@@ -7,7 +7,6 @@ from unittest.mock import MagicMock, patch
 
 from murmur import client, config
 from murmur.apps import App
-from murmur.commands import CommandError, Intent, Parser
 from murmur.hyprland import Hyprland
 from murmur.recorder import RecorderError
 from murmur.replay import Replay

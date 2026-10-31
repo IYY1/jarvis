@@ -122,6 +122,8 @@ def main():
     from .host import is_windows
     if is_windows():
         sub.add_parser("shutdown", help="Stop Jarvis and its owned workers")
+        startup = sub.add_parser("startup", help="Start Jarvis when you sign in to Windows")
+        startup.add_argument("state", choices=["on", "off"])
     execute = sub.add_parser("execute", help="Execute an allowlisted phrase for integration testing")
     execute.add_argument("phrase")
     record = sub.add_parser("record")
@@ -182,6 +184,10 @@ def main():
         if args.command == "shutdown":
             from .windows.startup import stop_service
             print(json.dumps(stop_service(), indent=2))
+            return 0
+        if args.command == "startup":
+            from .windows.startup import configure_startup
+            print(json.dumps(configure_startup(args.state == "on"), indent=2))
             return 0
         from .client import request, watch
         if args.command == "alias":

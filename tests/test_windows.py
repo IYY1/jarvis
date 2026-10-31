@@ -328,6 +328,38 @@ class HostTests(unittest.TestCase):
         self.assertNotIn("discord", config.DEFAULTS)
 
 
+class StartupTests(unittest.TestCase):
+    """Setup's start-at-sign-in component uses the same entry and setting as Settings."""
+
+    def test_running_service_applies_the_change_itself(self):
+        from murmur.windows import startup
+        with patch("murmur.client.request", return_value={"ok": True}) as request, \
+                patch.object(startup, "set_startup") as registry:
+            self.assertEqual(startup.configure_startup(True), {"ok": True, "startup": True})
+        request.assert_called_once_with("set_startup", enabled=True, timeout=5)
+        registry.assert_not_called()
+
+    def test_stopped_service_updates_run_entry_and_saved_setting(self):
+        from murmur.windows import startup
+        with tempfile.TemporaryDirectory() as directory, \
+                patch.dict("os.environ", MURMUR_CONFIG=str(Path(directory) / "config.json")), \
+                patch("murmur.client.request", side_effect=ConnectionRefusedError), \
+                patch.object(startup, "set_startup") as registry:
+            startup.configure_startup(True)
+            self.assertTrue(config.load()["startup"])
+            startup.configure_startup(False)
+            self.assertFalse(config.load()["startup"])
+        self.assertEqual([c.args for c in registry.call_args_list], [(True,), (False,)])
+
+    def test_service_refusal_is_reported(self):
+        from murmur.windows import startup
+        with patch("murmur.client.request", return_value={"ok": False, "error": "nope"}), \
+                patch.object(startup, "set_startup") as registry:
+            with self.assertRaisesRegex(RuntimeError, "nope"):
+                startup.configure_startup(False)
+        registry.assert_not_called()
+
+
 class AudioTests(unittest.TestCase):
     def stream(self, source_channels, target_channels):
         # Build the conversion stage directly; no PortAudio instance/device.

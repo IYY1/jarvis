@@ -1,19 +1,17 @@
 """Configured voice controls and wake names."""
-import copy
 import dataclasses
 import json
 import os
 from pathlib import Path
 import subprocess
 import sys
-import tempfile
 import types
 import unittest
 from unittest.mock import patch
 
 from murmur import config
 from murmur.commands import CommandError, Parser, all_wake_variants, closest_match, match_candidates
-from tests.test_rust_controller import BINARY, Harness, policies
+from tests.test_rust_controller import BINARY, policies
 from tests.test_voice_upgrade import FakeModel, FakeRecognizer, words
 
 

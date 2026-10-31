@@ -1,0 +1,38 @@
+# Reproducible Linux build/test environment for Jarvis.
+#
+# This container BUILDS and TESTS Jarvis; it does not run it. Jarvis itself is a
+# native desktop app (microphone, GPU capture, Windows Shell, tray) and runs
+# directly on Windows or Linux. The image cross-compiles the Windows Rust
+# helpers with MinGW-w64, freezes the Python service with Windows CPython under
+# Wine on a private Xvfb display, and packages the installer with NSIS.
+#
+#   podman build -t jarvis-build -f packaging/container/Containerfile .
+#   podman run --rm -v "$PWD:/src:Z" -v /path/to/inputs:/inputs:ro,Z jarvis-build test
+#   podman run --rm -v "$PWD:/src:Z" -v /path/to/inputs:/inputs:ro,Z jarvis-build windows
+#
+# /inputs supplies what must not be downloaded at build time (see
+# packaging/container/README.md): python-3.13.17-amd64.exe, wheels/ matching
+# packaging/windows/requirements-lock.txt, models/, ffmpeg-tools/bin and
+# FFmpeg-Corresponding-Source.tar.xz.
+FROM docker.io/library/debian:trixie-slim
+
+ARG RUST_VERSION=1.99.0
+ENV DEBIAN_FRONTEND=noninteractive \
+    RUSTUP_HOME=/opt/rustup CARGO_HOME=/opt/cargo \
+    PATH=/opt/cargo/bin:$PATH \
+    WINEPREFIX=/opt/wine WINEDEBUG=-all WINEARCH=win64
+
+RUN dpkg --add-architecture i386 && apt-get update && apt-get install -y --no-install-recommends \
+      ca-certificates curl git python3 python3-venv \
+      gcc g++ make pkg-config gcc-mingw-w64-x86-64-posix g++-mingw-w64-x86-64-posix binutils-mingw-w64-x86-64 \
+      wine wine64 wine32:i386 xvfb xauth nsis \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain "$RUST_VERSION" \
+      --target x86_64-pc-windows-gnu --component rustfmt \
+    && rustc --version
+
+COPY packaging/container/entrypoint.sh /usr/local/bin/jarvis-build
+WORKDIR /src
+ENTRYPOINT ["/usr/local/bin/jarvis-build"]
+CMD ["test"]

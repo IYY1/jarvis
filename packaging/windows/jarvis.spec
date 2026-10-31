@@ -9,13 +9,12 @@ from PyInstaller.utils.hooks import (
 )
 
 root = Path(SPECPATH).parents[1]
-datas = [(str(root / "src/murmur/onnx-cpu.conf"), "murmur")]
+# Speech runs in the bundled Rust worker (tools/jarvis-voice.exe); the Python
+# service and settings never import an inference library.
+datas = []
 binaries = []
 hiddenimports = []
 for package in (
-    "vosk",
-    "pocketsphinx",
-    "sherpa_onnx",
     "pyaudiowpatch",
     "pycaw",
     "comtypes",
@@ -51,7 +50,6 @@ hiddenimports += [
     "win32com.propsys.pscon",
     "pythoncom",
     "pywintypes",
-    "wmi",
     "audioop",
     "tkinter",
     "tkinter.ttk",
@@ -68,6 +66,17 @@ a = Analysis(
     excludes=[
         "gi",
         "murmur.ui",
+        "murmur.speech",
+        "murmur.transcriber",
+        "murmur.vosk_engine",
+        "vosk",
+        "pocketsphinx",
+        "sherpa_onnx",
+        "srt",
+        "tqdm",
+        "websockets",
+        "requests",
+        "cffi",
         "matplotlib",
         "numpy",
         "pip",
@@ -76,6 +85,12 @@ a = Analysis(
     ],
     noarchive=False,
 )
+# build_windows.py records licenses and versions only for what is bundled.
+import json
+
+(Path(workpath) / "bundled-modules.json").write_text(json.dumps(sorted(
+    {name.split(".")[0] for name, *_ in a.pure} | {dest.replace("\\", "/").split("/")[0] for dest, *_ in a.binaries}
+)))
 pyz = PYZ(a.pure)
 console = EXE(
     pyz,

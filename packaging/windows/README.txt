@@ -1,8 +1,13 @@
-Jarvis 0.2.0 — Windows x64 release candidate
+Jarvis 0.3.0 — Windows x64 release candidate
 
-Windows 10 22H2 and Windows 11 x64. Extract the whole portable ZIP before
-opening Jarvis.exe. Keep JarvisConsole.exe, _internal, models and tools beside
-it. The installer installs the same application for your account without admin.
+Windows 10 22H2 and Windows 11 x64. Run Jarvis-0.3.0-Windows-x64-Setup.exe:
+it installs for your account only, needs no administrator rights, downloads
+nothing and does not restart Windows. Setup upgrades an earlier Jarvis in
+place and keeps settings and recordings. Optional: desktop shortcut (on by
+default) and start at sign-in (off by default).
+
+Portable ZIP: extract the whole folder before opening Jarvis.exe. Keep
+JarvisConsole.exe, _internal, models and tools beside it.
 
 Open Jarvis.exe, choose Start service, and review Privacy before enabling your
 microphone. Models are included; normal use needs no downloads or paid service.
@@ -28,10 +33,16 @@ Saving completes the current second and may include one later second.
 Settings/logs: %LOCALAPPDATA%\Jarvis
 Recordings: the folder you selected (default %USERPROFILE%\Videos\Jarvis).
 Portable mode keeps account settings in the same location as the installer.
-Uninstall preserves account settings and recordings.
+Uninstall preserves account settings and recordings unless you tick
+"Also delete my Jarvis settings and logs". Recordings are never deleted.
+
+Speech recognition runs in tools\jarvis-voice.exe (native, offline). If
+Windows blocks the microphone, turn on Settings > Privacy > Microphone >
+"Let desktop apps access your microphone".
 
 Console examples:
   JarvisConsole.exe --version
+  JarvisConsole.exe startup on|off
   JarvisConsole.exe doctor
   JarvisConsole.exe status
   JarvisConsole.exe mute
@@ -40,9 +51,10 @@ Console examples:
 No Discord moderation is included. The same Windows app can still be opened
 by name like other installed applications.
 
-Validation: automated policy tests, generated-video recording/replay, private
-IPC, muted-service lifecycle and native settings have been tested under Wine.
-Actual Windows 10/11 hardware acceptance is required before public release:
+Validation: install, upgrade from 0.2.0, first launch, the voice path with
+injected test audio, start at sign-in, restart and uninstall were checked on
+Windows 10 22H2 in a virtual machine (see docs/windows.md). Physical hardware
+acceptance is still required before public release:
 microphone consent/mute, app focus, virtual desktops,
 GPU capture, system/microphone sound, mixed-DPI displays and HDR.
 Wine and containers cannot establish those hardware results. This build is

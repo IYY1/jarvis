@@ -1,4 +1,4 @@
-Jarvis 0.2.0 third-party components
+Jarvis 0.3.0 third-party components
 
 Jarvis source: MIT; LICENSE accompanies this distribution.
 Python: Python Software Foundation license; licenses/Python-LICENSE.txt.
@@ -8,9 +8,14 @@ pywin32 / pywin32-ctypes / pypiwin32: see their included licenses.
 PyAudioWPatch / PortAudio: MIT and PortAudio license, respectively.
 pycaw, pyvda, comtypes and audioop-lts:
 see licenses/ for the upstream notices from the installed distributions.
-Vosk runtime: Apache-2.0 (with its bundled third-party runtime notices).
-PocketSphinx: BSD-style; included notices also cover its bundled English model.
-sherpa-onnx / ONNX Runtime: Apache-2.0 / MIT; included upstream notices.
+Vosk runtime (tools/libvosk.dll with its MinGW runtime DLLs, from the vosk
+0.3.45 wheel): Apache-2.0; licenses/vosk/ and licenses/Vosk-Apache-2.0.txt.
+Rust voice worker (tools/jarvis-voice.exe): Jarvis MIT code, the Rust
+standard library (MIT/Apache-2.0) and the crates listed with their licenses
+in licenses/voice-worker/CRATES.txt (tract, rustfft, serde, windows-rs and
+others; MIT, Apache-2.0, BSD, Zlib, Unlicense or Unicode-3.0 terms). Upstream
+license files are in licenses/voice-worker/. Exact versions are in
+native/voice-worker/Cargo.lock in the source distribution.
 Whisper model: OpenAI, MIT; int8 ONNX conversion distributed by sherpa-onnx.
 Vosk small English 0.15 model: Apache-2.0.
 GTCRN denoising model: MIT; upstream license included.
@@ -42,7 +47,9 @@ https://github.com/s0d3s/PyAudioWPatch
 https://github.com/AndreMiras/pycaw
 https://github.com/mirober/pyvda
 https://alphacephei.com/vosk/models
-https://github.com/k2-fsa/sherpa-onnx
+https://github.com/k2-fsa/sherpa-onnx (Whisper int8 export only)
+https://github.com/sonos/tract
+https://github.com/microsoft/windows-rs
 https://github.com/openai/whisper
 https://github.com/Xiaobin-Rong/gtcrn
 https://ffmpeg.org/

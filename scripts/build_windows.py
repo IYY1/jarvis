@@ -40,6 +40,11 @@ def main():
     parser.add_argument("--replay-store", type=Path,
                         default=ROOT / "src/murmur/bin/jarvis-replay-store.exe",
                         help="Rust replay helper built with scripts/build_replay_store.py")
+    parser.add_argument("--voice-worker", type=Path,
+                        default=ROOT / "src/murmur/bin/jarvis-voice.exe",
+                        help="Rust voice worker for Windows (scripts/build_windows_release.py cross-compiles it)")
+    parser.add_argument("--vosk-dir", type=Path,
+                        help="Folder with libvosk.dll and its MinGW runtime DLLs (default: installed vosk package)")
     args = parser.parse_args()
     if sys.platform != "win32":
         parser.error("Run with Windows Python (a real Windows host or isolated Wine)")
@@ -62,6 +67,17 @@ def main():
             raise ValueError(f"Missing Windows tool: {tool}")
     if not args.replay_store.is_file():
         raise ValueError("Build scripts/build_replay_store.py before packaging disk replay")
+    if not args.voice_worker.is_file():
+        raise ValueError("Build the Rust voice worker for Windows before packaging")
+    if args.vosk_dir is None:
+        import importlib.util
+        spec = importlib.util.find_spec("vosk")
+        if spec is None or not spec.origin:
+            raise ValueError("Pass --vosk-dir or install the pinned vosk wheel in the build environment")
+        args.vosk_dir = Path(spec.origin).parent
+    vosk_dlls = sorted(args.vosk_dir.glob("*.dll"))
+    if "libvosk.dll" not in {p.name for p in vosk_dlls}:
+        raise ValueError(f"libvosk.dll is missing from {args.vosk_dir}")
     subprocess.run(
         [
             sys.executable,
@@ -79,6 +95,10 @@ def main():
     bundle = args.output / "frozen/Jarvis"
     shutil.copytree(args.tools, bundle / "tools", dirs_exist_ok=True)
     shutil.copy2(args.replay_store, bundle / "tools/jarvis-replay-store.exe")
+    # libvosk.dll resolves its MinGW runtime DLLs from the same folder.
+    shutil.copy2(args.voice_worker, bundle / "tools/jarvis-voice.exe")
+    for dll in vosk_dlls:
+        shutil.copy2(dll, bundle / "tools" / dll.name)
     shutil.copytree(
         args.models / MODEL_NAME, bundle / "models" / MODEL_NAME, dirs_exist_ok=True
     )
@@ -98,7 +118,18 @@ def main():
     python_license = Path(sys.base_prefix) / "LICENSE.txt"
     if python_license.is_file():
         shutil.copy2(python_license, bundle / "licenses/Python-LICENSE.txt")
-    for distribution in metadata.distributions():
+    modules = set(json.loads((ROOT / "build/windows/pyinstaller/jarvis/bundled-modules.json").read_text()))
+
+    def shipped(distribution):
+        if distribution.metadata.get("Name", "").casefold() == "vosk":
+            return True  # libvosk.dll and its runtimes are in tools/
+        tops = (distribution.read_text("top_level.txt") or "").split()
+        tops += [Path(f).parts[0].split(".")[0] for f in distribution.files or []
+                 if not Path(f).parts[0].endswith((".dist-info", ".egg-info", ".data"))]
+        return bool(modules & set(tops))
+
+    distributions = [d for d in metadata.distributions() if shipped(d)]
+    for distribution in distributions:
         name = distribution.metadata.get("Name", "unknown")
         for relative in distribution.files or []:
             if any(
@@ -117,9 +148,7 @@ def main():
         "target": "Windows 10 22H2 / Windows 11 x64",
         "discord_moderation": False,
         "python": sys.version,
-        "dependencies": {
-            d.metadata["Name"]: d.version for d in metadata.distributions()
-        },
+        "dependencies": {d.metadata["Name"]: d.version for d in distributions},
         "files": {
             p.relative_to(bundle).as_posix(): digest(p)
             for p in sorted(bundle.rglob("*"))

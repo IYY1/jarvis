@@ -36,6 +36,29 @@ def set_startup(enabled):
                 pass
 
 
+def configure_startup(enabled):
+    """Setup and the CLI change start-at-sign-in like Settings does.
+
+    A running service applies it itself, so its in-memory settings stay current.
+    """
+    from .. import config
+    from ..client import request
+
+    try:
+        result = request("set_startup", enabled=enabled, timeout=5)
+    except (OSError, ValueError, RuntimeError):
+        result = None
+    if result is not None:
+        if not result.get("ok"):
+            raise RuntimeError(result.get("error", "Jarvis could not change startup"))
+        return {"ok": True, "startup": enabled}
+    set_startup(enabled)
+    settings = config.load()
+    settings["startup"] = enabled
+    config.save(settings)
+    return {"ok": True, "startup": enabled}
+
+
 def start_service():
     from ..client import request
 

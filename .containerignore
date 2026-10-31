@@ -1,0 +1,3 @@
+# Only packaging/container/entrypoint.sh is copied; keep the context tiny.
+*
+!packaging/container/entrypoint.sh
