@@ -41,6 +41,8 @@ jobs:
         env:
           RUSTUP_TOOLCHAIN: stable
       - run: python -m unittest tests.test_replay_store -v
+      # The Windows release voice worker: WASAPI input, paced test capture, matching.
+      - run: cargo +stable test --release --locked --manifest-path native/voice-worker/Cargo.toml
 
   test:
     runs-on: ubuntu-24.04

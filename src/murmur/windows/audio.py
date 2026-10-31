@@ -2,15 +2,10 @@
 
 from __future__ import annotations
 import argparse
-from collections import deque
-from contextlib import contextmanager
-import io
 import json
 import queue
 import sys
-import threading
 import time
-from types import SimpleNamespace
 
 
 def _library():
@@ -198,129 +193,6 @@ class PCMStream:
         self.stream.close()
 
 
-class VoiceIO:
-    """Windows pipe/audio multiplexer for the shared voice-session loop.
-
-    select() on Windows only handles sockets. Blocking reader threads instead
-    notify a condition, with bounded audio and priority for control commands.
-    """
-
-    def __init__(self, config):
-        pa = _library()
-        self.engine = pa.PyAudio()
-        try:
-            self.stream = PCMStream(
-                self.engine,
-                pa,
-                select_device(self.engine, pa, config["audio"]["device"]),
-                rate=16000,
-                channels=1,
-            )
-        except Exception:
-            self.engine.terminate()
-            raise
-        self.condition = threading.Condition()
-        self.audio, self.controls = bytearray(), deque()
-        self.closed, self.error = False, None
-        self.decoding = False
-        self.stdout, self.stderr = io.BytesIO(), io.BytesIO()
-        self.keys = {}
-        threading.Thread(target=self._audio, daemon=True, name="jarvis-audio").start()
-
-    def _audio(self):
-        try:
-            while not self.closed:
-                data = self.stream.read(480)
-                with self.condition:
-                    if self.decoding:
-                        continue
-                    if len(self.audio) + len(data) > 32000:
-                        raise RuntimeError(
-                            "Voice input overflowed; pause and resume after reducing system load"
-                        )
-                    self.audio.extend(data)
-                    self.condition.notify()
-        except Exception as exc:
-            with self.condition:
-                self.error = exc
-                self.condition.notify()
-
-    def _control(self):
-        while not self.closed:
-            line = sys.stdin.buffer.readline(4097)
-            with self.condition:
-                if len(line) > 4096 or len(self.controls) >= 32:
-                    self.error = RuntimeError("Voice control input exceeds its limit")
-                    self.condition.notify()
-                    return
-                self.controls.append(line)
-                self.condition.notify()
-            if not line:
-                return
-
-    @contextmanager
-    def pause_for_inference(self):
-        """Drain WASAPI during command decoding; keep control messages queued."""
-        with self.condition:
-            self.decoding = True
-            self.audio.clear()
-        try:
-            yield
-        finally:
-            with self.condition:
-                self.audio.clear()
-                self.decoding = False
-
-    def register(self, stream, _events):
-        fd = 0 if stream == 0 else 1
-        key = SimpleNamespace(fd=fd)
-        self.keys[fd] = key
-        if fd == 0:
-            threading.Thread(
-                target=self._control, daemon=True, name="jarvis-voice-control"
-            ).start()
-        return key
-
-    def unregister(self, fd):
-        self.keys.pop(fd, None)
-
-    def select(self, timeout):
-        with self.condition:
-            self.condition.wait_for(
-                lambda: self.error or self.closed or self.audio or self.controls,
-                timeout,
-            )
-            if self.error:
-                raise self.error
-            return [
-                (self.keys[fd], 1)
-                for fd, available in ((0, self.controls), (1, self.audio))
-                if available and fd in self.keys
-            ]
-
-    def read(self, fd, size):
-        with self.condition:
-            if fd == 0:
-                return self.controls.popleft()
-            data = bytes(self.audio[:size])
-            del self.audio[:size]
-            return data
-
-    def terminate(self):
-        self.close()
-
-    def wait(self, timeout=None):
-        return 0
-
-    def close(self):
-        if not self.closed:
-            self.closed = True
-            with self.condition:
-                self.condition.notify_all()
-            self.stream.close()
-            self.engine.terminate()
-
-
 def mix_to_pipe(config, pipe):
     from .pipes import PipeWriter
 
@@ -371,17 +243,3 @@ def main(args=None):
         if code in (109, 232, 233, 995):
             return 0  # FFmpeg closed its audio input on stop
         raise
-
-
-class CommandTranscriber:
-    """Decode a finished command while intentionally ignoring new audio."""
-
-    def __init__(self, transcriber, capture):
-        self.transcriber, self.capture = transcriber, capture
-
-    def transcribe(self, pcm):
-        # Inference may take longer than the input-buffer limit on a busy CPU.
-        # Draining avoids an overflow and prevents old speech entering the next
-        # wake session. Model weights and inference parameters are unchanged.
-        with self.capture.pause_for_inference():
-            return self.transcriber.transcribe(pcm)

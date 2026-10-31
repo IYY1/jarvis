@@ -34,7 +34,7 @@ impl Model {
         // SAFETY: symbols use Vosk's public C signatures (vosk_api.h).
         // The Library is retained until the last Rc<Model> is dropped.
         unsafe {
-            let lib = Library::new(library)?;
+            let lib = load(library)?;
             let set_log: unsafe extern "C" fn(c_int) = *lib.get(b"vosk_set_log_level\0")?;
             set_log(-1);
             let api = Api {
@@ -197,4 +197,24 @@ pub fn trim() {
     unsafe {
         libc::malloc_trim(0);
     }
+    // Large blocks are already returned on free; this decommits coalesced
+    // free ranges of the process heap.
+    #[cfg(windows)]
+    unsafe {
+        use windows::Win32::System::Memory::{GetProcessHeap, HeapCompact, HEAP_FLAGS};
+        if let Ok(heap) = GetProcessHeap() {
+            HeapCompact(heap, HEAP_FLAGS(0));
+        }
+    }
+}
+
+/// libvosk.dll's MinGW runtime DLLs sit beside it in the vosk package.
+#[cfg(windows)]
+unsafe fn load(path: &str) -> std::result::Result<Library, libloading::Error> {
+    use libloading::os::windows::{Library, LOAD_WITH_ALTERED_SEARCH_PATH};
+    Library::load_with_flags(path, LOAD_WITH_ALTERED_SEARCH_PATH).map(Into::into)
+}
+#[cfg(not(windows))]
+unsafe fn load(path: &str) -> std::result::Result<Library, libloading::Error> {
+    Library::new(path)
 }

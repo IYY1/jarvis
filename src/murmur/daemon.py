@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import asyncio
-import importlib.util
 import json
 import os
 from pathlib import Path
@@ -58,8 +57,8 @@ class Service:
         self.worker_lock = asyncio.Lock()
         self.stopping = asyncio.Event()
         self.tasks: set[asyncio.Task] = set()
-        self.voice_available = (importlib.util.find_spec("pocketsphinx") is not None
-                                or importlib.util.find_spec("vosk") is not None)
+        from .native_worker import python_worker_available, rust_ready
+        self.voice_available = python_worker_available() or rust_ready(self.config)
         self.desktop_executor = None
         if is_windows():
             from concurrent.futures import ThreadPoolExecutor

@@ -15,7 +15,7 @@ from unittest.mock import MagicMock, patch
 from murmur import config, host
 from murmur.recorder import RecorderError
 from murmur.windows import encoding, transport
-from murmur.windows.audio import PCMStream, VoiceIO, select_device
+from murmur.windows.audio import PCMStream, select_device
 from murmur.windows.apps import WindowsApp
 from murmur.windows.capture import Replay, ReplayBuffer
 
@@ -383,19 +383,6 @@ class AudioTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "overflow"):
             stream.read(1)
 
-    def test_voice_control_has_priority_over_buffered_audio(self):
-        voice = object.__new__(VoiceIO)
-        voice.condition = threading.Condition()
-        voice.error = None
-        voice.closed = False
-        voice.controls = __import__("collections").deque([b"cancel\n"])
-        voice.audio = bytearray(b"audio")
-        voice.keys = {0: types.SimpleNamespace(fd=0), 1: types.SimpleNamespace(fd=1)}
-        self.assertEqual([key.fd for key, _ in voice.select(0)], [0, 1])
-        self.assertEqual(voice.read(0, 100), b"cancel\n")
-        self.assertEqual(voice.read(1, 3), b"aud")
-        self.assertEqual(voice.audio, b"io")
-
     def test_duplicate_device_names_are_refused(self):
         class Engine:
             def get_host_api_info_by_type(self, _):
@@ -409,31 +396,6 @@ class AudioTests(unittest.TestCase):
 
         with self.assertRaisesRegex(RuntimeError, "ambiguous"):
             select_device(Engine(), types.SimpleNamespace(paWASAPI=1), "input:Mic")
-
-    def test_decoding_discards_only_new_audio_and_preserves_control_lines(self):
-        from murmur.windows.audio import CommandTranscriber
-        from collections import deque
-
-        voice = object.__new__(VoiceIO)
-        voice.condition = threading.Condition()
-        voice.audio = bytearray(b"old")
-        voice.controls = deque([b"cancel\n"])
-        voice.decoding = False
-
-        class Decoder:
-            def transcribe(self, pcm):
-                self.assertion = voice.decoding and not voice.audio
-                voice.audio.extend(b"while decoding")
-                return "open firefox"
-
-        decoder = Decoder()
-        self.assertEqual(
-            CommandTranscriber(decoder, voice).transcribe(b"fixture"), "open firefox"
-        )
-        self.assertTrue(decoder.assertion)
-        self.assertFalse(voice.decoding)
-        self.assertFalse(voice.audio)
-        self.assertEqual(voice.controls.popleft(), b"cancel\n")
 
     def test_quiet_loopback_adds_timed_silence_but_microphone_never_does(self):
         stream = self.stream(2, 2)

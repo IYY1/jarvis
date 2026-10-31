@@ -100,6 +100,43 @@ class PreparationTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, error):
                     prepare(copy.deepcopy(DEFAULTS), "test", {})
 
+    def windows_release(self, directory, *, worker=True, library=True):
+        tools = Path(directory) / "tools"
+        tools.mkdir()
+        if worker:
+            (tools / "jarvis-voice.exe").touch(mode=0o755)
+        if library:
+            (tools / "libvosk.dll").touch()
+        return patch.multiple("murmur.native_worker", is_windows=lambda: True, app_dir=lambda: Path(directory), EXE=".exe",
+                              python_worker_available=lambda: False, valid_model=lambda _path: True,
+                              accurate_model_ready=lambda: False)
+
+    def test_windows_release_uses_the_bundled_rust_worker_and_vosk_dll(self):
+        with tempfile.TemporaryDirectory() as directory, self.windows_release(directory), patch.dict(os.environ):
+            os.environ.pop("MURMUR_VOICE_WORKER", None)
+            argv, payload, env = prepare(copy.deepcopy(DEFAULTS), "wake_word", Parser().grammar([]))
+        tools = Path(directory) / "tools"
+        self.assertEqual(argv, [str(tools / "jarvis-voice.exe")])
+        self.assertEqual(payload["native"]["vosk_library"], str(tools / "libvosk.dll"))
+        self.assertEqual(env["MURMUR_OWNER_PID"], str(os.getpid()))
+
+    def test_windows_release_without_worker_or_library_explains_reinstall(self):
+        for worker, library in ((False, True), (True, False)):
+            with self.subTest(worker=worker, library=library), tempfile.TemporaryDirectory() as directory, \
+                    self.windows_release(directory, worker=worker, library=library), \
+                    patch("murmur.native_worker.package_dir", return_value=None), patch.dict(os.environ):
+                os.environ.pop("MURMUR_VOICE_WORKER", None)
+                with self.assertRaisesRegex(ValueError, "[Rr]einstall"):
+                    prepare(copy.deepcopy(DEFAULTS), "wake_word", Parser().grammar([]))
+
+    def test_rust_ready_reports_release_voice_availability(self):
+        from murmur.native_worker import rust_ready
+        with tempfile.TemporaryDirectory() as directory, self.windows_release(directory):
+            self.assertTrue(rust_ready(copy.deepcopy(DEFAULTS)))
+            config = copy.deepcopy(DEFAULTS)
+            config["recognition"]["backend"] = "pocketsphinx"
+            self.assertFalse(rust_ready(config))
+
     def test_rust_whisper_preparation_does_not_require_sherpa(self):
         config = copy.deepcopy(DEFAULTS)
         config["recognition"]["accurate"] = True

@@ -1,6 +1,7 @@
 mod engine;
 mod history;
 mod inference;
+mod input;
 mod matching;
 mod on_demand;
 mod worker;
@@ -71,6 +72,7 @@ fn read_pcm(path: &str) -> Result<Vec<u8>> {
     }
     Ok(bytes)
 }
+#[cfg(unix)]
 fn metrics() -> Value {
     let status = std::fs::read_to_string("/proc/self/status").unwrap_or_default();
     let mib = |name| {
@@ -84,6 +86,27 @@ fn metrics() -> Value {
     };
     json!({"rss_mib":mib("VmRSS:"), "peak_rss_mib":mib("VmHWM:")})
 }
+/// Working set is the RSS counterpart; private commit is reported separately.
+#[cfg(windows)]
+fn metrics() -> Value {
+    use windows::Win32::System::ProcessStatus::{
+        GetProcessMemoryInfo, PROCESS_MEMORY_COUNTERS, PROCESS_MEMORY_COUNTERS_EX,
+    };
+    use windows::Win32::System::Threading::GetCurrentProcess;
+    let mut counters = PROCESS_MEMORY_COUNTERS_EX::default();
+    let size = std::mem::size_of::<PROCESS_MEMORY_COUNTERS_EX>() as u32;
+    let _ = unsafe {
+        GetProcessMemoryInfo(
+            GetCurrentProcess(),
+            (&mut counters as *mut PROCESS_MEMORY_COUNTERS_EX).cast::<PROCESS_MEMORY_COUNTERS>(),
+            size,
+        )
+    };
+    let mib = |bytes: usize| bytes as f64 / 1048576.0;
+    json!({"rss_mib":mib(counters.WorkingSetSize), "peak_rss_mib":mib(counters.PeakWorkingSetSize),
+           "private_commit_mib":mib(counters.PrivateUsage)})
+}
+#[cfg(unix)]
 fn cpu_seconds() -> f64 {
     let mut time = libc::timespec {
         tv_sec: 0,
@@ -93,6 +116,16 @@ fn cpu_seconds() -> f64 {
         libc::clock_gettime(libc::CLOCK_PROCESS_CPUTIME_ID, &mut time);
     }
     time.tv_sec as f64 + time.tv_nsec as f64 / 1e9
+}
+#[cfg(windows)]
+fn cpu_seconds() -> f64 {
+    use windows::Win32::Foundation::FILETIME;
+    use windows::Win32::System::Threading::{GetCurrentProcess, GetProcessTimes};
+    let mut times = [FILETIME::default(); 4];
+    let [created, exited, kernel, user] = &mut times;
+    let _ = unsafe { GetProcessTimes(GetCurrentProcess(), created, exited, kernel, user) };
+    let ticks = |t: &FILETIME| ((t.dwHighDateTime as u64) << 32 | t.dwLowDateTime as u64) as f64;
+    (ticks(&times[2]) + ticks(&times[3])) / 1e7
 }
 fn wake_only(request: &Value) -> Result<bool> {
     let enabled = request
