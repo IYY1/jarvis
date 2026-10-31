@@ -146,7 +146,12 @@ Only Hyprland is implemented and verified here.
 
 The Rust worker implements the same voice-process boundary and JSON protocol.
 The Linux daemon prefers it when the executable, Vosk library and model are
-available. Windows, PocketSphinx and source-only installations use Python.
+available; PocketSphinx and source-only Linux installations use the Python
+worker. Windows releases ship only the Rust worker (`tools/jarvis-voice.exe`
+beside `libvosk.dll`): it captures the microphone with shared-mode WASAPI,
+which converts to 16 kHz mono itself, reads control lines on a thread, and
+loads Whisper on demand exactly as on Linux. The Windows service and settings
+never import an inference library. See [Windows memory](windows-memory.md).
 `MURMUR_VOICE_WORKER=rust` or `python` explicitly selects either implementation. Paths and command-to-intent candidates are prepared without
 importing speech libraries in the daemon. See [Rust worker](rust-voice.md) for
 build instructions, model parity, measured memory savings and prototype limits.

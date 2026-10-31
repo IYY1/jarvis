@@ -15,6 +15,8 @@ Start with the root [README](../README.md) for installation and everyday use.
 | [Memory-plan handoff](memory-plan-handoff.md) | Current state, measured results, local assets and the next Rust KWS experiment |
 | [Review handoff](review-ready.md) | Where to review and what remains unverified |
 | [Windows release](windows.md) | Windows installer/ZIP, build instructions and hardware acceptance |
+| [Windows memory](windows-memory.md) | 0.3.0 Rust voice worker on Windows: method, before/after RAM and latency, open latency regression |
+| [Build container](../packaging/container/README.md) | Linux container that tests Jarvis and builds the Windows installer |
 | [Feature review](feature-review.md) | Recording settings and deferred Discord work |
 | [Local refactor review](refactor-review.md) | October 24 refactor, equivalence checks and measured CPU/RAM results |
 | [Voice models](speech-research.md) | Current model path and public test fixture |

@@ -1,0 +1,79 @@
+diff --git a/src/murmur/windows/audio.py b/src/murmur/windows/audio.py
+index 5f40116..129ad90 100644
+--- a/src/murmur/windows/audio.py
++++ b/src/murmur/windows/audio.py
+@@ -198,6 +198,26 @@ class PCMStream:
+         self.stream.close()
+ 
+ 
++class _TestCapture:
++    def __init__(self, path):
++        with open(path, "rb") as stream:
++            self.pcm = stream.read()
++        self.sent, self.start = 0, time.monotonic()
++
++    def read(self, frames):
++        size = frames * 2
++        chunk = self.pcm[self.sent:self.sent + size]
++        chunk += bytes(size - len(chunk))
++        self.sent += size
++        delay = self.start + self.sent / 32000 - time.monotonic()
++        if delay > 0:
++            time.sleep(delay)
++        return chunk
++
++    def close(self):
++        pass
++
++
+ class VoiceIO:
+     """Windows pipe/audio multiplexer for the shared voice-session loop.
+ 
+@@ -206,19 +226,24 @@ class VoiceIO:
+     """
+ 
+     def __init__(self, config):
+-        pa = _library()
+-        self.engine = pa.PyAudio()
+-        try:
+-            self.stream = PCMStream(
+-                self.engine,
+-                pa,
+-                select_device(self.engine, pa, config["audio"]["device"]),
+-                rate=16000,
+-                channels=1,
+-            )
+-        except Exception:
+-            self.engine.terminate()
+-            raise
++        import os
++        if os.environ.get("MURMUR_TEST_CAPTURE_FILE"):
++            # Baseline benchmark instrumentation only: paced file, then silence.
++            self.engine, self.stream = None, _TestCapture(os.environ["MURMUR_TEST_CAPTURE_FILE"])
++        else:
++            pa = _library()
++            self.engine = pa.PyAudio()
++            try:
++                self.stream = PCMStream(
++                    self.engine,
++                    pa,
++                    select_device(self.engine, pa, config["audio"]["device"]),
++                    rate=16000,
++                    channels=1,
++                )
++            except Exception:
++                self.engine.terminate()
++                raise
+         self.condition = threading.Condition()
+         self.audio, self.controls = bytearray(), deque()
+         self.closed, self.error = False, None
+@@ -318,7 +343,8 @@ class VoiceIO:
+             with self.condition:
+                 self.condition.notify_all()
+             self.stream.close()
+-            self.engine.terminate()
++            if self.engine is not None:
++                self.engine.terminate()
+ 
+ 
+ def mix_to_pipe(config, pipe):

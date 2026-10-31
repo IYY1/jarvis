@@ -12,8 +12,11 @@ microphone consent; listen-once activation is optional.
 This is an early desktop application. Recognition depends on your voice,
 microphone and room noise. Measurements and remaining checks are documented.
 
-Windows 0.2.0 is a local release candidate: installer and portable ZIP, bundled
-offline models and recording tools, with Discord moderation deferred. Read
+Windows 0.3.0 is a local release candidate: one per-user Setup.exe (or a portable
+ZIP) with bundled offline models, the native Rust voice worker and recording
+tools, with Discord moderation deferred. On Windows 10 it holds about 165 MiB
+while waiting for the wake word, down from about 600 MiB in 0.2.0
+([measurements](docs/windows-memory.md)). Read
 [Windows setup and validation](docs/windows.md) before public release. Linux
 installation instructions below remain available for Arch/CachyOS and Hyprland.
 
@@ -178,7 +181,7 @@ with Rust audio processing and neural kernels, using the existing model weights.
 Vectorized kernels cut the first Rust version’s median decode time by about
 57%. On the current public fixtures it roughly matches native transcription
 latency while retaining about 57 MiB less memory in the isolated transcriber. Vosk wake detection still uses its native library.
-Python remains available for Windows, PocketSphinx and installations without the native worker. Set `MURMUR_VOICE_WORKER=python` to select it explicitly; the guides explain build, selection and verification.
+Windows releases use only the Rust worker. On Linux, Python remains available for PocketSphinx and installations without the native worker. Set `MURMUR_VOICE_WORKER=python` to select it explicitly; the guides explain build, selection and verification.
 
 An optional [Rust background controller](docs/rust-controller.md) also implements
 the local service API, configuration, command dispatch and recorder/replay
