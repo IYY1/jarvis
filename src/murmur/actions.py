@@ -45,12 +45,6 @@ class Dispatcher:
         if action in ("workspace", "move_workspace", "fullscreen", "unfullscreen"):
             self.desktop.dispatch(action, intent.target)
             return "Desktop updated"
-        if action.startswith("brightness_"):
-            if is_windows():
-                from .windows.brightness import execute
-            else:
-                from .brightness import execute
-            return execute(intent, self.config)
         if action.startswith("volume_"):
             volume(action)
             return "Volume updated"

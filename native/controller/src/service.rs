@@ -828,9 +828,6 @@ async fn dispatch(
             desktop.dispatch(action, &intent["target"]).await?;
             Ok("Desktop updated".into())
         }
-        "brightness_set" | "brightness_up" | "brightness_down" => {
-            crate::brightness::execute(intent, cfg).await
-        }
         "volume_down" | "volume_up" | "volume_mute" | "volume_unmute" => {
             desktop::volume(action).await?;
             Ok("Volume updated".into())

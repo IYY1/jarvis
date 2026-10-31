@@ -102,8 +102,8 @@ class VoskEngine:
                                     if p.removeprefix("open ") not in self._sounds_like.values()]
         # The matcher checks text after _canonical(), so it knows the real names.
         self._matcher = GrammarMatcher(self.phrases, (spoken_apps + list(self._sounds_like.values())) if verbs else (), verbs)
-        from .phrases import Rules, brightness_like
-        self._rules = Rules(grammar.get("launches"), grammar.get("brightness_names"))
+        from .phrases import Rules
+        self._rules = Rules(grammar.get("launches"))
         blocked = set(grammar.get("blocked_apps", []))
         self._verbs = sorted(verbs, key=len, reverse=True)
         full = list(known) + [f"{verb}{article} {app}" for verb in verbs for app in spoken_apps
@@ -118,7 +118,7 @@ class VoskEngine:
                     full.extend((p[:-len(alias)] + spoken, p[:-len(alias)] + "the " + spoken))
         # Polite forms only for the shorter built-in phrases, to keep the
         # strict grammar small; app commands get them via closest-match.
-        full += [f"{prefix} {phrase}" for prefix in prefixes for phrase in known if not brightness_like(phrase)]
+        full += [f"{prefix} {phrase}" for prefix in prefixes for phrase in known]
         command_phrases = sorted(set(full))
 
         # Closest-match may also pick apps whose names the model can't spell
@@ -149,7 +149,7 @@ class VoskEngine:
         self._wake.SetWords(True)
         self._command = KaldiRecognizer(self._model, SAMPLE_RATE, json.dumps(command_phrases + ["[unk]"]))
         self._command.SetWords(True)
-        self._open = KaldiRecognizer(self._model, SAMPLE_RATE) if fuzzy or self._rules.monitors else None
+        self._open = KaldiRecognizer(self._model, SAMPLE_RATE) if fuzzy else None
         self._mode: str | None = None
         self._preroll: deque[bytes] = deque(maxlen=PREROLL_FRAMES)
         self._hangover = 0
@@ -426,13 +426,6 @@ class VoskEngine:
             accurate_match = closest_match(accurate, self._candidates, exact_only=not self._fuzzy) if accurate and self._candidates else None
             if accurate_match or not heard_match:
                 heard, heard_match = accurate or heard, accurate_match
-        from .phrases import brightness_like
-        if brightness_like(text):
-            if heard_match and brightness_like(heard_match[0]):
-                self._mode = None
-                return Recognition("command", heard_match[0], heard_match[1], heard=heard, closest_match=True)
-            self.unmatched = heard
-            return None
         confidence = self._confidence(result)
         if text and "[unk]" not in text and self._matcher.accepts(text):
             strict_intent = self._candidates.get(command_wording(text)) if self._candidates else None

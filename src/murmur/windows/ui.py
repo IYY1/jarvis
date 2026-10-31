@@ -58,7 +58,6 @@ class Window:
             ("commands", "Commands"),
             ("recording", "Recording"),
             ("replay", "Replay"),
-            ("displays", "Displays"),
             ("privacy", "Privacy"),
             ("diagnostics", "Diagnostics"),
         ):
@@ -661,108 +660,6 @@ class Window:
             11,
         )
 
-    def build_displays(self, p):
-        self.brightness = copy.deepcopy(self.config["brightness"])
-        self.note(
-            p,
-            "Brightness uses laptop controls or DDC/CI on external monitors. Refresh, select a display and give it a short spoken name. Enable DDC/CI in the monitor's own menu if brightness is unavailable.",
-            0,
-        )
-        self.brightness_tree = ttk.Treeview(
-            p,
-            columns=("name", "percent", "id"),
-            displaycolumns=("name", "percent"),
-            show="headings",
-            height=8,
-        )
-        self.brightness_tree.heading("name", text="Connected display")
-        self.brightness_tree.heading("percent", text="Brightness / availability")
-        self.brightness_tree.grid(row=1, column=0, columnspan=3, sticky="ew")
-        self.display_name = tk.StringVar()
-        ttk.Label(p, text="Spoken name").grid(row=2, column=0, sticky="w")
-        ttk.Entry(p, textvariable=self.display_name).grid(
-            row=2, column=1, sticky="ew", pady=10
-        )
-        self.buttons(
-            p,
-            [
-                (
-                    "Refresh displays",
-                    lambda: self.call("brightness_monitors", self.show_brightness),
-                ),
-                ("Assign name", self.assign_display),
-            ],
-            3,
-        )
-        self.named_displays = ttk.Treeview(
-            p, columns=("name", "default"), show="headings", height=6
-        )
-        self.named_displays.heading("name", text="Spoken display name")
-        self.named_displays.heading("default", text="Default")
-        self.named_displays.grid(row=4, column=0, columnspan=3, sticky="ew")
-        self.buttons(
-            p,
-            [
-                ("Use as default", self.default_display),
-                ("Remove name", self.remove_display),
-            ],
-            5,
-        )
-        self.note(
-            p,
-            "Try “set left screen brightness to fifty percent”. “Main” refers to the default display. Recheck names after reconnecting displays without a unique hardware identity. Save settings to apply.",
-            6,
-        )
-        self.refresh_named_displays()
-
-    def show_brightness(self, result):
-        self.brightness_tree.delete(*self.brightness_tree.get_children())
-        for monitor in result["monitors"]:
-            if not monitor.get("ambiguous"):
-                availability = monitor.get(
-                    "error", str(monitor.get("percent", "?")) + "%"
-                )
-                self.brightness_tree.insert(
-                    "", "end", values=(monitor["label"], availability, monitor["id"])
-                )
-
-    def refresh_named_displays(self):
-        self.named_displays.delete(*self.named_displays.get_children())
-        for identity, monitor in self.brightness["monitors"].items():
-            self.named_displays.insert(
-                "",
-                "end",
-                iid=identity,
-                values=(
-                    monitor["name"],
-                    "Default" if identity == self.brightness["default"] else "",
-                ),
-            )
-
-    def assign_display(self):
-        selection = self.brightness_tree.selection()
-        name = self.display_name.get().strip()
-        if not selection or not name:
-            return
-        identity = self.brightness_tree.item(selection[0], "values")[2]
-        self.brightness["monitors"][identity] = {"name": name, "aliases": []}
-        if not self.brightness["default"]:
-            self.brightness["default"] = identity
-        self.refresh_named_displays()
-
-    def default_display(self):
-        selection = self.named_displays.selection()
-        if selection:
-            self.brightness["default"] = selection[0]
-            self.refresh_named_displays()
-
-    def remove_display(self):
-        for identity in self.named_displays.selection():
-            self.brightness["monitors"].pop(identity, None)
-            if self.brightness["default"] == identity:
-                self.brightness["default"] = ""
-        self.refresh_named_displays()
-
     def build_privacy(self, p):
         self.note(
             p,
@@ -825,7 +722,6 @@ class Window:
         value["aliases"] = dict(self.aliases)
         value["app_prefixes"] = dict(self.prefixes)
         value["commands"] = json.loads(self.commands_text.get("1.0", "end"))
-        value["brightness"] = copy.deepcopy(self.brightness)
         return config.validate(value)
 
     def save(self):

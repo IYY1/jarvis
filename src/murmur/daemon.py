@@ -373,12 +373,6 @@ class Service:
             return {"ok": True, "devices": await asyncio.to_thread(devices)}
         if op == "recording_devices":
             return {"ok": True, "devices": [{"id": d["name"], "name": d["description"], "monitor": d["monitor"]} for d in await asyncio.to_thread(audio_sources)]}
-        if op == "brightness_monitors":
-            if is_windows():
-                from .windows.brightness import inventory
-            else:
-                from .brightness import inventory
-            return {"ok": True, "monitors": await self.desktop_call(inventory)}
         if op == "monitors":
             return {"ok": True, "monitors": await asyncio.to_thread(self.recorder.sources)}
         if op == "mute":

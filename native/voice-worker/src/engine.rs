@@ -23,8 +23,6 @@ pub struct Grammar {
     #[serde(default)]
     pub launches: serde_json::Map<String, Value>,
     #[serde(default)]
-    pub brightness_names: serde_json::Map<String, Value>,
-    #[serde(default)]
     pub blocked_apps: HashSet<String>,
 }
 
@@ -298,7 +296,7 @@ impl Engine {
             }
         }
         for p in &prefixes {
-            for k in known.iter().filter(|p| !jarvis_phrases::brightness_like(p)) {
+            for k in &known {
                 full.insert(format!("{p} {k}"));
             }
         }
@@ -333,9 +331,7 @@ impl Engine {
         }
         let wake = Decoder::new(model.clone(), Some(wake_grammar), true)?;
         let command = Decoder::new(model.clone(), Some(full), true)?;
-        let open = if config["recognition"]["closest_match"].as_bool() == Some(true)
-            || !grammar.brightness_names.is_empty()
-        {
+        let open = if config["recognition"]["closest_match"].as_bool() == Some(true) {
             Some(Decoder::new(model, None, false)?)
         } else {
             None
@@ -358,7 +354,6 @@ impl Engine {
             exact_only: config["recognition"]["closest_match"].as_bool() == Some(false),
             rules: jarvis_phrases::Rules {
                 launches: grammar.launches.clone(),
-                monitors: grammar.brightness_names.clone(),
             },
             blocked_apps: grammar.blocked_apps.clone(),
         };

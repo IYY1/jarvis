@@ -17,7 +17,7 @@ Every grammar word must have a finite posterior between 0 and 1, the word list
 must match the grammar transcript, and the minimum posterior must be at least
 **0.98**. The complete normalized command and free-decoder transcript must
 agree, allowing the existing courtesy prefixes/suffixes. Unknown words,
-brightness commands, missing posteriors, partial matches, conflicting commands
+missing posteriors, partial matches, conflicting commands
 and absent free decoding take the existing Whisper path. A fuzzy window can
 score 1.0 for a substring, so that score alone never approves the fast path.
 
@@ -84,8 +84,7 @@ These controls use variants of the same public recording and do not supply
 the missing real-command, confusable, music or game-audio categories. Both
 acceptance artifacts correctly retain `passed: false` for the incomplete
 corpus, and their runner exits 1. Unit tests additionally reject missing or
-partial posteriors, conflicting/partial phrases, unknown words and brightness
-commands. Real-model checks verify zero Whisper loads for eligible commands
+partial posteriors, conflicting/partial phrases and unknown words. Real-model checks verify zero Whisper loads for eligible commands
 and retained Whisper loading/transcription when the free decoder is absent.
 
 The [validation record](benchmarks/vosk-experiments-validation-2026-10-26.json)

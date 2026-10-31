@@ -6,7 +6,7 @@ Tcl/Tk: Tcl/Tk permissive licenses, included in licenses/.
 PyInstaller bootloader: GPL with the bootloader distribution exception.
 pywin32 / pywin32-ctypes / pypiwin32: see their included licenses.
 PyAudioWPatch / PortAudio: MIT and PortAudio license, respectively.
-pycaw, pyvda, screen_brightness_control, comtypes, WMI and audioop-lts:
+pycaw, pyvda, comtypes and audioop-lts:
 see licenses/ for the upstream notices from the installed distributions.
 Vosk runtime: Apache-2.0 (with its bundled third-party runtime notices).
 PocketSphinx: BSD-style; included notices also cover its bundled English model.
@@ -41,7 +41,6 @@ https://github.com/mhammond/pywin32
 https://github.com/s0d3s/PyAudioWPatch
 https://github.com/AndreMiras/pycaw
 https://github.com/mirober/pyvda
-https://github.com/Crozzers/screen_brightness_control
 https://alphacephei.com/vosk/models
 https://github.com/k2-fsa/sherpa-onnx
 https://github.com/openai/whisper

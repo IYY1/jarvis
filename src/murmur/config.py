@@ -24,7 +24,6 @@ DEFAULTS = {
                     "accurate": True, "noise_suppression": False},
     "privacy": {"onboarded": False},
     "aliases": {}, "commands": {}, "app_prefixes": {}, "startup": False,
-    "brightness": {"monitors": {}, "default": "", "step": 10},
     "recording": {"output_dir": "~/Videos/Murmur", "monitor": "", "system_audio": False,
                   "microphone": False, "audio_device": "", "fps": 30,
                   "codec": "libx264", "quality": 23, "rate_control": "quality",

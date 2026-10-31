@@ -91,7 +91,6 @@ recognition quality. After a system Python minor upgrade, rebuild the venv;
 | Close applications | “close Firefox”, “close Dolphin”, “please close Steam” |
 | Workspaces | “go to workspace three”, “move this window to workspace two” |
 | Fullscreen | “make this window fullscreen”, “exit fullscreen” |
-| Brightness | “set KTC brightness to sixty seven percent”, “dim Samsung”, “brighten main” |
 | Volume | “turn the volume down”, “mute volume”, “turn the sound back on” |
 | Recording | “start recording”, “stop recording”, “open the video recorder” |
 | Instant replay | “clip that”, “save replay”, “start replay”, “stop replay” |
@@ -121,23 +120,6 @@ window, including windows on other workspaces; unsaved-work prompts remain
 under the application's control. It does not force-kill background processes.
 Use the exact app name or an alias for closing; close commands are not guessed
 from similar phrases. A wake name (or an explicit Listen once session) is still required.
-
-In **Displays**, refresh monitors, give each one a name and optional aliases
-(for example, `KTC` and `k t c`), choose your main monitor, and save. Say “set KTC
-brightness to 67 percent”, “dim Samsung to twenty percent”, or “brighten main”.
-Dim/brighten without a percentage uses the saved step, initially 10 percentage
-points. The Apply brightness button uses the same command dispatcher. Percentages
-must be whole numbers from 0 to 100; monitor names and numbers are never guessed
-by fuzzy matching.
-
-Linux monitor control requires `ddcutil`, DDC/CI enabled in the monitor menu,
-and user access to the monitor's `/dev/i2c-*` device. Discovery and naming do not
-change brightness. Unsupported/disconnected displays show an error. Names use
-the EDID manufacturer, model and serial so bus reordering preserves the target;
-monitors without a unique serial are tied to their current connection, with a
-notice in the app. Duplicate identities are refused. Up to eight monitor names
-and aliases can be configured. On Windows, brightness uses laptop WMI controls
-or DDC/CI on external monitors; name each monitor in the Displays tab.
 
 An alias selects the application rather than adding an executable. Closest-match
 recognition requires a clear lead over different commands. If both native and

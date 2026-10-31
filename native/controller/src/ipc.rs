@@ -30,7 +30,6 @@ pub async fn connect() -> Result<UnixStream> {
 }
 pub fn seconds(op: &str) -> u64 {
     match op {
-        "brightness_monitors" => 150,
         "record_stop" | "execute" | "replay_save" => 45,
         "record_start" | "replay_start" | "apps" => 20,
         "save_config" => 30,

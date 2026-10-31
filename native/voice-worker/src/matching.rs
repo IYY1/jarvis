@@ -56,7 +56,6 @@ impl Matcher {
         if !confidence.is_finite()
             || !(0.98..=1.0).contains(&confidence)
             || strict.contains("[unk]")
-            || jarvis_phrases::brightness_like(strict)
             || !self.accepts(strict)
         {
             return false;
@@ -76,13 +75,6 @@ impl Matcher {
         heard_match: Option<(String, f64)>,
     ) -> Option<crate::engine::Recognition> {
         use crate::engine::Recognition;
-        if jarvis_phrases::brightness_like(text) {
-            let (p, score) = heard_match?;
-            if !jarvis_phrases::brightness_like(&p) {
-                return None;
-            }
-            return Some(Recognition::new("command", p, Some(score)));
-        }
         if !text.is_empty() && !text.contains("[unk]") && self.accepts(text) {
             let strict_intent = self.intent(&wording(text, &self.prefixes, &self.suffixes));
             if !heard.is_empty()
@@ -155,22 +147,13 @@ impl Matcher {
                 .map_or(heard.clone(), |(p, _)| p.to_owned());
         }
         let literal = jarvis_phrases::normalize(&heard);
-        if !jarvis_phrases::brightness_like(&literal) {
-            if let Some(p) = self.rules.canonical(&literal) {
-                return self.intent(&p).map(|_| (p, 1.0));
-            }
-            if self.intent(&literal).is_some() {
-                return Some((literal, 1.0));
-            }
-        }
-        let mut text = wording(&heard, &self.prefixes, &self.suffixes);
-        if jarvis_phrases::brightness_like(&text) {
-            if jarvis_phrases::invalid_number(&heard) {
-                return None;
-            }
-            let p = self.rules.canonical(&text)?;
+        if let Some(p) = self.rules.canonical(&literal) {
             return self.intent(&p).map(|_| (p, 1.0));
         }
+        if self.intent(&literal).is_some() {
+            return Some((literal, 1.0));
+        }
+        let mut text = wording(&heard, &self.prefixes, &self.suffixes);
         if let Some(p) = self.rules.canonical(&text) {
             return self.intent(&p).map(|_| (p, 1.0));
         }
@@ -236,7 +219,7 @@ impl Matcher {
         // this request, then release it instead of retaining a growing cache.
         let mut scratch = MatchScratch::default();
         for (candidate, intent) in &self.candidates {
-            if intent.starts_with("brightness_") || intent.starts_with("close_app:") {
+            if intent.starts_with("close_app:") {
                 continue;
             }
             let target: Vec<char> = candidate.chars().filter(|&c| c != ' ').collect();
@@ -416,10 +399,6 @@ mod tests {
             Some(0.999),
             "could you launch discord please"
         ));
-        let brightness = "set brightness to fifty percent";
-        m.phrases.insert(brightness.into());
-        m.candidates.push((brightness.into(), "brightness".into()));
-        assert!(!m.confident_exact(brightness, Some(1.0), brightness));
     }
     #[test]
     fn python_sequence_matcher_tie_breaks() {

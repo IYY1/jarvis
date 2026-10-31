@@ -30,7 +30,7 @@ except ImportError:
 class WindowRequestTests(unittest.TestCase):
     def test_requests_keep_the_client_per_operation_timeouts(self):
         from murmur.windows.ui import Window
-        expected = {"brightness_monitors": 150, "execute": 45, "record_start": 20, "status": 15,
+        expected = {"execute": 45, "record_start": 20, "status": 15,
                     "record_stop": 60, "save_config": 60}
         for op, timeout in expected.items():
             with self.subTest(op=op):

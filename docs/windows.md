@@ -39,7 +39,6 @@ per-user Run entry, disabled by default.
 | Desktops | Existing Task View desktops one through ten, via pyvda |
 | Fullscreen | Reversible borderless fullscreen for the foreground window |
 | Volume | Windows default render endpoint, explicit mute/unmute |
-| Brightness | Laptop WMI or external-monitor DDC/CI; named, checked monitor identities |
 | Recording | DXGI adapter/output discovery and FFmpeg DDA capture |
 | System sound and microphone | WASAPI loopback and input, with optional mixing; no virtual cable required |
 | Replay | Three reusable private pipes; independent one-second segments in capped RAM or an opt-in Rust disk store |
@@ -173,7 +172,7 @@ Before public release, use the available dual boot to check:
 
 - Installer, portable launch, update/uninstall and startup registration on Windows 10 and 11.
 - Microphone permission denial, wake/listen/cancel, mute/resume and worker cleanup.
-- Real app discovery/focus, fullscreen, volume, existing desktops and brightness.
+- Real app discovery/focus, fullscreen, volume, existing desktops.
 - SDR GPU capture, quiet system sound, microphone/mixed audio, stop/save and replay.
 - Mixed-DPI and multiple adapters/displays; HDR enabled/disabled and output playback.
 

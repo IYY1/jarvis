@@ -43,7 +43,7 @@ by name like other installed applications.
 Validation: automated policy tests, generated-video recording/replay, private
 IPC, muted-service lifecycle and native settings have been tested under Wine.
 Actual Windows 10/11 hardware acceptance is required before public release:
-microphone consent/mute, app focus, virtual desktops, monitor brightness,
+microphone consent/mute, app focus, virtual desktops,
 GPU capture, system/microphone sound, mixed-DPI displays and HDR.
 Wine and containers cannot establish those hardware results. This build is
 unsigned and has not been publicly published by this task.

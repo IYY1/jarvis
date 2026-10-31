@@ -60,17 +60,12 @@ async fn connection(
             }
             return Ok(());
         }
-        let wait_seconds = if payload["op"] == "brightness_monitors" {
-            150
-        } else {
-            60
-        };
         let (reply, rx) = oneshot::channel();
         events
             .send(service::Message::Request(payload, reply))
             .await
             .map_err(|_| "Service is stopping")?;
-        let response = timeout(Duration::from_secs(wait_seconds), rx).await??;
+        let response = timeout(Duration::from_secs(60), rx).await??;
         write_json(&mut write, &response).await?;
         Ok::<_, Error>(())
     }
@@ -90,9 +85,6 @@ fn response(result: Result<Value>) -> Value {
 async fn discover(op: &str) -> Result<Value> {
     match op {
         "devices" => Ok(json!({"ok":true,"devices":desktop::devices().await?})),
-        "brightness_monitors" => {
-            Ok(json!({"ok":true,"monitors":jarvis_controller::brightness::inventory().await?}))
-        }
         "monitors" => Ok(json!({"ok":true,"monitors":desktop::monitors().await?})),
         _ => {
             let devices = desktop::audio_sources().await?;
@@ -138,10 +130,7 @@ async fn request(service: &mut service::Service, payload: Value, reply: service:
         });
         return;
     }
-    if matches!(
-        op,
-        "devices" | "recording_devices" | "monitors" | "brightness_monitors"
-    ) {
+    if matches!(op, "devices" | "recording_devices" | "monitors") {
         // External servers can be slow. Discovery stays outside the state actor
         // so status, cancellation and mute can still be processed immediately.
         tokio::spawn(async move {

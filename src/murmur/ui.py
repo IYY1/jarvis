@@ -76,7 +76,7 @@ def _button(text: str, callback: Callable, css: str = "") -> Any:
     return widget
 
 
-PAGES = {"dashboard", "commands", "applications", "recording", "clips", "voice", "privacy", "displays"}
+PAGES = {"dashboard", "commands", "applications", "recording", "clips", "voice", "privacy"}
 
 
 class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
@@ -156,7 +156,6 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self._dashboard()
         self._commands_page()
         self._applications_page()
-        self._displays_page()
         self._recording_page()
         self._clips_page()
         self._voice_page()
@@ -182,7 +181,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         scroller.set_child(body)
         self.stack.add_titled(scroller, name, {
             "dashboard": "Overview", "commands": "Commands", "applications": "Applications", "clips": "Clips",
-            "displays": "Displays", "recording": "Recorder", "voice": "Voice & microphone", "privacy": "Privacy & startup",
+            "recording": "Recorder", "voice": "Voice & microphone", "privacy": "Privacy & startup",
         }[name])
         return body
 
@@ -352,90 +351,6 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         aliases.append(self.alias_app)
         aliases.append(_button("Add application alias", self._add_alias))
         body.append(aliases)
-
-    def _displays_page(self) -> None:
-        body = self._page("displays", "Brightness by name.", "Name each monitor, then say ‘Alfred, set KTC brightness to sixty seven percent’ or ‘Jarvis, dim Samsung’.")
-        card = self._card("Your monitors", "Choose a name and optional aliases for each display. Save names before using voice commands or Apply brightness.")
-        self.display_help = _label("Refresh to find monitors with DDC/CI brightness controls.", "caption")
-        card.append(self.display_help)
-        card.append(_button("Refresh monitors", self._refresh_displays))
-        self.display_list = _box(16)
-        self._brightness_monitors = []
-        self._display_editors = {}
-        card.append(self.display_list)
-        self.brightness_step = self._spin(1, 100, 1)
-        self.brightness_step.set_value(10)
-        self._row(card, "Brighten / dim step (%)", self.brightness_step, "Used when you do not specify an absolute percentage.")
-        card.append(_button("Save monitor names", self._save_displays, "primary"))
-        body.append(card)
-
-    def _refresh_displays(self) -> None:
-        self.display_help.set_text("Looking for monitors… You can keep using the other pages.")
-        self._work(lambda: client.request("brightness_monitors"), self._got_displays)
-
-    def _got_displays(self, response: dict) -> None:
-        self._brightness_monitors = response.get("monitors", []) if response.get("ok") else []
-        self.display_help.set_text("Name your displays below. Enable DDC/CI in each monitor’s menu." if response.get("ok") else str(response.get("error", "Could not discover monitors")))
-        self._render_displays()
-
-    def _render_displays(self) -> None:
-        self._clear(self.display_list)
-        self._display_editors = {}
-        settings = self.config.get("brightness", {"monitors": {}, "default": "", "step": 10})
-        self.brightness_step.set_value(settings["step"])
-        found = {m["id"]: m for m in self._brightness_monitors}
-        for identity in dict.fromkeys([*settings["monitors"], *found]):
-            monitor = found.get(identity, {})
-            saved = settings["monitors"].get(identity, {})
-            row = self._card(str(monitor.get("label", saved.get("name", identity))), "Connected" if monitor else "Saved monitor — disconnected or discovery unavailable")
-            name = self._entry("Name, e.g. KTC or Samsung; blank = do not configure")
-            name.set_text(saved.get("name", ""))
-            aliases = self._entry("Other names, separated by commas; e.g. k t c")
-            aliases.set_text(", ".join(saved.get("aliases", [])))
-            default = Gtk.CheckButton(label="Use for ‘dim’, ‘brighten’, and ‘main’")
-            default.set_active(settings["default"] == identity)
-            default.connect("toggled", lambda control, key=identity: self._display_default_changed(control, key))
-            self._row(row, "Voice name", name)
-            self._row(row, "Other names", aliases)
-            row.append(default)
-            if monitor and not monitor.get("stable", True):
-                row.append(_label("No unique serial reported: this name is tied to the current connection. Check it after reconnecting.", "caption"))
-            if monitor.get("error") or monitor.get("ambiguous"):
-                row.append(_label(str(monitor.get("error", "Duplicate monitor identity; brightness cannot be changed safely.")), "caption"))
-            percent = self._spin(0, 100, 1)
-            percent.set_value(monitor.get("percent", 50))
-            self._row(row, "Brightness (%)", percent)
-            apply = _button("Apply brightness", lambda key=identity, control=percent: self._apply_brightness(key, control.get_value_as_int()))
-            apply.set_sensitive(bool(monitor) and not monitor.get("error") and not monitor.get("ambiguous"))
-            row.append(apply)
-            self._display_editors[identity] = (name, aliases, default)
-            self.display_list.append(row)
-        if not self._display_editors:
-            self.display_list.append(_label("No monitors found. Install ddcutil, enable DDC/CI, and check access to /dev/i2c-*.", "caption"))
-
-    def _display_default_changed(self, control: Any, identity: str) -> None:
-        if control.get_active():
-            for key, (_, _, other) in self._display_editors.items():
-                if key != identity:
-                    other.set_active(False)
-
-    def _save_displays(self) -> None:
-        monitors, default = {}, ""
-        for identity, (name, aliases, primary) in self._display_editors.items():
-            if name.get_text().strip():
-                monitors[identity] = {"name": name.get_text().strip(), "aliases": [a.strip() for a in aliases.get_text().split(",") if a.strip()]}
-                if primary.get_active():
-                    default = identity
-        self._save({"brightness": {"monitors": monitors, "default": default, "step": self.brightness_step.get_value_as_int()}}, "Monitor names saved. Voice brightness controls are ready.", replace_keys=("brightness",))
-
-    def _apply_brightness(self, identity: str, percent: int) -> None:
-        saved = self.config.get("brightness", {}).get("monitors", {}).get(identity)
-        if not saved:
-            self._notice("Give this monitor a name and save monitor names first.", True)
-            return
-        # Raw names such as "LG-27" or "Dell 24.5" read as negative or decimal percentages.
-        phrase = f"set {normalize(saved['name'])} brightness to {percent} percent"
-        self._work(lambda: client.request("execute", phrase=phrase), lambda result: self._notice(str(result.get("message", result.get("error", "Brightness updated"))), not result.get("ok", False)))
 
     def _recording_page(self) -> None:
         body = self._page("recording", "Keep the moment.", "Set up once, then start and stop recording with your voice.")
@@ -792,7 +707,6 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.voice_grammar_notice.set_visible(False)
         self._render_apps()
         self._render_aliases()
-        self._render_displays()
         self._render_commands([*result.get("commands", {}).get("commands", []), *result.get("commands", {}).get("applications", [])])
         self._render_phrases()
         self._set_status(result)
@@ -1214,8 +1128,6 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
             self._render_aliases()
             self._render_phrases()
             self._render_apps()
-            if "brightness" in patch:
-                self._render_displays()
             if patch.get("privacy", {}).get("onboarded"):
                 self.onboard_button.set_label("Privacy setup complete")
                 self.onboard_button.set_sensitive(False)

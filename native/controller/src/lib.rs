@@ -19,5 +19,3 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub fn err<T>(message: impl Into<String>) -> Result<T> {
     Err(message.into().into())
 }
-
-pub mod brightness;

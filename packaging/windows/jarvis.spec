@@ -18,7 +18,6 @@ for package in (
     "sherpa_onnx",
     "pyaudiowpatch",
     "pycaw",
-    "screen_brightness_control",
     "comtypes",
 ):
     datas += collect_data_files(package)

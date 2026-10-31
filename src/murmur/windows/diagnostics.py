@@ -58,7 +58,6 @@ def report():
                 "pyaudiowpatch",
                 "pycaw",
                 "pyvda",
-                "screen_brightness_control",
                 "sherpa_onnx",
                 "vosk",
                 "tkinter",
