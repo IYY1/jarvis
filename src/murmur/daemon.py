@@ -508,12 +508,16 @@ async def serve():
                 service.watchers.add(queue)
                 queue.put_nowait({"ok": True, "status": service.status()})
                 # Detect disconnect while status is unchanged, without timer polling.
+                # Subscriptions also end at shutdown: Server.wait_closed() waits
+                # for every connection, so an open Settings window or Waybar
+                # module would otherwise keep the service from exiting.
                 eof = asyncio.create_task(reader.read(1))
+                stop = asyncio.create_task(service.stopping.wait())
                 try:
-                    while not eof.done():
+                    while not eof.done() and not stop.done():
                         event = asyncio.create_task(queue.get())
-                        done, _ = await asyncio.wait([eof, event], return_when=asyncio.FIRST_COMPLETED)
-                        if eof in done:
+                        done, _ = await asyncio.wait([eof, stop, event], return_when=asyncio.FIRST_COMPLETED)
+                        if event not in done:
                             event.cancel()
                             await asyncio.gather(event, return_exceptions=True)
                             break
@@ -521,6 +525,7 @@ async def serve():
                         await asyncio.wait_for(writer.drain(), 2)
                 finally:
                     eof.cancel()
+                    stop.cancel()
             else:
                 result = await service.handle(payload)
                 writer.write((json.dumps(result) + "\n").encode())

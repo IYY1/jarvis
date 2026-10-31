@@ -278,6 +278,38 @@ class ServiceResilienceTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(status["status"]["state"], "error")
         self.assertIn("grammar too large", status["status"]["message"])
 
+    async def test_shutdown_ends_open_status_subscriptions(self):
+        """Settings and Waybar keep a watch open; stopping must not wait for them."""
+        from murmur import daemon
+        import threading
+        with tempfile.TemporaryDirectory() as directory:
+            directory = Path(directory)
+            (directory / "run").mkdir(mode=0o700)
+            config.save({}, directory / "config.json")
+            env = {"MURMUR_CONFIG": str(directory / "config.json"),
+                   "MURMUR_SOCKET": str(directory / "run" / "control.sock")}
+            with patch.dict(os.environ, env), \
+                    patch("murmur.daemon.AppRegistry", return_value=MagicMock(index={})), \
+                    patch("murmur.daemon.Recorder.inspect_previous"):
+                server = asyncio.create_task(daemon.serve())
+                for _ in range(100):
+                    if Path(env["MURMUR_SOCKET"]).is_socket():
+                        break
+                    await asyncio.sleep(0.02)
+                seen, ended, stop = [], threading.Event(), threading.Event()
+                def subscribe():
+                    client.watch(seen.append, stop)
+                    ended.set()
+                threading.Thread(target=subscribe, daemon=True).start()
+                for _ in range(100):
+                    if seen:
+                        break
+                    await asyncio.sleep(0.02)
+                os.kill(os.getpid(), __import__("signal").SIGTERM)
+                await asyncio.wait_for(server, 5)
+                self.assertTrue(await asyncio.to_thread(ended.wait, 5))
+        self.assertTrue(seen)
+
 
 @unittest.skipUnless(importlib.util.find_spec("pocketsphinx"), "optional voice dependency is not installed")
 class DecoderGrammarTests(unittest.TestCase):
