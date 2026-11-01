@@ -10,6 +10,13 @@ window can close while Jarvis keeps listening in the background.
 
 Jarvis is early software. Recognition depends on your voice, microphone and room.
 
+## What's new in 0.3.1
+
+- **Light command model**: Settings → Voice → Command model → Light uses Whisper
+  tiny.en, which halves the memory Jarvis needs while you give commands (546 →
+  280 MiB on Linux) and answers faster. Small stays the default
+  ([details](docs/light-model.md)).
+
 ## What's new in 0.3.0
 
 - **Much lighter on Windows**: speech now runs in the same native Rust worker as
@@ -74,7 +81,7 @@ then `bash install.sh`.
 
 ### Windows 10/11
 
-Download `Jarvis-0.3.0-Windows-x64-Setup.exe` from the
+Download `Jarvis-0.3.1-Windows-x64-Setup.exe` from the
 [releases page](https://github.com/abdullaho21/jarvis/releases) and run it. It
 installs for your account only, with no administrator rights, downloads or
 restart, and upgrades an earlier Jarvis in place. A portable ZIP is also

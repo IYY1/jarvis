@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.1 — 2026-11-01
 
 - **Light command model**: Settings → Voice → Command model → Light uses
   Whisper tiny.en instead of small.en. On Linux the voice worker's peak fell

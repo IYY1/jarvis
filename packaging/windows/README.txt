@@ -1,6 +1,6 @@
-Jarvis 0.3.0 — Windows x64 release candidate
+Jarvis 0.3.1 — Windows x64 release candidate
 
-Windows 10 22H2 and Windows 11 x64. Run Jarvis-0.3.0-Windows-x64-Setup.exe:
+Windows 10 22H2 and Windows 11 x64. Run Jarvis-0.3.1-Windows-x64-Setup.exe:
 it installs for your account only, needs no administrator rights, downloads
 nothing and does not restart Windows. Setup upgrades an earlier Jarvis in
 place and keeps settings and recordings. Optional: desktop shortcut (on by
