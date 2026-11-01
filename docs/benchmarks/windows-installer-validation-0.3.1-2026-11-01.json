@@ -1,0 +1,163 @@
+{
+  "installer": "Jarvis-0.3.1-Windows-x64-Setup.exe",
+  "sha256": "f67c5c08f5c7891ad6142cfdf39eb5876e527ac5949761bd0dd091d9d900d7ed",
+  "previous_installer": "Jarvis-0.3.0-Windows-x64-Setup.exe (published release asset)",
+  "previous_installer_sha256": "56f9300d5457b38d9d43adc158b914a1f1877a3fb05d9a96e839b8a856b99286",
+  "environment": "Windows 10 Enterprise Evaluation 22H2 build 19045, KVM guest, 8 GiB, 4 vCPU, clean disk image",
+  "script": "scripts/windows/validate-installer.ps1",
+  "phases": {
+    "install": {
+      "clean: no Jarvis installed": {
+        "detail": "True",
+        "ok": true
+      },
+      "clean: no Python installed on PATH": {
+        "detail": "True",
+        "ok": true
+      },
+      "previous: silent install exit 0": {
+        "detail": "True",
+        "ok": true
+      },
+      "previous: installed version": {
+        "detail": "0.3.0",
+        "ok": true
+      },
+      "previous: first launch starts service": {
+        "detail": "True",
+        "ok": true
+      },
+      "previous: service running before upgrade": {
+        "detail": "True",
+        "ok": true
+      },
+      "release: setup seconds": {
+        "detail": "29.7",
+        "ok": true
+      },
+      "upgrade: silent setup exit 0 while old service ran": {
+        "detail": "True",
+        "ok": true
+      },
+      "upgrade: version registered": {
+        "detail": "0.3.1",
+        "ok": true
+      },
+      "upgrade: uninstall entry complete": {
+        "detail": "True",
+        "ok": true
+      },
+      "upgrade: old Python speech runtime removed": {
+        "detail": "True",
+        "ok": true
+      },
+      "upgrade: both command models bundled (Small and Light)": {
+        "detail": "True",
+        "ok": true
+      },
+      "upgrade: Rust voice worker and Vosk runtime bundled": {
+        "detail": "True",
+        "ok": true
+      },
+      "upgrade: settings kept": {
+        "detail": "True",
+        "ok": true
+      },
+      "upgrade: user files kept": {
+        "detail": "True",
+        "ok": true
+      },
+      "upgrade: Start menu shortcut": {
+        "detail": "True",
+        "ok": true
+      },
+      "upgrade: desktop shortcut (default component)": {
+        "detail": "True",
+        "ok": true
+      },
+      "upgrade: start at sign-in stays off by default": {
+        "detail": "True",
+        "ok": true
+      },
+      "release: version": {
+        "detail": "Jarvis 0.3.1\r\n",
+        "ok": true
+      },
+      "release: doctor finds models, tools and voice worker": {
+        "detail": "True",
+        "ok": true
+      },
+      "release: Start menu launch opens the settings window": {
+        "detail": "True",
+        "ok": true
+      },
+      "release: settings alone does not start the service": {
+        "detail": "True",
+        "ok": true
+      },
+      "release: background start (tray) brings the service up": {
+        "detail": "True",
+        "ok": true
+      },
+      "release: closing settings keeps the service": {
+        "detail": "paused",
+        "ok": true
+      },
+      "voice: worker opens and reaches idle": {
+        "detail": "True",
+        "ok": true
+      },
+      "voice: wake + command recognized and dispatched (dry run)": {
+        "detail": "True",
+        "ok": true
+      },
+      "voice: worker is the bundled Rust executable": {
+        "detail": "True",
+        "ok": true
+      },
+      "voice: no Jarvis process loads a DLL from outside Windows or the install folder": {
+        "detail": "True",
+        "ok": true
+      },
+      "voice: shutdown stops service and worker": {
+        "detail": "True",
+        "ok": true
+      },
+      "startup: on writes Run entry and setting": {
+        "detail": "True",
+        "ok": true
+      }
+    },
+    "reboot": "rebooting at 2026-11-01T13:33:03.4827783+00:00; Run entry: C:\\Users\\JarvisTest\\AppData\\Local\\Programs\\Jarvis\\Jarvis.exe --background",
+    "after-restart": {
+      "restart: service started at sign-in": {
+        "detail": "True",
+        "ok": true
+      },
+      "startup: off removes Run entry": {
+        "detail": "True",
+        "ok": true
+      },
+      "restart: service restarts after shutdown": {
+        "detail": "True",
+        "ok": true
+      },
+      "uninstall: program folder removed": {
+        "detail": "True",
+        "ok": true
+      },
+      "uninstall: no Jarvis process left": {
+        "detail": "True",
+        "ok": true
+      },
+      "uninstall: registry and shortcuts removed": {
+        "detail": "True",
+        "ok": true
+      },
+      "uninstall: settings and recordings kept by default": {
+        "detail": "True",
+        "ok": true
+      }
+    }
+  }
+}

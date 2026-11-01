@@ -184,6 +184,18 @@ assets (or another artifact store) together with their `.sha256` files.
 
 ## Validation and remaining acceptance
 
+### 0.3.1 on Windows 10 (virtual machine)
+
+`Jarvis-0.3.1-Windows-x64-Setup.exe` (SHA-256
+`f67c5c08f5c7891ad6142cfdf39eb5876e527ac5949761bd0dd091d9d900d7ed`, 326 MiB)
+bundles both command models and makes Light the default. From a clean
+Windows 10 image, the same PowerShell validation installed the published 0.3.0
+installer, then upgraded to 0.3.1 while 0.3.0 was running: all 37 checks passed,
+including both models installed, kept settings and files, the voice path on the
+default Light model, start at sign-in across a reboot, and uninstall. The silent
+upgrade took 30 s. [Report](benchmarks/windows-installer-validation-0.3.1-2026-11-01.json);
+memory and latency for each model are in [Light command model](light-model.md).
+
 ### 0.3.0 on Windows 10 (virtual machine)
 
 The final `Jarvis-0.3.0-Windows-x64-Setup.exe` (SHA-256

@@ -1,0 +1,232 @@
+{
+  "groups": {
+    "light": 2,
+    "small": 2
+  },
+  "metrics": {
+    "Cold start to service ready (s)": {
+      "light": {
+        "median": 0.363,
+        "runs": [
+          0.360867589999998,
+          0.36508254000000306
+        ]
+      },
+      "small": {
+        "median": 0.48,
+        "runs": [
+          0.44648087000000203,
+          0.5132596299999932
+        ]
+      }
+    },
+    "Cold start to listening (s)": {
+      "light": {
+        "median": 0.855,
+        "runs": [
+          0.861369120000063,
+          0.8477183699999387
+        ]
+      },
+      "small": {
+        "median": 1.041,
+        "runs": [
+          1.0165343999999976,
+          1.0656914300000153
+        ]
+      }
+    },
+    "Settled idle, private working set (MiB)": {
+      "light": {
+        "median": 165.155,
+        "runs": [
+          165.09,
+          165.22
+        ]
+      },
+      "small": {
+        "median": 165.37,
+        "runs": [
+          165.5,
+          165.24
+        ]
+      }
+    },
+    "Settled idle, private commit (MiB)": {
+      "light": {
+        "median": 565.225,
+        "runs": [
+          565.06,
+          565.39
+        ]
+      },
+      "small": {
+        "median": 565.69,
+        "runs": [
+          565.89,
+          565.49
+        ]
+      }
+    },
+    "During commands, median private WS (MiB)": {
+      "light": {
+        "median": 250.765,
+        "runs": [
+          250.61,
+          250.92
+        ]
+      },
+      "small": {
+        "median": 476.145,
+        "runs": [
+          486.36,
+          465.93
+        ]
+      }
+    },
+    "Peak private working set (MiB)": {
+      "light": {
+        "median": 264.555,
+        "runs": [
+          266.9,
+          262.21
+        ]
+      },
+      "small": {
+        "median": 522.415,
+        "runs": [
+          531.46,
+          513.37
+        ]
+      }
+    },
+    "Peak private commit (MiB)": {
+      "light": {
+        "median": 665.03,
+        "runs": [
+          666.11,
+          663.95
+        ]
+      },
+      "small": {
+        "median": 935.62,
+        "runs": [
+          936.15,
+          935.09
+        ]
+      }
+    },
+    "First 60 s idle after commands, private WS (MiB)": {
+      "light": {
+        "median": 252.08,
+        "runs": [
+          251.84,
+          252.32
+        ]
+      },
+      "small": {
+        "median": 474.635,
+        "runs": [
+          481.88,
+          467.39
+        ]
+      }
+    },
+    "After 5 min idle, private working set (MiB)": {
+      "light": {
+        "median": 177.135,
+        "runs": [
+          188.15,
+          166.12
+        ]
+      },
+      "small": {
+        "median": 176.42,
+        "runs": [
+          174.42,
+          178.42
+        ]
+      }
+    },
+    "After 5 min idle, private commit (MiB)": {
+      "light": {
+        "median": 589.43,
+        "runs": [
+          589.24,
+          589.62
+        ]
+      },
+      "small": {
+        "median": 592.275,
+        "runs": [
+          592.5,
+          592.05
+        ]
+      }
+    },
+    "Settings window, private working set (MiB)": {
+      "light": {
+        "median": 18.905,
+        "runs": [
+          18.96,
+          18.85
+        ]
+      },
+      "small": {
+        "median": 18.85,
+        "runs": [
+          18.9,
+          18.8
+        ]
+      }
+    },
+    "Command latency, median (s)": {
+      "light": {
+        "median": 0.174,
+        "runs": [
+          0.1785,
+          0.169
+        ]
+      },
+      "small": {
+        "median": 0.816,
+        "runs": [
+          0.8254999999999999,
+          0.8065
+        ]
+      }
+    },
+    "Command latency, max (s)": {
+      "light": {
+        "median": 0.819,
+        "runs": [
+          0.837,
+          0.801
+        ]
+      },
+      "small": {
+        "median": 1.511,
+        "runs": [
+          1.565,
+          1.457
+        ]
+      }
+    },
+    "Commands dispatched": {
+      "light": {
+        "median": 10.0,
+        "runs": [
+          10,
+          10
+        ]
+      },
+      "small": {
+        "median": 10.0,
+        "runs": [
+          10,
+          10
+        ]
+      }
+    }
+  }
+}
