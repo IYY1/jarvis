@@ -1,0 +1,69 @@
+{
+  "recorded_at": "2026-10-26T09:33:54.642146+00:00",
+  "platform": "Linux-7.3.0-5-cachyos-x86_64-with-glibc2.44",
+  "scope": "Isolated, offline Rust KWS probe with native sherpa-onnx/ONNX Runtime; no live microphone, desktop actions, service restart, model selection change, Windows or full acoustic acceptance.",
+  "binaries": {
+    "kws_probe_sha256": "3bead979c897d0c14b9ce2c3394239ec77dc929b0f43ca8ea1eb76d531dfd657",
+    "unchanged_packaged_voice_sha256": "212ff8655e303b55f0a70f902753d0ab6f87031aa3c71cd40306ddf5cf8d9844"
+  },
+  "checks": {
+    "rust_unit_tests": {
+      "passed": 3,
+      "command": "cargo test --manifest-path native/kws-probe/Cargo.toml --offline --locked"
+    },
+    "clippy_all_targets_warnings_denied": true,
+    "rust_fmt_check": true,
+    "offline_python_suite": {
+      "total": 359,
+      "passed": 322,
+      "skipped": 37,
+      "failed": 0,
+      "local_unix_sockets_allowed": true
+    },
+    "kws_python_model_and_protocol_suite": {
+      "total": 4,
+      "passed": 4,
+      "failed": 0,
+      "includes_native_library_maps_check_without_python": true
+    },
+    "keyword_helper_reproduces_jarvis_tokens": true,
+    "python_compile": true,
+    "git_diff_check": true,
+    "source_distribution_contains_c_shim_header_license_cargo_files": true,
+    "source_distribution_excludes_probe_target": true,
+    "initial_restricted_test_run": {
+      "interrupted_exit_code": 130,
+      "reason": "Existing daemon/controller tests require local Unix socket binding, blocked by sandbox; rerun with socket access passed."
+    }
+  },
+  "experiment": {
+    "completed": true,
+    "fresh_kws_workers": 21,
+    "reference_cases": 147,
+    "all_reference_trigger_labels_and_chunks_identical": true,
+    "primary_cases_pass": true,
+    "vosk_baseline_cases_pass": true,
+    "full_threshold_sweep_pass": false,
+    "expected_benchmark_exit_code": 1,
+    "failed_sweep_reason": "Threshold 0.5 misses 9/24 intended surrogate wakes and 0.75 misses 12/24; misses agree with upstream and are retained as failures.",
+    "standby_target_percent_one_core": 0.1,
+    "measured_silence_cpu_percent_one_core": [
+      1.4014400000000005,
+      1.419220000000001,
+      1.4110500000000004
+    ],
+    "standby_target_pass": false,
+    "full_acoustic_gate_pass": false,
+    "windows_gate_pass": false,
+    "whole_application_budget_pass": false,
+    "production_default_changed": false
+  },
+  "remaining": [
+    "energy gate and acoustic recovery validation",
+    "buffered audio handoff and concurrent command-model load/latency/peak",
+    "recorded Jarvis/custom-name positives, confusables, speakers/accents and music/game/dialogue negatives",
+    "GTCRN interaction",
+    "native Windows hardware validation",
+    "full application budgets and full-duration soak"
+  ]
+}

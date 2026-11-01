@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "recorded_date": "2026-10-27",
+  "scope": "Replay retention and explicit IPC duration regressions; fake backend, not live media acceptance",
+  "retention": {
+    "pre-fix": {
+      "tests": 5,
+      "failures": 6,
+      "errors": 0,
+      "skips": 0,
+      "elapsed_seconds": 2.969285356999535,
+      "binary": "build/replay-storage/save-regressions/pre-fix-jarvis-controller",
+      "binary_sha256": "7eaed451fb9fc9b6e5aeadd212d3ae0c5862c4f5b7fcb170f980bf7b40350142",
+      "log": "build/replay-storage/save-regressions/pre-fix.log",
+      "log_sha256": "fa7474723adfa5145bb0327d8259c5aed99caa89a84990f0d81417e39df74d2a",
+      "tests_sha256": "471f1dcc8bd16f5e7c79280f262763017c8bf3b368747fab0a92033d4c8d17b1",
+      "fixture_sha256": "8d76bad9449a5d6422311203b3a184443a6bbba1d3214538ef462c7f3672c400",
+      "outcome": "expected failures against pre-fix binary"
+    },
+    "targeted-post-fix": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "elapsed_seconds": 3.0408042300005036,
+      "binary": "/home/silver/Projects/jarvis/native/controller/target/release/jarvis-controller",
+      "binary_sha256": "57ab9b82984f0e330001d409baae5becfec5276d6e35e57dbbe0beab6e7604ef",
+      "log": "build/replay-storage/save-regressions/targeted-post-fix.log",
+      "log_sha256": "fbb85e3416f8a8dbcb72e3be3a31584981452fba6592b1efb24c8c583ebb5fb9",
+      "tests_sha256": "471f1dcc8bd16f5e7c79280f262763017c8bf3b368747fab0a92033d4c8d17b1",
+      "fixture_sha256": "8d76bad9449a5d6422311203b3a184443a6bbba1d3214538ef462c7f3672c400",
+      "outcome": "passed"
+    },
+    "full-controller-post-fix": {
+      "tests": 37,
+      "failures": 0,
+      "errors": 0,
+      "skips": [
+        {
+          "test": "test_real_rust_voice_and_denoiser_accept_a_fixture_without_actions (tests.test_rust_controller.ControllerRealVoiceTests.test_real_rust_voice_and_denoiser_accept_a_fixture_without_actions)",
+          "reason": "supply the public fixture and local voice models"
+        }
+      ],
+      "elapsed_seconds": 8.820137253000212,
+      "binary": "/home/silver/Projects/jarvis/native/controller/target/release/jarvis-controller",
+      "binary_sha256": "57ab9b82984f0e330001d409baae5becfec5276d6e35e57dbbe0beab6e7604ef",
+      "log": "build/replay-storage/save-regressions/full-controller-post-fix.log",
+      "log_sha256": "1b0e4cac27057aed8eeab5080cadf89516cbcd7dc13afcc278085cde46b6773c",
+      "tests_sha256": "471f1dcc8bd16f5e7c79280f262763017c8bf3b368747fab0a92033d4c8d17b1",
+      "fixture_sha256": "8d76bad9449a5d6422311203b3a184443a6bbba1d3214538ef462c7f3672c400",
+      "outcome": "passed"
+    }
+  },
+  "duration": {
+    "pre-duration-fix": {
+      "tests": 3,
+      "failures": 4,
+      "errors": 0,
+      "skips": 0,
+      "elapsed_seconds": 0.35182689799967193,
+      "binary": "build/replay-storage/save-duration/pre-duration-fix-jarvis-controller",
+      "binary_sha256": "57ab9b82984f0e330001d409baae5becfec5276d6e35e57dbbe0beab6e7604ef",
+      "log": "build/replay-storage/save-duration/pre-duration-fix.log",
+      "log_sha256": "230b789d0989bf15ae034a8e5a8f5004eff2112634eac22adcc5ee927cadee79",
+      "tests_sha256": "2d2f022fbc96f9ec6758b634e0de46853c3936ae5a629d44b8eae13c27e3f2b6",
+      "fixture_sha256": "9b946651afe3d8a832c1004b8e64d1509930c71514f01f08db284848b7673716",
+      "outcome": "expected failures against pre-duration-fix binary"
+    },
+    "targeted-post-duration-fix": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skips": [],
+      "elapsed_seconds": 0.5096820170001592,
+      "binary": "/home/silver/Projects/jarvis/native/controller/target/release/jarvis-controller",
+      "binary_sha256": "80a6d70ffd5dc773b878be903826101d86488b53800c189534d036911a9d6272",
+      "binary_unchanged_during_run": true,
+      "log": "build/replay-storage/save-duration/targeted-post-duration-fix.log",
+      "log_sha256": "3573191a8427c0a4b317d18098df25554f97318ce61be37ed6145464dc604ee4",
+      "tests_sha256": "2d2f022fbc96f9ec6758b634e0de46853c3936ae5a629d44b8eae13c27e3f2b6",
+      "fixture_sha256": "9b946651afe3d8a832c1004b8e64d1509930c71514f01f08db284848b7673716",
+      "outcome": "passed"
+    },
+    "full-controller-post-duration-fix": {
+      "tests": 38,
+      "failures": 0,
+      "errors": 0,
+      "skips": [
+        {
+          "test": "test_real_rust_voice_and_denoiser_accept_a_fixture_without_actions (tests.test_rust_controller.ControllerRealVoiceTests.test_real_rust_voice_and_denoiser_accept_a_fixture_without_actions)",
+          "reason": "supply the public fixture and local voice models"
+        }
+      ],
+      "elapsed_seconds": 9.032232595000096,
+      "binary": "/home/silver/Projects/jarvis/native/controller/target/release/jarvis-controller",
+      "binary_sha256": "80a6d70ffd5dc773b878be903826101d86488b53800c189534d036911a9d6272",
+      "binary_unchanged_during_run": true,
+      "log": "build/replay-storage/save-duration/full-controller-post-duration-fix.log",
+      "log_sha256": "7e2c3c015303ce56de4ec57711ee28ef5a2977c995905f1991f5bb32963490ac",
+      "tests_sha256": "2d2f022fbc96f9ec6758b634e0de46853c3936ae5a629d44b8eae13c27e3f2b6",
+      "fixture_sha256": "9b946651afe3d8a832c1004b8e64d1509930c71514f01f08db284848b7673716",
+      "outcome": "passed"
+    }
+  },
+  "final_rust_unit_tests": {
+    "tests": 7,
+    "passed": 7,
+    "command": "cargo test --offline --locked"
+  },
+  "final_clippy": {
+    "passed": true,
+    "command": "cargo clippy --offline --all-targets -- -D warnings"
+  },
+  "final_release_binary_sha256": "80a6d70ffd5dc773b878be903826101d86488b53800c189534d036911a9d6272",
+  "source_sha256": {
+    "native/controller/src/capture.rs": "09b91aa96e6e0ccce53c4bf3cc22d0df9acea48daab282046ee44660bd43ce82",
+    "native/controller/src/replay_clip.rs": "8d44f0ca331faa0cd83c12daa29b8781c0e4f54605d6c9233705fa89a5d62ca8",
+    "native/controller/src/lib.rs": "35c5308205256bbfb5a937c7d3ef6267f0a5b99f8a1ac8a6b343a72912fa3756",
+    "tests/fixtures/controller_backend.py": "9b946651afe3d8a832c1004b8e64d1509930c71514f01f08db284848b7673716",
+    "tests/test_rust_controller.py": "2d2f022fbc96f9ec6758b634e0de46853c3936ae5a629d44b8eae13c27e3f2b6"
+  },
+  "installed_backend_sha256": "2a8c2db8f4c1f7e1cdd0b21f44335e9b663c299191a1518d4580b0aae55db0c3",
+  "protocol_evidence": "gsr-save-duration-protocol-2026-10-27.json",
+  "old_failures_preserved": true,
+  "all_memory_plan_release_gates_pass": false,
+  "source_package": {
+    "passed": true,
+    "path": "build/replay-storage/save-regressions/dist/jarvis_hyprland-0.2.0.tar.gz",
+    "sha256": "1ea021ae965b0930db761d86d12a1ff7c1db1987b67d97c146535cdf055e9f34",
+    "includes_replay_clip_source": true,
+    "excludes_compiled_targets": true
+  },
+  "format_check": {
+    "passed": true,
+    "command": "cargo fmt --check --manifest-path native/controller/Cargo.toml"
+  }
+}

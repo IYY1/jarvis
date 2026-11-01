@@ -30,6 +30,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from murmur.commands import Parser
 from murmur.config import DEFAULTS
 from murmur.native_worker import prepare
+from murmur.process_memory import linux_memory
 
 CAPTURE = """#!/usr/bin/env python3
 import os, time
@@ -75,14 +76,21 @@ def rss_mib(pid: int) -> float:
 
 
 def session(binary: Path, fixture: Path, idle: float | None, lead: float, gap: float, repeats: int,
-            tail: float, denoise: bool) -> dict:
+            tail: float, denoise: bool, fast_path: bool = False, free_decoder: bool = True,
+            finalize_utterances: bool = False, whisper_files: dict | None = None) -> dict:
     config = copy.deepcopy(DEFAULTS)
     config["privacy"]["onboarded"] = True
-    config["recognition"].update(accurate=True, noise_suppression=denoise)
+    config["recognition"].update(accurate=True, noise_suppression=denoise, closest_match=free_decoder)
     config["activation"]["wake_phrase"] = "go forward"
     grammar = Parser({"ten meters": "start recording"}).grammar(["firefox", "steam", "stremio"])
     with patch.dict(os.environ, MURMUR_VOICE_WORKER="rust"):
         _argv, payload, env = prepare(config, "wake_word", grammar)
+    payload["native"]["vosk_fast_path"] = fast_path
+    payload["native"]["vosk_finalize_utterances"] = finalize_utterances
+    if whisper_files is not None:
+        if set(whisper_files) != {"encoder", "decoder", "tokens"} or not all(Path(p).is_file() for p in whisper_files.values()):
+            raise ValueError("Supply existing encoder, decoder and tokens files")
+        payload["native"]["whisper"] = whisper_files
     if payload["native"]["whisper"] is None or (denoise and payload["native"]["denoiser"] is None):
         raise SystemExit("Install the local Whisper (and GTCRN for --denoise) models first")
     if idle is None:
@@ -103,6 +111,7 @@ def session(binary: Path, fixture: Path, idle: float | None, lead: float, gap: f
         process = subprocess.Popen([str(binary.resolve())], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                    env=env, bufsize=0)
         samples, commands, ready = [], [], None
+        command_memory = []
         try:
             process.stdin.write((json.dumps(payload) + "\n").encode())
             with selectors.DefaultSelector() as selector:
@@ -121,7 +130,8 @@ def session(binary: Path, fixture: Path, idle: float | None, lead: float, gap: f
                     if message["event"] == "ready" and ready is None:
                         ready = time.monotonic()
                     if message["event"] == "command":
-                        commands.append((time.monotonic(), message["text"]))
+                        commands.append((time.monotonic(), message["text"], message.get("recognition_pass")))
+                        command_memory.append(linux_memory(process.pid))
             status = Path(f"/proc/{process.pid}/status").read_text()
             peak = next(int(line.split()[1]) / 1024 for line in status.splitlines() if line.startswith("VmHWM:"))
             stat = Path(f"/proc/{process.pid}/stat").read_text().rsplit(")", 1)[1].split()
@@ -144,19 +154,27 @@ def session(binary: Path, fixture: Path, idle: float | None, lead: float, gap: f
         return max((s for s in samples if s[0] <= moment), key=lambda s: s[0])
 
     results = []
-    for (received, text), began, ended in zip(commands, starts, ends, strict=True):
+    for (received, text, recognition_pass), began, ended in zip(commands, starts, ends, strict=True):
         results.append({"text": text, "latency_ms": round((received - ended) * 1000, 1),
                         "whisper_loaded_at_speech_start": before(began)[2] > 0,
+                        "recognition_pass": recognition_pass,
                         "rss_at_speech_start_mib": round(before(began)[1], 2)})
     waiting = [rss for t, rss, _ in samples if ready + .5 <= t < starts[0]]
-    released = [rss for t, rss, threads in samples if t > commands[0][0] and threads == 0]
+    unloaded = [rss for t, rss, threads in samples if t > commands[0][0] and threads == 0]
+    first_load = next((t for t, _, threads in samples if threads > 0), float("inf"))
+    released = [rss for t, rss, threads in samples if t > max(commands[0][0], first_load) and threads == 0]
     return {"binary_sha256": hashlib.sha256(binary.read_bytes()).hexdigest(),
+            "experimental_vosk_fast_path": fast_path, "free_decoder": free_decoder,
+            "experimental_vosk_finalize_utterances": finalize_utterances,
+            "experimental_whisper_files": whisper_files,
             "whisper_idle_seconds": idle, "gap_seconds": gap, "denoise": denoise,
             "ready_seconds": round(ready - start, 3),
             "waiting_rss_mib": round(statistics.median(waiting), 2),
             "released_rss_mib": round(statistics.median(released), 2) if released else None,
+            "unloaded_after_commands_rss_mib": round(statistics.median(unloaded), 2) if unloaded else None,
             "max_sampled_rss_mib": round(max(rss for _, rss, _ in samples), 2),
-            "peak_rss_mib": round(peak, 2), "cpu_seconds": round(cpu, 2), "commands": results}
+            "peak_rss_mib": round(peak, 2), "cpu_seconds": round(cpu, 2), "commands": results,
+            "memory_after_commands": command_memory, "max_observed_whisper_threads": max(s[2] for s in samples)}
 
 
 def summary(run: dict) -> dict:

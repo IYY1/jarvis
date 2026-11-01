@@ -125,11 +125,16 @@ passes, confidence, energy measurement and adaptive gating. The current recogniz
 the actual Rust executable and accepted its command with dispatch mocked.
 Tests using local Unix IPC need a runner that permits local sockets.
 
-`--transcribe`, `--engine` and `--match` are explicit offline diagnostic modes
+`--transcribe`, `--engine`, `--decoder-history` and `--match` are explicit offline diagnostic modes
 of the binary; normal daemon launches use no diagnostic argument. The first
 payload remains bounded to 1 MiB, control input to 4096 bytes, and utterance
 audio to ten seconds. Capture is still one 30 ms frame at a time. The worker
 uses Linux parent-death signals and reaps its capture process on shutdown.
+
+The [decoder-history](vosk-decoder-history.md) and
+[utterance-finalization](vosk-finalization.md) experiments describe the bounded
+offline repetition/heap-trim requests and the internal, default-disabled
+finalization flag. Normal controllers omit the experimental flags.
 
 REA's ELF-layout provider was unavailable because no pwntools provider was
 configured. Ordinary `nm`/`readelf` inspection confirmed the installed C entry

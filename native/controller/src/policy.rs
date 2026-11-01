@@ -85,7 +85,7 @@ impl Parser {
         let mut parser = Self::new(&c["commands"])?;
         let rules = jarvis_phrases::Rules::from_config(c).map_err(std::io::Error::other)?;
         for phrase in parser.custom.as_object().unwrap().keys() {
-            if jarvis_phrases::brightness_like(phrase) || rules.parse_normalized(phrase).is_some() {
+            if rules.parse_normalized(phrase).is_some() {
                 return err("Command shortcut conflicts with a configured voice control");
             }
         }
@@ -114,9 +114,6 @@ impl Parser {
             return err("Use an unsigned workspace number one through ten");
         }
         let mut phrase = normalize(text)?;
-        if jarvis_phrases::brightness_like(&phrase) && jarvis_phrases::invalid_number(text) {
-            return err("Brightness must be a whole unsigned percentage from zero to 100");
-        }
         if let Some(intent) = self.rules.parse_normalized(&phrase) {
             return Ok(intent);
         }
@@ -139,9 +136,6 @@ impl Parser {
         }
         if let Some(intent) = self.rules.parse_normalized(&phrase) {
             return Ok(intent);
-        }
-        if jarvis_phrases::brightness_like(&phrase) {
-            return err("Choose a configured monitor and a percentage from zero to 100");
         }
         for (form, action) in TABLES["WORKSPACE_FORMS"].as_object().unwrap() {
             if let Some(number) = phrase.strip_prefix(&format!("{form} ")) {
@@ -205,7 +199,7 @@ impl Parser {
             .cloned()
             .collect();
         verbs.sort();
-        json!({"launches":self.rules.launches,"brightness_names":self.rules.monitors,"blocked_apps":self.blocked_apps,"phrases":core,"apps":apps.iter().take(2048).collect::<Vec<_>>(),"custom":self.custom,"verbs":verbs,"prefixes":TABLES["POLITE_PREFIXES"],"suffixes":[],"overflow":apps.iter().skip(2048).map(|s|format!("open {s}")).collect::<Vec<_>>()})
+        json!({"launches":self.rules.launches,"blocked_apps":self.blocked_apps,"phrases":core,"apps":apps.iter().take(2048).collect::<Vec<_>>(),"custom":self.custom,"verbs":verbs,"prefixes":TABLES["POLITE_PREFIXES"],"suffixes":[],"overflow":apps.iter().skip(2048).map(|s|format!("open {s}")).collect::<Vec<_>>()})
     }
     pub fn candidates(&self, grammar: &Value) -> Result<Value> {
         let mut phrases = strings(&grammar["phrases"]);
@@ -218,7 +212,7 @@ impl Parser {
         for phrase in phrases {
             if let Ok(intent) = self.parse(&phrase) {
                 let action = intent["action"].as_str().unwrap();
-                let target = if ["open_app", "focus_app"].contains(&action) {
+                let target = if ["open_app", "focus_app", "close_app"].contains(&action) {
                     grammar["app_ids"]
                         .get(intent["target"].as_str().unwrap_or(""))
                         .unwrap_or(&intent["target"])
@@ -348,7 +342,6 @@ impl Activation {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use jarvis_phrases::{number, Rules};
 
     #[test]
     fn completed_audio_may_finish_after_capture_deadline_but_stale_audio_cannot() {
@@ -374,65 +367,5 @@ mod tests {
         assert!(!state.accept(&json!({"text":"CANCEL!","confidence":1.0})));
         state.set("paused");
         assert!(!state.accept(&json!({"text":"open firefox","confidence":1.0})));
-    }
-    #[test]
-    fn every_percentage_and_monitor_form_resolves_exactly() {
-        let rules = Rules {
-            monitors: serde_json::from_value(
-                json!({"screen one":"id-1", "screen":"id-2", "main":"id-1"}),
-            )
-            .unwrap(),
-            ..Default::default()
-        };
-        for (name, id) in &rules.monitors {
-            for n in 0..=100 {
-                for value in [number(n), n.to_string()] {
-                    for phrase in [
-                        format!("set {name} brightness to {value}"),
-                        format!("brighten the {name} to {value}"),
-                        format!("dim {name} to {value}"),
-                    ] {
-                        let expected =
-                            json!({"action":"brightness_set","target":{"monitor":id,"percent":n}});
-                        assert_eq!(rules.parse(&phrase), Some(expected.clone()), "{phrase}");
-                        assert_eq!(rules.parse(&format!("{phrase} percent")), Some(expected));
-                    }
-                }
-            }
-        }
-        assert_eq!(
-            rules.parse("dim"),
-            Some(json!({"action":"brightness_down","target":{"monitor":"id-1"}}))
-        );
-        assert_eq!(
-            rules.parse("set brightness to 100"),
-            Some(json!({"action":"brightness_set","target":{"monitor":"id-1","percent":100}}))
-        );
-    }
-
-    #[test]
-    fn incomplete_or_out_of_range_wording_is_rejected() {
-        let rules = Rules {
-            monitors: serde_json::from_value(json!({"screen":"id"})).unwrap(),
-            ..Default::default()
-        };
-        for value in [
-            "",
-            "twenty zero",
-            "one hundred one",
-            "zero hundred",
-            "two one",
-            "101",
-            "67 tomorrow",
-        ] {
-            assert!(
-                rules
-                    .parse(&format!("set screen brightness to {value}"))
-                    .is_none(),
-                "{value}"
-            );
-        }
-        assert!(rules.parse("dim").is_none());
-        assert!(rules.parse("set brightness to 67").is_none());
     }
 }

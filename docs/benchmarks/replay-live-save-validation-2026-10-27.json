@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "scope": "Authorized live disk-replay save/decode, observation and cleanup checks.\n\nKeep the validation clip in the configured Clips folder. Decode to null locally;\nnever display, play or upload its content. Restore replay-on after cleanup.\n",
+  "recorded_at": "2026-10-26T23:18:08.148848+00:00",
+  "config_sha256": "1d4bad420e9ba9d29f6c9d27ff88176acbbcc5b036c9f0b1cd6c0a214a5423b9",
+  "initial": {
+    "recorded_at": "2026-10-26T23:18:08.148709+00:00",
+    "monotonic": 15300.419038473,
+    "service_pid": 2854670,
+    "voice_state": "idle",
+    "muted": false,
+    "engine": "vosk+whisper-small",
+    "microphone_open": true,
+    "recording": {
+      "state": "idle",
+      "message": "Recorder ready.",
+      "file": null
+    },
+    "replay": {
+      "state": "on",
+      "message": "Instant replay on \u00b7 HDR \u00b7 up to 120 seconds \u00b7 disk buffer \u00b7 2048 MiB budget.",
+      "file": null
+    },
+    "processes": [
+      {
+        "pid": 2854670,
+        "ppid": 1111,
+        "name": "jarvis-controll",
+        "rss_bytes": 9818112,
+        "pss_bytes": 7406592
+      },
+      {
+        "pid": 3091115,
+        "ppid": 2854670,
+        "name": "jarvis-voice",
+        "rss_bytes": 265515008,
+        "pss_bytes": 260825088
+      },
+      {
+        "pid": 3091124,
+        "ppid": 2854670,
+        "name": "gpu-screen-reco",
+        "rss_bytes": 124321792,
+        "pss_bytes": 58974208,
+        "replay_storage": "disk",
+        "buffer_dir": "/home/silver/.local/share/murmur/replay-buffer/session-2b8f0e-18e234b23d4b11b2",
+        "clip_output_dir": "/home/silver/Videos/Murmur"
+      },
+      {
+        "pid": 3091652,
+        "ppid": 3091124,
+        "name": "gsr-kms-server",
+        "rss_bytes": null,
+        "pss_bytes": null,
+        "error": "Permission denied (os error 13)"
+      },
+      {
+        "pid": 3091692,
+        "ppid": 3091115,
+        "name": "pw-record",
+        "rss_bytes": 9465856,
+        "pss_bytes": 3235840
+      }
+    ],
+    "memory_complete": false,
+    "memory_totals": {
+      "rss_bytes": null,
+      "pss_bytes": null
+    },
+    "readable_rss_lower_bound_mib": 390.16796875,
+    "readable_pss_lower_bound_mib": 315.1337890625
+  },
+  "initial_buffer": {
+    "session_path": "/home/silver/.local/share/murmur/replay-buffer/session-2b8f0e-18e234b23d4b11b2",
+    "session_mode": "0o700",
+    "files": [
+      {
+        "relative_path": ".jarvis-replay-v1",
+        "size_bytes": 0,
+        "allocated_bytes": 0,
+        "mode": "0o600"
+      },
+      {
+        "relative_path": "gsr-replay-2026-10-27_01-25-41.gsr/Replay_2.gsr",
+        "size_bytes": 57391291,
+        "allocated_bytes": 57393152,
+        "mode": "0o700"
+      }
+    ],
+    "total_logical_bytes": 57391291,
+    "total_allocated_bytes": 57393152
+  },
+  "samples": [],
+  "buffer_metadata": [],
+  "checks": {},
+  "complete": false,
+  "observational_live_desktop": true,
+  "controlled_identical_scene": false,
+  "whole_application_budget_acceptance": false,
+  "strict_linux_byte_quota_acceptance": false,
+  "full_acoustic_acceptance": false,
+  "windows_acceptance": false,
+  "full_duration_soak_acceptance": false,
+  "failure": "/home/silver/.local/share/murmur/replay-buffer/session-2b8f0e-18e234b23d4b11b2/Replay_2026-10-27_02-18-08.mp4",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/silver/Projects/jarvis/build/memory-plan-live/2026-10-27/replay-validation/validate_live_replay.py\", line 43, in main\n    assert clip.parent==folder and clip.name not in existing and clip.is_file(),str(clip)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: /home/silver/.local/share/murmur/replay-buffer/session-2b8f0e-18e234b23d4b11b2/Replay_2026-10-27_02-18-08.mp4\n",
+  "failure_cleanup_status": {
+    "state": "on",
+    "message": "Saved replay: Replay_2026-10-27_02-18-08.mp4",
+    "file": "/home/silver/.local/share/murmur/replay-buffer/session-2b8f0e-18e234b23d4b11b2/Replay_2026-10-27_02-18-08.mp4"
+  }
+}

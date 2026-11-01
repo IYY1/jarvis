@@ -1,0 +1,5515 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-26T09:45:16.371542+00:00",
+  "scope": "Sequential file-only comparison against the verified, saved ungated probe.\n\nRSS/PSS include the energy ring and native libraries. No allocator trimming,\ncapture, downloads, actions or production defaults are changed. Repetitions\nreuse public recordings and cannot establish a population false-alarm rate.\n",
+  "platform": "Linux-7.3.0-5-cachyos-x86_64-with-glibc2.44",
+  "baseline_snapshot": {
+    "scope": "Handoff snapshot of measured ungated KWS baseline; ignored workspace-only copies, not a release",
+    "binary_sha256": "3bead979c897d0c14b9ce2c3394239ec77dc929b0f43ca8ea1eb76d531dfd657",
+    "source_archive_sha256": "ee318e49b4c0457f4597db804055d981719814baa99952c23207a84638bf56a8",
+    "files": {
+      "native/kws-probe/Cargo.lock": "15acd1ee12bebc87b023d18a74b426d56a4195cbd214345de75612c1146491da",
+      "native/kws-probe/Cargo.toml": "0edf22bce37f6f63f6ab8a202faf9cb5c910e84d31302033c5096cae5b337ca4",
+      "native/kws-probe/build.rs": "e7b498f427aebefa2431e913e8d4f6775b71f1b070d3b9c7cc2ddc6dcbf69f7d",
+      "native/kws-probe/shim.c": "3a9436845091f770cd77c61cf3aea920e641212337151da36c5bb57375e91b48",
+      "native/kws-probe/src/main.rs": "249dab3a4aef21c89728ef641e5c737b85e5c6c91787d7998310b1c506eaf34e",
+      "native/kws-probe/vendor/LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "native/kws-probe/vendor/README.md": "e9b5e996cbb2170769cf0eb96c400ad0cc7e4082e065bcb9c8ef4cf6b3c881ee",
+      "native/kws-probe/vendor/c-api.h": "2a1b95084be8fd1deb3228fcad2fd3f7f0258b64582f7402281ec174c7b7f4ce"
+    }
+  },
+  "binary_sha256": "d6b2ddef281e3edc464271f9d01499c07465e7efb3bbb554be1e54504637716f",
+  "configuration": {
+    "threshold": 0.25,
+    "quiet_gate": {
+      "rms": 0.001,
+      "preroll_ms": 300,
+      "hangover_ms": 1200
+    },
+    "sequential_workers": true,
+    "allocator_trim": false
+  },
+  "model_and_library": {
+    "library": {
+      "path": "/home/silver/Projects/jarvis/.venv/lib/python3.14/site-packages/sherpa_onnx/lib/libsherpa-onnx-c-api.so",
+      "sha256": "e50ae8bca4db52b7be04f56f8ac1502b940ca124a26fac0d48d8cef7fc9823d4"
+    },
+    "tokens": {
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/tokens.txt",
+      "sha256": "fd2ded4050a55d2b1578870ba8697d02371980217806b7558bd0a5cc60f3ba53"
+    },
+    "encoder": {
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/encoder-epoch-12-avg-2-chunk-16-left-64.int8.onnx",
+      "sha256": "1e721676515bcd42a186979733981213c66c80db680e1cc582dfedf3be76e678"
+    },
+    "decoder": {
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/decoder-epoch-12-avg-2-chunk-16-left-64.int8.onnx",
+      "sha256": "e40ff43297abe815e8898494c17e71bba2152d9d40fa3eb803f75d0f7533329a"
+    },
+    "joiner": {
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/joiner-epoch-12-avg-2-chunk-16-left-64.int8.onnx",
+      "sha256": "eae9da0c7e1e6c6a3f4cc42d167899c388f6c6701b94cb96320e4f55df79624c"
+    }
+  },
+  "keywords": {
+    "surrogate": "7b3ba4dc555f16a3f4a8bfb11fd49369e140397ceaf74465a2aa8c4c5e27c4e5",
+    "published": "b422de24b9de40e079fd469ac4c21b9fa5af06fbecc36d28b6cf51e53597c3e1",
+    "names": "1512ca29cb37ce950c51005c8a9c6d8b3bccfe42730c51e2efaebf591a4de32c"
+  },
+  "inputs": [
+    {
+      "name": "natural",
+      "group": "surrogate",
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/natural.raw",
+      "sha256": "e1e4e81f8c48060017cccc329b6b6f4e6c3df01489d5b6a61cc003cd5a7c4349",
+      "seconds": 4.88625,
+      "expected": [
+        "GO_FORWARD"
+      ],
+      "paced": true
+    },
+    {
+      "name": "wake-only",
+      "group": "surrogate",
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/wake-only.raw",
+      "sha256": "19b60cf43fdfe136070e946bcebaa19bcab3da2585fddcc0c23fb1afc127da21",
+      "seconds": 3.3,
+      "expected": [
+        "GO_FORWARD"
+      ],
+      "paced": false
+    },
+    {
+      "name": "quiet-recovery",
+      "group": "surrogate",
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/quiet-recovery.raw",
+      "sha256": "af11abfd737f94d7fdd3388e7e935361ab5feb02c1c3147ecbcfe18defe46ae6",
+      "seconds": 50.535,
+      "expected": [
+        "GO_FORWARD",
+        "GO_FORWARD",
+        "GO_FORWARD"
+      ],
+      "paced": true
+    },
+    {
+      "name": "pause-inside-name",
+      "group": "surrogate",
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/pause-inside-name.raw",
+      "sha256": "427993e14fffa965809894e7ab770cf39b0e36d1130fca86aef05e1e03399a2b",
+      "seconds": 5.18625,
+      "expected": [
+        "GO_FORWARD"
+      ],
+      "paced": true
+    },
+    {
+      "name": "low-volume",
+      "group": "surrogate",
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/low-volume.raw",
+      "sha256": "973dbb41d8b34b4642c617957f0fece32054b9d67c4b7d0bfedd3a8ce44c5c58",
+      "seconds": 4.88625,
+      "expected": [
+        "GO_FORWARD"
+      ],
+      "paced": true
+    },
+    {
+      "name": "uniform-noise",
+      "group": "surrogate",
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/uniform-noise.raw",
+      "sha256": "7cdc5e5add5ac66c33fd3dacd5a53c84266b2d8064470a84a72f25e363bbd005",
+      "seconds": 4.88625,
+      "expected": [
+        "GO_FORWARD"
+      ],
+      "paced": false
+    },
+    {
+      "name": "command-without-wake",
+      "group": "surrogate",
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/command-without-wake.raw",
+      "sha256": "97606fc166509c38b000c5df58d148643b3883c5468100c57f87c7c8a7de2fa9",
+      "seconds": 9.85875,
+      "expected": [],
+      "paced": false
+    },
+    {
+      "name": "reversed-speech",
+      "group": "surrogate",
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/reversed-speech.raw",
+      "sha256": "5d4943bd3be53a9c1cfbc9e8ae447489f99b4ce37e80b3143d1b5ba3e67b95bc",
+      "seconds": 13.45875,
+      "expected": [],
+      "paced": false
+    },
+    {
+      "name": "published-0",
+      "group": "published",
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/published-0.raw",
+      "sha256": "787c0408a57100604f35c0498b19b903a8f1ae67494f216c48dfdcde6e2b75da",
+      "seconds": 8.725,
+      "expected": [
+        "LIGHT_UP"
+      ],
+      "paced": false
+    },
+    {
+      "name": "unrelated-0",
+      "group": "surrogate",
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/unrelated-0.raw",
+      "sha256": "787c0408a57100604f35c0498b19b903a8f1ae67494f216c48dfdcde6e2b75da",
+      "seconds": 8.725,
+      "expected": [],
+      "paced": false
+    },
+    {
+      "name": "published-1",
+      "group": "published",
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/published-1.raw",
+      "sha256": "cd491506c47d77e0928952ccef064d8702575583b7fa3ff9927338caa6424978",
+      "seconds": 18.815,
+      "expected": [
+        "LOVELY_CHILD"
+      ],
+      "paced": false
+    },
+    {
+      "name": "unrelated-1",
+      "group": "surrogate",
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/unrelated-1.raw",
+      "sha256": "cd491506c47d77e0928952ccef064d8702575583b7fa3ff9927338caa6424978",
+      "seconds": 18.815,
+      "expected": [],
+      "paced": false
+    },
+    {
+      "name": "names-negative-natural",
+      "group": "names",
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/natural.raw",
+      "sha256": "e1e4e81f8c48060017cccc329b6b6f4e6c3df01489d5b6a61cc003cd5a7c4349",
+      "seconds": 4.88625,
+      "expected": [],
+      "paced": false
+    },
+    {
+      "name": "names-negative-published-0",
+      "group": "names",
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/published-0.raw",
+      "sha256": "787c0408a57100604f35c0498b19b903a8f1ae67494f216c48dfdcde6e2b75da",
+      "seconds": 8.725,
+      "expected": [],
+      "paced": false
+    },
+    {
+      "name": "names-negative-published-1",
+      "group": "names",
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/published-1.raw",
+      "sha256": "cd491506c47d77e0928952ccef064d8702575583b7fa3ff9927338caa6424978",
+      "seconds": 18.815,
+      "expected": [],
+      "paced": false
+    },
+    {
+      "name": "soft-onset",
+      "group": "surrogate",
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/soft-onset.raw",
+      "sha256": "08046a4e62daf424ad8e5e7253d692f3aedd35a0de74275819af3e72e8839de0",
+      "seconds": 7.28625,
+      "expected": [
+        "GO_FORWARD"
+      ],
+      "paced": true
+    },
+    {
+      "name": "long-leading-quiet",
+      "group": "surrogate",
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/long-leading-quiet.raw",
+      "sha256": "4ce50f601f16e61536cabad912223e30c7c1c9d0b0605c66d494bf2a3735068b",
+      "seconds": 16.28625,
+      "expected": [
+        "GO_FORWARD"
+      ],
+      "paced": false
+    },
+    {
+      "name": "active-speech",
+      "group": "surrogate",
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/active-speech.raw",
+      "sha256": "0af17b25068899dc32916060de033b0c5f066843d6a7297f8ed45a1fff4f0368",
+      "seconds": 16.7175,
+      "expected": [],
+      "paced": true
+    },
+    {
+      "name": "silence",
+      "group": "surrogate",
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/silence.raw",
+      "sha256": "b9163d03c43083a18e6101539b555cb5e363eed61fa4b3a3b54f50ae60eb5b52",
+      "seconds": 30.0,
+      "expected": [],
+      "paced": true
+    }
+  ],
+  "runs": [
+    {
+      "arm": "baseline",
+      "group": "surrogate",
+      "paced": false,
+      "repeat": 1,
+      "ready": {
+        "backend": "sherpa-onnx-1.13.8-c-api",
+        "event": "ready",
+        "load_seconds": 0.312126603,
+        "memory": {
+          "peak_rss_mib": 48.62890625,
+          "pss_mib": 44.60546875,
+          "rss_mib": 48.62890625
+        },
+        "score": 1.0,
+        "threads": 1,
+        "threshold": 0.25
+      },
+      "cases": [
+        {
+          "name": "natural",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 0.021671093,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.28,
+                  1.6,
+                  1.68
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.04808600000000002,
+            "detections": 1,
+            "elapsed_seconds": 0.048220607,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.3828125,
+              "pss_mib": 49.984375,
+              "rss_mib": 54.3828125
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/natural.raw"
+          }
+        },
+        {
+          "name": "wake-only",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 0.01930666,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.28,
+                  1.6,
+                  1.68
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 3.3,
+            "cpu_seconds": 0.02879200000000004,
+            "detections": 1,
+            "elapsed_seconds": 0.028874753,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.3828125,
+              "pss_mib": 49.984375,
+              "rss_mib": 54.3828125
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/wake-only.raw"
+          }
+        },
+        {
+          "name": "quiet-recovery",
+          "expected": [
+            "GO_FORWARD",
+            "GO_FORWARD",
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD",
+            "GO_FORWARD",
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 12.0,
+              "elapsed_seconds": 0.116769445,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.96,
+                  1.16,
+                  1.32
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            },
+            {
+              "audio_seconds": 28.65,
+              "elapsed_seconds": 0.278738731,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.96,
+                  1.16,
+                  1.32
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            },
+            {
+              "audio_seconds": 45.27,
+              "elapsed_seconds": 0.440278164,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.96,
+                  1.16,
+                  1.32
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 50.535,
+            "cpu_seconds": 0.48752300000000004,
+            "detections": 3,
+            "elapsed_seconds": 0.491554543,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.3828125,
+              "pss_mib": 49.984375,
+              "rss_mib": 54.3828125
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/quiet-recovery.raw"
+          }
+        },
+        {
+          "name": "pause-inside-name",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 0.019234603,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.28,
+                  1.44,
+                  1.52
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 5.18625,
+            "cpu_seconds": 0.047190000000000065,
+            "detections": 1,
+            "elapsed_seconds": 0.047532625,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.3828125,
+              "pss_mib": 49.984375,
+              "rss_mib": 54.3828125
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/pause-inside-name.raw"
+          }
+        },
+        {
+          "name": "low-volume",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 0.019250694,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.28,
+                  1.6,
+                  1.68
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.04493199999999997,
+            "detections": 1,
+            "elapsed_seconds": 0.045284301,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.3828125,
+              "pss_mib": 49.984375,
+              "rss_mib": 54.3828125
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/low-volume.raw"
+          }
+        },
+        {
+          "name": "uniform-noise",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 0.019795896,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.28,
+                  1.52,
+                  1.72
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.046175999999999995,
+            "detections": 1,
+            "elapsed_seconds": 0.046706923,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.3828125,
+              "pss_mib": 49.9833984375,
+              "rss_mib": 54.3828125
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/uniform-noise.raw"
+          }
+        },
+        {
+          "name": "command-without-wake",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 9.85875,
+            "cpu_seconds": 0.09512200000000015,
+            "detections": 0,
+            "elapsed_seconds": 0.095838493,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.3828125,
+              "pss_mib": 49.984375,
+              "rss_mib": 54.3828125
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/command-without-wake.raw"
+          }
+        },
+        {
+          "name": "reversed-speech",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 13.45875,
+            "cpu_seconds": 0.1276569999999999,
+            "detections": 0,
+            "elapsed_seconds": 0.128343775,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.3828125,
+              "pss_mib": 49.984375,
+              "rss_mib": 54.3828125
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/reversed-speech.raw"
+          }
+        },
+        {
+          "name": "unrelated-0",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 8.725,
+            "cpu_seconds": 0.08026099999999992,
+            "detections": 0,
+            "elapsed_seconds": 0.080751588,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.3828125,
+              "pss_mib": 49.984375,
+              "rss_mib": 54.3828125
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/unrelated-0.raw"
+          }
+        },
+        {
+          "name": "unrelated-1",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 18.815,
+            "cpu_seconds": 0.17975200000000013,
+            "detections": 0,
+            "elapsed_seconds": 0.180758156,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.3828125,
+              "pss_mib": 49.984375,
+              "rss_mib": 54.3828125
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/unrelated-1.raw"
+          }
+        },
+        {
+          "name": "soft-onset",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 4.65,
+              "elapsed_seconds": 0.043728407,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.52,
+                  0.76,
+                  0.88
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 7.28625,
+            "cpu_seconds": 0.06813599999999997,
+            "detections": 1,
+            "elapsed_seconds": 0.06853403,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.3828125,
+              "pss_mib": 49.984375,
+              "rss_mib": 54.3828125
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/soft-onset.raw"
+          }
+        },
+        {
+          "name": "long-leading-quiet",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 13.59,
+              "elapsed_seconds": 0.131782912,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.48,
+                  1.76,
+                  1.88
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 16.28625,
+            "cpu_seconds": 0.15534399999999993,
+            "detections": 1,
+            "elapsed_seconds": 0.156752807,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.3828125,
+              "pss_mib": 49.984375,
+              "rss_mib": 54.3828125
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/long-leading-quiet.raw"
+          }
+        },
+        {
+          "name": "active-speech",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 16.7175,
+            "cpu_seconds": 0.15683199999999986,
+            "detections": 0,
+            "elapsed_seconds": 0.158541271,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.3828125,
+              "pss_mib": 49.984375,
+              "rss_mib": 54.3828125
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/active-speech.raw"
+          }
+        },
+        {
+          "name": "silence",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 30.0,
+            "cpu_seconds": 0.2870459999999999,
+            "detections": 0,
+            "elapsed_seconds": 0.289036597,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.3828125,
+              "pss_mib": 49.984375,
+              "rss_mib": 54.3828125
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/silence.raw"
+          }
+        }
+      ],
+      "all_cases_pass": true
+    },
+    {
+      "arm": "ungated-current",
+      "group": "surrogate",
+      "paced": false,
+      "repeat": 1,
+      "ready": {
+        "backend": "sherpa-onnx-1.13.8-c-api",
+        "event": "ready",
+        "load_seconds": 0.300303615,
+        "memory": {
+          "peak_rss_mib": 48.61328125,
+          "pss_mib": 44.58984375,
+          "rss_mib": 48.61328125
+        },
+        "quiet_gate": null,
+        "score": 1.0,
+        "threads": 1,
+        "threshold": 0.25
+      },
+      "cases": [
+        {
+          "name": "natural",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 0.021367899,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.28,
+                  1.6,
+                  1.68
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.0
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.04615999999999998,
+            "decoded_samples": 78180,
+            "detections": 1,
+            "elapsed_seconds": 0.046688628,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.62109375,
+              "pss_mib": 49.22265625,
+              "rss_mib": 53.62109375
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/natural.raw",
+            "quiet_gate": null,
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "wake-only",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 0.019148751,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.28,
+                  1.6,
+                  1.68
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.0
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 3.3,
+            "cpu_seconds": 0.028420999999999974,
+            "decoded_samples": 52800,
+            "detections": 1,
+            "elapsed_seconds": 0.028756459,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.62109375,
+              "pss_mib": 49.22265625,
+              "rss_mib": 53.62109375
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/wake-only.raw",
+            "quiet_gate": null,
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "quiet-recovery",
+          "expected": [
+            "GO_FORWARD",
+            "GO_FORWARD",
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD",
+            "GO_FORWARD",
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 12.0,
+              "elapsed_seconds": 0.1157041,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.96,
+                  1.16,
+                  1.32
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.0
+            },
+            {
+              "audio_seconds": 28.65,
+              "elapsed_seconds": 0.279599241,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.96,
+                  1.16,
+                  1.32
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.0
+            },
+            {
+              "audio_seconds": 45.27,
+              "elapsed_seconds": 0.443457683,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.96,
+                  1.16,
+                  1.32
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.0
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 50.535,
+            "cpu_seconds": 0.491718,
+            "decoded_samples": 808560,
+            "detections": 3,
+            "elapsed_seconds": 0.49552597,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.62109375,
+              "pss_mib": 49.2216796875,
+              "rss_mib": 53.62109375
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/quiet-recovery.raw",
+            "quiet_gate": null,
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "pause-inside-name",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 0.019747234,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.28,
+                  1.44,
+                  1.52
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.0
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 5.18625,
+            "cpu_seconds": 0.04849400000000004,
+            "decoded_samples": 82980,
+            "detections": 1,
+            "elapsed_seconds": 0.048849187,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.62109375,
+              "pss_mib": 49.22265625,
+              "rss_mib": 53.62109375
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/pause-inside-name.raw",
+            "quiet_gate": null,
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "low-volume",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 0.019067287,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.28,
+                  1.6,
+                  1.68
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.0
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.04370000000000007,
+            "decoded_samples": 78180,
+            "detections": 1,
+            "elapsed_seconds": 0.044022023,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.62109375,
+              "pss_mib": 49.22265625,
+              "rss_mib": 53.62109375
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/low-volume.raw",
+            "quiet_gate": null,
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "uniform-noise",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 0.019071434,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.28,
+                  1.52,
+                  1.72
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.0
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.04384800000000011,
+            "decoded_samples": 78180,
+            "detections": 1,
+            "elapsed_seconds": 0.044219306,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.62109375,
+              "pss_mib": 49.22265625,
+              "rss_mib": 53.62109375
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/uniform-noise.raw",
+            "quiet_gate": null,
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "command-without-wake",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 9.85875,
+            "cpu_seconds": 0.09261199999999992,
+            "decoded_samples": 157740,
+            "detections": 0,
+            "elapsed_seconds": 0.093359874,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.62109375,
+              "pss_mib": 49.22265625,
+              "rss_mib": 53.62109375
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/command-without-wake.raw",
+            "quiet_gate": null,
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "reversed-speech",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 13.45875,
+            "cpu_seconds": 0.12770000000000015,
+            "decoded_samples": 215340,
+            "detections": 0,
+            "elapsed_seconds": 0.128915898,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.62109375,
+              "pss_mib": 49.22265625,
+              "rss_mib": 53.62109375
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/reversed-speech.raw",
+            "quiet_gate": null,
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "unrelated-0",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 8.725,
+            "cpu_seconds": 0.08044600000000024,
+            "decoded_samples": 139600,
+            "detections": 0,
+            "elapsed_seconds": 0.081173035,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.62109375,
+              "pss_mib": 49.22265625,
+              "rss_mib": 53.62109375
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/unrelated-0.raw",
+            "quiet_gate": null,
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "unrelated-1",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 18.815,
+            "cpu_seconds": 0.1814690000000001,
+            "decoded_samples": 301040,
+            "detections": 0,
+            "elapsed_seconds": 0.183106421,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.62109375,
+              "pss_mib": 49.22265625,
+              "rss_mib": 53.62109375
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/unrelated-1.raw",
+            "quiet_gate": null,
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "soft-onset",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 4.65,
+              "elapsed_seconds": 0.044425026,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.52,
+                  0.76,
+                  0.88
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.0
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 7.28625,
+            "cpu_seconds": 0.06942499999999985,
+            "decoded_samples": 116580,
+            "detections": 1,
+            "elapsed_seconds": 0.070649094,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.62109375,
+              "pss_mib": 49.22265625,
+              "rss_mib": 53.62109375
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/soft-onset.raw",
+            "quiet_gate": null,
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "long-leading-quiet",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 13.59,
+              "elapsed_seconds": 0.131066648,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.48,
+                  1.76,
+                  1.88
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.0
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 16.28625,
+            "cpu_seconds": 0.15476400000000012,
+            "decoded_samples": 260580,
+            "detections": 1,
+            "elapsed_seconds": 0.156079634,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.62109375,
+              "pss_mib": 49.22265625,
+              "rss_mib": 53.62109375
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/long-leading-quiet.raw",
+            "quiet_gate": null,
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "active-speech",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 16.7175,
+            "cpu_seconds": 0.1581999999999999,
+            "decoded_samples": 267480,
+            "detections": 0,
+            "elapsed_seconds": 0.159422519,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.62109375,
+              "pss_mib": 49.22265625,
+              "rss_mib": 53.62109375
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/active-speech.raw",
+            "quiet_gate": null,
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "silence",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 30.0,
+            "cpu_seconds": 0.290724,
+            "decoded_samples": 480000,
+            "detections": 0,
+            "elapsed_seconds": 0.293089577,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.62109375,
+              "pss_mib": 49.22265625,
+              "rss_mib": 53.62109375
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/silence.raw",
+            "quiet_gate": null,
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        }
+      ],
+      "all_cases_pass": true
+    },
+    {
+      "arm": "gated",
+      "group": "surrogate",
+      "paced": false,
+      "repeat": 1,
+      "ready": {
+        "backend": "sherpa-onnx-1.13.8-c-api",
+        "event": "ready",
+        "load_seconds": 0.29988796,
+        "memory": {
+          "peak_rss_mib": 48.59375,
+          "pss_mib": 44.5703125,
+          "rss_mib": 48.59375
+        },
+        "quiet_gate": {
+          "hangover_ms": 1200,
+          "preroll_ms": 300,
+          "rms": 0.001
+        },
+        "score": 1.0,
+        "threads": 1,
+        "threshold": 0.25
+      },
+      "cases": [
+        {
+          "name": "natural",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 0.018456772,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.0,
+                  1.28,
+                  1.4
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.3
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.040454000000000045,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 0.040941625,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.03515625,
+              "pss_mib": 49.63671875,
+              "rss_mib": 54.03515625
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/natural.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "wake-only",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 0.016333855,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.0,
+                  1.28,
+                  1.4
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.3
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 3.3,
+            "cpu_seconds": 0.022528999999999966,
+            "decoded_samples": 43200,
+            "detections": 1,
+            "elapsed_seconds": 0.022788768,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.03515625,
+              "pss_mib": 49.63671875,
+              "rss_mib": 54.03515625
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/wake-only.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 9600,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "quiet-recovery",
+          "expected": [
+            "GO_FORWARD",
+            "GO_FORWARD",
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD",
+            "GO_FORWARD",
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 11.94,
+              "elapsed_seconds": 0.114089505,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.0,
+                  1.28,
+                  1.36
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 10.17
+            },
+            {
+              "audio_seconds": 28.59,
+              "elapsed_seconds": 0.250979401,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.0,
+                  1.28,
+                  1.36
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 26.82
+            },
+            {
+              "audio_seconds": 45.21,
+              "elapsed_seconds": 0.388666576,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.0,
+                  1.28,
+                  1.4
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 43.44
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 50.535,
+            "cpu_seconds": 0.40812099999999996,
+            "decoded_samples": 673920,
+            "detections": 3,
+            "elapsed_seconds": 0.412115974,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.0390625,
+              "pss_mib": 49.6396484375,
+              "rss_mib": 54.0390625
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/quiet-recovery.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 134640,
+            "stream_count": 6
+          }
+        },
+        {
+          "name": "pause-inside-name",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 0.017011497,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.96,
+                  1.16,
+                  1.24
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.3
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 5.18625,
+            "cpu_seconds": 0.042698000000000014,
+            "decoded_samples": 72480,
+            "detections": 1,
+            "elapsed_seconds": 0.043206079,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.046875,
+              "pss_mib": 49.6484375,
+              "rss_mib": 54.046875
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/pause-inside-name.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "low-volume",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.25,
+              "elapsed_seconds": 0.013276119,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.52,
+                  0.76,
+                  0.88
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.81
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.02903,
+            "decoded_samples": 51840,
+            "detections": 1,
+            "elapsed_seconds": 0.029362385,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.046875,
+              "pss_mib": 49.6484375,
+              "rss_mib": 54.046875
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/low-volume.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 26340,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "uniform-noise",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 0.01651631,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.96,
+                  1.28,
+                  1.4
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.3
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.038515999999999995,
+            "decoded_samples": 68640,
+            "detections": 1,
+            "elapsed_seconds": 0.038980724,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.046875,
+              "pss_mib": 49.6484375,
+              "rss_mib": 54.046875
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/uniform-noise.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 9540,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "command-without-wake",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 9.85875,
+            "cpu_seconds": 0.08536900000000003,
+            "decoded_samples": 145440,
+            "detections": 0,
+            "elapsed_seconds": 0.086467423,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.046875,
+              "pss_mib": 49.6484375,
+              "rss_mib": 54.046875
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/command-without-wake.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 12300,
+            "stream_count": 3
+          }
+        },
+        {
+          "name": "reversed-speech",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 13.45875,
+            "cpu_seconds": 0.11343700000000001,
+            "decoded_samples": 203040,
+            "detections": 0,
+            "elapsed_seconds": 0.114739476,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.046875,
+              "pss_mib": 49.6484375,
+              "rss_mib": 54.046875
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/reversed-speech.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 12300,
+            "stream_count": 3
+          }
+        },
+        {
+          "name": "unrelated-0",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 8.725,
+            "cpu_seconds": 0.07521200000000006,
+            "decoded_samples": 127200,
+            "detections": 0,
+            "elapsed_seconds": 0.076149962,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.046875,
+              "pss_mib": 49.6484375,
+              "rss_mib": 54.046875
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/unrelated-0.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 12400,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "unrelated-1",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 18.815,
+            "cpu_seconds": 0.17530800000000002,
+            "decoded_samples": 291840,
+            "detections": 0,
+            "elapsed_seconds": 0.176948671,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.046875,
+              "pss_mib": 49.6484375,
+              "rss_mib": 54.046875
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/unrelated-1.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 9200,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "soft-onset",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 4.65,
+              "elapsed_seconds": 0.013180298,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.52,
+                  0.76,
+                  0.88
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 3.21
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 7.28625,
+            "cpu_seconds": 0.03491299999999997,
+            "decoded_samples": 59520,
+            "detections": 1,
+            "elapsed_seconds": 0.035121813,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.046875,
+              "pss_mib": 49.6484375,
+              "rss_mib": 54.046875
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/soft-onset.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 57060,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "long-leading-quiet",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 13.47,
+              "elapsed_seconds": 0.016536949,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.0,
+                  1.28,
+                  1.4
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 11.7
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 16.28625,
+            "cpu_seconds": 0.038497,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 0.038658314,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.046875,
+              "pss_mib": 49.6484375,
+              "rss_mib": 54.046875
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/long-leading-quiet.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 192900,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "active-speech",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 16.7175,
+            "cpu_seconds": 0.15957299999999996,
+            "decoded_samples": 267480,
+            "detections": 0,
+            "elapsed_seconds": 0.161661756,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.046875,
+              "pss_mib": 49.6484375,
+              "rss_mib": 54.046875
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/active-speech.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "silence",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 30.0,
+            "cpu_seconds": 0.0004999999999999449,
+            "decoded_samples": 0,
+            "detections": 0,
+            "elapsed_seconds": 0.000500457,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.046875,
+              "pss_mib": 49.6484375,
+              "rss_mib": 54.046875
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/silence.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 480000,
+            "stream_count": 0
+          }
+        }
+      ],
+      "all_cases_pass": true
+    },
+    {
+      "arm": "baseline",
+      "group": "published",
+      "paced": false,
+      "repeat": 1,
+      "ready": {
+        "backend": "sherpa-onnx-1.13.8-c-api",
+        "event": "ready",
+        "load_seconds": 0.303345082,
+        "memory": {
+          "peak_rss_mib": 48.6171875,
+          "pss_mib": 44.59375,
+          "rss_mib": 48.6171875
+        },
+        "score": 1.0,
+        "threads": 1,
+        "threshold": 0.25
+      },
+      "cases": [
+        {
+          "name": "published-0",
+          "expected": [
+            "LIGHT_UP"
+          ],
+          "actual": [
+            "LIGHT_UP"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 4.32,
+              "elapsed_seconds": 0.043961077,
+              "event": "keyword",
+              "result": {
+                "keyword": "LIGHT_UP",
+                "start_time": 0.0,
+                "timestamps": [
+                  3.64,
+                  3.68,
+                  3.72,
+                  3.84
+                ],
+                "tokens": [
+                  " ",
+                  "L",
+                  "IGHT",
+                  " UP"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 8.725,
+            "cpu_seconds": 0.08538899999999999,
+            "detections": 1,
+            "elapsed_seconds": 0.085784681,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.33984375,
+              "pss_mib": 49.94140625,
+              "rss_mib": 54.33984375
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/published-0.raw"
+          }
+        },
+        {
+          "name": "published-1",
+          "expected": [
+            "LOVELY_CHILD"
+          ],
+          "actual": [
+            "LOVELY_CHILD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 7.2,
+              "elapsed_seconds": 0.069452149,
+              "event": "keyword",
+              "result": {
+                "keyword": "LOVELY_CHILD",
+                "start_time": 0.0,
+                "timestamps": [
+                  5.96,
+                  6.16,
+                  6.48,
+                  6.6,
+                  6.64
+                ],
+                "tokens": [
+                  " LOVE",
+                  "LY",
+                  " CHI",
+                  "L",
+                  "D"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 18.815,
+            "cpu_seconds": 0.18172300000000002,
+            "detections": 1,
+            "elapsed_seconds": 0.182748975,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.33984375,
+              "pss_mib": 49.94140625,
+              "rss_mib": 54.33984375
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/published-1.raw"
+          }
+        }
+      ],
+      "all_cases_pass": true
+    },
+    {
+      "arm": "ungated-current",
+      "group": "published",
+      "paced": false,
+      "repeat": 1,
+      "ready": {
+        "backend": "sherpa-onnx-1.13.8-c-api",
+        "event": "ready",
+        "load_seconds": 0.299476193,
+        "memory": {
+          "peak_rss_mib": 48.5390625,
+          "pss_mib": 44.5078125,
+          "rss_mib": 48.5390625
+        },
+        "quiet_gate": null,
+        "score": 1.0,
+        "threads": 1,
+        "threshold": 0.25
+      },
+      "cases": [
+        {
+          "name": "published-0",
+          "expected": [
+            "LIGHT_UP"
+          ],
+          "actual": [
+            "LIGHT_UP"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 4.32,
+              "elapsed_seconds": 0.044166367,
+              "event": "keyword",
+              "result": {
+                "keyword": "LIGHT_UP",
+                "start_time": 0.0,
+                "timestamps": [
+                  3.64,
+                  3.68,
+                  3.72,
+                  3.84
+                ],
+                "tokens": [
+                  " ",
+                  "L",
+                  "IGHT",
+                  " UP"
+                ]
+              },
+              "stream_origin_seconds": 0.0
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 8.725,
+            "cpu_seconds": 0.08404600000000001,
+            "decoded_samples": 139600,
+            "detections": 1,
+            "elapsed_seconds": 0.085035284,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.4765625,
+              "pss_mib": 50.07421875,
+              "rss_mib": 54.4765625
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/published-0.raw",
+            "quiet_gate": null,
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "published-1",
+          "expected": [
+            "LOVELY_CHILD"
+          ],
+          "actual": [
+            "LOVELY_CHILD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 7.2,
+              "elapsed_seconds": 0.069221582,
+              "event": "keyword",
+              "result": {
+                "keyword": "LOVELY_CHILD",
+                "start_time": 0.0,
+                "timestamps": [
+                  5.96,
+                  6.16,
+                  6.48,
+                  6.6,
+                  6.64
+                ],
+                "tokens": [
+                  " LOVE",
+                  "LY",
+                  " CHI",
+                  "L",
+                  "D"
+                ]
+              },
+              "stream_origin_seconds": 0.0
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 18.815,
+            "cpu_seconds": 0.18196600000000002,
+            "decoded_samples": 301040,
+            "detections": 1,
+            "elapsed_seconds": 0.1841151,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.4765625,
+              "pss_mib": 50.07421875,
+              "rss_mib": 54.4765625
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/published-1.raw",
+            "quiet_gate": null,
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        }
+      ],
+      "all_cases_pass": true
+    },
+    {
+      "arm": "gated",
+      "group": "published",
+      "paced": false,
+      "repeat": 1,
+      "ready": {
+        "backend": "sherpa-onnx-1.13.8-c-api",
+        "event": "ready",
+        "load_seconds": 0.303425756,
+        "memory": {
+          "peak_rss_mib": 48.6171875,
+          "pss_mib": 44.59375,
+          "rss_mib": 48.6171875
+        },
+        "quiet_gate": {
+          "hangover_ms": 1200,
+          "preroll_ms": 300,
+          "rms": 0.001
+        },
+        "score": 1.0,
+        "threads": 1,
+        "threshold": 0.25
+      },
+      "cases": [
+        {
+          "name": "published-0",
+          "expected": [
+            "LIGHT_UP"
+          ],
+          "actual": [
+            "LIGHT_UP"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 4.14,
+              "elapsed_seconds": 0.038151155,
+              "event": "keyword",
+              "result": {
+                "keyword": "LIGHT_UP",
+                "start_time": 0.0,
+                "timestamps": [
+                  3.2,
+                  3.24,
+                  3.28,
+                  3.36
+                ],
+                "tokens": [
+                  " ",
+                  "L",
+                  "IGHT",
+                  " UP"
+                ]
+              },
+              "stream_origin_seconds": 0.45
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 8.725,
+            "cpu_seconds": 0.07918599999999998,
+            "decoded_samples": 127200,
+            "detections": 1,
+            "elapsed_seconds": 0.079543022,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.2265625,
+              "pss_mib": 49.828125,
+              "rss_mib": 54.2265625
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/published-0.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 12400,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "published-1",
+          "expected": [
+            "LOVELY_CHILD"
+          ],
+          "actual": [
+            "LOVELY_CHILD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 7.17,
+              "elapsed_seconds": 0.065955403,
+              "event": "keyword",
+              "result": {
+                "keyword": "LOVELY_CHILD",
+                "start_time": 0.0,
+                "timestamps": [
+                  5.68,
+                  5.88,
+                  6.16,
+                  6.32,
+                  6.36
+                ],
+                "tokens": [
+                  " LOVE",
+                  "LY",
+                  " CHI",
+                  "L",
+                  "D"
+                ]
+              },
+              "stream_origin_seconds": 0.3
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 18.815,
+            "cpu_seconds": 0.17565000000000003,
+            "decoded_samples": 291840,
+            "detections": 1,
+            "elapsed_seconds": 0.176633686,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.2265625,
+              "pss_mib": 49.828125,
+              "rss_mib": 54.2265625
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/published-1.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 9200,
+            "stream_count": 1
+          }
+        }
+      ],
+      "all_cases_pass": true
+    },
+    {
+      "arm": "baseline",
+      "group": "names",
+      "paced": false,
+      "repeat": 1,
+      "ready": {
+        "backend": "sherpa-onnx-1.13.8-c-api",
+        "event": "ready",
+        "load_seconds": 0.304075876,
+        "memory": {
+          "peak_rss_mib": 48.546875,
+          "pss_mib": 44.5546875,
+          "rss_mib": 48.546875
+        },
+        "score": 1.0,
+        "threads": 1,
+        "threshold": 0.25
+      },
+      "cases": [
+        {
+          "name": "names-negative-natural",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.046520000000000006,
+            "detections": 0,
+            "elapsed_seconds": 0.047028462,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.3203125,
+              "pss_mib": 49.8564453125,
+              "rss_mib": 54.3203125
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/natural.raw"
+          }
+        },
+        {
+          "name": "names-negative-published-0",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 8.725,
+            "cpu_seconds": 0.08236099999999996,
+            "detections": 0,
+            "elapsed_seconds": 0.083244726,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.328125,
+              "pss_mib": 49.8642578125,
+              "rss_mib": 54.328125
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/published-0.raw"
+          }
+        },
+        {
+          "name": "names-negative-published-1",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 18.815,
+            "cpu_seconds": 0.17999199999999999,
+            "detections": 0,
+            "elapsed_seconds": 0.181856136,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.3359375,
+              "pss_mib": 49.8720703125,
+              "rss_mib": 54.3359375
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/published-1.raw"
+          }
+        }
+      ],
+      "all_cases_pass": true
+    },
+    {
+      "arm": "ungated-current",
+      "group": "names",
+      "paced": false,
+      "repeat": 1,
+      "ready": {
+        "backend": "sherpa-onnx-1.13.8-c-api",
+        "event": "ready",
+        "load_seconds": 0.29866605,
+        "memory": {
+          "peak_rss_mib": 48.60546875,
+          "pss_mib": 44.58203125,
+          "rss_mib": 48.60546875
+        },
+        "quiet_gate": null,
+        "score": 1.0,
+        "threads": 1,
+        "threshold": 0.25
+      },
+      "cases": [
+        {
+          "name": "names-negative-natural",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.04578599999999999,
+            "decoded_samples": 78180,
+            "detections": 0,
+            "elapsed_seconds": 0.046339358,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.828125,
+              "pss_mib": 49.4296875,
+              "rss_mib": 53.828125
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/natural.raw",
+            "quiet_gate": null,
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "names-negative-published-0",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 8.725,
+            "cpu_seconds": 0.08021499999999998,
+            "decoded_samples": 139600,
+            "detections": 0,
+            "elapsed_seconds": 0.081111469,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.83984375,
+              "pss_mib": 49.44140625,
+              "rss_mib": 53.83984375
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/published-0.raw",
+            "quiet_gate": null,
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "names-negative-published-1",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 18.815,
+            "cpu_seconds": 0.17900799999999994,
+            "decoded_samples": 301040,
+            "detections": 0,
+            "elapsed_seconds": 0.181067705,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.84375,
+              "pss_mib": 49.4453125,
+              "rss_mib": 53.84375
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/published-1.raw",
+            "quiet_gate": null,
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        }
+      ],
+      "all_cases_pass": true
+    },
+    {
+      "arm": "gated",
+      "group": "names",
+      "paced": false,
+      "repeat": 1,
+      "ready": {
+        "backend": "sherpa-onnx-1.13.8-c-api",
+        "event": "ready",
+        "load_seconds": 0.305244979,
+        "memory": {
+          "peak_rss_mib": 48.5703125,
+          "pss_mib": 44.5458984375,
+          "rss_mib": 48.5703125
+        },
+        "quiet_gate": {
+          "hangover_ms": 1200,
+          "preroll_ms": 300,
+          "rms": 0.001
+        },
+        "score": 1.0,
+        "threads": 1,
+        "threshold": 0.25
+      },
+      "cases": [
+        {
+          "name": "names-negative-natural",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.04255500000000001,
+            "decoded_samples": 67680,
+            "detections": 0,
+            "elapsed_seconds": 0.043118945,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.7578125,
+              "pss_mib": 50.359375,
+              "rss_mib": 54.7578125
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/natural.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "names-negative-published-0",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 8.725,
+            "cpu_seconds": 0.07635400000000003,
+            "decoded_samples": 127200,
+            "detections": 0,
+            "elapsed_seconds": 0.077339462,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.76953125,
+              "pss_mib": 50.37109375,
+              "rss_mib": 54.76953125
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/published-0.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 12400,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "names-negative-published-1",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 18.815,
+            "cpu_seconds": 0.17390100000000003,
+            "decoded_samples": 291840,
+            "detections": 0,
+            "elapsed_seconds": 0.176085318,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.76953125,
+              "pss_mib": 50.37109375,
+              "rss_mib": 54.76953125
+            },
+            "paced": false,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/published-1.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 9200,
+            "stream_count": 1
+          }
+        }
+      ],
+      "all_cases_pass": true
+    },
+    {
+      "arm": "baseline",
+      "group": "surrogate",
+      "paced": true,
+      "repeat": 1,
+      "ready": {
+        "backend": "sherpa-onnx-1.13.8-c-api",
+        "event": "ready",
+        "load_seconds": 0.301404012,
+        "memory": {
+          "peak_rss_mib": 48.59765625,
+          "pss_mib": 44.57421875,
+          "rss_mib": 48.59765625
+        },
+        "score": 1.0,
+        "threads": 1,
+        "threshold": 0.25
+      },
+      "cases": [
+        {
+          "name": "natural",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 2.074443509,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.28,
+                  1.6,
+                  1.68
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.06850400000000001,
+            "detections": 1,
+            "elapsed_seconds": 4.886320932,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.2421875,
+              "pss_mib": 49.84375,
+              "rss_mib": 54.2421875
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/natural.raw"
+          }
+        },
+        {
+          "name": "quiet-recovery",
+          "expected": [
+            "GO_FORWARD",
+            "GO_FORWARD",
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD",
+            "GO_FORWARD",
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 12.0,
+              "elapsed_seconds": 12.004580746,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.96,
+                  1.16,
+                  1.32
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            },
+            {
+              "audio_seconds": 28.65,
+              "elapsed_seconds": 28.654559631,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.96,
+                  1.16,
+                  1.32
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            },
+            {
+              "audio_seconds": 45.27,
+              "elapsed_seconds": 45.274645537,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.96,
+                  1.16,
+                  1.32
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 50.535,
+            "cpu_seconds": 0.770613,
+            "detections": 3,
+            "elapsed_seconds": 50.535076053,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.3046875,
+              "pss_mib": 49.90625,
+              "rss_mib": 54.3046875
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/quiet-recovery.raw"
+          }
+        },
+        {
+          "name": "pause-inside-name",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 2.074575479,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.28,
+                  1.44,
+                  1.52
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 5.18625,
+            "cpu_seconds": 0.07379099999999994,
+            "detections": 1,
+            "elapsed_seconds": 5.186312985,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.3046875,
+              "pss_mib": 49.90625,
+              "rss_mib": 54.3046875
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/pause-inside-name.raw"
+          }
+        },
+        {
+          "name": "low-volume",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 2.074835321,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.28,
+                  1.6,
+                  1.68
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.06917200000000001,
+            "detections": 1,
+            "elapsed_seconds": 4.886336696,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.3046875,
+              "pss_mib": 49.90625,
+              "rss_mib": 54.3046875
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/low-volume.raw"
+          }
+        },
+        {
+          "name": "soft-onset",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 4.65,
+              "elapsed_seconds": 4.654563635,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.52,
+                  0.76,
+                  0.88
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 7.28625,
+            "cpu_seconds": 0.10545499999999985,
+            "detections": 1,
+            "elapsed_seconds": 7.286306505,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.3046875,
+              "pss_mib": 49.90625,
+              "rss_mib": 54.3046875
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/soft-onset.raw"
+          }
+        },
+        {
+          "name": "active-speech",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 16.7175,
+            "cpu_seconds": 0.24558100000000005,
+            "detections": 0,
+            "elapsed_seconds": 16.717563808,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.3046875,
+              "pss_mib": 49.90625,
+              "rss_mib": 54.3046875
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/active-speech.raw"
+          }
+        },
+        {
+          "name": "silence",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 30.0,
+            "cpu_seconds": 0.44635800000000003,
+            "detections": 0,
+            "elapsed_seconds": 30.000059954,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.3046875,
+              "pss_mib": 49.90625,
+              "rss_mib": 54.3046875
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/silence.raw"
+          }
+        }
+      ],
+      "all_cases_pass": true
+    },
+    {
+      "arm": "gated",
+      "group": "surrogate",
+      "paced": true,
+      "repeat": 1,
+      "ready": {
+        "backend": "sherpa-onnx-1.13.8-c-api",
+        "event": "ready",
+        "load_seconds": 0.330498028,
+        "memory": {
+          "peak_rss_mib": 47.640625,
+          "pss_mib": 43.6171875,
+          "rss_mib": 47.640625
+        },
+        "quiet_gate": {
+          "hangover_ms": 1200,
+          "preroll_ms": 300,
+          "rms": 0.001
+        },
+        "score": 1.0,
+        "threads": 1,
+        "threshold": 0.25
+      },
+      "cases": [
+        {
+          "name": "natural",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 2.074539349,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.0,
+                  1.28,
+                  1.4
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.3
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.060361,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.88625751,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.46875,
+              "pss_mib": 49.0703125,
+              "rss_mib": 53.46875
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/natural.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "quiet-recovery",
+          "expected": [
+            "GO_FORWARD",
+            "GO_FORWARD",
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD",
+            "GO_FORWARD",
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 11.94,
+              "elapsed_seconds": 11.944553017,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.0,
+                  1.28,
+                  1.36
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 10.17
+            },
+            {
+              "audio_seconds": 28.59,
+              "elapsed_seconds": 28.594839714,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.0,
+                  1.28,
+                  1.36
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 26.82
+            },
+            {
+              "audio_seconds": 45.21,
+              "elapsed_seconds": 45.215125171,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.0,
+                  1.28,
+                  1.4
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 43.44
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 50.535,
+            "cpu_seconds": 0.609222,
+            "decoded_samples": 673920,
+            "detections": 3,
+            "elapsed_seconds": 50.535018565,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.53515625,
+              "pss_mib": 49.13671875,
+              "rss_mib": 53.53515625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/quiet-recovery.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 134640,
+            "stream_count": 6
+          }
+        },
+        {
+          "name": "pause-inside-name",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 2.074780526,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.96,
+                  1.16,
+                  1.24
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.3
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 5.18625,
+            "cpu_seconds": 0.06338700000000008,
+            "decoded_samples": 72480,
+            "detections": 1,
+            "elapsed_seconds": 5.186258926,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.54296875,
+              "pss_mib": 49.14453125,
+              "rss_mib": 53.54296875
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/pause-inside-name.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "low-volume",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.25,
+              "elapsed_seconds": 2.254726667,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.52,
+                  0.76,
+                  0.88
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.81
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.04459000000000013,
+            "decoded_samples": 51840,
+            "detections": 1,
+            "elapsed_seconds": 4.88625957,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.54296875,
+              "pss_mib": 49.14453125,
+              "rss_mib": 53.54296875
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/low-volume.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 26340,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "soft-onset",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 4.65,
+              "elapsed_seconds": 4.654512651,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.52,
+                  0.76,
+                  0.88
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 3.21
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 7.28625,
+            "cpu_seconds": 0.05357300000000009,
+            "decoded_samples": 59520,
+            "detections": 1,
+            "elapsed_seconds": 7.286259428,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.54296875,
+              "pss_mib": 49.14453125,
+              "rss_mib": 53.54296875
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/soft-onset.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 57060,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "active-speech",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 16.7175,
+            "cpu_seconds": 0.24450300000000014,
+            "decoded_samples": 267480,
+            "detections": 0,
+            "elapsed_seconds": 16.717544438,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.57421875,
+              "pss_mib": 49.17578125,
+              "rss_mib": 53.57421875
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/active-speech.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "silence",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 30.0,
+            "cpu_seconds": 0.004288999999999987,
+            "decoded_samples": 0,
+            "detections": 0,
+            "elapsed_seconds": 30.000009121,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.57421875,
+              "pss_mib": 49.17578125,
+              "rss_mib": 53.57421875
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/silence.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 480000,
+            "stream_count": 0
+          }
+        }
+      ],
+      "all_cases_pass": true
+    },
+    {
+      "arm": "baseline",
+      "group": "surrogate",
+      "paced": true,
+      "repeat": 2,
+      "ready": {
+        "backend": "sherpa-onnx-1.13.8-c-api",
+        "event": "ready",
+        "load_seconds": 0.33259582,
+        "memory": {
+          "peak_rss_mib": 48.6171875,
+          "pss_mib": 44.59375,
+          "rss_mib": 48.6171875
+        },
+        "score": 1.0,
+        "threads": 1,
+        "threshold": 0.25
+      },
+      "cases": [
+        {
+          "name": "natural",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 2.0745957329999998,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.28,
+                  1.6,
+                  1.68
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.069994,
+            "detections": 1,
+            "elapsed_seconds": 4.886318464,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.9140625,
+              "pss_mib": 49.515625,
+              "rss_mib": 53.9140625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/natural.raw"
+          }
+        },
+        {
+          "name": "quiet-recovery",
+          "expected": [
+            "GO_FORWARD",
+            "GO_FORWARD",
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD",
+            "GO_FORWARD",
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 12.0,
+              "elapsed_seconds": 12.004422536,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.96,
+                  1.16,
+                  1.32
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            },
+            {
+              "audio_seconds": 28.65,
+              "elapsed_seconds": 28.654594668,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.96,
+                  1.16,
+                  1.32
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            },
+            {
+              "audio_seconds": 45.27,
+              "elapsed_seconds": 45.274164332,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.96,
+                  1.16,
+                  1.32
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 50.535,
+            "cpu_seconds": 0.7502800000000001,
+            "detections": 3,
+            "elapsed_seconds": 50.535046229,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.9140625,
+              "pss_mib": 49.515625,
+              "rss_mib": 53.9140625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/quiet-recovery.raw"
+          }
+        },
+        {
+          "name": "pause-inside-name",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 2.074511083,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.28,
+                  1.44,
+                  1.52
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 5.18625,
+            "cpu_seconds": 0.07092300000000007,
+            "detections": 1,
+            "elapsed_seconds": 5.186315107,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.9140625,
+              "pss_mib": 49.515625,
+              "rss_mib": 53.9140625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/pause-inside-name.raw"
+          }
+        },
+        {
+          "name": "low-volume",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 2.074715372,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.28,
+                  1.6,
+                  1.68
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.06739300000000004,
+            "detections": 1,
+            "elapsed_seconds": 4.886311415,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.9140625,
+              "pss_mib": 49.515625,
+              "rss_mib": 53.9140625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/low-volume.raw"
+          }
+        },
+        {
+          "name": "soft-onset",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 4.65,
+              "elapsed_seconds": 4.65467571,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.52,
+                  0.76,
+                  0.88
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 7.28625,
+            "cpu_seconds": 0.10722199999999993,
+            "detections": 1,
+            "elapsed_seconds": 7.286300314,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.9140625,
+              "pss_mib": 49.515625,
+              "rss_mib": 53.9140625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/soft-onset.raw"
+          }
+        },
+        {
+          "name": "active-speech",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 16.7175,
+            "cpu_seconds": 0.24449300000000007,
+            "detections": 0,
+            "elapsed_seconds": 16.717560784,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.9140625,
+              "pss_mib": 49.515625,
+              "rss_mib": 53.9140625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/active-speech.raw"
+          }
+        },
+        {
+          "name": "silence",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 30.0,
+            "cpu_seconds": 0.444844,
+            "detections": 0,
+            "elapsed_seconds": 30.0000566,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.9140625,
+              "pss_mib": 49.515625,
+              "rss_mib": 53.9140625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/silence.raw"
+          }
+        }
+      ],
+      "all_cases_pass": true
+    },
+    {
+      "arm": "gated",
+      "group": "surrogate",
+      "paced": true,
+      "repeat": 2,
+      "ready": {
+        "backend": "sherpa-onnx-1.13.8-c-api",
+        "event": "ready",
+        "load_seconds": 0.334004655,
+        "memory": {
+          "peak_rss_mib": 47.6953125,
+          "pss_mib": 43.7080078125,
+          "rss_mib": 47.6953125
+        },
+        "quiet_gate": {
+          "hangover_ms": 1200,
+          "preroll_ms": 300,
+          "rms": 0.001
+        },
+        "score": 1.0,
+        "threads": 1,
+        "threshold": 0.25
+      },
+      "cases": [
+        {
+          "name": "natural",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 2.074793181,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.0,
+                  1.28,
+                  1.4
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.3
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.06027100000000002,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.886258248,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.96484375,
+              "pss_mib": 49.5439453125,
+              "rss_mib": 53.96484375
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/natural.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "quiet-recovery",
+          "expected": [
+            "GO_FORWARD",
+            "GO_FORWARD",
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD",
+            "GO_FORWARD",
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 11.94,
+              "elapsed_seconds": 11.944715267,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.0,
+                  1.28,
+                  1.36
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 10.17
+            },
+            {
+              "audio_seconds": 28.59,
+              "elapsed_seconds": 28.595161468,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.0,
+                  1.28,
+                  1.36
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 26.82
+            },
+            {
+              "audio_seconds": 45.21,
+              "elapsed_seconds": 45.214562584,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.0,
+                  1.28,
+                  1.4
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 43.44
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 50.535,
+            "cpu_seconds": 0.615951,
+            "decoded_samples": 673920,
+            "detections": 3,
+            "elapsed_seconds": 50.535007497,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.96875,
+              "pss_mib": 49.5478515625,
+              "rss_mib": 53.96875
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/quiet-recovery.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 134640,
+            "stream_count": 6
+          }
+        },
+        {
+          "name": "pause-inside-name",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 2.074145796,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.96,
+                  1.16,
+                  1.24
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.3
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 5.18625,
+            "cpu_seconds": 0.06273499999999999,
+            "decoded_samples": 72480,
+            "detections": 1,
+            "elapsed_seconds": 5.186257722,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.9765625,
+              "pss_mib": 49.5556640625,
+              "rss_mib": 53.9765625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/pause-inside-name.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "low-volume",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.25,
+              "elapsed_seconds": 2.254584306,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.52,
+                  0.76,
+                  0.88
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.81
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.043068000000000106,
+            "decoded_samples": 51840,
+            "detections": 1,
+            "elapsed_seconds": 4.88625692,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.9765625,
+              "pss_mib": 49.5556640625,
+              "rss_mib": 53.9765625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/low-volume.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 26340,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "soft-onset",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 4.65,
+              "elapsed_seconds": 4.654506512,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.52,
+                  0.76,
+                  0.88
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 3.21
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 7.28625,
+            "cpu_seconds": 0.05193700000000012,
+            "decoded_samples": 59520,
+            "detections": 1,
+            "elapsed_seconds": 7.286259988,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.9765625,
+              "pss_mib": 49.5556640625,
+              "rss_mib": 53.9765625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/soft-onset.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 57060,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "active-speech",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 16.7175,
+            "cpu_seconds": 0.23813700000000004,
+            "decoded_samples": 267480,
+            "detections": 0,
+            "elapsed_seconds": 16.717551223,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.9765625,
+              "pss_mib": 49.5546875,
+              "rss_mib": 53.9765625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/active-speech.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "silence",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 30.0,
+            "cpu_seconds": 0.0039679999999999715,
+            "decoded_samples": 0,
+            "detections": 0,
+            "elapsed_seconds": 30.000018712,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.9765625,
+              "pss_mib": 49.5556640625,
+              "rss_mib": 53.9765625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/silence.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 480000,
+            "stream_count": 0
+          }
+        }
+      ],
+      "all_cases_pass": true
+    },
+    {
+      "arm": "baseline",
+      "group": "surrogate",
+      "paced": true,
+      "repeat": 3,
+      "ready": {
+        "backend": "sherpa-onnx-1.13.8-c-api",
+        "event": "ready",
+        "load_seconds": 0.3312968,
+        "memory": {
+          "peak_rss_mib": 48.6328125,
+          "pss_mib": 44.60546875,
+          "rss_mib": 48.6328125
+        },
+        "score": 1.0,
+        "threads": 1,
+        "threshold": 0.25
+      },
+      "cases": [
+        {
+          "name": "natural",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 2.074541888,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.28,
+                  1.6,
+                  1.68
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.069247,
+            "detections": 1,
+            "elapsed_seconds": 4.8863196030000005,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.44140625,
+              "pss_mib": 50.0390625,
+              "rss_mib": 54.44140625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/natural.raw"
+          }
+        },
+        {
+          "name": "quiet-recovery",
+          "expected": [
+            "GO_FORWARD",
+            "GO_FORWARD",
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD",
+            "GO_FORWARD",
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 12.0,
+              "elapsed_seconds": 12.004462992,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.96,
+                  1.16,
+                  1.32
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            },
+            {
+              "audio_seconds": 28.65,
+              "elapsed_seconds": 28.654675695,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.96,
+                  1.16,
+                  1.32
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            },
+            {
+              "audio_seconds": 45.27,
+              "elapsed_seconds": 45.274431494,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.96,
+                  1.16,
+                  1.32
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 50.535,
+            "cpu_seconds": 0.743919,
+            "detections": 3,
+            "elapsed_seconds": 50.535071007,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.44140625,
+              "pss_mib": 50.0390625,
+              "rss_mib": 54.44140625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/quiet-recovery.raw"
+          }
+        },
+        {
+          "name": "pause-inside-name",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 2.07461944,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.28,
+                  1.44,
+                  1.52
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 5.18625,
+            "cpu_seconds": 0.07347100000000006,
+            "detections": 1,
+            "elapsed_seconds": 5.186329069,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.44140625,
+              "pss_mib": 50.0390625,
+              "rss_mib": 54.44140625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/pause-inside-name.raw"
+          }
+        },
+        {
+          "name": "low-volume",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 2.074686985,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.28,
+                  1.6,
+                  1.68
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.06825300000000012,
+            "detections": 1,
+            "elapsed_seconds": 4.886331226,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.44140625,
+              "pss_mib": 50.0390625,
+              "rss_mib": 54.44140625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/low-volume.raw"
+          }
+        },
+        {
+          "name": "soft-onset",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 4.65,
+              "elapsed_seconds": 4.654728018,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.52,
+                  0.76,
+                  0.88
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              }
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 7.28625,
+            "cpu_seconds": 0.10759800000000008,
+            "detections": 1,
+            "elapsed_seconds": 7.28631185,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.44140625,
+              "pss_mib": 50.0390625,
+              "rss_mib": 54.44140625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/soft-onset.raw"
+          }
+        },
+        {
+          "name": "active-speech",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 16.7175,
+            "cpu_seconds": 0.2550539999999999,
+            "detections": 0,
+            "elapsed_seconds": 16.717571409,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.44140625,
+              "pss_mib": 50.0390625,
+              "rss_mib": 54.44140625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/active-speech.raw"
+          }
+        },
+        {
+          "name": "silence",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 30.0,
+            "cpu_seconds": 0.45097199999999993,
+            "detections": 0,
+            "elapsed_seconds": 30.000062854,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.44140625,
+              "pss_mib": 50.0390625,
+              "rss_mib": 54.44140625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/silence.raw"
+          }
+        }
+      ],
+      "all_cases_pass": true
+    },
+    {
+      "arm": "gated",
+      "group": "surrogate",
+      "paced": true,
+      "repeat": 3,
+      "ready": {
+        "backend": "sherpa-onnx-1.13.8-c-api",
+        "event": "ready",
+        "load_seconds": 0.339990456,
+        "memory": {
+          "peak_rss_mib": 48.75390625,
+          "pss_mib": 44.73046875,
+          "rss_mib": 48.75390625
+        },
+        "quiet_gate": {
+          "hangover_ms": 1200,
+          "preroll_ms": 300,
+          "rms": 0.001
+        },
+        "score": 1.0,
+        "threads": 1,
+        "threshold": 0.25
+      },
+      "cases": [
+        {
+          "name": "natural",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 2.074492626,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.0,
+                  1.28,
+                  1.4
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.3
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.06093100000000001,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.886258687,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.51171875,
+              "pss_mib": 50.11328125,
+              "rss_mib": 54.51171875
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/natural.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "quiet-recovery",
+          "expected": [
+            "GO_FORWARD",
+            "GO_FORWARD",
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD",
+            "GO_FORWARD",
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 11.94,
+              "elapsed_seconds": 11.944705375,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.0,
+                  1.28,
+                  1.36
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 10.17
+            },
+            {
+              "audio_seconds": 28.59,
+              "elapsed_seconds": 28.594743002,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.0,
+                  1.28,
+                  1.36
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 26.82
+            },
+            {
+              "audio_seconds": 45.21,
+              "elapsed_seconds": 45.214657627,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  1.0,
+                  1.28,
+                  1.4
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 43.44
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 50.535,
+            "cpu_seconds": 0.6084989999999999,
+            "decoded_samples": 673920,
+            "detections": 3,
+            "elapsed_seconds": 50.535010019,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.5859375,
+              "pss_mib": 50.1875,
+              "rss_mib": 54.5859375
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/quiet-recovery.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 134640,
+            "stream_count": 6
+          }
+        },
+        {
+          "name": "pause-inside-name",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.07,
+              "elapsed_seconds": 2.074399174,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.96,
+                  1.16,
+                  1.24
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.3
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 5.18625,
+            "cpu_seconds": 0.060124000000000066,
+            "decoded_samples": 72480,
+            "detections": 1,
+            "elapsed_seconds": 5.186256479,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.58984375,
+              "pss_mib": 50.19140625,
+              "rss_mib": 54.58984375
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/pause-inside-name.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "low-volume",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 2.25,
+              "elapsed_seconds": 2.253948791,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.52,
+                  0.76,
+                  0.88
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 0.81
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.04154599999999986,
+            "decoded_samples": 51840,
+            "detections": 1,
+            "elapsed_seconds": 4.886258237,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.58984375,
+              "pss_mib": 50.19140625,
+              "rss_mib": 54.58984375
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/low-volume.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 26340,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "soft-onset",
+          "expected": [
+            "GO_FORWARD"
+          ],
+          "actual": [
+            "GO_FORWARD"
+          ],
+          "passed": true,
+          "hits": [
+            {
+              "audio_seconds": 4.65,
+              "elapsed_seconds": 4.654195317,
+              "event": "keyword",
+              "result": {
+                "keyword": "GO_FORWARD",
+                "start_time": 0.0,
+                "timestamps": [
+                  0.52,
+                  0.76,
+                  0.88
+                ],
+                "tokens": [
+                  " GO",
+                  " FOR",
+                  "WARD"
+                ]
+              },
+              "stream_origin_seconds": 3.21
+            }
+          ],
+          "measurement": {
+            "audio_seconds": 7.28625,
+            "cpu_seconds": 0.051329999999999876,
+            "decoded_samples": 59520,
+            "detections": 1,
+            "elapsed_seconds": 7.286261193,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.58984375,
+              "pss_mib": 50.19140625,
+              "rss_mib": 54.58984375
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/soft-onset.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 57060,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "active-speech",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 16.7175,
+            "cpu_seconds": 0.2386759999999999,
+            "decoded_samples": 267480,
+            "detections": 0,
+            "elapsed_seconds": 16.717544576999998,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.58984375,
+              "pss_mib": 50.19140625,
+              "rss_mib": 54.58984375
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/active-speech.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 0,
+            "stream_count": 1
+          }
+        },
+        {
+          "name": "silence",
+          "expected": [],
+          "actual": [],
+          "passed": true,
+          "hits": [],
+          "measurement": {
+            "audio_seconds": 30.0,
+            "cpu_seconds": 0.004485000000000072,
+            "decoded_samples": 0,
+            "detections": 0,
+            "elapsed_seconds": 30.000018231,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.58984375,
+              "pss_mib": 50.19140625,
+              "rss_mib": 54.58984375
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/gate-paced/silence.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 480000,
+            "stream_count": 0
+          }
+        }
+      ],
+      "all_cases_pass": true
+    }
+  ],
+  "comparisons": [
+    {
+      "paced": false,
+      "group": "surrogate",
+      "ungated": [
+        {
+          "name": "natural",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        },
+        {
+          "name": "wake-only",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        },
+        {
+          "name": "quiet-recovery",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "name": "pause-inside-name",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        },
+        {
+          "name": "low-volume",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        },
+        {
+          "name": "uniform-noise",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        },
+        {
+          "name": "command-without-wake",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        },
+        {
+          "name": "reversed-speech",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        },
+        {
+          "name": "unrelated-0",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        },
+        {
+          "name": "unrelated-1",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        },
+        {
+          "name": "soft-onset",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        },
+        {
+          "name": "long-leading-quiet",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        },
+        {
+          "name": "active-speech",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        },
+        {
+          "name": "silence",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        }
+      ],
+      "gated": [
+        {
+          "name": "natural",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        },
+        {
+          "name": "wake-only",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        },
+        {
+          "name": "quiet-recovery",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            -0.0600000000000005,
+            -0.05999999999999872,
+            -0.060000000000002274
+          ]
+        },
+        {
+          "name": "pause-inside-name",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        },
+        {
+          "name": "low-volume",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.18000000000000016
+          ]
+        },
+        {
+          "name": "uniform-noise",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        },
+        {
+          "name": "command-without-wake",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        },
+        {
+          "name": "reversed-speech",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        },
+        {
+          "name": "unrelated-0",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        },
+        {
+          "name": "unrelated-1",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        },
+        {
+          "name": "soft-onset",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        },
+        {
+          "name": "long-leading-quiet",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            -0.11999999999999922
+          ]
+        },
+        {
+          "name": "active-speech",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        },
+        {
+          "name": "silence",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        }
+      ]
+    },
+    {
+      "paced": false,
+      "group": "published",
+      "ungated": [
+        {
+          "name": "published-0",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        },
+        {
+          "name": "published-1",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        }
+      ],
+      "gated": [
+        {
+          "name": "published-0",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            -0.1800000000000006
+          ]
+        },
+        {
+          "name": "published-1",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            -0.03000000000000025
+          ]
+        }
+      ]
+    },
+    {
+      "paced": false,
+      "group": "names",
+      "ungated": [
+        {
+          "name": "names-negative-natural",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        },
+        {
+          "name": "names-negative-published-0",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        },
+        {
+          "name": "names-negative-published-1",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        }
+      ],
+      "gated": [
+        {
+          "name": "names-negative-natural",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        },
+        {
+          "name": "names-negative-published-0",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        },
+        {
+          "name": "names-negative-published-1",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        }
+      ]
+    },
+    {
+      "paced": true,
+      "repeat": 1,
+      "gated": [
+        {
+          "name": "natural",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        },
+        {
+          "name": "quiet-recovery",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            -0.0600000000000005,
+            -0.05999999999999872,
+            -0.060000000000002274
+          ]
+        },
+        {
+          "name": "pause-inside-name",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        },
+        {
+          "name": "low-volume",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.18000000000000016
+          ]
+        },
+        {
+          "name": "soft-onset",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        },
+        {
+          "name": "active-speech",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        },
+        {
+          "name": "silence",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        }
+      ]
+    },
+    {
+      "paced": true,
+      "repeat": 2,
+      "gated": [
+        {
+          "name": "natural",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        },
+        {
+          "name": "quiet-recovery",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            -0.0600000000000005,
+            -0.05999999999999872,
+            -0.060000000000002274
+          ]
+        },
+        {
+          "name": "pause-inside-name",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        },
+        {
+          "name": "low-volume",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.18000000000000016
+          ]
+        },
+        {
+          "name": "soft-onset",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        },
+        {
+          "name": "active-speech",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        },
+        {
+          "name": "silence",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        }
+      ]
+    },
+    {
+      "paced": true,
+      "repeat": 3,
+      "gated": [
+        {
+          "name": "natural",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        },
+        {
+          "name": "quiet-recovery",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            -0.0600000000000005,
+            -0.05999999999999872,
+            -0.060000000000002274
+          ]
+        },
+        {
+          "name": "pause-inside-name",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        },
+        {
+          "name": "low-volume",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.18000000000000016
+          ]
+        },
+        {
+          "name": "soft-onset",
+          "labels_identical": true,
+          "trigger_deltas_seconds": [
+            0.0
+          ]
+        },
+        {
+          "name": "active-speech",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        },
+        {
+          "name": "silence",
+          "labels_identical": true,
+          "trigger_deltas_seconds": []
+        }
+      ]
+    }
+  ],
+  "complete": true,
+  "prior_threshold_failures": {
+    "artifact": "kws-2026-10-26.json",
+    "sha256": "07fe14089a49e8129fb0f47b9995109eaf99e7c7b4335affcb46cfc32ae9bbdd",
+    "threshold_0.5_misses": 9,
+    "threshold_0.75_misses": 12,
+    "full_sweep_pass": false
+  },
+  "production_defaults_changed": false,
+  "full_acoustic_acceptance": false,
+  "windows_acceptance": false,
+  "whole_application_acceptance": false,
+  "summary": {
+    "baseline": {
+      "fresh_workers": 6,
+      "cases": 40,
+      "passed_cases": 40,
+      "expected_wakes": 33,
+      "correct_wakes": 33,
+      "missed_wakes": 0,
+      "extra_triggers": 0,
+      "paced_ready_rss_mib": [
+        48.59765625,
+        48.6171875,
+        48.6328125
+      ],
+      "paced_peak_rss_mib": [
+        54.3046875,
+        53.9140625,
+        54.44140625
+      ],
+      "paced_final_pss_mib": [
+        49.90625,
+        49.515625,
+        50.0390625
+      ],
+      "silence_cpu_percent_one_core": [
+        1.4878600000000002,
+        1.4828133333333333,
+        1.5032399999999997
+      ],
+      "active_speech_cpu_percent_one_core": [
+        1.469005533123972,
+        1.4624973829819057,
+        1.5256707043517264
+      ]
+    },
+    "ungated-current": {
+      "fresh_workers": 3,
+      "cases": 19,
+      "passed_cases": 19,
+      "expected_wakes": 12,
+      "correct_wakes": 12,
+      "missed_wakes": 0,
+      "extra_triggers": 0,
+      "paced_ready_rss_mib": [],
+      "paced_peak_rss_mib": [],
+      "paced_final_pss_mib": [],
+      "silence_cpu_percent_one_core": [],
+      "active_speech_cpu_percent_one_core": []
+    },
+    "gated": {
+      "fresh_workers": 6,
+      "cases": 40,
+      "passed_cases": 40,
+      "expected_wakes": 33,
+      "correct_wakes": 33,
+      "missed_wakes": 0,
+      "extra_triggers": 0,
+      "paced_ready_rss_mib": [
+        47.640625,
+        47.6953125,
+        48.75390625
+      ],
+      "paced_peak_rss_mib": [
+        53.57421875,
+        53.9765625,
+        54.58984375
+      ],
+      "paced_final_pss_mib": [
+        49.17578125,
+        49.5556640625,
+        50.19140625
+      ],
+      "silence_cpu_percent_one_core": [
+        0.014296666666666624,
+        0.013226666666666572,
+        0.014950000000000241
+      ],
+      "active_speech_cpu_percent_one_core": [
+        1.4625572005383587,
+        1.4244773441004936,
+        1.4277015103932997
+      ]
+    }
+  },
+  "gates": {
+    "fixture_labels_pass": true,
+    "ungated_trigger_chunks_unchanged": true,
+    "standby_cpu_at_most_0.1_percent": true,
+    "all_fixture_trigger_times_nonregressing": false,
+    "prior_full_threshold_sweep_pass": false,
+    "enable_by_default": false
+  },
+  "trigger_delta_seconds_range": [
+    -0.1800000000000006,
+    0.18000000000000016
+  ],
+  "candidate_snapshot": {
+    "binary_sha256": "d6b2ddef281e3edc464271f9d01499c07465e7efb3bbb554be1e54504637716f",
+    "source_sha256": {
+      "native/kws-probe/Cargo.toml": "0edf22bce37f6f63f6ab8a202faf9cb5c910e84d31302033c5096cae5b337ca4",
+      "native/kws-probe/Cargo.lock": "15acd1ee12bebc87b023d18a74b426d56a4195cbd214345de75612c1146491da",
+      "native/kws-probe/src/main.rs": "0f0256ca2dcd57c4afdfbc66a55ab0b8675dc7ecb753a9ee84c9b2aacdadc06c",
+      "native/kws-probe/src/gate.rs": "6b0669babfe1ea62346200d33e46413787fdfb2a07f574c627ca07a1c7989000",
+      "native/kws-probe/build.rs": "e7b498f427aebefa2431e913e8d4f6775b71f1b070d3b9c7cc2ddc6dcbf69f7d",
+      "native/kws-probe/shim.c": "3a9436845091f770cd77c61cf3aea920e641212337151da36c5bb57375e91b48",
+      "native/kws-probe/vendor/c-api.h": "2a1b95084be8fd1deb3228fcad2fd3f7f0258b64582f7402281ec174c7b7f4ce"
+    },
+    "scope": "Measured quiet-gate candidate; handoff binary is separate"
+  }
+}

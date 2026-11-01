@@ -126,9 +126,9 @@ impl Denoiser {
             "Audio contains a non-finite sample"
         );
         let frames = 1 + samples.len() / HOP;
-        let total = FFT + (frames - 1) * HOP;
-        let mut output = vec![0.0_f32; total];
-        let mut normalization = vec![0.0_f32; total];
+        // Keep only the returned center crop. Every retained sample receives
+        // two adjacent windows, so normalization needs one hop, not ten seconds.
+        let mut output = vec![0.0_f32; (frames - 1) * HOP];
         let mut spectrum = vec![Complex32::default(); FFT];
         let mut input = vec![0.0_f32; BINS * 2];
         let mut scratch = vec![
@@ -193,20 +193,10 @@ impl Denoiser {
             states = result;
             self.synthesis
                 .process_with_scratch(&mut spectrum, &mut scratch);
-            overlap_add(
-                &spectrum,
-                &self.window,
-                frame * HOP,
-                &mut output,
-                &mut normalization,
-            );
+            overlap_add(&spectrum, &self.window, frame * HOP, &mut output);
         }
-        for (sample, divisor) in output.iter_mut().zip(normalization) {
-            if divisor != 0.0 {
-                *sample /= divisor;
-            }
-        }
-        Ok(output[HOP..total - HOP].to_vec())
+        normalize(&mut output, &self.window);
+        Ok(output)
     }
 }
 
@@ -224,16 +214,22 @@ fn reflect(mut index: isize, length: usize) -> usize {
     }
     index as usize
 }
-fn overlap_add(
-    spectrum: &[Complex32],
-    window: &[f32],
-    offset: usize,
-    output: &mut [f32],
-    normalization: &mut [f32],
-) {
-    for i in 0..FFT {
-        output[offset + i] += spectrum[i].re * (1.0 / FFT as f32) * window[i];
-        normalization[offset + i] += window[i] * window[i];
+fn overlap_add(spectrum: &[Complex32], window: &[f32], offset: usize, output: &mut [f32]) {
+    let start = HOP.saturating_sub(offset);
+    let end = FFT.min((HOP + output.len()).saturating_sub(offset));
+    for i in start..end {
+        output[offset + i - HOP] += spectrum[i].re * (1.0 / FFT as f32) * window[i];
+    }
+}
+fn normalize(output: &mut [f32], window: &[f32]) {
+    let divisors: [f32; HOP] = std::array::from_fn(|i| {
+        // Match the original overlap-add accumulation order exactly.
+        window[i + HOP] * window[i + HOP] + window[i] * window[i]
+    });
+    for (i, sample) in output.iter_mut().enumerate() {
+        if divisors[i % HOP] != 0.0 {
+            *sample /= divisors[i % HOP];
+        }
     }
 }
 
@@ -255,13 +251,11 @@ mod tests {
     fn spectral_round_trip_preserves_signal_and_reference_length() {
         let input: Vec<f32> = (0..1234).map(|i| (i as f32 * 0.031).sin() * 0.2).collect();
         let frames = 1 + input.len() / HOP;
-        let total = FFT + (frames - 1) * HOP;
         let window = sqrt_hann();
         let mut planner = FftPlanner::new();
         let forward = planner.plan_fft_forward(FFT);
         let inverse = planner.plan_fft_inverse(FFT);
-        let mut output = vec![0.0; total];
-        let mut norm = vec![0.0; total];
+        let mut output = vec![0.0; (frames - 1) * HOP];
         for frame in 0..frames {
             let mut spectrum: Vec<_> = (0..FFT)
                 .map(|i| {
@@ -274,15 +268,44 @@ mod tests {
                 .collect();
             forward.process(&mut spectrum);
             inverse.process(&mut spectrum);
-            overlap_add(&spectrum, &window, frame * HOP, &mut output, &mut norm);
+            overlap_add(&spectrum, &window, frame * HOP, &mut output);
         }
-        for (sample, divisor) in output.iter_mut().zip(norm) {
-            if divisor != 0.0 {
-                *sample /= divisor;
-            }
-        }
-        let result = &output[HOP..total - HOP];
+        normalize(&mut output, &window);
+        let result = &output;
         assert_eq!(result.len(), input.len() / HOP * HOP);
         assert!(result.iter().zip(input).all(|(a, b)| (a - b).abs() < 1e-6));
+    }
+    #[test]
+    fn cropped_overlap_and_periodic_divisor_match_full_reference_bits() {
+        let window = sqrt_hann();
+        for frames in [2, 3, 5, 625, 626] {
+            let total = FFT + (frames - 1) * HOP;
+            let mut legacy = vec![0.0_f32; total];
+            let mut divisors = vec![0.0_f32; total];
+            let mut cropped = vec![0.0_f32; (frames - 1) * HOP];
+            for frame in 0..frames {
+                let spectrum: Vec<_> = (0..FFT)
+                    .map(|i| Complex32::new(((frame * FFT + i) as f32 * 0.017).sin(), 0.0))
+                    .collect();
+                for i in 0..FFT {
+                    legacy[frame * HOP + i] += spectrum[i].re * (1.0 / FFT as f32) * window[i];
+                    divisors[frame * HOP + i] += window[i] * window[i];
+                }
+                overlap_add(&spectrum, &window, frame * HOP, &mut cropped);
+            }
+            for (sample, divisor) in legacy.iter_mut().zip(divisors) {
+                if divisor != 0.0 {
+                    *sample /= divisor;
+                }
+            }
+            normalize(&mut cropped, &window);
+            assert!(
+                cropped
+                    .iter()
+                    .zip(&legacy[HOP..total - HOP])
+                    .all(|(a, b)| a.to_bits() == b.to_bits()),
+                "frames={frames}"
+            );
+        }
     }
 }

@@ -53,7 +53,7 @@ install_packages() {
     # Ask pacman what is missing, so an existing PulseAudio or rustup install
     # satisfies the audio server and Cargo requirements.
     local packages=(git python python-gobject gtk4 python-setuptools pipewire wireplumber libpulse
-                    ffmpeg wf-recorder gst-plugins-good ddcutil base-devel cmake ninja pulse-native-provider)
+                    ffmpeg wf-recorder gst-plugins-good base-devel cmake ninja pulse-native-provider)
     [ "$native" = 0 ] || packages+=(cargo)
     [ "$gpu_recorder" = 0 ] || packages+=(gpu-screen-recorder)
     local missing i tty=/dev/stdin

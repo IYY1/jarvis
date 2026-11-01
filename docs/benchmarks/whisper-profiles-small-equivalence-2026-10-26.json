@@ -1,0 +1,120 @@
+{
+  "scope": "byte equality of saved mel, encoder and sampled decoder-logit tensors; excludes performance measurement",
+  "fixture_sha256": "f15c60ec54059d8b66e410d0064945a0b0a04ea56e1ddca1958e493c0cf70e71",
+  "before_binary_sha256": "296abf4e3c5c3c48930c9fa7045135a5c1a6a4a3ed0b9b096bcd121dcfb187dd",
+  "after_binary_sha256": "8915a1cfb58d7faec35f4409dd7cb1da17b55191f38f511129caf53e06c087b1",
+  "cases": [
+    {
+      "case": "clean",
+      "text": "Go forward 10 meters",
+      "tensor_count": 8,
+      "tensors_sha256": {
+        "step-004.f32": "3081d1a2861e022bf384b495423237f74814746ca9d5dc2e5acabb8e4c09ebc7",
+        "step-003.f32": "0f61a1f20a0539179fae04fee348c2fc6cb8908da857708ba067755c94ba33bc",
+        "step-002.f32": "7933a93c9ed25f2f958f51b6db7c11315c2b236bc925fd7a90632c48d9d22aaf",
+        "step-001.f32": "88e06b1ac8d2bc0873aea63df000f528ee77b895b22468060044375b064c45c7",
+        "step-000.f32": "028e2ef4cf2ba775bb070f1292879f538a08e6b68a9063d853037484489aea89",
+        "cross-v.f32": "fc3dc5a5382aa1e160286133d7798cb29599d828d6d9fd9c462e0a92f4187b44",
+        "cross-k.f32": "31379904409bb8a3412cd82efe8832ef7e10de60b4ec685b93d914f84f204be2",
+        "mel.f32": "daf1a9b66eb90a663a48dca6c85715596d953efd354f8134a494b3c4ae3e43e4"
+      },
+      "identical": true
+    },
+    {
+      "case": "quiet",
+      "text": "Go forward 10 meters.",
+      "tensor_count": 9,
+      "tensors_sha256": {
+        "step-005.f32": "2b11aaa464b0522a3d0aef35bb47f5894954359326d8cfefc0d47e5f09ab6956",
+        "step-004.f32": "34ab3e2107180591997ea314e5f6c552793449dfef3cb39b876038cfb40baade",
+        "step-003.f32": "d1e23c0f2d11a845de325482e8686eb0c918a3dc53d30695eab3b108a5dc15fb",
+        "step-002.f32": "485571100041d68c0f7419d21c3e573d648e9b27c96a08d294a03bb780843010",
+        "step-001.f32": "f7884f65c5228f1c7fbbb4837f539b142e01c191514ee6b1dc4f1a4caf7efda4",
+        "step-000.f32": "efe278a4b837496181ec52bfdfdb8bbfd17df26ada1028bb53e8dc992c88df13",
+        "cross-v.f32": "29c5cdb0aac9080b163f9990b13c6ac72227b901c15cd26208a6831e61ec9141",
+        "cross-k.f32": "4518c57960db83fe92ca3646c258ff74b6bd20e464fc8fc1f465441c408fa164",
+        "mel.f32": "ec946503a3ab7567eecf5ca5c9bee165f511cdd35acac719324ebc2bae774f1a"
+      },
+      "identical": true
+    },
+    {
+      "case": "noise",
+      "text": "Go forward 10 meters.",
+      "tensor_count": 9,
+      "tensors_sha256": {
+        "step-005.f32": "32fc8ec845d363e86d9ddffc7ba54c89d27827b788dd5ea922591ae3dc73169c",
+        "step-004.f32": "acaa196dfce1190a3d9edacb33fe7e2fc052850d1cd6f73517717867f58e5276",
+        "step-003.f32": "b495f71e9adeebb4a010c4bc84163f24650436187013eeeacc7e35e393efcf19",
+        "step-002.f32": "7227c35d29dbf44f7d6ad613aa92c84ec3a19e3947d685c304dc53848d174080",
+        "step-001.f32": "eeb7536127e5f9fb9193fbb048fb318859dc73fea1b872493d7e905985c8ba4e",
+        "step-000.f32": "9477ca2a7b412328ae166f87bc7df514edf4b344d68056171d214697290cf642",
+        "cross-v.f32": "7da1931f58892c90ad03c78d1ace090c85c3b684065fc1620e7345a4bc147b77",
+        "cross-k.f32": "6f3cfefff62588b297842229ed601258df38a2ecd4578a639477b2916aa4a3a0",
+        "mel.f32": "b6fb8570286313bddc48c719c9371060c67a708ada6e4c33ffd25b6b5ee65ba2"
+      },
+      "identical": true
+    },
+    {
+      "case": "long",
+      "text": "Go forward 10 meters.",
+      "tensor_count": 9,
+      "tensors_sha256": {
+        "step-005.f32": "66f8965718fc17ee7657579f644624dd92756b5053f2c383bffb69895ee4d7f7",
+        "step-004.f32": "b691b6edf17f050146dd6d46a5a16a38a731749b446b5ebbd7bfc1d4d2647ce1",
+        "step-003.f32": "2c3cc3da990bc167e31b221ac86b18041f9f89b03a6ed81227451c24663ad4a7",
+        "step-002.f32": "7c8c49e4f55f4b5c3768b1cd30173526dfabe87519c2347d339820c4df910954",
+        "step-001.f32": "9701df719ea1d07990c602639a6c28d2ae181b5f5ce5404e4128e809b232acd5",
+        "step-000.f32": "383ea61f544fa1e5bd66255bc4c2fbddd918e9e25a24e6db3e6a28015656fb34",
+        "cross-v.f32": "9cde9ac05a4783bb1c8696afe4f94c04d2358b526c426d498835d7137e5ec951",
+        "cross-k.f32": "c65fc6799fbc2891558dc8d0f5ebb1338b560c008464470faec805e621f150cd",
+        "mel.f32": "2f69c45a891f6af93566f484dcbde040c3c03fe903accfcb67ddd6ac950d2596"
+      },
+      "identical": true
+    },
+    {
+      "case": "silence",
+      "text": "you",
+      "tensor_count": 5,
+      "tensors_sha256": {
+        "step-001.f32": "4983231c18832f9f52597bcd49f934284bf9686740febde6e8e112e539ea5ec6",
+        "step-000.f32": "a2429ed7a1d7f8dbfa602405138634cf639fcb6dac3e9089965fa0a5703f141b",
+        "cross-v.f32": "0eb0420df01e0df6271cabf033c69175ee5660f3c2ac9692c23efbbf61b2fb49",
+        "cross-k.f32": "f1c22b3a8fa6d9b05720b5082c67b4dbcbfa3380b0fb36c967f0d0230eef8d0b",
+        "mel.f32": "bad46f47f56daf5830625f2e54711c93ee21730783c5f0aee50527465123fc78"
+      },
+      "identical": true
+    },
+    {
+      "case": "short",
+      "text": "Go forward.",
+      "tensor_count": 7,
+      "tensors_sha256": {
+        "step-003.f32": "6dbf1715714a5d311bc7aebc50d07331122180d3d3bd2d5c5df527f352922ba8",
+        "step-002.f32": "a003449452022fafe34dbc87ec68f5456eafa9421bbcfc0871f94e6367e62f8a",
+        "step-001.f32": "f24ce9a788697d3abda253ac69aec14a9f6c0bb55be6604f615bfd722cca45cf",
+        "step-000.f32": "18eaf4ed2c3884bce328d8440306156c9c121974f3566126170f42a0c4651597",
+        "cross-v.f32": "1fccb1c709ea0b0d1cb96f9b5101f3314ad121eb93bfcbac6c81f6a1d0a497d3",
+        "cross-k.f32": "0cacb4cfc6054775e7649acde32f792017e644d4299a4bf5c1ee841707bb6e4e",
+        "mel.f32": "3bb0cbfbfddf3e535d6200923f77cb84257d343b92e558eefe55ebf1fa412b2c"
+      },
+      "identical": true
+    },
+    {
+      "case": "slower",
+      "text": "Go forward 10 meters",
+      "tensor_count": 8,
+      "tensors_sha256": {
+        "step-004.f32": "74ba4011f6aa6a18505e3ec95f35b817a62d499df3c666652543dff6b1613c22",
+        "step-003.f32": "13d201054832214b4c326a97ef503a15ddfbfb991c5cf3749ccd2da495dc31c3",
+        "step-002.f32": "34088b31f956084f45a4695d44dd5e849ec785b492e9620ebbc560fdfb6a8a9d",
+        "step-001.f32": "6cb5598fcec128827d9a966aa807aa65bd21069e4785c0acf935add696174763",
+        "step-000.f32": "a0c8ac0b9a60da857e8efdeb46136ff25c50e23e1deb8a2093a0cd1304bda1aa",
+        "cross-v.f32": "ce7d1654b32b881a0730b7deda2bb0de458c4376c30ca93ff2ee83181736cf2b",
+        "cross-k.f32": "95588a1b41c79e50e1f68f8e4cb18fa7255da3e6970eaa4709a6943e95308b14",
+        "mel.f32": "a785f6fdbf09cfdf095428046ba2fa66510f71b6c5df79e9426532e00599cbbc"
+      },
+      "identical": true
+    }
+  ],
+  "all_identical": true
+}

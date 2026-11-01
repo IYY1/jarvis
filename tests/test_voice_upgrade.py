@@ -159,6 +159,38 @@ class FakeVoskEngineTests(unittest.TestCase):
         self.engine.feed(self.loud)                # speech starts: pre-roll is decoded too
         self.assertEqual(self.engine._wake.fed, 960 * 11)
 
+    def test_wake_history_is_discarded_once_at_the_quiet_boundary(self):
+        from murmur.vosk_engine import HANGOVER_FRAMES
+        self.engine.begin_wake()
+        self.engine.feed(self.loud)
+        with patch.object(self.engine._wake, "Reset") as reset, \
+                patch.object(self.engine._wake, "FinalResult") as final:
+            for _ in range(HANGOVER_FRAMES - 1):
+                self.assertIsNone(self.engine.feed(bytes(960), quiet=True))
+            reset.assert_not_called()
+            self.assertIsNone(self.engine.feed(bytes(960), quiet=True))
+            reset.assert_called_once_with()
+            # Idle silence stays gated and does not repeatedly reset a decoder.
+            for _ in range(500):
+                self.assertIsNone(self.engine.feed(bytes(960), quiet=True))
+            reset.assert_called_once_with()
+            final.assert_not_called()
+        self.assertEqual(self.engine._mode, "wake")
+        self.assertEqual(self.engine._utterance_bytes, 0)
+        self.assertEqual(self.engine._wake_audio, b"")
+        self.assertEqual(len(self.engine._preroll), 10)
+
+    def test_quiet_boundary_does_not_discard_an_armed_command(self):
+        from murmur.vosk_engine import HANGOVER_FRAMES
+        self.engine.begin_command()
+        self.engine.feed(self.loud)
+        with patch.object(self.engine._command, "Reset") as reset:
+            for _ in range(HANGOVER_FRAMES + 10):
+                self.assertIsNone(self.engine.feed(bytes(960), quiet=True))
+            reset.assert_not_called()
+        self.assertEqual(self.engine._mode, "command")
+        self.assertGreater(len(self.engine._command_audio), 0)
+
     def test_wake_with_misheard_greeting_and_one_breath_command(self):
         self.engine.begin_wake()
         FakeRecognizer.script = [("grammar", words("the jarvis open firefox"))]
@@ -260,6 +292,33 @@ class RealVoskTests(unittest.TestCase):
         wake = next(r for f in self.frames(pcm, engine) if (r := engine.feed(f)))
         self.assertEqual(wake.kind, "wake")
         self.assertEqual(engine.after_wake().text, "ten meters")
+
+    @unittest.skipUnless(FIXTURE, "supply the public fixture")
+    def test_repeated_background_quiet_wake_without_room_noise(self):
+        import array
+        from murmur.vosk_engine import VoskEngine
+        from murmur.voice import rms
+        pcm = Path(FIXTURE).read_bytes()
+        pcm += bytes((-len(pcm)) % 960)
+        reversed_samples = array.array("h", pcm)
+        reversed_samples.reverse()
+        sequence = pcm + bytes(960) * 50 + reversed_samples.tobytes() + bytes(960) * 117
+        engine = VoskEngine(Parser({"ten meters": "start recording"}).grammar(["firefox", "steam"]),
+                            "go forward", .5, MODEL)
+        self.addCleanup(engine.close)
+        engine.begin_wake()
+        events = []
+        for _ in range(3):
+            for offset in range(0, len(sequence), 960):
+                frame = sequence[offset:offset + 960]
+                if result := engine.feed(frame, quiet=rms(frame) < .005):
+                    events.append((result.kind, result.text))
+                    self.assertEqual(result.kind, "wake")
+                    follow = engine.after_wake()
+                    self.assertIsNotNone(follow)
+                    events.append((follow.kind, follow.text))
+                    engine.begin_wake()
+        self.assertEqual(events, [("wake", "go forward"), ("command", "ten meters")] * 3)
 
 
 class HyprlandLuaConfigTests(unittest.TestCase):

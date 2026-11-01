@@ -24,6 +24,7 @@ pub struct OnDemand<T> {
     slot: Slot<T>,
     trim_every: Duration,
     trimmed: Instant,
+    loads: u64,
 }
 
 impl<T: Send + 'static> OnDemand<T> {
@@ -35,6 +36,7 @@ impl<T: Send + 'static> OnDemand<T> {
             slot: Slot::Empty,
             trim_every: TRIM_EVERY,
             trimmed: Instant::now(),
+            loads: 0,
         };
         if idle.is_none() {
             value.get()?;
@@ -54,6 +56,7 @@ impl<T: Send + 'static> OnDemand<T> {
                     .spawn(move || load())
                 {
                     self.slot = Slot::Loading(handle);
+                    self.loads += 1;
                 }
             }
             Slot::Loading(_) => {}
@@ -64,6 +67,7 @@ impl<T: Send + 'static> OnDemand<T> {
     pub fn get(&mut self) -> Result<&T> {
         self.collect(true)?;
         if matches!(self.slot, Slot::Empty) {
+            self.loads += 1;
             self.slot = Slot::Ready((self.load)()?, Instant::now());
         }
         if let Slot::Ready(value, used) = &mut self.slot {
@@ -71,6 +75,9 @@ impl<T: Send + 'static> OnDemand<T> {
             return Ok(value);
         }
         Err("Whisper did not load".into())
+    }
+    pub fn load_count(&self) -> u64 {
+        self.loads
     }
     /// Collects a finished background load (reporting its error) and releases
     /// a value unused for the idle limit unless `busy`. True when the caller
@@ -135,6 +142,7 @@ mod tests {
         let (load, loads) = counting(Duration::ZERO);
         let mut value = OnDemand::new(load, None).unwrap();
         assert_eq!(loads.load(Ordering::SeqCst), 1);
+        assert_eq!(value.load_count(), 1);
         assert!(!value.maintain(false).unwrap());
         assert_eq!(*value.get().unwrap(), 1);
         assert_eq!(loads.load(Ordering::SeqCst), 1);
@@ -159,6 +167,7 @@ mod tests {
         assert!(value.maintain(false).unwrap());
         assert!(!value.loaded());
         assert_eq!(*value.get().unwrap(), 2);
+        assert_eq!(value.load_count(), 2);
     }
 
     #[test]

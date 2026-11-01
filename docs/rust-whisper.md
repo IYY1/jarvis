@@ -20,13 +20,20 @@ loads the existing native Vosk library. The service and UI remain Python.
 
 ## Supported behavior
 
-This version supports the installed sherpa Whisper **small.en int8 export**,
+The default path supports the installed sherpa Whisper **small.en int8 export**,
 16 kHz mono commands of 0.2–10 seconds, English transcription, and greedy
 search. It validates model metadata, graph wiring, token IDs and size limits.
 The compatibility signature identifies this export's wiring; it is not a
 cryptographic integrity check. Model installation retains its pinned checksums.
 Other Whisper exports, languages, timestamps and GPU inference require separate
 implementation and validation.
+
+An explicit [smaller-model experiment](whisper-model-experiments.md) now also
+loads allowlisted English tiny.en/base.en int8 exports through the same Rust
+kernels. Standalone use requires `--model-name`; service defaults and the model
+catalog remain small.en. Tiny passed the available transcript comparison;
+base has an unresolved reference discrepancy and remains unvalidated. This
+does not authorize a model change or extend support to arbitrary exports.
 
 The front end reproduces the current recognizer's frame placement, symmetric
 boundary padding, 400-point periodic Hann window, 160-sample shift, 80 Slaney

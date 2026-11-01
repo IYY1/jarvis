@@ -1,7 +1,8 @@
-"""Owned FFmpeg recording and a bounded, encoded-in-RAM Windows replay buffer."""
+"""Owned FFmpeg recording with capped RAM or opt-in Rust disk replay storage."""
 
 from __future__ import annotations
 from collections import deque
+from contextlib import contextmanager
 from datetime import datetime
 import json
 import os
@@ -78,6 +79,24 @@ class ReplayBuffer:
                 raise RecorderError("Replay is warming up; wait for one full second")
             # Immutable bytes are shared, not duplicated while a clip is saved.
             return tuple(self.segments)
+
+    @contextmanager
+    def files(self, *, after=0, timeout=0):
+        blocks = self.snapshot(after=after, timeout=timeout)
+        # The RAM privacy promise permits temporary files only after Save.
+        with tempfile.TemporaryDirectory(prefix=".replay-save-") as directory:
+            if os.name == "nt":
+                from .system import private_directory
+                private_directory(Path(directory))
+            paths = []
+            for index, block in enumerate(blocks):
+                path = Path(directory) / f"segment-{index:04d}.mkv"
+                path.write_bytes(block)
+                paths.append(path)
+            yield paths
+
+    def close(self):
+        pass
 
 
 class _Capture:
@@ -187,7 +206,12 @@ class _Capture:
                 if self.replay:
                     from .pipes import SegmentReader
 
-                    self._buffer = ReplayBuffer(self.config["replay"]["seconds"])
+                    replay = self.config["replay"]
+                    if replay["storage"] == "disk":
+                        from ..replay_store import DiskReplayBuffer
+                        self._buffer = DiskReplayBuffer(replay["seconds"], replay["max_mb"] * 1024**2, replay["buffer_dir"])
+                    else:
+                        self._buffer = ReplayBuffer(replay["seconds"], replay["max_mb"] * 1024**2)
                     self._segments = SegmentReader(
                         prefix + "-", self._buffer.append, self._abort
                     )
@@ -233,7 +257,8 @@ class _Capture:
                 self._done.clear()
                 self._set(
                     "on" if self.replay else "recording",
-                    f"{'Replay' if self.replay else 'Recorder'} running · {self._codec.upper()} · {self._color.upper()} · {family}",
+                    f"{'Replay' if self.replay else 'Recorder'} running · {self._codec.upper()} · {self._color.upper()} · {family}"
+                    + (f" · {self.config['replay']['storage']} · {self.config['replay']['max_mb']} MiB budget" if self.replay else ""),
                     partial,
                 )
                 threading.Thread(
@@ -294,7 +319,7 @@ class _Capture:
                     f"Capture stopped (exit {process.returncode}). {detail}"
                 )
             if self.replay:
-                self._set("off", "Replay off; RAM buffer released")
+                self._set("off", "Replay off; buffer released")
             else:
                 verify_video(partial, color=self._color, codec=self._codec)
                 with partial.open("r+b") as f:
@@ -335,7 +360,9 @@ class _Capture:
             if self._audio.stderr:
                 self._audio.stderr.close()
             self._audio = None
-        self._buffer = None
+        if self._buffer:
+            self._buffer.close()
+            self._buffer = None
 
     def stop(self, timeout=15):
         with self._lock:
@@ -376,7 +403,7 @@ class Replay(_Capture):
     def save(self):
         if not self._saving.acquire(blocking=False):
             raise RecorderError("A replay is already being saved")
-        folder = None
+        partial = None
         try:
             with self._lock:
                 if self._process is None or self._buffer is None:
@@ -389,7 +416,6 @@ class Replay(_Capture):
                 )
             # Wait for the current independent segment so the requested moment
             # is included. This may add up to one second of later video.
-            blocks = buffer.snapshot(after=time.monotonic(), timeout=2)
             tag = (
                 datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
                 + "_"
@@ -397,14 +423,12 @@ class Replay(_Capture):
             )
             partial = folder / f".Murmur_replay_{tag}.part.mkv"
             final = folder / f"Replay_{tag}.mkv"
-            with tempfile.TemporaryDirectory(
-                prefix=".replay-save-", dir=folder
-            ) as directory:
-                root = Path(directory)
+            with buffer.files(after=time.monotonic(), timeout=2) as paths:
+                # The listing sits beside the segments. Use simple relative
+                # names so FFmpeg's safe concat mode accepts paths on Windows.
+                root = paths[0].parent
                 lines = []
-                for index, block in enumerate(blocks):
-                    path = root / f"segment-{index:04d}.mkv"
-                    path.write_bytes(block)
+                for path in paths:
                     lines.append(f"file '{path.name}'")
                 listing = root / "segments.txt"
                 listing.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -421,7 +445,7 @@ class Replay(_Capture):
                         "-safe",
                         "1",
                         "-i",
-                        str(listing),
+                        listing.name,
                         "-map",
                         "0",
                         "-c",
@@ -432,6 +456,7 @@ class Replay(_Capture):
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.PIPE,
                     timeout=45,
+                    cwd=root,
                     **child_options(),
                 )
                 if result.returncode:
@@ -443,17 +468,22 @@ class Replay(_Capture):
             with partial.open("r+b") as f:
                 os.fsync(f.fileno())
             os.rename(partial, final)
-            self._set(
-                "on" if self._process is not None and not self._requested else "off",
-                f"Saved replay: {final.name} · {len(blocks)} seconds retained (256 MiB retained-video RAM cap)",
-                final,
-            )
+            if self._error:
+                self._set("error", f"{self._error} Clip saved: {final.name}", final)
+            else:
+                self._set(
+                    "on" if self._process is not None and not self._requested else "off",
+                    f"Saved replay: {final.name} · {len(paths)} seconds retained ({self.config['replay']['max_mb']} MiB {self.config['replay']['storage']} budget)",
+                    final,
+                )
             return self.status()
         except (OSError, subprocess.TimeoutExpired, RuntimeError) as exc:
+            retained = partial if partial and partial.is_file() else self._status.get("file")
+            detail = f" Partial video retained at {retained}." if retained == partial and partial else ""
             self._set(
-                "on" if self._process is not None else "error",
-                str(exc),
-                self._status.get("file"),
+                "on" if self._process is not None and not self._error else "error",
+                str(exc) + detail,
+                retained,
             )
             raise RecorderError(str(exc)) from exc
         finally:

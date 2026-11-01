@@ -7,43 +7,9 @@ from unittest.mock import MagicMock, patch
 
 from murmur import client, config
 from murmur.apps import App
-from murmur.commands import CommandError, Intent, Parser
 from murmur.hyprland import Hyprland
-from murmur.phrases import number
 from murmur.recorder import RecorderError
 from murmur.replay import Replay
-
-
-class ExactBrightnessTests(unittest.TestCase):
-    def test_every_percentage_and_wording_resolves_to_the_exact_monitor(self):
-        parser = Parser.from_config(config.validate({"brightness": {
-            "monitors": {"screen-1": {"name": "screen one", "aliases": ["primary"]},
-                         "screen-2": {"name": "screen", "aliases": []}},
-            "default": "screen-1"}}))
-        for name, identity in [("screen one", "screen-1"), ("primary", "screen-1"),
-                               ("main", "screen-1"), ("screen", "screen-2")]:
-            for n in range(101):
-                for value in (str(n), number(n)):
-                    for form in (f"set {name} brightness to {value}",
-                                 f"brighten the {name} to {value}", f"dim {name} to {value}"):
-                        for text in (form, "could you " + form + " percent please"):
-                            with self.subTest(text=text):
-                                self.assertEqual(parser.parse(text), Intent("brightness_set", {
-                                    "monitor": identity, "percent": n}))
-        self.assertEqual(parser.parse("set brightness to 100").target["percent"], 100)
-        self.assertEqual(parser.parse("dim"), Intent("brightness_down", {"monitor": "screen-1"}))
-
-    def test_partial_numbers_and_extra_words_never_become_percentages(self):
-        parser = Parser.from_config(config.validate({"brightness": {
-            "monitors": {"screen-1": {"name": "screen", "aliases": []}}}}))
-        for value in ("", "one hundred one", "twenty zero", "two one", "zero hundred",
-                      "twenty one one", "one hundred zero", "sixty seven percent percent",
-                      "101", "-1", "+67", "6.7", "67 tomorrow"):
-            with self.subTest(value=value), self.assertRaises(CommandError):
-                parser.parse("set screen brightness to " + value)
-        for phrase in ("dim", "brighten", "set brightness to 67", "dim unknown", "dim the"):
-            with self.subTest(phrase=phrase), self.assertRaises(CommandError):
-                parser.parse(phrase)
 
 
 class SettingsOwnershipTests(unittest.TestCase):

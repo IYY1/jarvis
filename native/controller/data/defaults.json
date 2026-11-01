@@ -26,11 +26,6 @@
   "commands": {},
   "app_prefixes": {},
   "startup": false,
-  "brightness": {
-    "monitors": {},
-    "default": "",
-    "step": 10
-  },
   "recording": {
     "output_dir": "~/Videos/Murmur",
     "monitor": "",
@@ -55,6 +50,9 @@
     "autostart": false,
     "game_audio": true,
     "microphone": true,
-    "sound": true
+    "sound": true,
+    "storage": "ram",
+    "max_mb": 256,
+    "buffer_dir": ""
   }
 }

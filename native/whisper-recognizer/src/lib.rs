@@ -1,35 +1,33 @@
-//! Whisper small.en inference with Rust feature extraction and tract kernels.
+//! English Whisper inference with Rust feature extraction and tract kernels.
 //! ONNX supplies unchanged int8/f32 weights; no foreign inference runtime.
 mod embedding;
 mod features;
 mod graph;
 mod model;
+mod profile;
 mod quantize;
 mod scale;
-use base64::{engine::general_purpose::STANDARD, Engine};
+mod tokens;
 use embedding::Embedding;
 use features::Features;
-use std::{
-    collections::{BTreeMap, HashMap},
-    path::Path,
-    sync::Arc,
-};
+use profile::Profile;
+use std::{collections::BTreeMap, path::Path, sync::Arc};
+use tokens::TokenTable;
 use tract_linalg::multithread::Executor;
 use tract_onnx::prelude::*;
 use tract_onnx::tract_core::{
     internal::{ensure, format_err},
     runtime::RunOptions,
 };
-const STATE: usize = 768;
-const LAYERS: usize = 12;
 const VOCAB: usize = 51864;
 pub struct Recognizer {
+    profile: Profile,
     encoder: Arc<TypedRunnableModel>,
     blocks: Vec<Arc<TypedRunnableModel>>,
     norm: Arc<TypedRunnableModel>,
     embedding: Embedding,
     positions: Tensor,
-    tokens: HashMap<usize, Vec<u8>>,
+    tokens: TokenTable,
     pool: Arc<rayon::ThreadPool>,
     features: Features,
 }
@@ -72,32 +70,7 @@ impl Recognizer {
         let loader = tract_onnx::onnx();
         // Compile the encoder before adding resident decoder weights.
         let (mut p, _) = model::load(&encoder, 128 * 1024 * 1024, false)?;
-        let meta: HashMap<_, _> = p
-            .metadata_props
-            .iter()
-            .map(|p| (p.key.as_str(), p.value.as_str()))
-            .collect();
-        for (key, val) in [
-            ("model_type", "whisper-small.en"),
-            ("version", "1"),
-            ("n_mels", "80"),
-            ("n_audio_state", "768"),
-            ("n_audio_head", "12"),
-            ("n_audio_layer", "12"),
-            ("n_text_layer", "12"),
-            ("n_text_state", "768"),
-            ("n_text_ctx", "448"),
-            ("n_vocab", "51864"),
-            ("sot_sequence", "50257"),
-            ("eot", "50256"),
-            ("no_timestamps", "50362"),
-            ("is_multilingual", "0"),
-        ] {
-            ensure!(
-                meta.get(key).copied() == Some(val),
-                "Unsupported Whisper metadata {key}"
-            );
-        }
+        let profile = Profile::from_metadata(&p.metadata_props)?;
         ensure!(
             p.graph.as_ref().is_some_and(|g| g.input.len() == 1
                 && g.input[0].name == "mel"
@@ -107,8 +80,8 @@ impl Recognizer {
                     .eq(["n_layer_cross_k", "n_layer_cross_v"])),
             "Unexpected encoder interface"
         );
-        graph::check_export(p.graph.as_ref().unwrap(), 0x8739_0418_f7ca_a917)?;
-        graph::split_encoder_outputs(&mut p)?;
+        graph::check_export(p.graph.as_ref().unwrap(), profile.encoder_wiring)?;
+        graph::split_encoder_outputs(&mut p, profile.layers)?;
         graph::clear_shapes(&mut p)?;
         let parsed = loader.parse(&p, Some(encoder_dir))?;
         ensure!(
@@ -127,7 +100,7 @@ impl Recognizer {
             .graph
             .as_ref()
             .ok_or_else(|| format_err!("Missing decoder graph"))?;
-        graph::check_export(g, 0xcd61_f134_021f_2a7b)?;
+        graph::check_export(g, profile.decoder_wiring)?;
         ensure!(
             g.input.iter().map(|v| v.name.as_str()).eq([
                 "tokens",
@@ -149,35 +122,27 @@ impl Recognizer {
         };
         let positions = tensor("textDecoder.positional_embedding")?;
         ensure!(
-            embedding.shape() == [VOCAB, STATE] && positions.shape() == [448, STATE],
+            embedding.shape() == [VOCAB, profile.state]
+                && positions.shape() == [448, profile.state],
             "Unexpected embedding shape"
         );
-        let blocks = (0..LAYERS)
-            .map(|i| plan(graph::Builder::new(g, decoder_dir).block(i)?, &pool))
+        let blocks = (0..profile.layers)
+            .map(|i| {
+                plan(
+                    graph::Builder::new(g, decoder_dir, profile).block(i)?,
+                    &pool,
+                )
+            })
             .collect::<TractResult<Vec<_>>>()?;
-        let norm = plan(graph::Builder::new(g, decoder_dir).final_norm()?, &pool)?;
+        let norm = plan(
+            graph::Builder::new(g, decoder_dir, profile).final_norm()?,
+            &pool,
+        )?;
         drop(p);
 
-        ensure!(
-            std::fs::metadata(tokens.as_ref())?.len() <= 2 * 1024 * 1024,
-            "Token table exceeds 2 MiB"
-        );
-        let mut table = HashMap::new();
-        for line in std::fs::read_to_string(tokens)?.lines() {
-            let (bytes, id) = line
-                .split_once(' ')
-                .ok_or_else(|| format_err!("Invalid token line"))?;
-            let id: usize = id.parse()?;
-            ensure!(
-                id < VOCAB && table.insert(id, STANDARD.decode(bytes)?).is_none(),
-                "Invalid token ID"
-            );
-        }
-        ensure!(
-            table.len() == 50256 && (0..50256).all(|i| table.contains_key(&i)),
-            "Unexpected English token table"
-        );
+        let table = TokenTable::load(tokens.as_ref())?;
         Ok(Self {
+            profile,
             encoder,
             blocks,
             norm,
@@ -190,6 +155,9 @@ impl Recognizer {
     }
     pub fn features(&self, samples: &[f32]) -> TractResult<(Tensor, usize)> {
         self.features.compute(samples)
+    }
+    pub fn model_name(&self) -> &'static str {
+        self.profile.name
     }
     pub fn embedding_storage(&self) -> &'static str {
         self.embedding.storage()
@@ -207,6 +175,8 @@ impl Recognizer {
         self.recognize(samples, Some(directory))
     }
     fn recognize(&self, samples: &[f32], trace: Option<&Path>) -> TractResult<String> {
+        let state = self.profile.state;
+        let layers = self.profile.layers;
         let mut profile = BTreeMap::new();
         let (features, frames) = self.features.compute(samples)?;
         if let Some(dir) = trace {
@@ -222,34 +192,34 @@ impl Recognizer {
         let encoder_seconds = encoder_start.elapsed().as_secs_f64();
         let decoder_start = std::time::Instant::now();
         ensure!(
-            cross.len() == LAYERS * 2 && cross.iter().all(|t| t.rank() == 4),
+            cross.len() == layers * 2 && cross.iter().all(|t| t.rank() == 4),
             "Unexpected encoder outputs"
         );
         let time = cross[0].shape()[2];
         ensure!(
-            cross.iter().all(|t| t.shape() == [1, 1, time, STATE]),
+            cross.iter().all(|t| t.shape() == [1, 1, time, state]),
             "Unexpected cross-cache shape"
         );
         if let Some(dir) = trace {
             write_tensors(
                 &dir.join("cross-k.f32"),
-                cross[..LAYERS].iter().map(|v| &**v),
+                cross[..layers].iter().map(|v| &**v),
             )?;
             write_tensors(
                 &dir.join("cross-v.f32"),
-                cross[LAYERS..].iter().map(|v| &**v),
+                cross[layers..].iter().map(|v| &**v),
             )?;
         }
         let mut cross = cross
             .into_iter()
-            .map(|t| Ok(t.into_tensor().into_shape(&[1, time, STATE])?.into_tvalue()));
+            .map(|t| Ok(t.into_tensor().into_shape(&[1, time, state])?.into_tvalue()));
         let keys = cross
             .by_ref()
-            .take(LAYERS)
+            .take(layers)
             .collect::<TractResult<Vec<_>>>()?;
         let values = cross.collect::<TractResult<Vec<_>>>()?;
-        let mut k = (0..LAYERS)
-            .map(|_| Ok(Tensor::zero::<f32>(&[1, 0, STATE])?.into_tvalue()))
+        let mut k = (0..layers)
+            .map(|_| Ok(Tensor::zero::<f32>(&[1, 0, state])?.into_tvalue()))
             .collect::<TractResult<Vec<_>>>()?;
         let mut v = k.clone();
         let mut input = vec![50257, 50362];
@@ -259,16 +229,16 @@ impl Recognizer {
         let maximum = ((frames as f64 / 100.0 * 6.0) as usize).min(224);
         for step in 0..=maximum {
             let n = input.len();
-            let mut x = Vec::with_capacity(n * STATE);
+            let mut x = Vec::with_capacity(n * state);
             let positions = self.positions.try_as_plain_ram()?.as_slice::<f32>()?;
             for (i, &token) in input.iter().enumerate() {
                 self.embedding.append_positioned(
                     token,
-                    &positions[(offset + i) * STATE..(offset + i + 1) * STATE],
+                    &positions[(offset + i) * state..(offset + i + 1) * state],
                     &mut x,
                 )?;
             }
-            let mut x = Tensor::from_shape(&[1, n, STATE], &x)?.into_tvalue();
+            let mut x = Tensor::from_shape(&[1, n, state], &x)?.into_tvalue();
             let total = offset + n;
             let mask: Vec<f32> = (0..n)
                 .flat_map(|i| {
@@ -282,7 +252,7 @@ impl Recognizer {
                 })
                 .collect();
             let mask = Tensor::from_shape(&[1, 1, n, total], &mask)?.into_tvalue();
-            for layer in 0..LAYERS {
+            for layer in 0..layers {
                 let out = run(
                     &self.blocks[layer],
                     tvec!(
@@ -302,8 +272,8 @@ impl Recognizer {
                 v[layer] = out.next().unwrap();
             }
             let last = Tensor::from_shape(
-                &[1, 1, STATE],
-                &x.try_as_plain_ram()?.as_slice::<f32>()?[(n - 1) * STATE..n * STATE],
+                &[1, 1, state],
+                &x.try_as_plain_ram()?.as_slice::<f32>()?[(n - 1) * state..n * state],
             )?
             .into_tvalue();
             let norm = run(
@@ -332,7 +302,7 @@ impl Recognizer {
             if token == 50256 || step == maximum {
                 break;
             }
-            if let Some(text) = self.tokens.get(&token) {
+            if let Some(text) = self.tokens.get(token) {
                 bytes.extend_from_slice(text);
             }
             offset += n;
@@ -344,7 +314,7 @@ impl Recognizer {
             std::fs::write(
                 dir.join("trace.json"),
                 serde_json::to_vec_pretty(
-                    &serde_json::json!({"text":text,"tokens":predicted,"encoder_seconds":encoder_seconds,"decoder_seconds":decoder_start.elapsed().as_secs_f64(),"feature_frames":frames,"mel_shape":[1,80,frames+1000],"cross_shape":[12,1,time,768],"profile":profile}),
+                    &serde_json::json!({"text":text,"tokens":predicted,"encoder_seconds":encoder_seconds,"decoder_seconds":decoder_start.elapsed().as_secs_f64(),"feature_frames":frames,"mel_shape":[1,80,frames+1000],"cross_shape":[layers,1,time,state],"profile":profile}),
                 )?,
             )?;
         }

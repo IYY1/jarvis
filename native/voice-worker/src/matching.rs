@@ -47,6 +47,24 @@ pub struct Matcher {
 }
 
 impl Matcher {
+    /// A fast path must use whole-phrase agreement, never a fuzzy match/window
+    /// score (a substring can score 1.0). Retain the free decoder as a veto.
+    pub fn confident_exact(&self, strict: &str, confidence: Option<f64>, heard: &str) -> bool {
+        let Some(confidence) = confidence else {
+            return false;
+        };
+        if !confidence.is_finite()
+            || !(0.98..=1.0).contains(&confidence)
+            || strict.contains("[unk]")
+            || !self.accepts(strict)
+        {
+            return false;
+        }
+        let strict = wording(strict, &self.prefixes, &self.suffixes);
+        !strict.is_empty()
+            && self.intent(&strict).is_some()
+            && strict == wording(heard, &self.prefixes, &self.suffixes)
+    }
     /// Strict grammar and free speech must agree, unless the latter clears the
     /// same 0.9 override threshold as the Python worker.
     pub fn choose(
@@ -57,15 +75,16 @@ impl Matcher {
         heard_match: Option<(String, f64)>,
     ) -> Option<crate::engine::Recognition> {
         use crate::engine::Recognition;
-        if jarvis_phrases::brightness_like(text) {
-            let (p, score) = heard_match?;
-            if !jarvis_phrases::brightness_like(&p) {
-                return None;
-            }
-            return Some(Recognition::new("command", p, Some(score)));
-        }
         if !text.is_empty() && !text.contains("[unk]") && self.accepts(text) {
             let strict_intent = self.intent(&wording(text, &self.prefixes, &self.suffixes));
+            if !heard.is_empty()
+                && strict_intent.is_some_and(|i| i.starts_with("close_app:"))
+                && !heard_match
+                    .as_ref()
+                    .is_some_and(|(p, _)| self.intent(p) == strict_intent)
+            {
+                return None;
+            }
             let disagreement = heard_match
                 .as_ref()
                 .is_some_and(|(p, _)| strict_intent.is_some() && self.intent(p) != strict_intent);
@@ -109,7 +128,7 @@ impl Matcher {
                     let a = a.strip_prefix("the ").unwrap_or(a);
                     self.apps.contains(a)
                         && (!self.blocked_apps.contains(a)
-                            || ["focus", "switch to"].contains(&v.as_str()))
+                            || ["focus", "switch to", "close"].contains(&v.as_str()))
                 })
             })
     }
@@ -128,22 +147,13 @@ impl Matcher {
                 .map_or(heard.clone(), |(p, _)| p.to_owned());
         }
         let literal = jarvis_phrases::normalize(&heard);
-        if !jarvis_phrases::brightness_like(&literal) {
-            if let Some(p) = self.rules.canonical(&literal) {
-                return self.intent(&p).map(|_| (p, 1.0));
-            }
-            if self.intent(&literal).is_some() {
-                return Some((literal, 1.0));
-            }
-        }
-        let mut text = wording(&heard, &self.prefixes, &self.suffixes);
-        if jarvis_phrases::brightness_like(&text) {
-            if jarvis_phrases::invalid_number(&heard) {
-                return None;
-            }
-            let p = self.rules.canonical(&text)?;
+        if let Some(p) = self.rules.canonical(&literal) {
             return self.intent(&p).map(|_| (p, 1.0));
         }
+        if self.intent(&literal).is_some() {
+            return Some((literal, 1.0));
+        }
+        let mut text = wording(&heard, &self.prefixes, &self.suffixes);
         if let Some(p) = self.rules.canonical(&text) {
             return self.intent(&p).map(|_| (p, 1.0));
         }
@@ -177,7 +187,7 @@ impl Matcher {
         if self.intent(&text).is_some() {
             return Some((text, 1.0));
         }
-        if self.exact_only {
+        if self.exact_only || text.starts_with("close ") {
             return None;
         }
         let whole = text.replace(' ', "");
@@ -205,8 +215,11 @@ impl Matcher {
         let windows: Vec<Vec<char>> = windows.iter().map(|s| s.chars().collect()).collect();
         let letters: Vec<_> = windows.iter().map(|w| counts(w)).collect();
         let mut intents: HashMap<&str, (f64, &str)> = HashMap::new();
+        // Reuse temporary matching storage for all windows and candidates in
+        // this request, then release it instead of retaining a growing cache.
+        let mut scratch = MatchScratch::default();
         for (candidate, intent) in &self.candidates {
-            if intent.starts_with("brightness_") {
+            if intent.starts_with("close_app:") {
                 continue;
             }
             let target: Vec<char> = candidate.chars().filter(|&c| c != ' ').collect();
@@ -228,7 +241,7 @@ impl Matcher {
                 if bound < 0.82 - 0.06 || bound <= best {
                     continue;
                 }
-                best = best.max(matching_size(w, &target) as f64 / longest);
+                best = best.max(matching_size(w, &target, &mut scratch) as f64 / longest);
             }
             if best > intents.get(intent.as_str()).map_or(0.0, |x| x.0) {
                 intents.insert(intent, (best, candidate));
@@ -251,14 +264,23 @@ fn counts(chars: &[char]) -> HashMap<char, usize> {
     result
 }
 
-fn matching_size(a: &[char], b: &[char]) -> usize {
-    let mut todo = vec![(0, a.len(), 0, b.len())];
+#[derive(Default)]
+struct MatchScratch {
+    todo: Vec<(usize, usize, usize, usize)>,
+    row: Vec<usize>,
+}
+
+fn matching_size(a: &[char], b: &[char], scratch: &mut MatchScratch) -> usize {
+    let MatchScratch { todo, row } = scratch;
+    todo.clear();
+    todo.push((0, a.len(), 0, b.len()));
     let mut total = 0;
     while let Some((alo, ahi, blo, bhi)) = todo.pop() {
         let (mut ai, mut bj, mut size) = (alo, blo, 0);
         // Carry the preceding diagonal in a scalar; one row suffices for the
         // longest-block recurrence and avoids an allocation per input character.
-        let mut row = vec![0; bhi - blo + 1];
+        row.resize(bhi - blo + 1, 0);
+        row.fill(0);
         for (i, &ac) in a.iter().enumerate().take(ahi).skip(alo) {
             let mut diagonal = 0;
             for j in blo..bhi {
@@ -345,21 +367,121 @@ mod tests {
         assert!(!result.closest_match);
     }
     #[test]
+    fn fast_path_requires_complete_whole_phrase_agreement() {
+        let mut m = command_matcher();
+        assert!(m.confident_exact("launch discord", Some(0.98), "launch discord"));
+        for confidence in [
+            None,
+            Some(0.979),
+            Some(1.01),
+            Some(f64::NAN),
+            Some(f64::INFINITY),
+        ] {
+            assert!(!m.confident_exact("launch discord", confidence, "launch discord"));
+        }
+        for heard in [
+            "",
+            "launch deadlock",
+            "do not launch discord",
+            "launch discord tomorrow",
+            "i said launch discord",
+        ] {
+            assert!(
+                !m.confident_exact("launch discord", Some(1.0), heard),
+                "{heard}"
+            );
+        }
+        assert!(!m.confident_exact("launch [unk]", Some(1.0), "launch [unk]"));
+        m.prefixes.push("could you".into());
+        m.suffixes.push("please".into());
+        assert!(m.confident_exact(
+            "launch discord",
+            Some(0.999),
+            "could you launch discord please"
+        ));
+    }
+    #[test]
     fn python_sequence_matcher_tie_breaks() {
         assert_eq!(
             matching_size(
                 &"tide".chars().collect::<Vec<_>>(),
-                &"diet".chars().collect::<Vec<_>>()
+                &"diet".chars().collect::<Vec<_>>(),
+                &mut MatchScratch::default(),
             ),
             1
         );
         assert_eq!(
             matching_size(
                 &"diet".chars().collect::<Vec<_>>(),
-                &"tide".chars().collect::<Vec<_>>()
+                &"tide".chars().collect::<Vec<_>>(),
+                &mut MatchScratch::default(),
             ),
             2
         );
+    }
+    // Independent, deliberately simple reference: scan matching runs directly
+    // and recursively score the sections surrounding the longest block.
+    fn reference_matching_size(a: &[char], b: &[char]) -> usize {
+        let (mut ai, mut bj, mut size) = (0, 0, 0);
+        for i in 0..a.len() {
+            for j in 0..b.len() {
+                let length = a[i..]
+                    .iter()
+                    .zip(&b[j..])
+                    .take_while(|(ac, bc)| ac == bc)
+                    .count();
+                if length > size {
+                    (ai, bj, size) = (i, j, length);
+                }
+            }
+        }
+        if size == 0 {
+            0
+        } else {
+            size + reference_matching_size(&a[..ai], &b[..bj])
+                + reference_matching_size(&a[ai + size..], &b[bj + size..])
+        }
+    }
+    #[test]
+    fn scratch_reuse_matches_reference_for_repeated_unicode_and_unequal_inputs() {
+        let mut inputs = vec![Vec::new()];
+        let mut level = vec![Vec::new()];
+        for _ in 0..4 {
+            level = level
+                .iter()
+                .flat_map(|prefix| {
+                    ['a', 'b', '🦊'].map(|c| {
+                        let mut word = prefix.clone();
+                        word.push(c);
+                        word
+                    })
+                })
+                .collect();
+            inputs.extend(level.iter().cloned());
+        }
+        inputs.extend(
+            [
+                "tide",
+                "diet",
+                "abacadabra🦊abacadabra",
+                "🦊abracadabra🦊abra",
+                "aaaaaaaaaaaaaaaaaaaa",
+                "baaaaaaabaaaaaaab",
+                "é界é界 abcdef é界é界",
+            ]
+            .into_iter()
+            .map(|s| s.chars().collect::<Vec<_>>()),
+        );
+        let mut scratch = MatchScratch::default();
+        for a in &inputs {
+            for b in &inputs {
+                assert_eq!(
+                    matching_size(a, b, &mut scratch),
+                    reference_matching_size(a, b),
+                    "{a:?}, {b:?}"
+                );
+            }
+        }
     }
     #[test]
     fn ambiguous_commands_and_partial_words_are_rejected() {
@@ -380,5 +502,52 @@ mod tests {
         };
         assert_eq!(m.closest("open steam"), Some(("open steam".into(), 1.0)));
         assert_eq!(m.closest("recording"), None);
+    }
+    #[test]
+    fn closing_uses_exact_names_and_checks_available_free_transcripts() {
+        let mut m = command_matcher();
+        m.apps.insert("visual studio code".into());
+        m.verbs = vec!["open".into(), "close".into()];
+        m.candidates = vec![
+            ("open visual studio code".into(), "open_app:code".into()),
+            ("close visual studio code".into(), "close_app:code".into()),
+        ];
+        m.blocked_apps.insert("visual studio code".into());
+        assert!(m.accepts("close visual studio code"));
+        assert!(!m.accepts("open visual studio code"));
+        assert_eq!(
+            m.closest("close visual studio code"),
+            Some(("close visual studio code".into(), 1.0))
+        );
+        for heard in [
+            "visual studio code",
+            "cloze visual studio code",
+            "close visual studio cod",
+        ] {
+            assert!(m
+                .closest(heard)
+                .is_none_or(|(p, _)| !p.starts_with("close ")));
+        }
+        // Strict-only settings still support closing without loading a
+        // second decoder. An available contradictory transcript vetoes it.
+        assert!(m
+            .choose("close visual studio code", Some(1.0), "", None)
+            .is_some());
+        assert!(m
+            .choose(
+                "close visual studio code",
+                Some(1.0),
+                "open visual studio code",
+                Some(("open visual studio code".into(), 1.0))
+            )
+            .is_none());
+        assert!(m
+            .choose(
+                "close visual studio code",
+                Some(1.0),
+                "close visual studio code",
+                Some(("close visual studio code".into(), 1.0))
+            )
+            .is_some());
     }
 }

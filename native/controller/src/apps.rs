@@ -94,6 +94,7 @@ pub struct Registry {
     pub apps: BTreeMap<String, App>,
     pub index: BTreeMap<String, Vec<String>>,
     pub aliases: Value,
+    fallbacks: BTreeMap<String, String>,
 }
 pub fn data_dirs() -> Vec<PathBuf> {
     let mut roots = vec![env::var_os("XDG_DATA_HOME")
@@ -166,6 +167,7 @@ impl Registry {
             apps: BTreeMap::new(),
             index: BTreeMap::new(),
             aliases: aliases.clone(),
+            fallbacks: BTreeMap::new(),
         };
         let mut seen = HashSet::new();
         let desktops: HashSet<_> = env::var("XDG_CURRENT_DESKTOP")
@@ -258,10 +260,42 @@ impl Registry {
                 }
             }
         }
+        let mut used: BTreeSet<_> = registry.index.keys().cloned().collect();
+        if let Some(aliases) = aliases.as_object() {
+            used.extend(aliases.keys().filter_map(|name| normalize(name).ok()));
+        }
+        let digits = [
+            "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+        ];
+        let mut counter = 1;
+        for id in registry.apps.keys() {
+            let name = loop {
+                let name = format!(
+                    "application {}",
+                    counter
+                        .to_string()
+                        .bytes()
+                        .map(|d| digits[(d - b'0') as usize])
+                        .collect::<Vec<_>>()
+                        .join(" ")
+                );
+                counter += 1;
+                if used.insert(name.clone()) {
+                    break name;
+                }
+            };
+            registry.fallbacks.insert(name, id.clone());
+        }
         registry
     }
     pub fn resolve(&self, phrase: &str) -> Result<&App> {
         let name = normalize(phrase)?;
+        if let Some(id) = self.fallbacks.get(&name) {
+            return self
+                .apps
+                .get(id)
+                .ok_or_else(|| "Application no longer installed".into());
+        }
         for (k, v) in self.aliases.as_object().unwrap() {
             if normalize(k)? == name && !self.apps.contains_key(v.as_str().unwrap_or("")) {
                 return err(format!(
@@ -343,10 +377,60 @@ impl Registry {
             })
             .collect()
     }
+    pub fn voice_commands(&self, parser: &crate::policy::Parser) -> Result<Vec<Value>> {
+        let mut apps: Vec<_> = self.apps.values().collect();
+        apps.sort_by_key(|app| (fold(&app.name), app.id.clone()));
+        let mut result = Vec::with_capacity(apps.len());
+        for app in apps {
+            let mut names = vec![app.display()];
+            names.extend(
+                self.index
+                    .iter()
+                    .filter(|(_, ids)| ids.contains(&app.id))
+                    .map(|(name, _)| name.clone()),
+            );
+            names.extend(
+                self.fallbacks
+                    .iter()
+                    .filter(|(_, id)| **id == app.id)
+                    .map(|(name, _)| name.clone()),
+            );
+            let name = names
+                .into_iter()
+                .find(|name| {
+                    if name.is_empty() {
+                        return false;
+                    }
+                    [("open", "open_app"), ("close", "close_app")]
+                        .iter()
+                        .all(|(verb, action)| {
+                            parser.parse(&format!("{verb} {name}")).is_ok_and(|intent| {
+                                intent["action"] == *action
+                                    && intent["target"].as_str().is_some_and(|target| {
+                                        self.resolve(target)
+                                            .is_ok_and(|resolved| resolved.id == app.id)
+                                    })
+                            })
+                        })
+                })
+                .ok_or_else(|| format!("Cannot assign open/close commands to {}", app.name))?;
+            result.push(
+                json!({"category":"Applications", "title":app.name, "app_id":app.id,
+                "voice_name":name, "examples":[format!("open {name}"),format!("close {name}")]}),
+            );
+        }
+        Ok(result)
+    }
     pub fn grammar(&self, parser: &crate::policy::Parser) -> Result<Value> {
-        let mut grammar = parser.grammar(self.index.keys().cloned());
+        let mut names: BTreeSet<_> = self.index.keys().cloned().collect();
+        names.extend(
+            self.voice_commands(parser)?
+                .iter()
+                .filter_map(|row| row["voice_name"].as_str().map(str::to_owned)),
+        );
+        let mut grammar = parser.grammar(names.iter().cloned());
         let mut ids = serde_json::Map::new();
-        for name in self.index.keys() {
+        for name in &names {
             ids.insert(
                 name.clone(),
                 json!(self.resolve(name).map(|a| a.id.as_str()).unwrap_or(name)),

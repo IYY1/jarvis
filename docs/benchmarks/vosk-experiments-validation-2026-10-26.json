@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-26T07:18:43.406029+00:00",
+  "scope": "Linux Rust decoder-history attribution and default-disabled Vosk fast path; public PCM, local models and fake capture only",
+  "production_fast_path_enabled": false,
+  "production_decoder_finalization_changed": false,
+  "full_recognition_acceptance": false,
+  "whole_application_budget_acceptance": false,
+  "native_windows_acceptance": false,
+  "installed_service_restarted": false,
+  "checks": {
+    "offline_unittest": {
+      "total": 351,
+      "passed": 320,
+      "skipped": 31,
+      "failed": 0
+    },
+    "selected_voice_and_model_tests": {
+      "total": 51,
+      "passed": 51,
+      "skipped": 0,
+      "failed": 0
+    },
+    "rust_unit_tests": {
+      "voice_worker": 13,
+      "whisper": 18,
+      "denoiser": 2,
+      "failed": 0
+    },
+    "voice_clippy_all_targets_deny_warnings": true,
+    "diff_check": true,
+    "benchmark_summary_and_failed_fallback_gate_verified": true
+  },
+  "benchmarked_binary_sha256": "29fb92b24352718effd081bc43ec2c635be11f3f51c4cee4ab1b8ba29752a61d",
+  "rebuilt_binary_sha256": "6ea3de5161cd89148c1e452d0a72b812945bd1c51a975d19758c9315d27369d8",
+  "binary_difference": "The measured frozen binary precedes Clippy replacing iter().copied().collect() with to_vec() only in the diagnostic fixture-reversal branch. The rebuilt binary passed the real-model and diagnostic tests.",
+  "decoder_history": {
+    "reversed": {
+      "artifact": "decoder-history-reversed-2026-10-26.json",
+      "complete": true,
+      "runs": 18,
+      "cycles_per_run": 32
+    },
+    "forward": {
+      "artifact": "decoder-history-forward-2026-10-26.json",
+      "complete": true,
+      "runs": 2,
+      "cycles_per_run": 32
+    }
+  },
+  "recognition_controls": {
+    "default": {
+      "artifact": "vosk-fast-controls-default-2026-10-26.json",
+      "cases": 5,
+      "focused_controls_passed": true,
+      "false_actions": 0,
+      "extra_wakes": 0,
+      "missing_categories": [
+        "confusable",
+        "game_audio",
+        "music",
+        "recorded_command"
+      ],
+      "full_gate_passed": false,
+      "expected_runner_exit_code": 1
+    },
+    "experimental": {
+      "artifact": "vosk-fast-controls-experimental-2026-10-26.json",
+      "cases": 5,
+      "focused_controls_passed": true,
+      "false_actions": 0,
+      "extra_wakes": 0,
+      "missing_categories": [
+        "confusable",
+        "game_audio",
+        "music",
+        "recorded_command"
+      ],
+      "full_gate_passed": false,
+      "expected_runner_exit_code": 1
+    }
+  }
+}

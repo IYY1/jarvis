@@ -26,6 +26,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--fixture", required=True, type=Path)
     parser.add_argument("--model", type=Path, default=accurate_model_dir())
+    parser.add_argument("--model-name", choices=("tiny.en", "base.en", "small.en"), default="small.en")
+    parser.add_argument("--case", action="append", choices=("clean", "quiet", "noise", "long", "silence", "short", "slower"))
     parser.add_argument("--binary", type=Path, default=ROOT / "native/whisper-recognizer/target/release/jarvis-whisper")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
@@ -33,14 +35,15 @@ def main():
         parser.error("fixture must be 0.2–10 seconds of complete s16le samples")
     import numpy as np
     import onnxruntime as ort
+    ort.disable_telemetry_events()
     options = ort.SessionOptions()
     options.intra_op_num_threads = 8
     options.enable_cpu_mem_arena = False
     options.enable_mem_pattern = False
     options.add_session_config_entry("session.intra_op.allow_spinning", "0")
-    encoder = ort.InferenceSession(str(args.model / "small.en-encoder.int8.onnx"), options,
+    encoder = ort.InferenceSession(str(args.model / f"{args.model_name}-encoder.int8.onnx"), options,
                                   providers=["CPUExecutionProvider"])
-    decoder = ort.InferenceSession(str(args.model / "small.en-decoder.int8.onnx"), options,
+    decoder = ort.InferenceSession(str(args.model / f"{args.model_name}-decoder.int8.onnx"), options,
                                   providers=["CPUExecutionProvider"])
 
     def difference(actual, reference):
@@ -53,19 +56,19 @@ def main():
         with path.open("rb") as source:
             return hashlib.file_digest(source, "sha256").hexdigest()
     report = {"onnxruntime_reference": ort.__version__, "scope": "offline tensor diagnostic; excludes resource comparisons",
-              "fixture_sha256": hashlib.sha256(audio).hexdigest(),
+              "fixture_sha256": hashlib.sha256(audio).hexdigest(), "model_name": args.model_name,
               "model_sha256": {name: checksum(args.model / name)
-                               for name in ("small.en-encoder.int8.onnx", "small.en-decoder.int8.onnx")},
+                               for name in (f"{args.model_name}-encoder.int8.onnx", f"{args.model_name}-decoder.int8.onnx")},
               "cases": []}
     with tempfile.TemporaryDirectory(prefix="jarvis-whisper-tensors-") as directory:
         root = Path(directory)
         for name, pcm in variants(audio):
-            if name not in ("clean", "long"):
+            if name not in (args.case or ("clean", "long")):
                 continue
             fixture = root / f"{name}.raw"
             fixture.write_bytes(pcm)
             trace = root / name
-            subprocess.run([str(args.binary.resolve()), "--diagnose", str(args.model.resolve()), str(fixture), str(trace)],
+            subprocess.run([str(args.binary.resolve()), "--model-name", args.model_name, "--diagnose", str(args.model.resolve()), str(fixture), str(trace)],
                            check=True, stdout=subprocess.DEVNULL, timeout=30)
             metadata = json.loads((trace / "trace.json").read_text())
             mel = np.fromfile(trace / "mel.f32", dtype="<f4").reshape(metadata["mel_shape"])
@@ -75,7 +78,8 @@ def main():
             comparison = {"case": name, "text": metadata["text"], "feature_frames": metadata["feature_frames"],
                           "cross_k": difference(cross[0], expected_cross[0]),
                           "cross_v": difference(cross[1], expected_cross[1]), "decoder_steps": []}
-            self_k = np.zeros((12, 1, 448, 768), dtype=np.float32)
+            layers, _, _, state = metadata["cross_shape"]
+            self_k = np.zeros((layers, 1, 448, state), dtype=np.float32)
             self_v = self_k.copy()
             tokens, offset = [50257, 50362], 0
             for step, predicted in enumerate(metadata["tokens"]):

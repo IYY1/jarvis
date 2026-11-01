@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "jarvis-hyprland"
-version = "0.2.0"
+version = "0.3.0"
 description = "Offline desktop voice controls for Windows and Hyprland"
 requires-python = ">=3.11"
 readme = "README.md"
@@ -32,7 +32,6 @@ windows = [
   "PyAudioWPatch==0.2.12.9; sys_platform == 'win32'",
   "pycaw==20260927; sys_platform == 'win32'",
   "pyvda==0.6.0; sys_platform == 'win32'",
-  "screen-brightness-control==0.27.2; sys_platform == 'win32'",
   "audioop-lts==0.2.2; python_version >= '3.13' and sys_platform == 'win32'",
 ]
 

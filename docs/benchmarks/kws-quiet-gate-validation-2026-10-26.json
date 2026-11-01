@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-26T10:04:55.590321+00:00",
+  "scope": "Linux file-only quiet gate and separate buffered handoff; no production integration or release acceptance",
+  "rust_unit_tests": {
+    "passed": 8,
+    "failed": 0,
+    "command": "cargo test --offline --locked --manifest-path native/kws-probe/Cargo.toml",
+    "exit_code": 0
+  },
+  "python_focused_tests": {
+    "passed": 7,
+    "skipped": 0,
+    "failed": 0,
+    "command": "MURMUR_KWS_MODEL=... MURMUR_KWS_LIBRARY=... MURMUR_SPEECH_TEST_RAW=... .venv/bin/python -m unittest tests.test_kws_probe -v",
+    "native_library_maps_checked": true,
+    "python_absent_from_inference_maps": true,
+    "exit_code": 0
+  },
+  "full_offline_suite_rerun": false,
+  "previous_full_suite_artifact": "kws-validation-2026-10-26.json",
+  "format_check": true,
+  "all_target_clippy_warnings_denied": true,
+  "offline_locked_release_build": true,
+  "python_compilation": true,
+  "diff_check": true,
+  "source_package_includes_gate_handoff_header_license": true,
+  "source_package_excludes_target": true,
+  "baseline_binary_archive_and_eight_sources_verified": true,
+  "gate_measured_source_hashes_preserved": true,
+  "gate_benchmark_exit_code": 0,
+  "gate_benchmark_exit_scope": "label and default-trigger equivalence; separate timing gate remains false",
+  "handoff_benchmark_exit_code": 0,
+  "gate_focused_cases_each_arm": 40,
+  "gate_expected_wakes_each_arm": 33,
+  "handoff_cases": 18,
+  "handoff_byte_identical_triggered_buffers": 15,
+  "failed_gates": {
+    "quiet_gate_trigger_time_nonregression": false,
+    "prior_full_threshold_sweep": false,
+    "small_en_combined_worker_set_under_400_mib": false,
+    "full_acoustic_acceptance": false,
+    "windows_acceptance": false,
+    "whole_application_budget_acceptance": false,
+    "full_duration_soak_acceptance": false
+  },
+  "binary_sha256": {
+    "jarvis-kws-probe": "d6b2ddef281e3edc464271f9d01499c07465e7efb3bbb554be1e54504637716f",
+    "jarvis-kws-handoff-probe": "42d2a534cacca9f2d383e37b41c6285945e9c74518e1f0a956a5d48b554d5dc7"
+  },
+  "unchanged_voice_binary_sha256": "212ff8655e303b55f0a70f902753d0ab6f87031aa3c71cd40306ddf5cf8d9844",
+  "source_sha256": {
+    "native/kws-probe/Cargo.toml": "0edf22bce37f6f63f6ab8a202faf9cb5c910e84d31302033c5096cae5b337ca4",
+    "native/kws-probe/Cargo.lock": "15acd1ee12bebc87b023d18a74b426d56a4195cbd214345de75612c1146491da",
+    "native/kws-probe/build.rs": "e7b498f427aebefa2431e913e8d4f6775b71f1b070d3b9c7cc2ddc6dcbf69f7d",
+    "native/kws-probe/shim.c": "3a9436845091f770cd77c61cf3aea920e641212337151da36c5bb57375e91b48",
+    "native/kws-probe/src/main.rs": "0f0256ca2dcd57c4afdfbc66a55ab0b8675dc7ecb753a9ee84c9b2aacdadc06c",
+    "native/kws-probe/src/gate.rs": "6b0669babfe1ea62346200d33e46413787fdfb2a07f574c627ca07a1c7989000",
+    "native/kws-probe/src/bin/jarvis-kws-handoff-probe.rs": "59f397a9c0548fd664931293f67ddf17a4db8e624f02ea4d9c07e5e1f88dd3ca",
+    "scripts/benchmark_kws_gate.py": "dc8602f2c5771b64cd387f5f616067d4512ac79d7d6c587a56f0a929d6ef26d3",
+    "scripts/benchmark_kws_handoff.py": "6939d4da4b9400da0d920aedfbdbe8598d0e7aae98afcdeda44090c1330ca62d",
+    "tests/test_kws_probe.py": "aeff0c18469187ce6636aba367053013aa4896213a1d1a41e1d7ac46998e65ea"
+  },
+  "evidence_sha256": {
+    "docs/benchmarks/kws-quiet-gate-2026-10-26.json": "9d80163d1cf776e3a675987c31dcded949ece16261312b3a631ed1a3f6a3c7bd",
+    "docs/benchmarks/kws-buffered-handoff-2026-10-26.json": "ec4306027c2afc7eb0fc9b2be1ab3f0ed8938ea378f8913f9c4d724c000a07b1"
+  },
+  "production_defaults_changed": false,
+  "actual_capture_started": false,
+  "installed_service_restarted": false,
+  "commit_push_or_pr_created": false,
+  "all_experiment_workers_exited": true
+}

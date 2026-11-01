@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-26T21:49:57.436889+00:00",
+  "scope": "One fixed model-chunk-aligned gate against saved baseline/legacy controls.\n\nThree supplied recordings, a complete 320/30 ms phase cycle and fixed gains.\nNo tuning, real capture, action dispatch, allocator change, or promotion.\n",
+  "protocol": {
+    "date": "2026-10-27",
+    "scope": "One fixed aligned-onset candidate; no parameter search",
+    "model": {
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/encoder-epoch-12-avg-2-chunk-16-left-64.int8.onnx",
+      "sha256": "1e721676515bcd42a186979733981213c66c80db680e1cc582dfedf3be76e678",
+      "model_type": "zipformer2",
+      "T": 45,
+      "decode_chunk_len": 32,
+      "feature_shift_ms": 10,
+      "decode_shift_ms": 320
+    },
+    "candidate": {
+      "rms": 0.001,
+      "preroll_ms": 300,
+      "hangover_ms": 1200,
+      "align_chunk_ms": 320
+    },
+    "phase_grid": {
+      "leading_ms": [
+        600,
+        630,
+        660,
+        690,
+        720,
+        750,
+        780,
+        810,
+        840,
+        870,
+        900,
+        930,
+        960,
+        990,
+        1020,
+        1050,
+        1080,
+        1110,
+        1140,
+        1170,
+        1200,
+        1230,
+        1260,
+        1290,
+        1320,
+        1350,
+        1380,
+        1410,
+        1440,
+        1470,
+        1500,
+        1530
+      ],
+      "amplitudes": [
+        0.1,
+        0.3,
+        1.0
+      ],
+      "source_recordings": 3
+    },
+    "primary_threshold": 0.25,
+    "expected_labels": "Source keyword once per file; no extra triggers",
+    "timing_gate": "No input trigger later than saved ungated baseline; retain every failing case",
+    "controls": "Original quiet gate and current omitted-alignment behavior must match exact trigger chunks",
+    "additional_controls": "Original surrogate/published/names negatives, long leading quiet and repeated recovery",
+    "cpu": {
+      "fresh_workers_per_arm": 3,
+      "silence_seconds": 30,
+      "paced": true,
+      "gate_percent_one_core": 0.1
+    },
+    "production_defaults_changed": false,
+    "enable_by_default": false,
+    "whole_application_acceptance": false
+  },
+  "protocol_sha256": "a001de3d8a333741a11e44698730bab2a162b5a88ce352c174586db8ad998b0c",
+  "baseline_snapshot": {
+    "scope": "Handoff snapshot of measured ungated KWS baseline; ignored workspace-only copies, not a release",
+    "binary_sha256": "3bead979c897d0c14b9ce2c3394239ec77dc929b0f43ca8ea1eb76d531dfd657",
+    "source_archive_sha256": "ee318e49b4c0457f4597db804055d981719814baa99952c23207a84638bf56a8",
+    "files": {
+      "native/kws-probe/Cargo.lock": "15acd1ee12bebc87b023d18a74b426d56a4195cbd214345de75612c1146491da",
+      "native/kws-probe/Cargo.toml": "0edf22bce37f6f63f6ab8a202faf9cb5c910e84d31302033c5096cae5b337ca4",
+      "native/kws-probe/build.rs": "e7b498f427aebefa2431e913e8d4f6775b71f1b070d3b9c7cc2ddc6dcbf69f7d",
+      "native/kws-probe/shim.c": "3a9436845091f770cd77c61cf3aea920e641212337151da36c5bb57375e91b48",
+      "native/kws-probe/src/main.rs": "249dab3a4aef21c89728ef641e5c737b85e5c6c91787d7998310b1c506eaf34e",
+      "native/kws-probe/vendor/LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "native/kws-probe/vendor/README.md": "e9b5e996cbb2170769cf0eb96c400ad0cc7e4082e065bcb9c8ef4cf6b3c881ee",
+      "native/kws-probe/vendor/c-api.h": "2a1b95084be8fd1deb3228fcad2fd3f7f0258b64582f7402281ec174c7b7f4ce"
+    }
+  },
+  "binary_sha256": "3f0030314b153a89bac0c96163e668ef838850b93daf22f322929d96623bbe51",
+  "legacy_binary_sha256": "df6d5df9c716c5f93ae2c02367546616b2d1d093f108965fc5be51a9aee331c2",
+  "configuration": {
+    "library": "/home/silver/Projects/jarvis/.venv/lib/python3.14/site-packages/sherpa_onnx/lib/libsherpa-onnx-c-api.so",
+    "tokens": "/home/silver/Projects/jarvis/build/memory-plan-kws/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/tokens.txt",
+    "keywords": "/home/silver/Projects/jarvis/build/memory-plan-kws/surrogate-keywords.txt",
+    "score": 1.0,
+    "threshold": 0.25,
+    "encoder": "/home/silver/Projects/jarvis/build/memory-plan-kws/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/encoder-epoch-12-avg-2-chunk-16-left-64.int8.onnx",
+    "decoder": "/home/silver/Projects/jarvis/build/memory-plan-kws/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/decoder-epoch-12-avg-2-chunk-16-left-64.int8.onnx",
+    "joiner": "/home/silver/Projects/jarvis/build/memory-plan-kws/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/joiner-epoch-12-avg-2-chunk-16-left-64.int8.onnx"
+  },
+  "assets": {
+    "library": {
+      "path": "/home/silver/Projects/jarvis/.venv/lib/python3.14/site-packages/sherpa_onnx/lib/libsherpa-onnx-c-api.so",
+      "sha256": "e50ae8bca4db52b7be04f56f8ac1502b940ca124a26fac0d48d8cef7fc9823d4"
+    },
+    "tokens": {
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/tokens.txt",
+      "sha256": "fd2ded4050a55d2b1578870ba8697d02371980217806b7558bd0a5cc60f3ba53"
+    },
+    "keywords": {
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/surrogate-keywords.txt",
+      "sha256": "7b3ba4dc555f16a3f4a8bfb11fd49369e140397ceaf74465a2aa8c4c5e27c4e5"
+    },
+    "encoder": {
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/encoder-epoch-12-avg-2-chunk-16-left-64.int8.onnx",
+      "sha256": "1e721676515bcd42a186979733981213c66c80db680e1cc582dfedf3be76e678"
+    },
+    "decoder": {
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/decoder-epoch-12-avg-2-chunk-16-left-64.int8.onnx",
+      "sha256": "e40ff43297abe815e8898494c17e71bba2152d9d40fa3eb803f75d0f7533329a"
+    },
+    "joiner": {
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/joiner-epoch-12-avg-2-chunk-16-left-64.int8.onnx",
+      "sha256": "eae9da0c7e1e6c6a3f4cc42d167899c388f6c6701b94cb96320e4f55df79624c"
+    }
+  },
+  "runs": [],
+  "phase_comparisons": [],
+  "focused_comparisons": [],
+  "complete": false,
+  "production_defaults_changed": false,
+  "whole_application_acceptance": false,
+  "full_acoustic_acceptance": false,
+  "windows_acceptance": false,
+  "full_duration_soak_acceptance": false,
+  "enable_by_default": false,
+  "summary": {
+    "phase_cases": 0,
+    "all_phase_labels_identical": true,
+    "later_phase_cases": 0,
+    "trigger_delta_range_seconds": null,
+    "phase_fixture_labels_pass": true,
+    "all_phase_trigger_times_nonregressing": false
+  }
+}

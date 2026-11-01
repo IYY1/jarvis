@@ -1,0 +1,3218 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-26T19:36:29.129094+00:00",
+  "scope": "Check the waiting-floor trend beyond initial persistent-KWS warm-up.\n\nExplicit existing experimental configuration and public PCM only; bounded\ncycles with fresh command workers and a persistent file-replay detector.\nThis short run does not establish leak freedom or replace the 24-hour soak.\n",
+  "binary_sha256": "dcc3191ad0b0c38f9f22f04ae44bdcef833ecd6d4d69849c0a7a562efe1be9f6",
+  "detector_sha256": "d6b2ddef281e3edc464271f9d01499c07465e7efb3bbb554be1e54504637716f",
+  "voice_sha256": "212ff8655e303b55f0a70f902753d0ab6f87031aa3c71cd40306ddf5cf8d9844",
+  "fixture_sha256": "e1e4e81f8c48060017cccc329b6b6f4e6c3df01489d5b6a61cc003cd5a7c4349",
+  "configuration": {
+    "detector_binary": "/home/silver/Projects/jarvis/native/kws-probe/target/release/jarvis-kws-probe",
+    "detector_config": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/detector.json",
+    "voice_binary": "/home/silver/Projects/jarvis/native/voice-worker/target/release/jarvis-voice",
+    "voice_payload": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/voice.json",
+    "work_dir": "/home/silver/Projects/jarvis/build/memory-plan-kws/floor",
+    "cycles": 10,
+    "settle_ms": 1000,
+    "quiet_endpoint": {
+      "rms": 0.001,
+      "min_speech_ms": 240,
+      "quiet_ms": 600,
+      "timeout_ms": 5000
+    }
+  },
+  "events": [
+    {
+      "detector": {
+        "backend": "sherpa-onnx-1.13.8-c-api",
+        "event": "ready",
+        "load_seconds": 0.336429178,
+        "memory": {
+          "peak_rss_mib": 48.84765625,
+          "pss_mib": 44.8388671875,
+          "rss_mib": 48.84765625
+        },
+        "quiet_gate": {
+          "hangover_ms": 1200,
+          "preroll_ms": 300,
+          "rms": 0.001
+        },
+        "score": 1.0,
+        "threads": 1,
+        "threshold": 0.25
+      },
+      "event": "ready",
+      "memory": {
+        "overlap_peak_pss_mib": 0.0,
+        "overlap_peak_rss_mib": 0.0,
+        "overlap_samples": 0,
+        "peak_combined_pss_mib": 45.7802734375,
+        "peak_combined_rss_mib": 51.8671875,
+        "sample_interval_ms": 20,
+        "samples": 18,
+        "sum_process_hwm_upper_bound_mib": 51.8671875
+      },
+      "waiting": {
+        "processes": 2,
+        "pss_mib": 45.7763671875,
+        "rss_mib": 51.86328125
+      }
+    },
+    {
+      "buffer_bytes": 65280,
+      "buffer_start_seconds": 0.06,
+      "cycle": 1,
+      "elapsed_seconds": 2.100228772,
+      "event": "handoff_started",
+      "trigger": {
+        "audio_seconds": 2.07,
+        "elapsed_seconds": 2.0747016,
+        "event": "keyword",
+        "result": {
+          "keyword": "GO_FORWARD",
+          "start_time": 0.0,
+          "timestamps": [
+            1.0,
+            1.28,
+            1.4
+          ],
+          "tokens": [
+            " GO",
+            " FOR",
+            "WARD"
+          ]
+        },
+        "stream_origin_seconds": 0.3
+      }
+    },
+    {
+      "cycle": 1,
+      "event": "recognizer_ready",
+      "ready": {
+        "event": {
+          "denoiser": "rust-tract-0.23.9",
+          "event": "ready",
+          "load_seconds": 0.502188231,
+          "memory": {
+            "peak_rss_mib": 240.66796875,
+            "rss_mib": 240.66796875
+          },
+          "whisper": "rust-tract-0.23.9"
+        },
+        "observed_elapsed_seconds": 2.610010166
+      }
+    },
+    {
+      "buffer_bytes": 123840,
+      "buffer_capacity_bytes": 320000,
+      "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/floor/buffer-3-1.raw",
+      "buffer_start_seconds": 0.06,
+      "command_ready": {
+        "event": {
+          "denoiser": "rust-tract-0.23.9",
+          "event": "ready",
+          "load_seconds": 0.502188231,
+          "memory": {
+            "peak_rss_mib": 240.66796875,
+            "rss_mib": 240.66796875
+          },
+          "whisper": "rust-tract-0.23.9"
+        },
+        "observed_elapsed_seconds": 2.610010166
+      },
+      "command_result": {
+        "decode_cpu_seconds": 0.5183951820000001,
+        "event": "result",
+        "events": [
+          {
+            "closest_match": false,
+            "confidence": null,
+            "heard": null,
+            "kind": "wake",
+            "min_word_posterior": null,
+            "text": "go forward"
+          },
+          {
+            "closest_match": false,
+            "confidence": 1.0,
+            "heard": null,
+            "kind": "command",
+            "min_word_posterior": 1.0,
+            "text": "ten meters"
+          }
+        ],
+        "memory": {
+          "peak_rss_mib": 277.484375,
+          "rss_mib": 257.59375
+        },
+        "recognition_stats": {
+          "fast_commands": 0,
+          "vosk_fast_path": false,
+          "vosk_finalize_utterances": false,
+          "whisper_loads": 1,
+          "whisper_transcriptions": 1
+        },
+        "seconds": 0.361301241,
+        "settle_cpu_seconds": 9.720000000434936e-07,
+        "text": ""
+      },
+      "cycle": 1,
+      "detector_complete": {
+        "audio_seconds": 4.88625,
+        "cpu_seconds": 0.061055000000000026,
+        "decoded_samples": 67680,
+        "detections": 1,
+        "elapsed_seconds": 4.886257259,
+        "event": "complete",
+        "memory": {
+          "peak_rss_mib": 54.08984375,
+          "pss_mib": 49.7109375,
+          "rss_mib": 54.08984375
+        },
+        "paced": true,
+        "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/input.raw",
+        "quiet_gate": {
+          "hangover_ms": 1200,
+          "preroll_ms": 300,
+          "rms": 0.001
+        },
+        "skipped_samples": 10500,
+        "stream_count": 1
+      },
+      "endpoint_input_seconds": 3.93,
+      "endpoint_reason": "quiet",
+      "event": "cycle_complete",
+      "full_recognition_acceptance": false,
+      "input_seconds": 4.88625,
+      "last_speech_input_seconds": 3.33,
+      "memory": {
+        "overlap_peak_pss_mib": 318.060546875,
+        "overlap_peak_rss_mib": 329.015625,
+        "overlap_samples": 106,
+        "peak_combined_pss_mib": 318.060546875,
+        "peak_combined_rss_mib": 329.015625,
+        "sample_interval_ms": 20,
+        "samples": 237,
+        "sum_process_hwm_upper_bound_mib": 334.83203125
+      },
+      "payload_delay_ms": 0,
+      "production_defaults_changed": false,
+      "released_elapsed_seconds": 4.351212421,
+      "result_elapsed_seconds": 4.320008466,
+      "ring_capacity_bytes": 73920,
+      "timed_out": false,
+      "trigger": {
+        "audio_seconds": 2.07,
+        "elapsed_seconds": 2.0747016,
+        "event": "keyword",
+        "result": {
+          "keyword": "GO_FORWARD",
+          "start_time": 0.0,
+          "timestamps": [
+            1.0,
+            1.28,
+            1.4
+          ],
+          "tokens": [
+            " GO",
+            " FOR",
+            "WARD"
+          ]
+        },
+        "stream_origin_seconds": 0.3
+      },
+      "waiting_after_release": {
+        "processes": 2,
+        "pss_mib": 50.787109375,
+        "rss_mib": 57.3671875
+      },
+      "waiting_before": {
+        "processes": 2,
+        "pss_mib": 45.7841796875,
+        "rss_mib": 51.87109375
+      },
+      "whole_application_acceptance": false
+    },
+    {
+      "buffer_bytes": 65280,
+      "buffer_start_seconds": 0.06,
+      "cycle": 2,
+      "elapsed_seconds": 2.100239183,
+      "event": "handoff_started",
+      "trigger": {
+        "audio_seconds": 2.07,
+        "elapsed_seconds": 2.074754321,
+        "event": "keyword",
+        "result": {
+          "keyword": "GO_FORWARD",
+          "start_time": 0.0,
+          "timestamps": [
+            1.0,
+            1.28,
+            1.4
+          ],
+          "tokens": [
+            " GO",
+            " FOR",
+            "WARD"
+          ]
+        },
+        "stream_origin_seconds": 0.3
+      }
+    },
+    {
+      "cycle": 2,
+      "event": "recognizer_ready",
+      "ready": {
+        "event": {
+          "denoiser": "rust-tract-0.23.9",
+          "event": "ready",
+          "load_seconds": 0.502449278,
+          "memory": {
+            "peak_rss_mib": 238.8203125,
+            "rss_mib": 238.8203125
+          },
+          "whisper": "rust-tract-0.23.9"
+        },
+        "observed_elapsed_seconds": 2.610007986
+      }
+    },
+    {
+      "buffer_bytes": 123840,
+      "buffer_capacity_bytes": 320000,
+      "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/floor/buffer-3-2.raw",
+      "buffer_start_seconds": 0.06,
+      "command_ready": {
+        "event": {
+          "denoiser": "rust-tract-0.23.9",
+          "event": "ready",
+          "load_seconds": 0.502449278,
+          "memory": {
+            "peak_rss_mib": 238.8203125,
+            "rss_mib": 238.8203125
+          },
+          "whisper": "rust-tract-0.23.9"
+        },
+        "observed_elapsed_seconds": 2.610007986
+      },
+      "command_result": {
+        "decode_cpu_seconds": 0.509273327,
+        "event": "result",
+        "events": [
+          {
+            "closest_match": false,
+            "confidence": null,
+            "heard": null,
+            "kind": "wake",
+            "min_word_posterior": null,
+            "text": "go forward"
+          },
+          {
+            "closest_match": false,
+            "confidence": 1.0,
+            "heard": null,
+            "kind": "command",
+            "min_word_posterior": 1.0,
+            "text": "ten meters"
+          }
+        ],
+        "memory": {
+          "peak_rss_mib": 275.33203125,
+          "rss_mib": 255.33203125
+        },
+        "recognition_stats": {
+          "fast_commands": 0,
+          "vosk_fast_path": false,
+          "vosk_finalize_utterances": false,
+          "whisper_loads": 1,
+          "whisper_transcriptions": 1
+        },
+        "seconds": 0.354802934,
+        "settle_cpu_seconds": 1.0820000000411056e-06,
+        "text": ""
+      },
+      "cycle": 2,
+      "detector_complete": {
+        "audio_seconds": 4.88625,
+        "cpu_seconds": 0.058813,
+        "decoded_samples": 67680,
+        "detections": 1,
+        "elapsed_seconds": 4.886257937,
+        "event": "complete",
+        "memory": {
+          "peak_rss_mib": 54.08984375,
+          "pss_mib": 49.7109375,
+          "rss_mib": 54.08984375
+        },
+        "paced": true,
+        "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/input.raw",
+        "quiet_gate": {
+          "hangover_ms": 1200,
+          "preroll_ms": 300,
+          "rms": 0.001
+        },
+        "skipped_samples": 10500,
+        "stream_count": 1
+      },
+      "endpoint_input_seconds": 3.93,
+      "endpoint_reason": "quiet",
+      "event": "cycle_complete",
+      "full_recognition_acceptance": false,
+      "input_seconds": 4.88625,
+      "last_speech_input_seconds": 3.33,
+      "memory": {
+        "overlap_peak_pss_mib": 315.87890625,
+        "overlap_peak_rss_mib": 327.12890625,
+        "overlap_samples": 107,
+        "peak_combined_pss_mib": 315.87890625,
+        "peak_combined_rss_mib": 327.12890625,
+        "sample_interval_ms": 20,
+        "samples": 237,
+        "sum_process_hwm_upper_bound_mib": 332.8984375
+      },
+      "payload_delay_ms": 0,
+      "production_defaults_changed": false,
+      "released_elapsed_seconds": 4.331532057,
+      "result_elapsed_seconds": 4.290007904,
+      "ring_capacity_bytes": 73920,
+      "timed_out": false,
+      "trigger": {
+        "audio_seconds": 2.07,
+        "elapsed_seconds": 2.074754321,
+        "event": "keyword",
+        "result": {
+          "keyword": "GO_FORWARD",
+          "start_time": 0.0,
+          "timestamps": [
+            1.0,
+            1.28,
+            1.4
+          ],
+          "tokens": [
+            " GO",
+            " FOR",
+            "WARD"
+          ]
+        },
+        "stream_origin_seconds": 0.3
+      },
+      "waiting_after_release": {
+        "processes": 2,
+        "pss_mib": 50.990234375,
+        "rss_mib": 57.5703125
+      },
+      "waiting_before": {
+        "processes": 2,
+        "pss_mib": 50.787109375,
+        "rss_mib": 57.3671875
+      },
+      "whole_application_acceptance": false
+    },
+    {
+      "buffer_bytes": 65280,
+      "buffer_start_seconds": 0.06,
+      "cycle": 3,
+      "elapsed_seconds": 2.100153002,
+      "event": "handoff_started",
+      "trigger": {
+        "audio_seconds": 2.07,
+        "elapsed_seconds": 2.073951402,
+        "event": "keyword",
+        "result": {
+          "keyword": "GO_FORWARD",
+          "start_time": 0.0,
+          "timestamps": [
+            1.0,
+            1.28,
+            1.4
+          ],
+          "tokens": [
+            " GO",
+            " FOR",
+            "WARD"
+          ]
+        },
+        "stream_origin_seconds": 0.3
+      }
+    },
+    {
+      "cycle": 3,
+      "event": "recognizer_ready",
+      "ready": {
+        "event": {
+          "denoiser": "rust-tract-0.23.9",
+          "event": "ready",
+          "load_seconds": 0.527596394,
+          "memory": {
+            "peak_rss_mib": 236.421875,
+            "rss_mib": 236.421875
+          },
+          "whisper": "rust-tract-0.23.9"
+        },
+        "observed_elapsed_seconds": 2.640008647
+      }
+    },
+    {
+      "buffer_bytes": 123840,
+      "buffer_capacity_bytes": 320000,
+      "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/floor/buffer-3-3.raw",
+      "buffer_start_seconds": 0.06,
+      "command_ready": {
+        "event": {
+          "denoiser": "rust-tract-0.23.9",
+          "event": "ready",
+          "load_seconds": 0.527596394,
+          "memory": {
+            "peak_rss_mib": 236.421875,
+            "rss_mib": 236.421875
+          },
+          "whisper": "rust-tract-0.23.9"
+        },
+        "observed_elapsed_seconds": 2.640008647
+      },
+      "command_result": {
+        "decode_cpu_seconds": 0.489853549,
+        "event": "result",
+        "events": [
+          {
+            "closest_match": false,
+            "confidence": null,
+            "heard": null,
+            "kind": "wake",
+            "min_word_posterior": null,
+            "text": "go forward"
+          },
+          {
+            "closest_match": false,
+            "confidence": 1.0,
+            "heard": null,
+            "kind": "command",
+            "min_word_posterior": 1.0,
+            "text": "ten meters"
+          }
+        ],
+        "memory": {
+          "peak_rss_mib": 272.609375,
+          "rss_mib": 252.8671875
+        },
+        "recognition_stats": {
+          "fast_commands": 0,
+          "vosk_fast_path": false,
+          "vosk_finalize_utterances": false,
+          "whisper_loads": 1,
+          "whisper_transcriptions": 1
+        },
+        "seconds": 0.332307145,
+        "settle_cpu_seconds": 1.0520000000013852e-06,
+        "text": ""
+      },
+      "cycle": 3,
+      "detector_complete": {
+        "audio_seconds": 4.88625,
+        "cpu_seconds": 0.05577700000000002,
+        "decoded_samples": 67680,
+        "detections": 1,
+        "elapsed_seconds": 4.886257885,
+        "event": "complete",
+        "memory": {
+          "peak_rss_mib": 54.08984375,
+          "pss_mib": 49.7109375,
+          "rss_mib": 54.08984375
+        },
+        "paced": true,
+        "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/input.raw",
+        "quiet_gate": {
+          "hangover_ms": 1200,
+          "preroll_ms": 300,
+          "rms": 0.001
+        },
+        "skipped_samples": 10500,
+        "stream_count": 1
+      },
+      "endpoint_input_seconds": 3.93,
+      "endpoint_reason": "quiet",
+      "event": "cycle_complete",
+      "full_recognition_acceptance": false,
+      "input_seconds": 4.88625,
+      "last_speech_input_seconds": 3.33,
+      "memory": {
+        "overlap_peak_pss_mib": 313.5966796875,
+        "overlap_peak_rss_mib": 324.57421875,
+        "overlap_samples": 107,
+        "peak_combined_pss_mib": 313.5966796875,
+        "peak_combined_rss_mib": 324.57421875,
+        "sample_interval_ms": 20,
+        "samples": 239,
+        "sum_process_hwm_upper_bound_mib": 330.18359375
+      },
+      "payload_delay_ms": 0,
+      "production_defaults_changed": false,
+      "released_elapsed_seconds": 4.321675161,
+      "result_elapsed_seconds": 4.290007267,
+      "ring_capacity_bytes": 73920,
+      "timed_out": false,
+      "trigger": {
+        "audio_seconds": 2.07,
+        "elapsed_seconds": 2.073951402,
+        "event": "keyword",
+        "result": {
+          "keyword": "GO_FORWARD",
+          "start_time": 0.0,
+          "timestamps": [
+            1.0,
+            1.28,
+            1.4
+          ],
+          "tokens": [
+            " GO",
+            " FOR",
+            "WARD"
+          ]
+        },
+        "stream_origin_seconds": 0.3
+      },
+      "waiting_after_release": {
+        "processes": 2,
+        "pss_mib": 50.99609375,
+        "rss_mib": 57.578125
+      },
+      "waiting_before": {
+        "processes": 2,
+        "pss_mib": 50.990234375,
+        "rss_mib": 57.5703125
+      },
+      "whole_application_acceptance": false
+    },
+    {
+      "buffer_bytes": 65280,
+      "buffer_start_seconds": 0.06,
+      "cycle": 4,
+      "elapsed_seconds": 2.100153845,
+      "event": "handoff_started",
+      "trigger": {
+        "audio_seconds": 2.07,
+        "elapsed_seconds": 2.074485084,
+        "event": "keyword",
+        "result": {
+          "keyword": "GO_FORWARD",
+          "start_time": 0.0,
+          "timestamps": [
+            1.0,
+            1.28,
+            1.4
+          ],
+          "tokens": [
+            " GO",
+            " FOR",
+            "WARD"
+          ]
+        },
+        "stream_origin_seconds": 0.3
+      }
+    },
+    {
+      "cycle": 4,
+      "event": "recognizer_ready",
+      "ready": {
+        "event": {
+          "denoiser": "rust-tract-0.23.9",
+          "event": "ready",
+          "load_seconds": 0.51137963,
+          "memory": {
+            "peak_rss_mib": 238.56640625,
+            "rss_mib": 238.56640625
+          },
+          "whisper": "rust-tract-0.23.9"
+        },
+        "observed_elapsed_seconds": 2.640010305
+      }
+    },
+    {
+      "buffer_bytes": 123840,
+      "buffer_capacity_bytes": 320000,
+      "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/floor/buffer-3-4.raw",
+      "buffer_start_seconds": 0.06,
+      "command_ready": {
+        "event": {
+          "denoiser": "rust-tract-0.23.9",
+          "event": "ready",
+          "load_seconds": 0.51137963,
+          "memory": {
+            "peak_rss_mib": 238.56640625,
+            "rss_mib": 238.56640625
+          },
+          "whisper": "rust-tract-0.23.9"
+        },
+        "observed_elapsed_seconds": 2.640010305
+      },
+      "command_result": {
+        "decode_cpu_seconds": 0.5054976070000001,
+        "event": "result",
+        "events": [
+          {
+            "closest_match": false,
+            "confidence": null,
+            "heard": null,
+            "kind": "wake",
+            "min_word_posterior": null,
+            "text": "go forward"
+          },
+          {
+            "closest_match": false,
+            "confidence": 1.0,
+            "heard": null,
+            "kind": "command",
+            "min_word_posterior": 1.0,
+            "text": "ten meters"
+          }
+        ],
+        "memory": {
+          "peak_rss_mib": 275.49609375,
+          "rss_mib": 255.59375
+        },
+        "recognition_stats": {
+          "fast_commands": 0,
+          "vosk_fast_path": false,
+          "vosk_finalize_utterances": false,
+          "whisper_loads": 1,
+          "whisper_transcriptions": 1
+        },
+        "seconds": 0.343471143,
+        "settle_cpu_seconds": 1.1429999999812424e-06,
+        "text": ""
+      },
+      "cycle": 4,
+      "detector_complete": {
+        "audio_seconds": 4.88625,
+        "cpu_seconds": 0.060323000000000015,
+        "decoded_samples": 67680,
+        "detections": 1,
+        "elapsed_seconds": 4.88625744,
+        "event": "complete",
+        "memory": {
+          "peak_rss_mib": 54.08984375,
+          "pss_mib": 49.7109375,
+          "rss_mib": 54.08984375
+        },
+        "paced": true,
+        "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/input.raw",
+        "quiet_gate": {
+          "hangover_ms": 1200,
+          "preroll_ms": 300,
+          "rms": 0.001
+        },
+        "skipped_samples": 10500,
+        "stream_count": 1
+      },
+      "endpoint_input_seconds": 3.93,
+      "endpoint_reason": "quiet",
+      "event": "cycle_complete",
+      "full_recognition_acceptance": false,
+      "input_seconds": 4.88625,
+      "last_speech_input_seconds": 3.33,
+      "memory": {
+        "overlap_peak_pss_mib": 319.9560546875,
+        "overlap_peak_rss_mib": 330.19921875,
+        "overlap_samples": 104,
+        "peak_combined_pss_mib": 319.9560546875,
+        "peak_combined_rss_mib": 330.19921875,
+        "sample_interval_ms": 20,
+        "samples": 236,
+        "sum_process_hwm_upper_bound_mib": 333.08203125
+      },
+      "payload_delay_ms": 0,
+      "production_defaults_changed": false,
+      "released_elapsed_seconds": 4.333397439,
+      "result_elapsed_seconds": 4.290014965,
+      "ring_capacity_bytes": 73920,
+      "timed_out": false,
+      "trigger": {
+        "audio_seconds": 2.07,
+        "elapsed_seconds": 2.074485084,
+        "event": "keyword",
+        "result": {
+          "keyword": "GO_FORWARD",
+          "start_time": 0.0,
+          "timestamps": [
+            1.0,
+            1.28,
+            1.4
+          ],
+          "tokens": [
+            " GO",
+            " FOR",
+            "WARD"
+          ]
+        },
+        "stream_origin_seconds": 0.3
+      },
+      "waiting_after_release": {
+        "processes": 2,
+        "pss_mib": 51.0126953125,
+        "rss_mib": 57.58984375
+      },
+      "waiting_before": {
+        "processes": 2,
+        "pss_mib": 50.99609375,
+        "rss_mib": 57.578125
+      },
+      "whole_application_acceptance": false
+    },
+    {
+      "buffer_bytes": 65280,
+      "buffer_start_seconds": 0.06,
+      "cycle": 5,
+      "elapsed_seconds": 2.100207979,
+      "event": "handoff_started",
+      "trigger": {
+        "audio_seconds": 2.07,
+        "elapsed_seconds": 2.074191909,
+        "event": "keyword",
+        "result": {
+          "keyword": "GO_FORWARD",
+          "start_time": 0.0,
+          "timestamps": [
+            1.0,
+            1.28,
+            1.4
+          ],
+          "tokens": [
+            " GO",
+            " FOR",
+            "WARD"
+          ]
+        },
+        "stream_origin_seconds": 0.3
+      }
+    },
+    {
+      "cycle": 5,
+      "event": "recognizer_ready",
+      "ready": {
+        "event": {
+          "denoiser": "rust-tract-0.23.9",
+          "event": "ready",
+          "load_seconds": 0.521476868,
+          "memory": {
+            "peak_rss_mib": 236.75,
+            "rss_mib": 236.75
+          },
+          "whisper": "rust-tract-0.23.9"
+        },
+        "observed_elapsed_seconds": 2.640009938
+      }
+    },
+    {
+      "buffer_bytes": 123840,
+      "buffer_capacity_bytes": 320000,
+      "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/floor/buffer-3-5.raw",
+      "buffer_start_seconds": 0.06,
+      "command_ready": {
+        "event": {
+          "denoiser": "rust-tract-0.23.9",
+          "event": "ready",
+          "load_seconds": 0.521476868,
+          "memory": {
+            "peak_rss_mib": 236.75,
+            "rss_mib": 236.75
+          },
+          "whisper": "rust-tract-0.23.9"
+        },
+        "observed_elapsed_seconds": 2.640009938
+      },
+      "command_result": {
+        "decode_cpu_seconds": 0.5165707730000001,
+        "event": "result",
+        "events": [
+          {
+            "closest_match": false,
+            "confidence": null,
+            "heard": null,
+            "kind": "wake",
+            "min_word_posterior": null,
+            "text": "go forward"
+          },
+          {
+            "closest_match": false,
+            "confidence": 1.0,
+            "heard": null,
+            "kind": "command",
+            "min_word_posterior": 1.0,
+            "text": "ten meters"
+          }
+        ],
+        "memory": {
+          "peak_rss_mib": 273.24609375,
+          "rss_mib": 253.3984375
+        },
+        "recognition_stats": {
+          "fast_commands": 0,
+          "vosk_fast_path": false,
+          "vosk_finalize_utterances": false,
+          "whisper_loads": 1,
+          "whisper_transcriptions": 1
+        },
+        "seconds": 0.36269036,
+        "settle_cpu_seconds": 1.062000000162655e-06,
+        "text": ""
+      },
+      "cycle": 5,
+      "detector_complete": {
+        "audio_seconds": 4.88625,
+        "cpu_seconds": 0.057315000000000005,
+        "decoded_samples": 67680,
+        "detections": 1,
+        "elapsed_seconds": 4.886267374,
+        "event": "complete",
+        "memory": {
+          "peak_rss_mib": 54.08984375,
+          "pss_mib": 49.7109375,
+          "rss_mib": 54.08984375
+        },
+        "paced": true,
+        "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/input.raw",
+        "quiet_gate": {
+          "hangover_ms": 1200,
+          "preroll_ms": 300,
+          "rms": 0.001
+        },
+        "skipped_samples": 10500,
+        "stream_count": 1
+      },
+      "endpoint_input_seconds": 3.93,
+      "endpoint_reason": "quiet",
+      "event": "cycle_complete",
+      "full_recognition_acceptance": false,
+      "input_seconds": 4.88625,
+      "last_speech_input_seconds": 3.33,
+      "memory": {
+        "overlap_peak_pss_mib": 317.802734375,
+        "overlap_peak_rss_mib": 328.1484375,
+        "overlap_samples": 107,
+        "peak_combined_pss_mib": 317.802734375,
+        "peak_combined_rss_mib": 328.1484375,
+        "sample_interval_ms": 20,
+        "samples": 237,
+        "sum_process_hwm_upper_bound_mib": 330.84375
+      },
+      "payload_delay_ms": 0,
+      "production_defaults_changed": false,
+      "released_elapsed_seconds": 4.351304381,
+      "result_elapsed_seconds": 4.320007088,
+      "ring_capacity_bytes": 73920,
+      "timed_out": false,
+      "trigger": {
+        "audio_seconds": 2.07,
+        "elapsed_seconds": 2.074191909,
+        "event": "keyword",
+        "result": {
+          "keyword": "GO_FORWARD",
+          "start_time": 0.0,
+          "timestamps": [
+            1.0,
+            1.28,
+            1.4
+          ],
+          "tokens": [
+            " GO",
+            " FOR",
+            "WARD"
+          ]
+        },
+        "stream_origin_seconds": 0.3
+      },
+      "waiting_after_release": {
+        "processes": 2,
+        "pss_mib": 51.021484375,
+        "rss_mib": 57.59765625
+      },
+      "waiting_before": {
+        "processes": 2,
+        "pss_mib": 51.013671875,
+        "rss_mib": 57.59375
+      },
+      "whole_application_acceptance": false
+    },
+    {
+      "buffer_bytes": 65280,
+      "buffer_start_seconds": 0.06,
+      "cycle": 6,
+      "elapsed_seconds": 2.100173284,
+      "event": "handoff_started",
+      "trigger": {
+        "audio_seconds": 2.07,
+        "elapsed_seconds": 2.074346734,
+        "event": "keyword",
+        "result": {
+          "keyword": "GO_FORWARD",
+          "start_time": 0.0,
+          "timestamps": [
+            1.0,
+            1.28,
+            1.4
+          ],
+          "tokens": [
+            " GO",
+            " FOR",
+            "WARD"
+          ]
+        },
+        "stream_origin_seconds": 0.3
+      }
+    },
+    {
+      "cycle": 6,
+      "event": "recognizer_ready",
+      "ready": {
+        "event": {
+          "denoiser": "rust-tract-0.23.9",
+          "event": "ready",
+          "load_seconds": 0.532841879,
+          "memory": {
+            "peak_rss_mib": 238.68359375,
+            "rss_mib": 238.68359375
+          },
+          "whisper": "rust-tract-0.23.9"
+        },
+        "observed_elapsed_seconds": 2.640008679
+      }
+    },
+    {
+      "buffer_bytes": 123840,
+      "buffer_capacity_bytes": 320000,
+      "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/floor/buffer-3-6.raw",
+      "buffer_start_seconds": 0.06,
+      "command_ready": {
+        "event": {
+          "denoiser": "rust-tract-0.23.9",
+          "event": "ready",
+          "load_seconds": 0.532841879,
+          "memory": {
+            "peak_rss_mib": 238.68359375,
+            "rss_mib": 238.68359375
+          },
+          "whisper": "rust-tract-0.23.9"
+        },
+        "observed_elapsed_seconds": 2.640008679
+      },
+      "command_result": {
+        "decode_cpu_seconds": 0.512655353,
+        "event": "result",
+        "events": [
+          {
+            "closest_match": false,
+            "confidence": null,
+            "heard": null,
+            "kind": "wake",
+            "min_word_posterior": null,
+            "text": "go forward"
+          },
+          {
+            "closest_match": false,
+            "confidence": 1.0,
+            "heard": null,
+            "kind": "command",
+            "min_word_posterior": 1.0,
+            "text": "ten meters"
+          }
+        ],
+        "memory": {
+          "peak_rss_mib": 274.41015625,
+          "rss_mib": 254.59375
+        },
+        "recognition_stats": {
+          "fast_commands": 0,
+          "vosk_fast_path": false,
+          "vosk_finalize_utterances": false,
+          "whisper_loads": 1,
+          "whisper_transcriptions": 1
+        },
+        "seconds": 0.361326358,
+        "settle_cpu_seconds": 9.81999999982719e-07,
+        "text": ""
+      },
+      "cycle": 6,
+      "detector_complete": {
+        "audio_seconds": 4.88625,
+        "cpu_seconds": 0.05640400000000001,
+        "decoded_samples": 67680,
+        "detections": 1,
+        "elapsed_seconds": 4.886259134,
+        "event": "complete",
+        "memory": {
+          "peak_rss_mib": 54.08984375,
+          "pss_mib": 49.7109375,
+          "rss_mib": 54.08984375
+        },
+        "paced": true,
+        "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/input.raw",
+        "quiet_gate": {
+          "hangover_ms": 1200,
+          "preroll_ms": 300,
+          "rms": 0.001
+        },
+        "skipped_samples": 10500,
+        "stream_count": 1
+      },
+      "endpoint_input_seconds": 3.93,
+      "endpoint_reason": "quiet",
+      "event": "cycle_complete",
+      "full_recognition_acceptance": false,
+      "input_seconds": 4.88625,
+      "last_speech_input_seconds": 3.33,
+      "memory": {
+        "overlap_peak_pss_mib": 315.25,
+        "overlap_peak_rss_mib": 326.26171875,
+        "overlap_samples": 107,
+        "peak_combined_pss_mib": 315.25,
+        "peak_combined_rss_mib": 326.26171875,
+        "sample_interval_ms": 20,
+        "samples": 237,
+        "sum_process_hwm_upper_bound_mib": 332.015625
+      },
+      "payload_delay_ms": 0,
+      "production_defaults_changed": false,
+      "released_elapsed_seconds": 4.351400094,
+      "result_elapsed_seconds": 4.32000735,
+      "ring_capacity_bytes": 73920,
+      "timed_out": false,
+      "trigger": {
+        "audio_seconds": 2.07,
+        "elapsed_seconds": 2.074346734,
+        "event": "keyword",
+        "result": {
+          "keyword": "GO_FORWARD",
+          "start_time": 0.0,
+          "timestamps": [
+            1.0,
+            1.28,
+            1.4
+          ],
+          "tokens": [
+            " GO",
+            " FOR",
+            "WARD"
+          ]
+        },
+        "stream_origin_seconds": 0.3
+      },
+      "waiting_after_release": {
+        "processes": 2,
+        "pss_mib": 51.029296875,
+        "rss_mib": 57.60546875
+      },
+      "waiting_before": {
+        "processes": 2,
+        "pss_mib": 51.021484375,
+        "rss_mib": 57.6015625
+      },
+      "whole_application_acceptance": false
+    },
+    {
+      "buffer_bytes": 65280,
+      "buffer_start_seconds": 0.06,
+      "cycle": 7,
+      "elapsed_seconds": 2.10016546,
+      "event": "handoff_started",
+      "trigger": {
+        "audio_seconds": 2.07,
+        "elapsed_seconds": 2.075101213,
+        "event": "keyword",
+        "result": {
+          "keyword": "GO_FORWARD",
+          "start_time": 0.0,
+          "timestamps": [
+            1.0,
+            1.28,
+            1.4
+          ],
+          "tokens": [
+            " GO",
+            " FOR",
+            "WARD"
+          ]
+        },
+        "stream_origin_seconds": 0.3
+      }
+    },
+    {
+      "cycle": 7,
+      "event": "recognizer_ready",
+      "ready": {
+        "event": {
+          "denoiser": "rust-tract-0.23.9",
+          "event": "ready",
+          "load_seconds": 0.522880493,
+          "memory": {
+            "peak_rss_mib": 236.26953125,
+            "rss_mib": 236.26953125
+          },
+          "whisper": "rust-tract-0.23.9"
+        },
+        "observed_elapsed_seconds": 2.64001251
+      }
+    },
+    {
+      "buffer_bytes": 123840,
+      "buffer_capacity_bytes": 320000,
+      "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/floor/buffer-3-7.raw",
+      "buffer_start_seconds": 0.06,
+      "command_ready": {
+        "event": {
+          "denoiser": "rust-tract-0.23.9",
+          "event": "ready",
+          "load_seconds": 0.522880493,
+          "memory": {
+            "peak_rss_mib": 236.26953125,
+            "rss_mib": 236.26953125
+          },
+          "whisper": "rust-tract-0.23.9"
+        },
+        "observed_elapsed_seconds": 2.64001251
+      },
+      "command_result": {
+        "decode_cpu_seconds": 0.513592995,
+        "event": "result",
+        "events": [
+          {
+            "closest_match": false,
+            "confidence": null,
+            "heard": null,
+            "kind": "wake",
+            "min_word_posterior": null,
+            "text": "go forward"
+          },
+          {
+            "closest_match": false,
+            "confidence": 1.0,
+            "heard": null,
+            "kind": "command",
+            "min_word_posterior": 1.0,
+            "text": "ten meters"
+          }
+        ],
+        "memory": {
+          "peak_rss_mib": 272.8671875,
+          "rss_mib": 252.8125
+        },
+        "recognition_stats": {
+          "fast_commands": 0,
+          "vosk_fast_path": false,
+          "vosk_finalize_utterances": false,
+          "whisper_loads": 1,
+          "whisper_transcriptions": 1
+        },
+        "seconds": 0.347956865,
+        "settle_cpu_seconds": 1.0720000001018803e-06,
+        "text": ""
+      },
+      "cycle": 7,
+      "detector_complete": {
+        "audio_seconds": 4.88625,
+        "cpu_seconds": 0.059003999999999945,
+        "decoded_samples": 67680,
+        "detections": 1,
+        "elapsed_seconds": 4.886258247,
+        "event": "complete",
+        "memory": {
+          "peak_rss_mib": 54.08984375,
+          "pss_mib": 49.7109375,
+          "rss_mib": 54.08984375
+        },
+        "paced": true,
+        "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/input.raw",
+        "quiet_gate": {
+          "hangover_ms": 1200,
+          "preroll_ms": 300,
+          "rms": 0.001
+        },
+        "skipped_samples": 10500,
+        "stream_count": 1
+      },
+      "endpoint_input_seconds": 3.93,
+      "endpoint_reason": "quiet",
+      "event": "cycle_complete",
+      "full_recognition_acceptance": false,
+      "input_seconds": 4.88625,
+      "last_speech_input_seconds": 3.33,
+      "memory": {
+        "overlap_peak_pss_mib": 313.62890625,
+        "overlap_peak_rss_mib": 324.62890625,
+        "overlap_samples": 105,
+        "peak_combined_pss_mib": 313.62890625,
+        "peak_combined_rss_mib": 324.62890625,
+        "sample_interval_ms": 20,
+        "samples": 235,
+        "sum_process_hwm_upper_bound_mib": 330.48046875
+      },
+      "payload_delay_ms": 0,
+      "production_defaults_changed": false,
+      "released_elapsed_seconds": 4.334117129,
+      "result_elapsed_seconds": 4.290020552,
+      "ring_capacity_bytes": 73920,
+      "timed_out": false,
+      "trigger": {
+        "audio_seconds": 2.07,
+        "elapsed_seconds": 2.075101213,
+        "event": "keyword",
+        "result": {
+          "keyword": "GO_FORWARD",
+          "start_time": 0.0,
+          "timestamps": [
+            1.0,
+            1.28,
+            1.4
+          ],
+          "tokens": [
+            " GO",
+            " FOR",
+            "WARD"
+          ]
+        },
+        "stream_origin_seconds": 0.3
+      },
+      "waiting_after_release": {
+        "processes": 2,
+        "pss_mib": 51.03515625,
+        "rss_mib": 57.6171875
+      },
+      "waiting_before": {
+        "processes": 2,
+        "pss_mib": 51.029296875,
+        "rss_mib": 57.609375
+      },
+      "whole_application_acceptance": false
+    },
+    {
+      "buffer_bytes": 65280,
+      "buffer_start_seconds": 0.06,
+      "cycle": 8,
+      "elapsed_seconds": 2.100179407,
+      "event": "handoff_started",
+      "trigger": {
+        "audio_seconds": 2.07,
+        "elapsed_seconds": 2.074554668,
+        "event": "keyword",
+        "result": {
+          "keyword": "GO_FORWARD",
+          "start_time": 0.0,
+          "timestamps": [
+            1.0,
+            1.28,
+            1.4
+          ],
+          "tokens": [
+            " GO",
+            " FOR",
+            "WARD"
+          ]
+        },
+        "stream_origin_seconds": 0.3
+      }
+    },
+    {
+      "cycle": 8,
+      "event": "recognizer_ready",
+      "ready": {
+        "event": {
+          "denoiser": "rust-tract-0.23.9",
+          "event": "ready",
+          "load_seconds": 0.531561148,
+          "memory": {
+            "peak_rss_mib": 236.296875,
+            "rss_mib": 236.296875
+          },
+          "whisper": "rust-tract-0.23.9"
+        },
+        "observed_elapsed_seconds": 2.640017583
+      }
+    },
+    {
+      "buffer_bytes": 123840,
+      "buffer_capacity_bytes": 320000,
+      "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/floor/buffer-3-8.raw",
+      "buffer_start_seconds": 0.06,
+      "command_ready": {
+        "event": {
+          "denoiser": "rust-tract-0.23.9",
+          "event": "ready",
+          "load_seconds": 0.531561148,
+          "memory": {
+            "peak_rss_mib": 236.296875,
+            "rss_mib": 236.296875
+          },
+          "whisper": "rust-tract-0.23.9"
+        },
+        "observed_elapsed_seconds": 2.640017583
+      },
+      "command_result": {
+        "decode_cpu_seconds": 0.5209809209999999,
+        "event": "result",
+        "events": [
+          {
+            "closest_match": false,
+            "confidence": null,
+            "heard": null,
+            "kind": "wake",
+            "min_word_posterior": null,
+            "text": "go forward"
+          },
+          {
+            "closest_match": false,
+            "confidence": 1.0,
+            "heard": null,
+            "kind": "command",
+            "min_word_posterior": 1.0,
+            "text": "ten meters"
+          }
+        ],
+        "memory": {
+          "peak_rss_mib": 272.85546875,
+          "rss_mib": 252.796875
+        },
+        "recognition_stats": {
+          "fast_commands": 0,
+          "vosk_fast_path": false,
+          "vosk_finalize_utterances": false,
+          "whisper_loads": 1,
+          "whisper_transcriptions": 1
+        },
+        "seconds": 0.3515962,
+        "settle_cpu_seconds": 1.4520000000128874e-06,
+        "text": ""
+      },
+      "cycle": 8,
+      "detector_complete": {
+        "audio_seconds": 4.88625,
+        "cpu_seconds": 0.05884299999999998,
+        "decoded_samples": 67680,
+        "detections": 1,
+        "elapsed_seconds": 4.88625769,
+        "event": "complete",
+        "memory": {
+          "peak_rss_mib": 54.08984375,
+          "pss_mib": 49.7099609375,
+          "rss_mib": 54.08984375
+        },
+        "paced": true,
+        "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/input.raw",
+        "quiet_gate": {
+          "hangover_ms": 1200,
+          "preroll_ms": 300,
+          "rms": 0.001
+        },
+        "skipped_samples": 10500,
+        "stream_count": 1
+      },
+      "endpoint_input_seconds": 3.93,
+      "endpoint_reason": "quiet",
+      "event": "cycle_complete",
+      "full_recognition_acceptance": false,
+      "input_seconds": 4.88625,
+      "last_speech_input_seconds": 3.33,
+      "memory": {
+        "overlap_peak_pss_mib": 313.580078125,
+        "overlap_peak_rss_mib": 324.546875,
+        "overlap_samples": 105,
+        "peak_combined_pss_mib": 313.580078125,
+        "peak_combined_rss_mib": 324.546875,
+        "sample_interval_ms": 20,
+        "samples": 237,
+        "sum_process_hwm_upper_bound_mib": 330.4921875
+      },
+      "payload_delay_ms": 0,
+      "production_defaults_changed": false,
+      "released_elapsed_seconds": 4.325579408,
+      "result_elapsed_seconds": 4.290010865,
+      "ring_capacity_bytes": 73920,
+      "timed_out": false,
+      "trigger": {
+        "audio_seconds": 2.07,
+        "elapsed_seconds": 2.074554668,
+        "event": "keyword",
+        "result": {
+          "keyword": "GO_FORWARD",
+          "start_time": 0.0,
+          "timestamps": [
+            1.0,
+            1.28,
+            1.4
+          ],
+          "tokens": [
+            " GO",
+            " FOR",
+            "WARD"
+          ]
+        },
+        "stream_origin_seconds": 0.3
+      },
+      "waiting_after_release": {
+        "processes": 2,
+        "pss_mib": 51.0576171875,
+        "rss_mib": 57.640625
+      },
+      "waiting_before": {
+        "processes": 2,
+        "pss_mib": 51.0390625,
+        "rss_mib": 57.62109375
+      },
+      "whole_application_acceptance": false
+    },
+    {
+      "buffer_bytes": 65280,
+      "buffer_start_seconds": 0.06,
+      "cycle": 9,
+      "elapsed_seconds": 2.100168265,
+      "event": "handoff_started",
+      "trigger": {
+        "audio_seconds": 2.07,
+        "elapsed_seconds": 2.075026402,
+        "event": "keyword",
+        "result": {
+          "keyword": "GO_FORWARD",
+          "start_time": 0.0,
+          "timestamps": [
+            1.0,
+            1.28,
+            1.4
+          ],
+          "tokens": [
+            " GO",
+            " FOR",
+            "WARD"
+          ]
+        },
+        "stream_origin_seconds": 0.3
+      }
+    },
+    {
+      "cycle": 9,
+      "event": "recognizer_ready",
+      "ready": {
+        "event": {
+          "denoiser": "rust-tract-0.23.9",
+          "event": "ready",
+          "load_seconds": 0.493684445,
+          "memory": {
+            "peak_rss_mib": 240.4453125,
+            "rss_mib": 240.4453125
+          },
+          "whisper": "rust-tract-0.23.9"
+        },
+        "observed_elapsed_seconds": 2.610009273
+      }
+    },
+    {
+      "buffer_bytes": 123840,
+      "buffer_capacity_bytes": 320000,
+      "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/floor/buffer-3-9.raw",
+      "buffer_start_seconds": 0.06,
+      "command_ready": {
+        "event": {
+          "denoiser": "rust-tract-0.23.9",
+          "event": "ready",
+          "load_seconds": 0.493684445,
+          "memory": {
+            "peak_rss_mib": 240.4453125,
+            "rss_mib": 240.4453125
+          },
+          "whisper": "rust-tract-0.23.9"
+        },
+        "observed_elapsed_seconds": 2.610009273
+      },
+      "command_result": {
+        "decode_cpu_seconds": 0.54025918,
+        "event": "result",
+        "events": [
+          {
+            "closest_match": false,
+            "confidence": null,
+            "heard": null,
+            "kind": "wake",
+            "min_word_posterior": null,
+            "text": "go forward"
+          },
+          {
+            "closest_match": false,
+            "confidence": 1.0,
+            "heard": null,
+            "kind": "command",
+            "min_word_posterior": 1.0,
+            "text": "ten meters"
+          }
+        ],
+        "memory": {
+          "peak_rss_mib": 276.64453125,
+          "rss_mib": 256.61328125
+        },
+        "recognition_stats": {
+          "fast_commands": 0,
+          "vosk_fast_path": false,
+          "vosk_finalize_utterances": false,
+          "whisper_loads": 1,
+          "whisper_transcriptions": 1
+        },
+        "seconds": 0.369369639,
+        "settle_cpu_seconds": 1.2719999999966092e-06,
+        "text": ""
+      },
+      "cycle": 9,
+      "detector_complete": {
+        "audio_seconds": 4.88625,
+        "cpu_seconds": 0.061921,
+        "decoded_samples": 67680,
+        "detections": 1,
+        "elapsed_seconds": 4.886258144,
+        "event": "complete",
+        "memory": {
+          "peak_rss_mib": 54.08984375,
+          "pss_mib": 49.705078125,
+          "rss_mib": 54.08984375
+        },
+        "paced": true,
+        "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/input.raw",
+        "quiet_gate": {
+          "hangover_ms": 1200,
+          "preroll_ms": 300,
+          "rms": 0.001
+        },
+        "skipped_samples": 10500,
+        "stream_count": 1
+      },
+      "endpoint_input_seconds": 3.93,
+      "endpoint_reason": "quiet",
+      "event": "cycle_complete",
+      "full_recognition_acceptance": false,
+      "input_seconds": 4.88625,
+      "last_speech_input_seconds": 3.33,
+      "memory": {
+        "overlap_peak_pss_mib": 317.3779296875,
+        "overlap_peak_rss_mib": 328.3984375,
+        "overlap_samples": 107,
+        "peak_combined_pss_mib": 317.3779296875,
+        "peak_combined_rss_mib": 328.3984375,
+        "sample_interval_ms": 20,
+        "samples": 236,
+        "sum_process_hwm_upper_bound_mib": 334.29296875
+      },
+      "payload_delay_ms": 0,
+      "production_defaults_changed": false,
+      "released_elapsed_seconds": 4.352526682,
+      "result_elapsed_seconds": 4.320011782,
+      "ring_capacity_bytes": 73920,
+      "timed_out": false,
+      "trigger": {
+        "audio_seconds": 2.07,
+        "elapsed_seconds": 2.075026402,
+        "event": "keyword",
+        "result": {
+          "keyword": "GO_FORWARD",
+          "start_time": 0.0,
+          "timestamps": [
+            1.0,
+            1.28,
+            1.4
+          ],
+          "tokens": [
+            " GO",
+            " FOR",
+            "WARD"
+          ]
+        },
+        "stream_origin_seconds": 0.3
+      },
+      "waiting_after_release": {
+        "processes": 2,
+        "pss_mib": 51.0654296875,
+        "rss_mib": 57.65234375
+      },
+      "waiting_before": {
+        "processes": 2,
+        "pss_mib": 51.0576171875,
+        "rss_mib": 57.640625
+      },
+      "whole_application_acceptance": false
+    },
+    {
+      "buffer_bytes": 65280,
+      "buffer_start_seconds": 0.06,
+      "cycle": 10,
+      "elapsed_seconds": 2.100193523,
+      "event": "handoff_started",
+      "trigger": {
+        "audio_seconds": 2.07,
+        "elapsed_seconds": 2.074428589,
+        "event": "keyword",
+        "result": {
+          "keyword": "GO_FORWARD",
+          "start_time": 0.0,
+          "timestamps": [
+            1.0,
+            1.28,
+            1.4
+          ],
+          "tokens": [
+            " GO",
+            " FOR",
+            "WARD"
+          ]
+        },
+        "stream_origin_seconds": 0.3
+      }
+    },
+    {
+      "cycle": 10,
+      "event": "recognizer_ready",
+      "ready": {
+        "event": {
+          "denoiser": "rust-tract-0.23.9",
+          "event": "ready",
+          "load_seconds": 0.546634124,
+          "memory": {
+            "peak_rss_mib": 238.54296875,
+            "rss_mib": 238.54296875
+          },
+          "whisper": "rust-tract-0.23.9"
+        },
+        "observed_elapsed_seconds": 2.670029817
+      }
+    },
+    {
+      "buffer_bytes": 123840,
+      "buffer_capacity_bytes": 320000,
+      "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/floor/buffer-3-10.raw",
+      "buffer_start_seconds": 0.06,
+      "command_ready": {
+        "event": {
+          "denoiser": "rust-tract-0.23.9",
+          "event": "ready",
+          "load_seconds": 0.546634124,
+          "memory": {
+            "peak_rss_mib": 238.54296875,
+            "rss_mib": 238.54296875
+          },
+          "whisper": "rust-tract-0.23.9"
+        },
+        "observed_elapsed_seconds": 2.670029817
+      },
+      "command_result": {
+        "decode_cpu_seconds": 0.5481048400000001,
+        "event": "result",
+        "events": [
+          {
+            "closest_match": false,
+            "confidence": null,
+            "heard": null,
+            "kind": "wake",
+            "min_word_posterior": null,
+            "text": "go forward"
+          },
+          {
+            "closest_match": false,
+            "confidence": 1.0,
+            "heard": null,
+            "kind": "command",
+            "min_word_posterior": 1.0,
+            "text": "ten meters"
+          }
+        ],
+        "memory": {
+          "peak_rss_mib": 274.88671875,
+          "rss_mib": 254.87109375
+        },
+        "recognition_stats": {
+          "fast_commands": 0,
+          "vosk_fast_path": false,
+          "vosk_finalize_utterances": false,
+          "whisper_loads": 1,
+          "whisper_transcriptions": 1
+        },
+        "seconds": 0.363903046,
+        "settle_cpu_seconds": 1.3930000000161868e-06,
+        "text": ""
+      },
+      "cycle": 10,
+      "detector_complete": {
+        "audio_seconds": 4.88625,
+        "cpu_seconds": 0.06066400000000005,
+        "decoded_samples": 67680,
+        "detections": 1,
+        "elapsed_seconds": 4.886258969,
+        "event": "complete",
+        "memory": {
+          "peak_rss_mib": 54.08984375,
+          "pss_mib": 49.701171875,
+          "rss_mib": 54.08984375
+        },
+        "paced": true,
+        "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/input.raw",
+        "quiet_gate": {
+          "hangover_ms": 1200,
+          "preroll_ms": 300,
+          "rms": 0.001
+        },
+        "skipped_samples": 10500,
+        "stream_count": 1
+      },
+      "endpoint_input_seconds": 3.93,
+      "endpoint_reason": "quiet",
+      "event": "cycle_complete",
+      "full_recognition_acceptance": false,
+      "input_seconds": 4.88625,
+      "last_speech_input_seconds": 3.33,
+      "memory": {
+        "overlap_peak_pss_mib": 322.521484375,
+        "overlap_peak_rss_mib": 333.671875,
+        "overlap_samples": 104,
+        "peak_combined_pss_mib": 322.521484375,
+        "peak_combined_rss_mib": 333.671875,
+        "sample_interval_ms": 20,
+        "samples": 233,
+        "sum_process_hwm_upper_bound_mib": 333.671875
+      },
+      "payload_delay_ms": 0,
+      "production_defaults_changed": false,
+      "released_elapsed_seconds": 4.361223476,
+      "result_elapsed_seconds": 4.320012574,
+      "ring_capacity_bytes": 73920,
+      "timed_out": false,
+      "trigger": {
+        "audio_seconds": 2.07,
+        "elapsed_seconds": 2.074428589,
+        "event": "keyword",
+        "result": {
+          "keyword": "GO_FORWARD",
+          "start_time": 0.0,
+          "timestamps": [
+            1.0,
+            1.28,
+            1.4
+          ],
+          "tokens": [
+            " GO",
+            " FOR",
+            "WARD"
+          ]
+        },
+        "stream_origin_seconds": 0.3
+      },
+      "waiting_after_release": {
+        "processes": 2,
+        "pss_mib": 51.2001953125,
+        "rss_mib": 57.78515625
+      },
+      "waiting_before": {
+        "processes": 2,
+        "pss_mib": 51.0654296875,
+        "rss_mib": 57.65234375
+      },
+      "whole_application_acceptance": false
+    },
+    {
+      "cycles": [
+        {
+          "buffer_bytes": 123840,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/floor/buffer-3-1.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.502188231,
+              "memory": {
+                "peak_rss_mib": 240.66796875,
+                "rss_mib": 240.66796875
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.610010166
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.5183951820000001,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 277.484375,
+              "rss_mib": 257.59375
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.361301241,
+            "settle_cpu_seconds": 9.720000000434936e-07,
+            "text": ""
+          },
+          "cycle": 1,
+          "detector_complete": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.061055000000000026,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.886257259,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.08984375,
+              "pss_mib": 49.7109375,
+              "rss_mib": 54.08984375
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "endpoint_input_seconds": 3.93,
+          "endpoint_reason": "quiet",
+          "event": "cycle_complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 4.88625,
+          "last_speech_input_seconds": 3.33,
+          "memory": {
+            "overlap_peak_pss_mib": 318.060546875,
+            "overlap_peak_rss_mib": 329.015625,
+            "overlap_samples": 106,
+            "peak_combined_pss_mib": 318.060546875,
+            "peak_combined_rss_mib": 329.015625,
+            "sample_interval_ms": 20,
+            "samples": 237,
+            "sum_process_hwm_upper_bound_mib": 334.83203125
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "released_elapsed_seconds": 4.351212421,
+          "result_elapsed_seconds": 4.320008466,
+          "ring_capacity_bytes": 73920,
+          "timed_out": false,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.0747016,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "waiting_after_release": {
+            "processes": 2,
+            "pss_mib": 50.787109375,
+            "rss_mib": 57.3671875
+          },
+          "waiting_before": {
+            "processes": 2,
+            "pss_mib": 45.7841796875,
+            "rss_mib": 51.87109375
+          },
+          "whole_application_acceptance": false,
+          "actual_commands": [
+            "ten meters"
+          ],
+          "buffer_identical": true
+        },
+        {
+          "buffer_bytes": 123840,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/floor/buffer-3-2.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.502449278,
+              "memory": {
+                "peak_rss_mib": 238.8203125,
+                "rss_mib": 238.8203125
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.610007986
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.509273327,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 275.33203125,
+              "rss_mib": 255.33203125
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.354802934,
+            "settle_cpu_seconds": 1.0820000000411056e-06,
+            "text": ""
+          },
+          "cycle": 2,
+          "detector_complete": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.058813,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.886257937,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.08984375,
+              "pss_mib": 49.7109375,
+              "rss_mib": 54.08984375
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "endpoint_input_seconds": 3.93,
+          "endpoint_reason": "quiet",
+          "event": "cycle_complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 4.88625,
+          "last_speech_input_seconds": 3.33,
+          "memory": {
+            "overlap_peak_pss_mib": 315.87890625,
+            "overlap_peak_rss_mib": 327.12890625,
+            "overlap_samples": 107,
+            "peak_combined_pss_mib": 315.87890625,
+            "peak_combined_rss_mib": 327.12890625,
+            "sample_interval_ms": 20,
+            "samples": 237,
+            "sum_process_hwm_upper_bound_mib": 332.8984375
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "released_elapsed_seconds": 4.331532057,
+          "result_elapsed_seconds": 4.290007904,
+          "ring_capacity_bytes": 73920,
+          "timed_out": false,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074754321,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "waiting_after_release": {
+            "processes": 2,
+            "pss_mib": 50.990234375,
+            "rss_mib": 57.5703125
+          },
+          "waiting_before": {
+            "processes": 2,
+            "pss_mib": 50.787109375,
+            "rss_mib": 57.3671875
+          },
+          "whole_application_acceptance": false,
+          "actual_commands": [
+            "ten meters"
+          ],
+          "buffer_identical": true
+        },
+        {
+          "buffer_bytes": 123840,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/floor/buffer-3-3.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.527596394,
+              "memory": {
+                "peak_rss_mib": 236.421875,
+                "rss_mib": 236.421875
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.640008647
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.489853549,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 272.609375,
+              "rss_mib": 252.8671875
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.332307145,
+            "settle_cpu_seconds": 1.0520000000013852e-06,
+            "text": ""
+          },
+          "cycle": 3,
+          "detector_complete": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.05577700000000002,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.886257885,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.08984375,
+              "pss_mib": 49.7109375,
+              "rss_mib": 54.08984375
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "endpoint_input_seconds": 3.93,
+          "endpoint_reason": "quiet",
+          "event": "cycle_complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 4.88625,
+          "last_speech_input_seconds": 3.33,
+          "memory": {
+            "overlap_peak_pss_mib": 313.5966796875,
+            "overlap_peak_rss_mib": 324.57421875,
+            "overlap_samples": 107,
+            "peak_combined_pss_mib": 313.5966796875,
+            "peak_combined_rss_mib": 324.57421875,
+            "sample_interval_ms": 20,
+            "samples": 239,
+            "sum_process_hwm_upper_bound_mib": 330.18359375
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "released_elapsed_seconds": 4.321675161,
+          "result_elapsed_seconds": 4.290007267,
+          "ring_capacity_bytes": 73920,
+          "timed_out": false,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.073951402,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "waiting_after_release": {
+            "processes": 2,
+            "pss_mib": 50.99609375,
+            "rss_mib": 57.578125
+          },
+          "waiting_before": {
+            "processes": 2,
+            "pss_mib": 50.990234375,
+            "rss_mib": 57.5703125
+          },
+          "whole_application_acceptance": false,
+          "actual_commands": [
+            "ten meters"
+          ],
+          "buffer_identical": true
+        },
+        {
+          "buffer_bytes": 123840,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/floor/buffer-3-4.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.51137963,
+              "memory": {
+                "peak_rss_mib": 238.56640625,
+                "rss_mib": 238.56640625
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.640010305
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.5054976070000001,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 275.49609375,
+              "rss_mib": 255.59375
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.343471143,
+            "settle_cpu_seconds": 1.1429999999812424e-06,
+            "text": ""
+          },
+          "cycle": 4,
+          "detector_complete": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.060323000000000015,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.88625744,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.08984375,
+              "pss_mib": 49.7109375,
+              "rss_mib": 54.08984375
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "endpoint_input_seconds": 3.93,
+          "endpoint_reason": "quiet",
+          "event": "cycle_complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 4.88625,
+          "last_speech_input_seconds": 3.33,
+          "memory": {
+            "overlap_peak_pss_mib": 319.9560546875,
+            "overlap_peak_rss_mib": 330.19921875,
+            "overlap_samples": 104,
+            "peak_combined_pss_mib": 319.9560546875,
+            "peak_combined_rss_mib": 330.19921875,
+            "sample_interval_ms": 20,
+            "samples": 236,
+            "sum_process_hwm_upper_bound_mib": 333.08203125
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "released_elapsed_seconds": 4.333397439,
+          "result_elapsed_seconds": 4.290014965,
+          "ring_capacity_bytes": 73920,
+          "timed_out": false,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074485084,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "waiting_after_release": {
+            "processes": 2,
+            "pss_mib": 51.0126953125,
+            "rss_mib": 57.58984375
+          },
+          "waiting_before": {
+            "processes": 2,
+            "pss_mib": 50.99609375,
+            "rss_mib": 57.578125
+          },
+          "whole_application_acceptance": false,
+          "actual_commands": [
+            "ten meters"
+          ],
+          "buffer_identical": true
+        },
+        {
+          "buffer_bytes": 123840,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/floor/buffer-3-5.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.521476868,
+              "memory": {
+                "peak_rss_mib": 236.75,
+                "rss_mib": 236.75
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.640009938
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.5165707730000001,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 273.24609375,
+              "rss_mib": 253.3984375
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.36269036,
+            "settle_cpu_seconds": 1.062000000162655e-06,
+            "text": ""
+          },
+          "cycle": 5,
+          "detector_complete": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.057315000000000005,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.886267374,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.08984375,
+              "pss_mib": 49.7109375,
+              "rss_mib": 54.08984375
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "endpoint_input_seconds": 3.93,
+          "endpoint_reason": "quiet",
+          "event": "cycle_complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 4.88625,
+          "last_speech_input_seconds": 3.33,
+          "memory": {
+            "overlap_peak_pss_mib": 317.802734375,
+            "overlap_peak_rss_mib": 328.1484375,
+            "overlap_samples": 107,
+            "peak_combined_pss_mib": 317.802734375,
+            "peak_combined_rss_mib": 328.1484375,
+            "sample_interval_ms": 20,
+            "samples": 237,
+            "sum_process_hwm_upper_bound_mib": 330.84375
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "released_elapsed_seconds": 4.351304381,
+          "result_elapsed_seconds": 4.320007088,
+          "ring_capacity_bytes": 73920,
+          "timed_out": false,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074191909,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "waiting_after_release": {
+            "processes": 2,
+            "pss_mib": 51.021484375,
+            "rss_mib": 57.59765625
+          },
+          "waiting_before": {
+            "processes": 2,
+            "pss_mib": 51.013671875,
+            "rss_mib": 57.59375
+          },
+          "whole_application_acceptance": false,
+          "actual_commands": [
+            "ten meters"
+          ],
+          "buffer_identical": true
+        },
+        {
+          "buffer_bytes": 123840,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/floor/buffer-3-6.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.532841879,
+              "memory": {
+                "peak_rss_mib": 238.68359375,
+                "rss_mib": 238.68359375
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.640008679
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.512655353,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 274.41015625,
+              "rss_mib": 254.59375
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.361326358,
+            "settle_cpu_seconds": 9.81999999982719e-07,
+            "text": ""
+          },
+          "cycle": 6,
+          "detector_complete": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.05640400000000001,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.886259134,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.08984375,
+              "pss_mib": 49.7109375,
+              "rss_mib": 54.08984375
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "endpoint_input_seconds": 3.93,
+          "endpoint_reason": "quiet",
+          "event": "cycle_complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 4.88625,
+          "last_speech_input_seconds": 3.33,
+          "memory": {
+            "overlap_peak_pss_mib": 315.25,
+            "overlap_peak_rss_mib": 326.26171875,
+            "overlap_samples": 107,
+            "peak_combined_pss_mib": 315.25,
+            "peak_combined_rss_mib": 326.26171875,
+            "sample_interval_ms": 20,
+            "samples": 237,
+            "sum_process_hwm_upper_bound_mib": 332.015625
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "released_elapsed_seconds": 4.351400094,
+          "result_elapsed_seconds": 4.32000735,
+          "ring_capacity_bytes": 73920,
+          "timed_out": false,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074346734,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "waiting_after_release": {
+            "processes": 2,
+            "pss_mib": 51.029296875,
+            "rss_mib": 57.60546875
+          },
+          "waiting_before": {
+            "processes": 2,
+            "pss_mib": 51.021484375,
+            "rss_mib": 57.6015625
+          },
+          "whole_application_acceptance": false,
+          "actual_commands": [
+            "ten meters"
+          ],
+          "buffer_identical": true
+        },
+        {
+          "buffer_bytes": 123840,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/floor/buffer-3-7.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.522880493,
+              "memory": {
+                "peak_rss_mib": 236.26953125,
+                "rss_mib": 236.26953125
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.64001251
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.513592995,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 272.8671875,
+              "rss_mib": 252.8125
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.347956865,
+            "settle_cpu_seconds": 1.0720000001018803e-06,
+            "text": ""
+          },
+          "cycle": 7,
+          "detector_complete": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.059003999999999945,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.886258247,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.08984375,
+              "pss_mib": 49.7109375,
+              "rss_mib": 54.08984375
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "endpoint_input_seconds": 3.93,
+          "endpoint_reason": "quiet",
+          "event": "cycle_complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 4.88625,
+          "last_speech_input_seconds": 3.33,
+          "memory": {
+            "overlap_peak_pss_mib": 313.62890625,
+            "overlap_peak_rss_mib": 324.62890625,
+            "overlap_samples": 105,
+            "peak_combined_pss_mib": 313.62890625,
+            "peak_combined_rss_mib": 324.62890625,
+            "sample_interval_ms": 20,
+            "samples": 235,
+            "sum_process_hwm_upper_bound_mib": 330.48046875
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "released_elapsed_seconds": 4.334117129,
+          "result_elapsed_seconds": 4.290020552,
+          "ring_capacity_bytes": 73920,
+          "timed_out": false,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.075101213,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "waiting_after_release": {
+            "processes": 2,
+            "pss_mib": 51.03515625,
+            "rss_mib": 57.6171875
+          },
+          "waiting_before": {
+            "processes": 2,
+            "pss_mib": 51.029296875,
+            "rss_mib": 57.609375
+          },
+          "whole_application_acceptance": false,
+          "actual_commands": [
+            "ten meters"
+          ],
+          "buffer_identical": true
+        },
+        {
+          "buffer_bytes": 123840,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/floor/buffer-3-8.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.531561148,
+              "memory": {
+                "peak_rss_mib": 236.296875,
+                "rss_mib": 236.296875
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.640017583
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.5209809209999999,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 272.85546875,
+              "rss_mib": 252.796875
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.3515962,
+            "settle_cpu_seconds": 1.4520000000128874e-06,
+            "text": ""
+          },
+          "cycle": 8,
+          "detector_complete": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.05884299999999998,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.88625769,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.08984375,
+              "pss_mib": 49.7099609375,
+              "rss_mib": 54.08984375
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "endpoint_input_seconds": 3.93,
+          "endpoint_reason": "quiet",
+          "event": "cycle_complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 4.88625,
+          "last_speech_input_seconds": 3.33,
+          "memory": {
+            "overlap_peak_pss_mib": 313.580078125,
+            "overlap_peak_rss_mib": 324.546875,
+            "overlap_samples": 105,
+            "peak_combined_pss_mib": 313.580078125,
+            "peak_combined_rss_mib": 324.546875,
+            "sample_interval_ms": 20,
+            "samples": 237,
+            "sum_process_hwm_upper_bound_mib": 330.4921875
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "released_elapsed_seconds": 4.325579408,
+          "result_elapsed_seconds": 4.290010865,
+          "ring_capacity_bytes": 73920,
+          "timed_out": false,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074554668,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "waiting_after_release": {
+            "processes": 2,
+            "pss_mib": 51.0576171875,
+            "rss_mib": 57.640625
+          },
+          "waiting_before": {
+            "processes": 2,
+            "pss_mib": 51.0390625,
+            "rss_mib": 57.62109375
+          },
+          "whole_application_acceptance": false,
+          "actual_commands": [
+            "ten meters"
+          ],
+          "buffer_identical": true
+        },
+        {
+          "buffer_bytes": 123840,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/floor/buffer-3-9.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.493684445,
+              "memory": {
+                "peak_rss_mib": 240.4453125,
+                "rss_mib": 240.4453125
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.610009273
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.54025918,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 276.64453125,
+              "rss_mib": 256.61328125
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.369369639,
+            "settle_cpu_seconds": 1.2719999999966092e-06,
+            "text": ""
+          },
+          "cycle": 9,
+          "detector_complete": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.061921,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.886258144,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.08984375,
+              "pss_mib": 49.705078125,
+              "rss_mib": 54.08984375
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "endpoint_input_seconds": 3.93,
+          "endpoint_reason": "quiet",
+          "event": "cycle_complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 4.88625,
+          "last_speech_input_seconds": 3.33,
+          "memory": {
+            "overlap_peak_pss_mib": 317.3779296875,
+            "overlap_peak_rss_mib": 328.3984375,
+            "overlap_samples": 107,
+            "peak_combined_pss_mib": 317.3779296875,
+            "peak_combined_rss_mib": 328.3984375,
+            "sample_interval_ms": 20,
+            "samples": 236,
+            "sum_process_hwm_upper_bound_mib": 334.29296875
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "released_elapsed_seconds": 4.352526682,
+          "result_elapsed_seconds": 4.320011782,
+          "ring_capacity_bytes": 73920,
+          "timed_out": false,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.075026402,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "waiting_after_release": {
+            "processes": 2,
+            "pss_mib": 51.0654296875,
+            "rss_mib": 57.65234375
+          },
+          "waiting_before": {
+            "processes": 2,
+            "pss_mib": 51.0576171875,
+            "rss_mib": 57.640625
+          },
+          "whole_application_acceptance": false,
+          "actual_commands": [
+            "ten meters"
+          ],
+          "buffer_identical": true
+        },
+        {
+          "buffer_bytes": 123840,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/floor/buffer-3-10.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.546634124,
+              "memory": {
+                "peak_rss_mib": 238.54296875,
+                "rss_mib": 238.54296875
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.670029817
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.5481048400000001,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 274.88671875,
+              "rss_mib": 254.87109375
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.363903046,
+            "settle_cpu_seconds": 1.3930000000161868e-06,
+            "text": ""
+          },
+          "cycle": 10,
+          "detector_complete": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.06066400000000005,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.886258969,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.08984375,
+              "pss_mib": 49.701171875,
+              "rss_mib": 54.08984375
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "endpoint_input_seconds": 3.93,
+          "endpoint_reason": "quiet",
+          "event": "cycle_complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 4.88625,
+          "last_speech_input_seconds": 3.33,
+          "memory": {
+            "overlap_peak_pss_mib": 322.521484375,
+            "overlap_peak_rss_mib": 333.671875,
+            "overlap_samples": 104,
+            "peak_combined_pss_mib": 322.521484375,
+            "peak_combined_rss_mib": 333.671875,
+            "sample_interval_ms": 20,
+            "samples": 233,
+            "sum_process_hwm_upper_bound_mib": 333.671875
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "released_elapsed_seconds": 4.361223476,
+          "result_elapsed_seconds": 4.320012574,
+          "ring_capacity_bytes": 73920,
+          "timed_out": false,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074428589,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "waiting_after_release": {
+            "processes": 2,
+            "pss_mib": 51.2001953125,
+            "rss_mib": 57.78515625
+          },
+          "waiting_before": {
+            "processes": 2,
+            "pss_mib": 51.0654296875,
+            "rss_mib": 57.65234375
+          },
+          "whole_application_acceptance": false,
+          "actual_commands": [
+            "ten meters"
+          ],
+          "buffer_identical": true
+        }
+      ],
+      "event": "complete",
+      "final_waiting": {
+        "processes": 2,
+        "pss_mib": 51.2001953125,
+        "rss_mib": 57.7890625
+      },
+      "initial_waiting": {
+        "processes": 2,
+        "pss_mib": 45.7763671875,
+        "rss_mib": 51.86328125
+      },
+      "production_defaults_changed": false,
+      "whole_application_acceptance": false
+    }
+  ],
+  "complete": true,
+  "summary": {
+    "cycles": 10,
+    "all_commands_and_buffers_match": true,
+    "waiting_rss_mib": [
+      57.3671875,
+      57.5703125,
+      57.578125,
+      57.58984375,
+      57.59765625,
+      57.60546875,
+      57.6171875,
+      57.640625,
+      57.65234375,
+      57.78515625
+    ],
+    "waiting_pss_mib": [
+      50.787109375,
+      50.990234375,
+      50.99609375,
+      51.0126953125,
+      51.021484375,
+      51.029296875,
+      51.03515625,
+      51.0576171875,
+      51.0654296875,
+      51.2001953125
+    ],
+    "initial_waiting_rss_mib": 51.86328125,
+    "first_to_last_waiting_rss_growth_mib": 0.41796875,
+    "last_five_waiting_rss_growth_mib": 0.1796875,
+    "peak_combined_rss_mib": 333.671875,
+    "peak_combined_pss_mib": 322.521484375
+  },
+  "whole_application_acceptance": false,
+  "full_acoustic_acceptance": false,
+  "windows_acceptance": false,
+  "full_duration_soak_acceptance": false,
+  "enable_by_default": false
+}

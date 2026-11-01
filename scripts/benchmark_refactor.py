@@ -25,7 +25,9 @@ ROOT = Path(__file__).resolve().parents[1]
 ITERATIONS = {"parse_brightness": 300, "parse_invalid_brightness": 300,
               "parse_application": 1000, "match_brightness": 100,
               "match_fuzzy": 50, "candidates": 3, "validate": 100,
-              "running_windows": 1000, "merge": 1000, "transcribe_input": 500}
+              "running_windows": 1000, "merge": 1000, "transcribe_input": 500,
+              "transcribe_input_10s": 50,
+              "app_catalog_100": 30, "app_catalog_1000": 10}
 
 
 def workload(source, case):
@@ -35,7 +37,33 @@ def workload(source, case):
     from murmur.commands import Parser, closest_match, match_candidates
     from murmur.hyprland import Hyprland
 
-    if case == "transcribe_input":
+    if case.startswith("app_catalog_"):
+        from murmur.apps import AppRegistry, id_stem
+        from murmur.commands import normalize, spoken_numbers
+        count = int(case.removeprefix("app_catalog_"))
+        # Model the in-memory registry after scanning desktop entries. File I/O
+        # and discovery are outside this catalog-generation measurement.
+        registry = AppRegistry.__new__(AppRegistry)
+        registry.aliases = {}
+        registry.apps = {
+            f"launcher-{n}.desktop": App(f"launcher-{n}.desktop", f"Program {n}",
+                                        f"/fixture/launcher-{n}.desktop", f"launcher-{n}")
+            for n in range(count)}
+        registry.index = {}
+        for app in registry.apps.values():
+            names = set()
+            for name in (app.name, id_stem(app.id)):
+                normalized = normalize(name)
+                names.update((normalized, spoken_numbers(normalized),
+                              normalized.removeprefix("the "),
+                              spoken_numbers(normalized.removeprefix("the "))))
+            for name in names:
+                registry.index.setdefault(name, []).append(app)
+        registry._register_fallbacks()
+        parser = Parser()
+        return lambda: registry.voice_commands(parser)
+
+    if case in ("transcribe_input", "transcribe_input_10s"):
         from types import SimpleNamespace
         from murmur.transcriber import Transcriber
         class Stream:
@@ -46,7 +74,7 @@ def workload(source, case):
         engine._recognizer = SimpleNamespace(create_stream=Stream, decode_stream=lambda stream: None)
         engine._denoiser = None
         engine._memory_efficient = False
-        pcm = b"\x01\x00" * 16000
+        pcm = b"\x01\x00" * (160000 if case.endswith("10s") else 16000)
         return lambda: engine.transcribe(pcm)
 
     settings = {"aliases": {f"app {n}": f"app-{n}.desktop" for n in range(128)},

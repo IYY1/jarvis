@@ -1,0 +1,38 @@
+{
+  "date": "2026-10-28",
+  "installed_apps": 93,
+  "listed_command_pairs": 93,
+  "listed_open_close_phrases": 186,
+  "catalog_ids_equal_installed_ids": true,
+  "all_listed_phrases_supported_by_loaded_grammar": true,
+  "configuration_unchanged": true,
+  "previous_controller_pid": 4184809,
+  "controller_pid": 345897,
+  "controller_sha256": "045e6b6f0c223c2c5bf3944ef785fc9d28750d5974ca6179d55d2a1aed30bd48",
+  "running_controller_matches_tested_build": true,
+  "voice": {
+    "state": "idle",
+    "muted": false,
+    "engine": "vosk+whisper-small",
+    "microphone_open": true
+  },
+  "replay_state": "on",
+  "replay_settings": {
+    "storage": "ram",
+    "seconds": 120,
+    "autostart": true
+  },
+  "python_tests": {
+    "run": 394,
+    "passed": 380,
+    "skipped": 14
+  },
+  "native_controller_tests": {
+    "passed": 7
+  },
+  "gtk_hidden_window_check": true,
+  "rust_clippy_warnings_denied": true,
+  "native_python_catalog_parity": true,
+  "verified_command_pairs_resolve_to_correct_ids": 93,
+  "real_apps_opened_or_closed_for_validation": false
+}

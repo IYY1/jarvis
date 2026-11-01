@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-28",
+  "user_authorized_restart_and_buffer_clear": true,
+  "previous_controller_pid": 2405689,
+  "controller_pid": 4184809,
+  "voice_pid": 4184810,
+  "children": {
+    "4184810": "jarvis-voice",
+    "4184812": "gpu-screen-reco"
+  },
+  "status": {
+    "state": "idle",
+    "muted": false,
+    "engine": "vosk+whisper-small",
+    "microphone_open": true
+  },
+  "replay_state": "on",
+  "replay_settings": {
+    "storage": "ram",
+    "seconds": 120,
+    "autostart": true
+  },
+  "configuration_unchanged": true,
+  "close_commands": [
+    {
+      "category": "Applications",
+      "title": "Close an app",
+      "examples": [
+        "close Firefox",
+        "close Dolphin",
+        "please close Firefox"
+      ]
+    }
+  ],
+  "running_binaries_match_validated_build": true,
+  "real_app_close_action_tested": false
+}

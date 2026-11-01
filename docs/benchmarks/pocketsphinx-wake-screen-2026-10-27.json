@@ -1,0 +1,663 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-27",
+  "scope": "Isolated existing Python PocketSphinx wake adapter; native acoustic model and VAD included, no command recognizer/capture/controller/UI. No microphone/actions/uploads/held-out decoding or production change.",
+  "settings": {
+    "sensitivity": 0.5,
+    "kws_threshold": 1e-20,
+    "jarvis_wake": "jarvis",
+    "wake_aliases": [
+      "hey jarvis"
+    ],
+    "external_energy_gate": false,
+    "denoising": false,
+    "trailing_silence_seconds": 2,
+    "pace": "Unpaced except three explicitly paced silent workers (15 seconds plus two seconds trailing silence)."
+  },
+  "versions": {
+    "python": "3.14.8",
+    "pocketsphinx": "5.1.1"
+  },
+  "source_sha256": {
+    "src/murmur/speech.py": "992185c0f3838e086a631f65f4bcadeb32ba20541243a0ae03a97f0c9afedc7d",
+    "src/murmur/commands.py": "1d5e73f71095b8f19e37f921cdf4679008a3c786d9b42f11a186320edafd4967"
+  },
+  "fixture_sha256": {
+    "public_go_forward": "f15c60ec54059d8b66e410d0064945a0b0a04ea56e1ddca1958e493c0cf70e71",
+    "user_selected_tail": "a0f956dbda4c0e736497322918ae9adaf611275209efe2a264fe413c820dd020"
+  },
+  "labels": {
+    "user_selected_tail": true,
+    "exact_user_wording_is_asr_draft": true,
+    "older_group_audio_unlabeled": true,
+    "held_out_audio_decoded": false,
+    "perturbations_add_speakers": false
+  },
+  "phase_one": {
+    "cases": [
+      {
+        "case": "public-positive",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3,
+        "input_trigger_seconds": [
+          [
+            1.65
+          ],
+          [
+            1.65
+          ],
+          [
+            1.65
+          ]
+        ],
+        "peak_rss_mib": [
+          51.109375,
+          50.71484375,
+          50.86328125
+        ]
+      },
+      {
+        "case": "user-selected-tail",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3,
+        "input_trigger_seconds": [
+          [
+            3.66
+          ],
+          [
+            3.66
+          ],
+          [
+            3.66
+          ]
+        ],
+        "peak_rss_mib": [
+          52.6484375,
+          52.83984375,
+          52.86328125
+        ]
+      },
+      {
+        "case": "public-absent-jarvis",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3,
+        "input_trigger_seconds": [
+          [],
+          [],
+          []
+        ],
+        "peak_rss_mib": [
+          52.703125,
+          52.3671875,
+          52.92578125
+        ]
+      },
+      {
+        "case": "silence",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3,
+        "input_trigger_seconds": [
+          [],
+          [],
+          []
+        ],
+        "peak_rss_mib": [
+          50.8984375,
+          51.046875,
+          50.9453125
+        ]
+      }
+    ],
+    "complete": true,
+    "passed": true
+  },
+  "phase_two": {
+    "cases": [
+      {
+        "case": "natural",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3,
+        "input_trigger_seconds": [
+          [
+            2.25
+          ],
+          [
+            2.25
+          ],
+          [
+            2.25
+          ]
+        ],
+        "peak_rss_mib": [
+          51.03125,
+          50.8515625,
+          51.0546875
+        ]
+      },
+      {
+        "case": "absent-jarvis-natural",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3,
+        "input_trigger_seconds": [
+          [],
+          [],
+          []
+        ],
+        "peak_rss_mib": [
+          53.01953125,
+          53.0234375,
+          52.9140625
+        ]
+      },
+      {
+        "case": "wake-only",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 0,
+        "input_trigger_seconds": [
+          [],
+          [],
+          []
+        ],
+        "peak_rss_mib": [
+          51.04296875,
+          51.1953125,
+          51.265625
+        ]
+      },
+      {
+        "case": "quiet-recovery",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 3,
+        "actual_wakes": [
+          3,
+          3,
+          3
+        ],
+        "passed_repetitions": 3,
+        "input_trigger_seconds": [
+          [
+            12.12,
+            28.74,
+            45.39
+          ],
+          [
+            12.12,
+            28.74,
+            45.39
+          ],
+          [
+            12.12,
+            28.74,
+            45.39
+          ]
+        ],
+        "peak_rss_mib": [
+          52.46875,
+          52.0859375,
+          52.609375
+        ]
+      },
+      {
+        "case": "pause-inside-name",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 0,
+        "input_trigger_seconds": [
+          [],
+          [],
+          []
+        ],
+        "peak_rss_mib": [
+          51.2734375,
+          50.66015625,
+          51.18359375
+        ]
+      },
+      {
+        "case": "low-volume",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 0,
+        "input_trigger_seconds": [
+          [],
+          [],
+          []
+        ],
+        "peak_rss_mib": [
+          51.1640625,
+          51.43359375,
+          51.26171875
+        ]
+      },
+      {
+        "case": "uniform-noise",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 0,
+        "input_trigger_seconds": [
+          [],
+          [],
+          []
+        ],
+        "peak_rss_mib": [
+          51.51171875,
+          50.83203125,
+          51.234375
+        ]
+      },
+      {
+        "case": "command-without-wake",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3,
+        "input_trigger_seconds": [
+          [],
+          [],
+          []
+        ],
+        "peak_rss_mib": [
+          51.13671875,
+          50.91015625,
+          51.203125
+        ]
+      },
+      {
+        "case": "reversed-speech",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3,
+        "input_trigger_seconds": [
+          [],
+          [],
+          []
+        ],
+        "peak_rss_mib": [
+          51.1484375,
+          51.6640625,
+          51.4453125
+        ]
+      },
+      {
+        "case": "silence",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3,
+        "input_trigger_seconds": [
+          [],
+          [],
+          []
+        ],
+        "peak_rss_mib": [
+          49.60546875,
+          48.9375,
+          49.390625
+        ]
+      },
+      {
+        "case": "absent-jarvis-published-0",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3,
+        "input_trigger_seconds": [
+          [],
+          [],
+          []
+        ],
+        "peak_rss_mib": [
+          52.734375,
+          52.71484375,
+          52.65234375
+        ]
+      },
+      {
+        "case": "unrelated-0",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3,
+        "input_trigger_seconds": [
+          [],
+          [],
+          []
+        ],
+        "peak_rss_mib": [
+          50.9921875,
+          51.125,
+          51.34375
+        ]
+      },
+      {
+        "case": "absent-jarvis-published-1",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3,
+        "input_trigger_seconds": [
+          [],
+          [],
+          []
+        ],
+        "peak_rss_mib": [
+          53.21484375,
+          53.0,
+          52.91015625
+        ]
+      },
+      {
+        "case": "unrelated-1",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3,
+        "input_trigger_seconds": [
+          [],
+          [],
+          []
+        ],
+        "peak_rss_mib": [
+          51.60546875,
+          51.49609375,
+          51.29296875
+        ]
+      },
+      {
+        "case": "user-tail-gain-1-lead-0",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3,
+        "input_trigger_seconds": [
+          [
+            3.66
+          ],
+          [
+            3.66
+          ],
+          [
+            3.66
+          ]
+        ],
+        "peak_rss_mib": [
+          52.91015625,
+          52.66015625,
+          52.859375
+        ]
+      },
+      {
+        "case": "user-tail-gain-1-lead-0.3",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3,
+        "input_trigger_seconds": [
+          [
+            3.96
+          ],
+          [
+            3.96
+          ],
+          [
+            3.96
+          ]
+        ],
+        "peak_rss_mib": [
+          52.828125,
+          52.6328125,
+          52.94140625
+        ]
+      },
+      {
+        "case": "user-tail-gain-0.5-lead-0",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3,
+        "input_trigger_seconds": [
+          [
+            3.66
+          ],
+          [
+            3.66
+          ],
+          [
+            3.66
+          ]
+        ],
+        "peak_rss_mib": [
+          53.19921875,
+          52.6953125,
+          52.40234375
+        ]
+      },
+      {
+        "case": "user-tail-gain-0.5-lead-0.3",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3,
+        "input_trigger_seconds": [
+          [
+            3.96
+          ],
+          [
+            3.96
+          ],
+          [
+            3.96
+          ]
+        ],
+        "peak_rss_mib": [
+          52.59375,
+          52.75390625,
+          52.62890625
+        ]
+      },
+      {
+        "case": "user-tail-gain-0.1-lead-0",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 0,
+        "input_trigger_seconds": [
+          [],
+          [],
+          []
+        ],
+        "peak_rss_mib": [
+          52.8515625,
+          52.5390625,
+          52.38671875
+        ]
+      },
+      {
+        "case": "user-tail-gain-0.1-lead-0.3",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 0,
+        "input_trigger_seconds": [
+          [],
+          [],
+          []
+        ],
+        "peak_rss_mib": [
+          53.0546875,
+          52.79296875,
+          52.7734375
+        ]
+      },
+      {
+        "case": "paced-silence",
+        "repetitions": 3,
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3,
+        "input_trigger_seconds": [
+          [],
+          [],
+          []
+        ],
+        "peak_rss_mib": [
+          51.6171875,
+          51.00390625,
+          51.0546875
+        ]
+      }
+    ],
+    "complete": true,
+    "passed_cases": 45,
+    "total_cases": 63,
+    "expected_wakes": 42,
+    "actual_wakes": 24,
+    "extra_wakes": 0,
+    "expected_exit_code": 1,
+    "observed_exit_code": 1,
+    "paced_silence_cpu_percent_one_core": [
+      0.06046780427457628,
+      0.05569098469863002,
+      0.06621717649339366
+    ],
+    "paced_silence_wall_seconds": [
+      17.01000908399874,
+      17.01001885900041,
+      17.01001250200352
+    ]
+  },
+  "private_evidence_sha256": {
+    "protocol.json": "74ed46fd725777afcd5d76866b17cf04ac13f7aa758f8f0b930dba28387d2424",
+    "protocol-phase-two.json": "f6a6a654c5116ad964ae80d8292a0a4ba64bc169ea4379a14be8b390c34a568b",
+    "worker.py": "918b4c5a6cfa7c2ba10c979d61de0a7681b91c495334d158e13b5b476fc26f70",
+    "worker-phase-two.py": "3d23cc4b2ef97851d572b671410e8c6afac3d0e4ec4240b345ebe991425e2073",
+    "run.py": "9764f2c6a3b83b8e260c0dfd91638deee0b1a1774fb6a13fe9cac22458cda723",
+    "phase-two.py": "f4dc0693e55e34395a42f4e59ac6249c69afd7e3550463f3f59c18022431fb7d",
+    "results.json": "bf344e6f76b2b2fdbe0b9e1b268494448ed8b2d4097ac5a3b58548dedbb45171",
+    "results-phase-two.json": "ae7a81c72618be90213da422155fc14bedf7d94af0e18149f5fde8e07c34168a"
+  },
+  "gates": {
+    "focused_phase_one": true,
+    "expanded_recognition": false,
+    "candidate_adopted": false,
+    "latency_nonregression": false,
+    "combined_application_memory": false,
+    "full_corpus": false,
+    "full_soak": false
+  },
+  "decision": "Do not port or integrate this fixed-settings candidate; retain failures without tuning to the selected clip. Production Vosk/small.en unchanged."
+}

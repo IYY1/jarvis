@@ -1,0 +1,3524 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-26T08:46:50.331416+00:00",
+  "platform": "Linux-7.3.0-5-cachyos-x86_64-with-glibc2.44",
+  "scope": "Compare explicit local English Whisper profiles; never install/select a model.\n\nAll workers run sequentially. Isolated Rust transcription is checked against\nsherpa-onnx with the same model and seven public-fixture perturbations. Separate\npaced Rust voice workers retain Vosk/free decoding, Whisper prefetch and real\nGTCRN; fast path and decoder finalization are disabled. No actual microphone,\ndesktop action, download, Windows result or full acoustic acceptance is involved.\n",
+  "fixture_sha256": "f15c60ec54059d8b66e410d0064945a0b0a04ea56e1ddca1958e493c0cf70e71",
+  "voice_binary_sha256": "212ff8655e303b55f0a70f902753d0ab6f87031aa3c71cd40306ddf5cf8d9844",
+  "whisper_binary_sha256": "8915a1cfb58d7faec35f4409dd7cb1da17b55191f38f511129caf53e06c087b1",
+  "model_files": {
+    "small.en": {
+      "encoder": {
+        "sha256": "8bdac288f369aa94ee2194059238c465ed82ea9d47ee8fa4a8c0a891873e462f",
+        "bytes": 112442483
+      },
+      "decoder": {
+        "sha256": "710ccf890e10f3faa15f51ec346081a2723c9f3adb6e4da81c6573a5a6f877fb",
+        "bytes": 262223042
+      },
+      "tokens": {
+        "sha256": "306cd27f03c1a714eca7108e03d66b7dc042abe8c258b44c199a7ed9838dd930",
+        "bytes": 835554
+      }
+    },
+    "base.en": {
+      "encoder": {
+        "sha256": "ef6b936f4c9b1d90a3b68634b60c4ed8576b26172b33c2535ec0e933c9edb823",
+        "bytes": 29120534
+      },
+      "decoder": {
+        "sha256": "f7162ad6db2dbef16cfaeaa7f945b9d7dd9c1b8d472f6aca82f2273d185e4d41",
+        "bytes": 130669978
+      },
+      "tokens": {
+        "sha256": "306cd27f03c1a714eca7108e03d66b7dc042abe8c258b44c199a7ed9838dd930",
+        "bytes": 835554
+      }
+    },
+    "tiny.en": {
+      "encoder": {
+        "sha256": "0ce578b827c94a961aacb8fa14b02f096504b337e5c94be37c36238cbe3e8bc6",
+        "bytes": 12937772
+      },
+      "decoder": {
+        "sha256": "06c0e6ff6348d427e51839219d1c886c18cfdf411e629e33f5e1679bff9c1527",
+        "bytes": 89853865
+      },
+      "tokens": {
+        "sha256": "306cd27f03c1a714eca7108e03d66b7dc042abe8c258b44c199a7ed9838dd930",
+        "bytes": 835554
+      }
+    }
+  },
+  "references": {
+    "small.en": {
+      "sherpa_onnx": "1.13.8",
+      "cases": [
+        {
+          "case": "clean",
+          "text": "Go forward 10 meters"
+        },
+        {
+          "case": "quiet",
+          "text": "Go forward 10 meters."
+        },
+        {
+          "case": "noise",
+          "text": "Go forward 10 meters."
+        },
+        {
+          "case": "long",
+          "text": "Go forward 10 meters."
+        },
+        {
+          "case": "silence",
+          "text": "you"
+        },
+        {
+          "case": "short",
+          "text": "Go forward."
+        },
+        {
+          "case": "slower",
+          "text": "Go forward 10 meters"
+        }
+      ]
+    },
+    "base.en": {
+      "sherpa_onnx": "1.13.8",
+      "cases": [
+        {
+          "case": "clean",
+          "text": "Go forward 10 meters."
+        },
+        {
+          "case": "quiet",
+          "text": "Go forward 10 meters."
+        },
+        {
+          "case": "noise",
+          "text": "Go forward 10 meters."
+        },
+        {
+          "case": "long",
+          "text": "Go forward 10 meters. Go forward 10 meters."
+        },
+        {
+          "case": "silence",
+          "text": "["
+        },
+        {
+          "case": "short",
+          "text": "Go Forward"
+        },
+        {
+          "case": "slower",
+          "text": "Go forward 10 meters."
+        }
+      ]
+    },
+    "tiny.en": {
+      "sherpa_onnx": "1.13.8",
+      "cases": [
+        {
+          "case": "clean",
+          "text": "Go forward 10 meters."
+        },
+        {
+          "case": "quiet",
+          "text": "Go forward 10 meters."
+        },
+        {
+          "case": "noise",
+          "text": "Go forward 10 meters."
+        },
+        {
+          "case": "long",
+          "text": "Go forward 10 meters. Go forward 10 meters."
+        },
+        {
+          "case": "silence",
+          "text": "[ Silence ]"
+        },
+        {
+          "case": "short",
+          "text": "Go forward."
+        },
+        {
+          "case": "slower",
+          "text": "Go forward 10 meters."
+        }
+      ]
+    }
+  },
+  "runs": [
+    {
+      "name": "small.en",
+      "repeat": 1,
+      "isolated": {
+        "ready": {
+          "embedding": {
+            "bytes": 79663104,
+            "storage": "lossless-f16"
+          },
+          "event": "ready",
+          "implementation": "rust-tract-0.23.9",
+          "load_seconds": 1.712574678,
+          "memory": {
+            "peak_rss_mib": 353.6796875,
+            "rss_mib": 316.43359375
+          },
+          "model": "small.en"
+        },
+        "cases": [
+          {
+            "case": "clean",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 389.375,
+              "rss_mib": 319.33984375
+            },
+            "seconds": 0.339907419,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 389.5234375,
+              "rss_mib": 319.5546875
+            },
+            "seconds": 0.310803601,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 389.62890625,
+              "rss_mib": 319.7890625
+            },
+            "seconds": 0.303887038,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "long",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.0625,
+              "rss_mib": 320.21484375
+            },
+            "seconds": 0.436927975,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.0625,
+              "rss_mib": 320.11328125
+            },
+            "seconds": 0.72153738,
+            "text": "you",
+            "reference_text": "you",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.0625,
+              "rss_mib": 320.05078125
+            },
+            "seconds": 1.231876002,
+            "text": "Go forward.",
+            "reference_text": "Go forward.",
+            "reference_identical": true
+          },
+          {
+            "case": "slower",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.0625,
+              "rss_mib": 320.390625
+            },
+            "seconds": 1.3541981,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters",
+            "reference_identical": true
+          },
+          {
+            "case": "clean",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.0625,
+              "rss_mib": 320.359375
+            },
+            "seconds": 1.094847667,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.0625,
+              "rss_mib": 320.5546875
+            },
+            "seconds": 1.319734114,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.0625,
+              "rss_mib": 320.55078125
+            },
+            "seconds": 1.1442362,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "long",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.6484375,
+              "rss_mib": 320.796875
+            },
+            "seconds": 1.739037931,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.6484375,
+              "rss_mib": 320.50390625
+            },
+            "seconds": 0.445244135,
+            "text": "you",
+            "reference_text": "you",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.6484375,
+              "rss_mib": 320.44140625
+            },
+            "seconds": 0.796384831,
+            "text": "Go forward.",
+            "reference_text": "Go forward.",
+            "reference_identical": true
+          },
+          {
+            "case": "slower",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.6484375,
+              "rss_mib": 320.5859375
+            },
+            "seconds": 0.822532277,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters",
+            "reference_identical": true
+          },
+          {
+            "case": "clean",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.6484375,
+              "rss_mib": 320.5625
+            },
+            "seconds": 0.325806731,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.6484375,
+              "rss_mib": 320.5625
+            },
+            "seconds": 0.377013101,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.6484375,
+              "rss_mib": 320.57421875
+            },
+            "seconds": 0.411083296,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "long",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.6484375,
+              "rss_mib": 320.80859375
+            },
+            "seconds": 0.510802403,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.6484375,
+              "rss_mib": 320.52734375
+            },
+            "seconds": 0.261686164,
+            "text": "you",
+            "reference_text": "you",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.6484375,
+              "rss_mib": 320.4609375
+            },
+            "seconds": 0.261651829,
+            "text": "Go forward.",
+            "reference_text": "Go forward.",
+            "reference_identical": true
+          },
+          {
+            "case": "slower",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.6484375,
+              "rss_mib": 320.60546875
+            },
+            "seconds": 0.317998677,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters",
+            "reference_identical": true
+          }
+        ],
+        "reference_identical": true,
+        "median_decode_ms": 445.24413499999997,
+        "final_rss_mib": 320.60546875,
+        "peak_rss_mib": 410.6484375
+      },
+      "paced": {
+        "binary_sha256": "212ff8655e303b55f0a70f902753d0ab6f87031aa3c71cd40306ddf5cf8d9844",
+        "experimental_vosk_fast_path": false,
+        "free_decoder": true,
+        "experimental_vosk_finalize_utterances": false,
+        "experimental_whisper_files": {
+          "encoder": "/home/silver/.local/share/murmur/models/sherpa-onnx-whisper-small.en/small.en-encoder.int8.onnx",
+          "decoder": "/home/silver/.local/share/murmur/models/sherpa-onnx-whisper-small.en/small.en-decoder.int8.onnx",
+          "tokens": "/home/silver/.local/share/murmur/models/sherpa-onnx-whisper-small.en/small.en-tokens.txt"
+        },
+        "whisper_idle_seconds": 60,
+        "gap_seconds": 4,
+        "denoise": true,
+        "ready_seconds": 0.241,
+        "waiting_rss_mib": 157.46,
+        "released_rss_mib": null,
+        "unloaded_after_commands_rss_mib": null,
+        "max_sampled_rss_mib": 549.43,
+        "peak_rss_mib": 548.31,
+        "cpu_seconds": 7.61,
+        "commands": [
+          {
+            "text": "ten meters",
+            "latency_ms": 1476.9,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 157.46
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 1029.8,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 483.68
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 3296.2,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 484.09
+          }
+        ],
+        "memory_after_commands": [
+          {
+            "rss_bytes": 507174912,
+            "pss_bytes": 501502976
+          },
+          {
+            "rss_bytes": 507600896,
+            "pss_bytes": 501928960
+          },
+          {
+            "rss_bytes": 507842560,
+            "pss_bytes": 502170624
+          }
+        ],
+        "max_observed_whisper_threads": 9
+      },
+      "paced_commands_match": true
+    },
+    {
+      "name": "base.en",
+      "repeat": 1,
+      "isolated": {
+        "ready": {
+          "embedding": {
+            "bytes": 53108736,
+            "storage": "lossless-f16"
+          },
+          "event": "ready",
+          "implementation": "rust-tract-0.23.9",
+          "load_seconds": 0.90191197,
+          "memory": {
+            "peak_rss_mib": 146.3125,
+            "rss_mib": 131.921875
+          },
+          "model": "base.en"
+        },
+        "cases": [
+          {
+            "case": "clean",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 168.11328125,
+              "rss_mib": 135.546875
+            },
+            "seconds": 0.672537007,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 170.15234375,
+              "rss_mib": 135.734375
+            },
+            "seconds": 0.809097655,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 170.15234375,
+              "rss_mib": 135.77734375
+            },
+            "seconds": 0.659525666,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": false
+          },
+          {
+            "case": "long",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.24609375,
+              "rss_mib": 136.390625
+            },
+            "seconds": 1.201110527,
+            "text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.24609375,
+              "rss_mib": 136.109375
+            },
+            "seconds": 0.856606145,
+            "text": "[",
+            "reference_text": "[",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.24609375,
+              "rss_mib": 136.046875
+            },
+            "seconds": 1.199897376,
+            "text": "Go go go go go go go go go",
+            "reference_text": "Go Forward",
+            "reference_identical": false
+          },
+          {
+            "case": "slower",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.24609375,
+              "rss_mib": 136.203125
+            },
+            "seconds": 0.768605651,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "clean",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.24609375,
+              "rss_mib": 136.171875
+            },
+            "seconds": 1.104064372,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.24609375,
+              "rss_mib": 136.16796875
+            },
+            "seconds": 0.829957548,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.24609375,
+              "rss_mib": 136.171875
+            },
+            "seconds": 0.73947421,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": false
+          },
+          {
+            "case": "long",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.63671875,
+              "rss_mib": 136.40234375
+            },
+            "seconds": 1.808200129,
+            "text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.63671875,
+              "rss_mib": 136.125
+            },
+            "seconds": 0.679895649,
+            "text": "[",
+            "reference_text": "[",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.63671875,
+              "rss_mib": 136.0703125
+            },
+            "seconds": 0.776084003,
+            "text": "Go go go go go go go go go",
+            "reference_text": "Go Forward",
+            "reference_identical": false
+          },
+          {
+            "case": "slower",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.63671875,
+              "rss_mib": 136.21875
+            },
+            "seconds": 0.691981003,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "clean",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.63671875,
+              "rss_mib": 136.1796875
+            },
+            "seconds": 0.237473001,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.63671875,
+              "rss_mib": 136.1796875
+            },
+            "seconds": 0.139088376,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.63671875,
+              "rss_mib": 136.18359375
+            },
+            "seconds": 0.288116843,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": false
+          },
+          {
+            "case": "long",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.63671875,
+              "rss_mib": 136.4140625
+            },
+            "seconds": 1.049615032,
+            "text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.63671875,
+              "rss_mib": 136.13671875
+            },
+            "seconds": 0.781794147,
+            "text": "[",
+            "reference_text": "[",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.63671875,
+              "rss_mib": 136.06640625
+            },
+            "seconds": 0.852796878,
+            "text": "Go go go go go go go go go",
+            "reference_text": "Go Forward",
+            "reference_identical": false
+          },
+          {
+            "case": "slower",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.63671875,
+              "rss_mib": 136.22265625
+            },
+            "seconds": 0.442264056,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          }
+        ],
+        "reference_identical": false,
+        "median_decode_ms": 776.084003,
+        "final_rss_mib": 136.22265625,
+        "peak_rss_mib": 189.63671875
+      },
+      "paced": {
+        "binary_sha256": "212ff8655e303b55f0a70f902753d0ab6f87031aa3c71cd40306ddf5cf8d9844",
+        "experimental_vosk_fast_path": false,
+        "free_decoder": true,
+        "experimental_vosk_finalize_utterances": false,
+        "experimental_whisper_files": {
+          "encoder": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-base.en/base.en-encoder.int8.onnx",
+          "decoder": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-base.en/base.en-decoder.int8.onnx",
+          "tokens": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-base.en/base.en-tokens.txt"
+        },
+        "whisper_idle_seconds": 60,
+        "gap_seconds": 4,
+        "denoise": true,
+        "ready_seconds": 0.379,
+        "waiting_rss_mib": 158.22,
+        "released_rss_mib": null,
+        "unloaded_after_commands_rss_mib": null,
+        "max_sampled_rss_mib": 331.41,
+        "peak_rss_mib": 330.81,
+        "cpu_seconds": 4.86,
+        "commands": [
+          {
+            "text": "ten meters",
+            "latency_ms": 2332.6,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 158.22
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 1306.3,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 300.6
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 948.2,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 301.2
+          }
+        ],
+        "memory_after_commands": [
+          {
+            "rss_bytes": 315203584,
+            "pss_bytes": 309531648
+          },
+          {
+            "rss_bytes": 315830272,
+            "pss_bytes": 310158336
+          },
+          {
+            "rss_bytes": 316112896,
+            "pss_bytes": 310440960
+          }
+        ],
+        "max_observed_whisper_threads": 9
+      },
+      "paced_commands_match": true
+    },
+    {
+      "name": "tiny.en",
+      "repeat": 1,
+      "isolated": {
+        "ready": {
+          "embedding": {
+            "bytes": 39831552,
+            "storage": "lossless-f16"
+          },
+          "event": "ready",
+          "implementation": "rust-tract-0.23.9",
+          "load_seconds": 0.303506138,
+          "memory": {
+            "peak_rss_mib": 95.484375,
+            "rss_mib": 88.5234375
+          },
+          "model": "tiny.en"
+        },
+        "cases": [
+          {
+            "case": "clean",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 114.96484375,
+              "rss_mib": 91.609375
+            },
+            "seconds": 0.064869279,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 114.96484375,
+              "rss_mib": 91.62109375
+            },
+            "seconds": 0.063649108,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 115.7109375,
+              "rss_mib": 91.62890625
+            },
+            "seconds": 0.068505578,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "long",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.71484375,
+              "rss_mib": 91.8984375
+            },
+            "seconds": 0.116655244,
+            "text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.71484375,
+              "rss_mib": 91.6015625
+            },
+            "seconds": 0.048736508,
+            "text": "[ Silence ]",
+            "reference_text": "[ Silence ]",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.71484375,
+              "rss_mib": 91.5546875
+            },
+            "seconds": 0.045684726,
+            "text": "Go forward.",
+            "reference_text": "Go forward.",
+            "reference_identical": true
+          },
+          {
+            "case": "slower",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.71484375,
+              "rss_mib": 91.6875
+            },
+            "seconds": 0.061852053,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "clean",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.71484375,
+              "rss_mib": 91.66015625
+            },
+            "seconds": 0.058583692,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.71484375,
+              "rss_mib": 91.66015625
+            },
+            "seconds": 0.055588157,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.71484375,
+              "rss_mib": 91.875
+            },
+            "seconds": 0.056216017,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "long",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 132.390625,
+              "rss_mib": 92.484375
+            },
+            "seconds": 0.116111464,
+            "text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 132.390625,
+              "rss_mib": 92.20703125
+            },
+            "seconds": 0.047718138,
+            "text": "[ Silence ]",
+            "reference_text": "[ Silence ]",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 132.390625,
+              "rss_mib": 92.1484375
+            },
+            "seconds": 0.04875924,
+            "text": "Go forward.",
+            "reference_text": "Go forward.",
+            "reference_identical": true
+          },
+          {
+            "case": "slower",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 132.390625,
+              "rss_mib": 92.30078125
+            },
+            "seconds": 0.065111698,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "clean",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 132.390625,
+              "rss_mib": 92.28515625
+            },
+            "seconds": 0.05615421,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 132.390625,
+              "rss_mib": 92.28515625
+            },
+            "seconds": 0.056622617,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 132.390625,
+              "rss_mib": 92.28515625
+            },
+            "seconds": 0.058186309,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "long",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 132.390625,
+              "rss_mib": 92.5234375
+            },
+            "seconds": 0.111245165,
+            "text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 132.390625,
+              "rss_mib": 92.25390625
+            },
+            "seconds": 0.046612363,
+            "text": "[ Silence ]",
+            "reference_text": "[ Silence ]",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 132.390625,
+              "rss_mib": 92.1875
+            },
+            "seconds": 0.045837395,
+            "text": "Go forward.",
+            "reference_text": "Go forward.",
+            "reference_identical": true
+          },
+          {
+            "case": "slower",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 132.390625,
+              "rss_mib": 92.3203125
+            },
+            "seconds": 0.060792416,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          }
+        ],
+        "reference_identical": true,
+        "median_decode_ms": 58.186309,
+        "final_rss_mib": 92.3203125,
+        "peak_rss_mib": 132.390625
+      },
+      "paced": {
+        "binary_sha256": "212ff8655e303b55f0a70f902753d0ab6f87031aa3c71cd40306ddf5cf8d9844",
+        "experimental_vosk_fast_path": false,
+        "free_decoder": true,
+        "experimental_vosk_finalize_utterances": false,
+        "experimental_whisper_files": {
+          "encoder": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-tiny.en/tiny.en-encoder.int8.onnx",
+          "decoder": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-tiny.en/tiny.en-decoder.int8.onnx",
+          "tokens": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-tiny.en/tiny.en-tokens.txt"
+        },
+        "whisper_idle_seconds": 60,
+        "gap_seconds": 4,
+        "denoise": true,
+        "ready_seconds": 0.221,
+        "waiting_rss_mib": 160.02,
+        "released_rss_mib": null,
+        "unloaded_after_commands_rss_mib": null,
+        "max_sampled_rss_mib": 282.6,
+        "peak_rss_mib": 282.04,
+        "cpu_seconds": 2.26,
+        "commands": [
+          {
+            "text": "ten meters",
+            "latency_ms": 1028.8,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 160.02
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 1183.2,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 259.39
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 803.7,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 259.88
+          }
+        ],
+        "memory_after_commands": [
+          {
+            "rss_bytes": 271994880,
+            "pss_bytes": 266303488
+          },
+          {
+            "rss_bytes": 272506880,
+            "pss_bytes": 266815488
+          },
+          {
+            "rss_bytes": 272736256,
+            "pss_bytes": 267044864
+          }
+        ],
+        "max_observed_whisper_threads": 9
+      },
+      "paced_commands_match": true
+    },
+    {
+      "name": "small.en",
+      "repeat": 2,
+      "isolated": {
+        "ready": {
+          "embedding": {
+            "bytes": 79663104,
+            "storage": "lossless-f16"
+          },
+          "event": "ready",
+          "implementation": "rust-tract-0.23.9",
+          "load_seconds": 2.197331558,
+          "memory": {
+            "peak_rss_mib": 348.41015625,
+            "rss_mib": 316.68359375
+          },
+          "model": "small.en"
+        },
+        "cases": [
+          {
+            "case": "clean",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 389.14453125,
+              "rss_mib": 320.07421875
+            },
+            "seconds": 1.929315688,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 389.44140625,
+              "rss_mib": 320.5859375
+            },
+            "seconds": 0.972159267,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 390.19921875,
+              "rss_mib": 320.80859375
+            },
+            "seconds": 0.325437946,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "long",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.48046875,
+              "rss_mib": 321.23828125
+            },
+            "seconds": 0.438920726,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.48046875,
+              "rss_mib": 320.94921875
+            },
+            "seconds": 0.21761156,
+            "text": "you",
+            "reference_text": "you",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.48046875,
+              "rss_mib": 320.89453125
+            },
+            "seconds": 0.240575223,
+            "text": "Go forward.",
+            "reference_text": "Go forward.",
+            "reference_identical": true
+          },
+          {
+            "case": "slower",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.48046875,
+              "rss_mib": 321.03515625
+            },
+            "seconds": 0.32173461,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters",
+            "reference_identical": true
+          },
+          {
+            "case": "clean",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.48046875,
+              "rss_mib": 321.01171875
+            },
+            "seconds": 0.648039968,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.48046875,
+              "rss_mib": 321.01171875
+            },
+            "seconds": 0.474383726,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.48046875,
+              "rss_mib": 321.01171875
+            },
+            "seconds": 0.706437896,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "long",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.48046875,
+              "rss_mib": 321.26171875
+            },
+            "seconds": 0.555317305,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.48046875,
+              "rss_mib": 320.953125
+            },
+            "seconds": 0.336496063,
+            "text": "you",
+            "reference_text": "you",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.48046875,
+              "rss_mib": 320.8984375
+            },
+            "seconds": 0.279288691,
+            "text": "Go forward.",
+            "reference_text": "Go forward.",
+            "reference_identical": true
+          },
+          {
+            "case": "slower",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.48046875,
+              "rss_mib": 321.046875
+            },
+            "seconds": 0.640283833,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters",
+            "reference_identical": true
+          },
+          {
+            "case": "clean",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.48046875,
+              "rss_mib": 321.0234375
+            },
+            "seconds": 0.406975077,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.48046875,
+              "rss_mib": 321.0234375
+            },
+            "seconds": 0.311502726,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.48046875,
+              "rss_mib": 321.0390625
+            },
+            "seconds": 0.311630598,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "long",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.48046875,
+              "rss_mib": 321.26953125
+            },
+            "seconds": 0.463957453,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.48046875,
+              "rss_mib": 320.97265625
+            },
+            "seconds": 0.239090539,
+            "text": "you",
+            "reference_text": "you",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.48046875,
+              "rss_mib": 320.92578125
+            },
+            "seconds": 0.334137083,
+            "text": "Go forward.",
+            "reference_text": "Go forward.",
+            "reference_identical": true
+          },
+          {
+            "case": "slower",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 410.48046875,
+              "rss_mib": 321.078125
+            },
+            "seconds": 0.299296211,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters",
+            "reference_identical": true
+          }
+        ],
+        "reference_identical": true,
+        "median_decode_ms": 336.496063,
+        "final_rss_mib": 321.078125,
+        "peak_rss_mib": 410.48046875
+      },
+      "paced": {
+        "binary_sha256": "212ff8655e303b55f0a70f902753d0ab6f87031aa3c71cd40306ddf5cf8d9844",
+        "experimental_vosk_fast_path": false,
+        "free_decoder": true,
+        "experimental_vosk_finalize_utterances": false,
+        "experimental_whisper_files": {
+          "encoder": "/home/silver/.local/share/murmur/models/sherpa-onnx-whisper-small.en/small.en-encoder.int8.onnx",
+          "decoder": "/home/silver/.local/share/murmur/models/sherpa-onnx-whisper-small.en/small.en-decoder.int8.onnx",
+          "tokens": "/home/silver/.local/share/murmur/models/sherpa-onnx-whisper-small.en/small.en-tokens.txt"
+        },
+        "whisper_idle_seconds": 60,
+        "gap_seconds": 4,
+        "denoise": true,
+        "ready_seconds": 0.233,
+        "waiting_rss_mib": 158.31,
+        "released_rss_mib": null,
+        "unloaded_after_commands_rss_mib": null,
+        "max_sampled_rss_mib": 571.91,
+        "peak_rss_mib": 570.7,
+        "cpu_seconds": 6.43,
+        "commands": [
+          {
+            "text": "ten meters",
+            "latency_ms": 1174.6,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 158.31
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 1005.5,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 485.77
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 1008.7,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 486.16
+          }
+        ],
+        "memory_after_commands": [
+          {
+            "rss_bytes": 509366272,
+            "pss_bytes": 503693312
+          },
+          {
+            "rss_bytes": 509775872,
+            "pss_bytes": 504102912
+          },
+          {
+            "rss_bytes": 510009344,
+            "pss_bytes": 504337408
+          }
+        ],
+        "max_observed_whisper_threads": 9
+      },
+      "paced_commands_match": true
+    },
+    {
+      "name": "base.en",
+      "repeat": 2,
+      "isolated": {
+        "ready": {
+          "embedding": {
+            "bytes": 53108736,
+            "storage": "lossless-f16"
+          },
+          "event": "ready",
+          "implementation": "rust-tract-0.23.9",
+          "load_seconds": 0.612393052,
+          "memory": {
+            "peak_rss_mib": 145.23828125,
+            "rss_mib": 131.546875
+          },
+          "model": "base.en"
+        },
+        "cases": [
+          {
+            "case": "clean",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 168.4921875,
+              "rss_mib": 135.8203125
+            },
+            "seconds": 0.130672611,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 169.78515625,
+              "rss_mib": 136.0234375
+            },
+            "seconds": 0.127014882,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 170.02734375,
+              "rss_mib": 136.2421875
+            },
+            "seconds": 0.129527461,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": false
+          },
+          {
+            "case": "long",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.51953125,
+              "rss_mib": 136.48828125
+            },
+            "seconds": 0.227943056,
+            "text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.51953125,
+              "rss_mib": 136.1953125
+            },
+            "seconds": 0.082242827,
+            "text": "[",
+            "reference_text": "[",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.51953125,
+              "rss_mib": 136.17578125
+            },
+            "seconds": 0.112155633,
+            "text": "Go go go go go go go go go",
+            "reference_text": "Go Forward",
+            "reference_identical": false
+          },
+          {
+            "case": "slower",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.51953125,
+              "rss_mib": 136.3203125
+            },
+            "seconds": 0.102943181,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "clean",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.51953125,
+              "rss_mib": 136.3046875
+            },
+            "seconds": 0.098497148,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.51953125,
+              "rss_mib": 136.29296875
+            },
+            "seconds": 0.102713025,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.51953125,
+              "rss_mib": 136.296875
+            },
+            "seconds": 0.094749269,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": false
+          },
+          {
+            "case": "long",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.82421875,
+              "rss_mib": 136.54296875
+            },
+            "seconds": 0.19323711,
+            "text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.82421875,
+              "rss_mib": 136.24609375
+            },
+            "seconds": 0.07331765,
+            "text": "[",
+            "reference_text": "[",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.82421875,
+              "rss_mib": 136.19921875
+            },
+            "seconds": 0.121984733,
+            "text": "Go go go go go go go go go",
+            "reference_text": "Go Forward",
+            "reference_identical": false
+          },
+          {
+            "case": "slower",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.82421875,
+              "rss_mib": 136.32421875
+            },
+            "seconds": 0.118880823,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "clean",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.82421875,
+              "rss_mib": 136.30078125
+            },
+            "seconds": 0.113743951,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.82421875,
+              "rss_mib": 136.296875
+            },
+            "seconds": 0.163897991,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.82421875,
+              "rss_mib": 136.30078125
+            },
+            "seconds": 0.113206123,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": false
+          },
+          {
+            "case": "long",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.82421875,
+              "rss_mib": 136.54296875
+            },
+            "seconds": 0.214771845,
+            "text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.82421875,
+              "rss_mib": 136.25390625
+            },
+            "seconds": 0.081498077,
+            "text": "[",
+            "reference_text": "[",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.82421875,
+              "rss_mib": 136.19140625
+            },
+            "seconds": 0.137573342,
+            "text": "Go go go go go go go go go",
+            "reference_text": "Go Forward",
+            "reference_identical": false
+          },
+          {
+            "case": "slower",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 189.82421875,
+              "rss_mib": 136.3515625
+            },
+            "seconds": 0.126043982,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          }
+        ],
+        "reference_identical": false,
+        "median_decode_ms": 118.88082299999999,
+        "final_rss_mib": 136.3515625,
+        "peak_rss_mib": 189.82421875
+      },
+      "paced": {
+        "binary_sha256": "212ff8655e303b55f0a70f902753d0ab6f87031aa3c71cd40306ddf5cf8d9844",
+        "experimental_vosk_fast_path": false,
+        "free_decoder": true,
+        "experimental_vosk_finalize_utterances": false,
+        "experimental_whisper_files": {
+          "encoder": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-base.en/base.en-encoder.int8.onnx",
+          "decoder": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-base.en/base.en-decoder.int8.onnx",
+          "tokens": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-base.en/base.en-tokens.txt"
+        },
+        "whisper_idle_seconds": 60,
+        "gap_seconds": 4,
+        "denoise": true,
+        "ready_seconds": 0.209,
+        "waiting_rss_mib": 158.48,
+        "released_rss_mib": null,
+        "unloaded_after_commands_rss_mib": null,
+        "max_sampled_rss_mib": 331.68,
+        "peak_rss_mib": 330.79,
+        "cpu_seconds": 3.66,
+        "commands": [
+          {
+            "text": "ten meters",
+            "latency_ms": 1004.1,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 158.48
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 944.2,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 301.94
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 931.0,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 302.42
+          }
+        ],
+        "memory_after_commands": [
+          {
+            "rss_bytes": 316604416,
+            "pss_bytes": 310804480
+          },
+          {
+            "rss_bytes": 317112320,
+            "pss_bytes": 311312384
+          },
+          {
+            "rss_bytes": 317337600,
+            "pss_bytes": 311537664
+          }
+        ],
+        "max_observed_whisper_threads": 9
+      },
+      "paced_commands_match": true
+    },
+    {
+      "name": "tiny.en",
+      "repeat": 2,
+      "isolated": {
+        "ready": {
+          "embedding": {
+            "bytes": 39831552,
+            "storage": "lossless-f16"
+          },
+          "event": "ready",
+          "implementation": "rust-tract-0.23.9",
+          "load_seconds": 0.29747139,
+          "memory": {
+            "peak_rss_mib": 95.93359375,
+            "rss_mib": 88.5703125
+          },
+          "model": "tiny.en"
+        },
+        "cases": [
+          {
+            "case": "clean",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 116.16015625,
+              "rss_mib": 91.5859375
+            },
+            "seconds": 0.062997297,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 116.4375,
+              "rss_mib": 91.8046875
+            },
+            "seconds": 0.064759627,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 116.6171875,
+              "rss_mib": 91.8359375
+            },
+            "seconds": 0.064309624,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "long",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 131.11328125,
+              "rss_mib": 92.08203125
+            },
+            "seconds": 0.099513823,
+            "text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 131.11328125,
+              "rss_mib": 91.80078125
+            },
+            "seconds": 0.04334455,
+            "text": "[ Silence ]",
+            "reference_text": "[ Silence ]",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 131.11328125,
+              "rss_mib": 91.74609375
+            },
+            "seconds": 0.04223132,
+            "text": "Go forward.",
+            "reference_text": "Go forward.",
+            "reference_identical": true
+          },
+          {
+            "case": "slower",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 131.11328125,
+              "rss_mib": 91.8984375
+            },
+            "seconds": 0.057383574,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "clean",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 131.11328125,
+              "rss_mib": 91.86328125
+            },
+            "seconds": 0.055265672,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 131.11328125,
+              "rss_mib": 91.875
+            },
+            "seconds": 0.059029101,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 131.11328125,
+              "rss_mib": 91.87109375
+            },
+            "seconds": 0.053225126,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "long",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 131.11328125,
+              "rss_mib": 92.11328125
+            },
+            "seconds": 0.104018766,
+            "text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 131.11328125,
+              "rss_mib": 91.83984375
+            },
+            "seconds": 0.044771693,
+            "text": "[ Silence ]",
+            "reference_text": "[ Silence ]",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 131.11328125,
+              "rss_mib": 91.765625
+            },
+            "seconds": 0.040667729,
+            "text": "Go forward.",
+            "reference_text": "Go forward.",
+            "reference_identical": true
+          },
+          {
+            "case": "slower",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 131.11328125,
+              "rss_mib": 92.10546875
+            },
+            "seconds": 0.058032202,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "clean",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 131.11328125,
+              "rss_mib": 92.07421875
+            },
+            "seconds": 0.056813613,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 131.11328125,
+              "rss_mib": 92.07421875
+            },
+            "seconds": 0.056533944,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 131.11328125,
+              "rss_mib": 92.07421875
+            },
+            "seconds": 0.053579236,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "long",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 131.68359375,
+              "rss_mib": 92.33203125
+            },
+            "seconds": 0.096248907,
+            "text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 131.68359375,
+              "rss_mib": 92.44921875
+            },
+            "seconds": 0.054607395,
+            "text": "[ Silence ]",
+            "reference_text": "[ Silence ]",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 131.68359375,
+              "rss_mib": 92.7734375
+            },
+            "seconds": 0.061532813,
+            "text": "Go forward.",
+            "reference_text": "Go forward.",
+            "reference_identical": true
+          },
+          {
+            "case": "slower",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 131.68359375,
+              "rss_mib": 92.91015625
+            },
+            "seconds": 0.063671455,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          }
+        ],
+        "reference_identical": true,
+        "median_decode_ms": 57.383574,
+        "final_rss_mib": 92.91015625,
+        "peak_rss_mib": 131.68359375
+      },
+      "paced": {
+        "binary_sha256": "212ff8655e303b55f0a70f902753d0ab6f87031aa3c71cd40306ddf5cf8d9844",
+        "experimental_vosk_fast_path": false,
+        "free_decoder": true,
+        "experimental_vosk_finalize_utterances": false,
+        "experimental_whisper_files": {
+          "encoder": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-tiny.en/tiny.en-encoder.int8.onnx",
+          "decoder": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-tiny.en/tiny.en-decoder.int8.onnx",
+          "tokens": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-tiny.en/tiny.en-tokens.txt"
+        },
+        "whisper_idle_seconds": 60,
+        "gap_seconds": 4,
+        "denoise": true,
+        "ready_seconds": 0.21,
+        "waiting_rss_mib": 157.59,
+        "released_rss_mib": null,
+        "unloaded_after_commands_rss_mib": null,
+        "max_sampled_rss_mib": 273.46,
+        "peak_rss_mib": 280.22,
+        "cpu_seconds": 2.08,
+        "commands": [
+          {
+            "text": "ten meters",
+            "latency_ms": 990.9,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 157.59
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 804.3,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 257.12
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 807.4,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 257.61
+          }
+        ],
+        "memory_after_commands": [
+          {
+            "rss_bytes": 269606912,
+            "pss_bytes": 263934976
+          },
+          {
+            "rss_bytes": 270118912,
+            "pss_bytes": 264448000
+          },
+          {
+            "rss_bytes": 270401536,
+            "pss_bytes": 264729600
+          }
+        ],
+        "max_observed_whisper_threads": 9
+      },
+      "paced_commands_match": true
+    },
+    {
+      "name": "small.en",
+      "repeat": 3,
+      "isolated": {
+        "ready": {
+          "embedding": {
+            "bytes": 79663104,
+            "storage": "lossless-f16"
+          },
+          "event": "ready",
+          "implementation": "rust-tract-0.23.9",
+          "load_seconds": 1.624184301,
+          "memory": {
+            "peak_rss_mib": 350.14453125,
+            "rss_mib": 316.38671875
+          },
+          "model": "small.en"
+        },
+        "cases": [
+          {
+            "case": "clean",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 389.8515625,
+              "rss_mib": 319.95703125
+            },
+            "seconds": 0.313373827,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 409.75,
+              "rss_mib": 320.16796875
+            },
+            "seconds": 0.349661557,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 409.75,
+              "rss_mib": 320.17578125
+            },
+            "seconds": 0.313890766,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "long",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 440.734375,
+              "rss_mib": 320.421875
+            },
+            "seconds": 0.466612949,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 440.734375,
+              "rss_mib": 320.1484375
+            },
+            "seconds": 0.208564165,
+            "text": "you",
+            "reference_text": "you",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 440.734375,
+              "rss_mib": 320.078125
+            },
+            "seconds": 0.23837147,
+            "text": "Go forward.",
+            "reference_text": "Go forward.",
+            "reference_identical": true
+          },
+          {
+            "case": "slower",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 440.734375,
+              "rss_mib": 320.41015625
+            },
+            "seconds": 0.305234458,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters",
+            "reference_identical": true
+          },
+          {
+            "case": "clean",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 440.734375,
+              "rss_mib": 320.3828125
+            },
+            "seconds": 0.275454276,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 440.734375,
+              "rss_mib": 320.390625
+            },
+            "seconds": 0.31573524,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 440.734375,
+              "rss_mib": 320.78125
+            },
+            "seconds": 0.314555806,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "long",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 441.5546875,
+              "rss_mib": 321.015625
+            },
+            "seconds": 0.458206604,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 441.5546875,
+              "rss_mib": 320.72265625
+            },
+            "seconds": 0.217930537,
+            "text": "you",
+            "reference_text": "you",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 441.5546875,
+              "rss_mib": 320.66796875
+            },
+            "seconds": 0.227630843,
+            "text": "Go forward.",
+            "reference_text": "Go forward.",
+            "reference_identical": true
+          },
+          {
+            "case": "slower",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 441.5546875,
+              "rss_mib": 320.8125
+            },
+            "seconds": 0.308053278,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters",
+            "reference_identical": true
+          },
+          {
+            "case": "clean",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 441.5546875,
+              "rss_mib": 320.78515625
+            },
+            "seconds": 0.276054482,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 441.5546875,
+              "rss_mib": 320.7890625
+            },
+            "seconds": 0.384454996,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 441.5546875,
+              "rss_mib": 320.79296875
+            },
+            "seconds": 0.333007688,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "long",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 441.5546875,
+              "rss_mib": 321.02734375
+            },
+            "seconds": 0.482180328,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 441.5546875,
+              "rss_mib": 320.7421875
+            },
+            "seconds": 0.227486579,
+            "text": "you",
+            "reference_text": "you",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 441.5546875,
+              "rss_mib": 320.67578125
+            },
+            "seconds": 0.23568039,
+            "text": "Go forward.",
+            "reference_text": "Go forward.",
+            "reference_identical": true
+          },
+          {
+            "case": "slower",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 441.5546875,
+              "rss_mib": 320.81640625
+            },
+            "seconds": 0.286935593,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters",
+            "reference_identical": true
+          }
+        ],
+        "reference_identical": true,
+        "median_decode_ms": 308.053278,
+        "final_rss_mib": 320.81640625,
+        "peak_rss_mib": 441.5546875
+      },
+      "paced": {
+        "binary_sha256": "212ff8655e303b55f0a70f902753d0ab6f87031aa3c71cd40306ddf5cf8d9844",
+        "experimental_vosk_fast_path": false,
+        "free_decoder": true,
+        "experimental_vosk_finalize_utterances": false,
+        "experimental_whisper_files": {
+          "encoder": "/home/silver/.local/share/murmur/models/sherpa-onnx-whisper-small.en/small.en-encoder.int8.onnx",
+          "decoder": "/home/silver/.local/share/murmur/models/sherpa-onnx-whisper-small.en/small.en-decoder.int8.onnx",
+          "tokens": "/home/silver/.local/share/murmur/models/sherpa-onnx-whisper-small.en/small.en-tokens.txt"
+        },
+        "whisper_idle_seconds": 60,
+        "gap_seconds": 4,
+        "denoise": true,
+        "ready_seconds": 0.212,
+        "waiting_rss_mib": 157.52,
+        "released_rss_mib": null,
+        "unloaded_after_commands_rss_mib": null,
+        "max_sampled_rss_mib": 567.64,
+        "peak_rss_mib": 566.61,
+        "cpu_seconds": 6.63,
+        "commands": [
+          {
+            "text": "ten meters",
+            "latency_ms": 1214.5,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 157.52
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 1012.5,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 484.0
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 1017.4,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 484.45
+          }
+        ],
+        "memory_after_commands": [
+          {
+            "rss_bytes": 507510784,
+            "pss_bytes": 501819392
+          },
+          {
+            "rss_bytes": 507981824,
+            "pss_bytes": 502291456
+          },
+          {
+            "rss_bytes": 508243968,
+            "pss_bytes": 502553600
+          }
+        ],
+        "max_observed_whisper_threads": 9
+      },
+      "paced_commands_match": true
+    },
+    {
+      "name": "base.en",
+      "repeat": 3,
+      "isolated": {
+        "ready": {
+          "embedding": {
+            "bytes": 53108736,
+            "storage": "lossless-f16"
+          },
+          "event": "ready",
+          "implementation": "rust-tract-0.23.9",
+          "load_seconds": 0.600245767,
+          "memory": {
+            "peak_rss_mib": 144.0390625,
+            "rss_mib": 131.67578125
+          },
+          "model": "base.en"
+        },
+        "cases": [
+          {
+            "case": "clean",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 167.51953125,
+              "rss_mib": 134.55859375
+            },
+            "seconds": 0.124735455,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 168.08984375,
+              "rss_mib": 135.32421875
+            },
+            "seconds": 0.12123318,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 170.03125,
+              "rss_mib": 135.546875
+            },
+            "seconds": 0.122625578,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": false
+          },
+          {
+            "case": "long",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 188.94140625,
+              "rss_mib": 135.765625
+            },
+            "seconds": 0.219724181,
+            "text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 188.94140625,
+              "rss_mib": 135.49609375
+            },
+            "seconds": 0.08220473,
+            "text": "[",
+            "reference_text": "[",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 188.94140625,
+              "rss_mib": 135.625
+            },
+            "seconds": 0.129383399,
+            "text": "Go go go go go go go go go",
+            "reference_text": "Go Forward",
+            "reference_identical": false
+          },
+          {
+            "case": "slower",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 188.94140625,
+              "rss_mib": 135.77734375
+            },
+            "seconds": 0.119535234,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "clean",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 188.94140625,
+              "rss_mib": 135.7578125
+            },
+            "seconds": 0.122243273,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 188.94140625,
+              "rss_mib": 135.734375
+            },
+            "seconds": 0.101255317,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 188.94140625,
+              "rss_mib": 135.74609375
+            },
+            "seconds": 0.102124242,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": false
+          },
+          {
+            "case": "long",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 188.94140625,
+              "rss_mib": 135.9765625
+            },
+            "seconds": 0.207690305,
+            "text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 188.94140625,
+              "rss_mib": 135.703125
+            },
+            "seconds": 0.081320033,
+            "text": "[",
+            "reference_text": "[",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 188.94140625,
+              "rss_mib": 135.66015625
+            },
+            "seconds": 0.129050348,
+            "text": "Go go go go go go go go go",
+            "reference_text": "Go Forward",
+            "reference_identical": false
+          },
+          {
+            "case": "slower",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 188.94140625,
+              "rss_mib": 135.79296875
+            },
+            "seconds": 0.118117929,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "clean",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 188.94140625,
+              "rss_mib": 135.7734375
+            },
+            "seconds": 0.111752762,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 188.94140625,
+              "rss_mib": 135.7734375
+            },
+            "seconds": 0.106696353,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 188.94140625,
+              "rss_mib": 135.79296875
+            },
+            "seconds": 0.168889605,
+            "text": "Go forward 10 meters",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": false
+          },
+          {
+            "case": "long",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 188.94140625,
+              "rss_mib": 136.0078125
+            },
+            "seconds": 0.229231108,
+            "text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 188.94140625,
+              "rss_mib": 135.734375
+            },
+            "seconds": 0.073510019,
+            "text": "[",
+            "reference_text": "[",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 188.94140625,
+              "rss_mib": 135.66796875
+            },
+            "seconds": 0.119429193,
+            "text": "Go go go go go go go go go",
+            "reference_text": "Go Forward",
+            "reference_identical": false
+          },
+          {
+            "case": "slower",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 188.94140625,
+              "rss_mib": 135.8125
+            },
+            "seconds": 0.10480452,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          }
+        ],
+        "reference_identical": false,
+        "median_decode_ms": 119.535234,
+        "final_rss_mib": 135.8125,
+        "peak_rss_mib": 188.94140625
+      },
+      "paced": {
+        "binary_sha256": "212ff8655e303b55f0a70f902753d0ab6f87031aa3c71cd40306ddf5cf8d9844",
+        "experimental_vosk_fast_path": false,
+        "free_decoder": true,
+        "experimental_vosk_finalize_utterances": false,
+        "experimental_whisper_files": {
+          "encoder": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-base.en/base.en-encoder.int8.onnx",
+          "decoder": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-base.en/base.en-decoder.int8.onnx",
+          "tokens": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-base.en/base.en-tokens.txt"
+        },
+        "whisper_idle_seconds": 60,
+        "gap_seconds": 4,
+        "denoise": true,
+        "ready_seconds": 0.209,
+        "waiting_rss_mib": 156.87,
+        "released_rss_mib": null,
+        "unloaded_after_commands_rss_mib": null,
+        "max_sampled_rss_mib": 330.07,
+        "peak_rss_mib": 329.23,
+        "cpu_seconds": 3.63,
+        "commands": [
+          {
+            "text": "ten meters",
+            "latency_ms": 1014.8,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 156.87
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 925.3,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 299.08
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 907.3,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 300.18
+          }
+        ],
+        "memory_after_commands": [
+          {
+            "rss_bytes": 313610240,
+            "pss_bytes": 307858432
+          },
+          {
+            "rss_bytes": 314761216,
+            "pss_bytes": 309009408
+          },
+          {
+            "rss_bytes": 314986496,
+            "pss_bytes": 309234688
+          }
+        ],
+        "max_observed_whisper_threads": 9
+      },
+      "paced_commands_match": true
+    },
+    {
+      "name": "tiny.en",
+      "repeat": 3,
+      "isolated": {
+        "ready": {
+          "embedding": {
+            "bytes": 39831552,
+            "storage": "lossless-f16"
+          },
+          "event": "ready",
+          "implementation": "rust-tract-0.23.9",
+          "load_seconds": 0.310090975,
+          "memory": {
+            "peak_rss_mib": 94.7109375,
+            "rss_mib": 88.08203125
+          },
+          "model": "tiny.en"
+        },
+        "cases": [
+          {
+            "case": "clean",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 115.03125,
+              "rss_mib": 91.234375
+            },
+            "seconds": 0.066782544,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 115.42578125,
+              "rss_mib": 91.28125
+            },
+            "seconds": 0.068386793,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 115.42578125,
+              "rss_mib": 91.28125
+            },
+            "seconds": 0.059710918,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "long",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.390625,
+              "rss_mib": 91.515625
+            },
+            "seconds": 0.102398821,
+            "text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.390625,
+              "rss_mib": 91.24609375
+            },
+            "seconds": 0.047491762,
+            "text": "[ Silence ]",
+            "reference_text": "[ Silence ]",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.390625,
+              "rss_mib": 91.37890625
+            },
+            "seconds": 0.050102327,
+            "text": "Go forward.",
+            "reference_text": "Go forward.",
+            "reference_identical": true
+          },
+          {
+            "case": "slower",
+            "repeat": 1,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.390625,
+              "rss_mib": 91.515625
+            },
+            "seconds": 0.072130704,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "clean",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.390625,
+              "rss_mib": 91.49609375
+            },
+            "seconds": 0.062461048,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.390625,
+              "rss_mib": 91.49609375
+            },
+            "seconds": 0.053461851,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.390625,
+              "rss_mib": 91.5078125
+            },
+            "seconds": 0.053693159,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "long",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.87109375,
+              "rss_mib": 91.75
+            },
+            "seconds": 0.101942226,
+            "text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.87109375,
+              "rss_mib": 91.4609375
+            },
+            "seconds": 0.046267644,
+            "text": "[ Silence ]",
+            "reference_text": "[ Silence ]",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.87109375,
+              "rss_mib": 91.3984375
+            },
+            "seconds": 0.044806445,
+            "text": "Go forward.",
+            "reference_text": "Go forward.",
+            "reference_identical": true
+          },
+          {
+            "case": "slower",
+            "repeat": 2,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.87109375,
+              "rss_mib": 91.5390625
+            },
+            "seconds": 0.058903128,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "clean",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.87109375,
+              "rss_mib": 91.515625
+            },
+            "seconds": 0.055089845,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "quiet",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.87109375,
+              "rss_mib": 91.52734375
+            },
+            "seconds": 0.056330284,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "noise",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.87109375,
+              "rss_mib": 91.71484375
+            },
+            "seconds": 0.056118233,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "long",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.87109375,
+              "rss_mib": 92.14453125
+            },
+            "seconds": 0.096336316,
+            "text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters. Go forward 10 meters.",
+            "reference_identical": true
+          },
+          {
+            "case": "silence",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.87109375,
+              "rss_mib": 91.86328125
+            },
+            "seconds": 0.041848141,
+            "text": "[ Silence ]",
+            "reference_text": "[ Silence ]",
+            "reference_identical": true
+          },
+          {
+            "case": "short",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.87109375,
+              "rss_mib": 91.796875
+            },
+            "seconds": 0.037976478,
+            "text": "Go forward.",
+            "reference_text": "Go forward.",
+            "reference_identical": true
+          },
+          {
+            "case": "slower",
+            "repeat": 3,
+            "event": "result",
+            "memory": {
+              "peak_rss_mib": 130.87109375,
+              "rss_mib": 92.125
+            },
+            "seconds": 0.061617109,
+            "text": "Go forward 10 meters.",
+            "reference_text": "Go forward 10 meters.",
+            "reference_identical": true
+          }
+        ],
+        "reference_identical": true,
+        "median_decode_ms": 56.330284,
+        "final_rss_mib": 92.125,
+        "peak_rss_mib": 130.87109375
+      },
+      "paced": {
+        "binary_sha256": "212ff8655e303b55f0a70f902753d0ab6f87031aa3c71cd40306ddf5cf8d9844",
+        "experimental_vosk_fast_path": false,
+        "free_decoder": true,
+        "experimental_vosk_finalize_utterances": false,
+        "experimental_whisper_files": {
+          "encoder": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-tiny.en/tiny.en-encoder.int8.onnx",
+          "decoder": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-tiny.en/tiny.en-decoder.int8.onnx",
+          "tokens": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-tiny.en/tiny.en-tokens.txt"
+        },
+        "whisper_idle_seconds": 60,
+        "gap_seconds": 4,
+        "denoise": true,
+        "ready_seconds": 0.213,
+        "waiting_rss_mib": 157.71,
+        "released_rss_mib": null,
+        "unloaded_after_commands_rss_mib": null,
+        "max_sampled_rss_mib": 276.13,
+        "peak_rss_mib": 278.98,
+        "cpu_seconds": 2.03,
+        "commands": [
+          {
+            "text": "ten meters",
+            "latency_ms": 968.4,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 157.71
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 805.6,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 256.37
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 806.7,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 256.92
+          }
+        ],
+        "memory_after_commands": [
+          {
+            "rss_bytes": 268820480,
+            "pss_bytes": 263149568
+          },
+          {
+            "rss_bytes": 269398016,
+            "pss_bytes": 263727104
+          },
+          {
+            "rss_bytes": 269676544,
+            "pss_bytes": 264005632
+          }
+        ],
+        "max_observed_whisper_threads": 9
+      },
+      "paced_commands_match": true
+    }
+  ],
+  "complete": true,
+  "production_default": "small.en",
+  "full_recognition_acceptance": false,
+  "enable_smaller_model_by_default": false,
+  "summary": {
+    "small.en": {
+      "workers": 3,
+      "paced_commands": 9,
+      "paced_commands_match": true,
+      "reference_transcripts_identical": true,
+      "isolated_retained_rss_mib": [
+        320.60546875,
+        321.078125,
+        320.81640625
+      ],
+      "isolated_peak_rss_mib": [
+        410.6484375,
+        410.48046875,
+        441.5546875
+      ],
+      "paced_worker_peak_rss_mib": [
+        548.31,
+        570.7,
+        566.61
+      ],
+      "paced_command_pss_mib": [
+        478.27,
+        478.68,
+        478.91,
+        480.36,
+        480.75,
+        480.97,
+        478.57,
+        479.02,
+        479.27
+      ],
+      "median_latency_ms": 1029.8,
+      "p95_latency_ms": 3296.2
+    },
+    "base.en": {
+      "workers": 3,
+      "paced_commands": 9,
+      "paced_commands_match": true,
+      "reference_transcripts_identical": false,
+      "isolated_retained_rss_mib": [
+        136.22265625,
+        136.3515625,
+        135.8125
+      ],
+      "isolated_peak_rss_mib": [
+        189.63671875,
+        189.82421875,
+        188.94140625
+      ],
+      "paced_worker_peak_rss_mib": [
+        330.81,
+        330.79,
+        329.23
+      ],
+      "paced_command_pss_mib": [
+        295.19,
+        295.79,
+        296.06,
+        296.41,
+        296.89,
+        297.11,
+        293.6,
+        294.69,
+        294.91
+      ],
+      "median_latency_ms": 948.2,
+      "p95_latency_ms": 2332.6
+    },
+    "tiny.en": {
+      "workers": 3,
+      "paced_commands": 9,
+      "paced_commands_match": true,
+      "reference_transcripts_identical": true,
+      "isolated_retained_rss_mib": [
+        92.3203125,
+        92.91015625,
+        92.125
+      ],
+      "isolated_peak_rss_mib": [
+        132.390625,
+        131.68359375,
+        130.87109375
+      ],
+      "paced_worker_peak_rss_mib": [
+        282.04,
+        280.22,
+        278.98
+      ],
+      "paced_command_pss_mib": [
+        253.97,
+        254.46,
+        254.67,
+        251.71,
+        252.2,
+        252.47,
+        250.96,
+        251.51,
+        251.78
+      ],
+      "median_latency_ms": 807.4,
+      "p95_latency_ms": 1183.2
+    }
+  },
+  "gates": {
+    "small.en": {
+      "reference_transcripts_match": true,
+      "fixture_commands_match": true,
+      "median_latency_nonregression": true,
+      "p95_latency_nonregression": true,
+      "whole_application_budget_acceptance": false,
+      "full_recognition_acceptance": false,
+      "enable_by_default": false
+    },
+    "base.en": {
+      "reference_transcripts_match": false,
+      "fixture_commands_match": true,
+      "median_latency_nonregression": true,
+      "p95_latency_nonregression": true,
+      "whole_application_budget_acceptance": false,
+      "full_recognition_acceptance": false,
+      "enable_by_default": false
+    },
+    "tiny.en": {
+      "reference_transcripts_match": true,
+      "fixture_commands_match": true,
+      "median_latency_nonregression": true,
+      "p95_latency_nonregression": true,
+      "whole_application_budget_acceptance": false,
+      "full_recognition_acceptance": false,
+      "enable_by_default": false
+    }
+  }
+}

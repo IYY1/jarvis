@@ -23,6 +23,7 @@ def report():
     if is_windows():
         from .windows.diagnostics import report as windows_report
         return windows_report()
+    from .process_memory import service_snapshot
     commands = {}
     # Every external program Murmur actually runs, not just the main ones.
     for name, args in {"hyprctl": ["version"], "pw-cli": ["--version"], "pw-record": ["--version"],
@@ -48,4 +49,5 @@ def report():
             "pocketsphinx": importlib.util.find_spec("pocketsphinx") is not None,
             "voice_engine": _voice_engine(),
             "gtk_python": importlib.util.find_spec("gi") is not None, "tools": commands,
+            "memory": service_snapshot(),
             "note": "Dependency presence is not microphone, capture permission, or recognition verification."}

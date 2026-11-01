@@ -1,27 +1,28 @@
 use crate::{
     emit,
     engine::{Engine, Recognition},
+    input::{self, FRAME},
     Payload, Result,
 };
 use serde_json::json;
-use std::collections::VecDeque;
-use std::io::Read;
-use std::os::fd::AsRawFd;
-use std::os::unix::process::CommandExt;
-use std::process::{Child, Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::Duration;
 static STOP: AtomicBool = AtomicBool::new(false);
+#[cfg(unix)]
 extern "C" fn stop(_: libc::c_int) {
     STOP.store(true, Ordering::Relaxed);
 }
-pub fn bind_parent() -> Result<()> {
-    let before = unsafe { libc::getppid() };
-    let expected: i32 = std::env::var("MURMUR_OWNER_PID")
+fn expected_owner(actual: u32) -> Result<u32> {
+    Ok(std::env::var("MURMUR_OWNER_PID")
         .ok()
         .map(|s| s.parse())
         .transpose()?
-        .unwrap_or(before);
-    if before <= 1 || before != expected {
+        .unwrap_or(actual))
+}
+#[cfg(unix)]
+pub fn bind_parent() -> Result<()> {
+    let before = unsafe { libc::getppid() };
+    if before <= 1 || before as u32 != expected_owner(before as u32)? {
         return Err("Voice worker owner exited".into());
     }
     if unsafe { libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGTERM) } != 0 {
@@ -37,7 +38,33 @@ pub fn bind_parent() -> Result<()> {
     }
     Ok(())
 }
-fn now() -> f64 {
+/// The service's kill-on-close job also ends this process; watching the owner
+/// covers a worker started outside that job.
+#[cfg(windows)]
+pub fn bind_parent() -> Result<()> {
+    use windows::Win32::System::Threading::{
+        OpenProcess, WaitForSingleObject, INFINITE, PROCESS_SYNCHRONIZE,
+    };
+    let Ok(owner) = std::env::var("MURMUR_OWNER_PID") else {
+        return Ok(());
+    };
+    let owner = expected_owner(owner.parse()?)?;
+    let handle = unsafe { OpenProcess(PROCESS_SYNCHRONIZE, false, owner) }
+        .map_err(|_| "Voice worker owner exited")?;
+    let handle = handle.0 as usize;
+    std::thread::Builder::new()
+        .name("jarvis-owner".into())
+        .spawn(move || {
+            let handle = windows::Win32::Foundation::HANDLE(handle as *mut _);
+            unsafe { WaitForSingleObject(handle, INFINITE) };
+            std::process::exit(1);
+        })?;
+    Ok(())
+}
+/// Seconds on the clock the service's time.monotonic() reads, so deadlines
+/// and capture times cross the process boundary unchanged.
+#[cfg(unix)]
+pub fn now() -> f64 {
     let mut t = libc::timespec {
         tv_sec: 0,
         tv_nsec: 0,
@@ -46,6 +73,19 @@ fn now() -> f64 {
         libc::clock_gettime(libc::CLOCK_MONOTONIC, &mut t);
     }
     t.tv_sec as f64 + t.tv_nsec as f64 / 1e9
+}
+/// Python 3.13+ uses QueryPerformanceCounter for time.monotonic() on Windows.
+#[cfg(windows)]
+pub fn now() -> f64 {
+    use windows::Win32::System::Performance::{
+        QueryPerformanceCounter, QueryPerformanceFrequency,
+    };
+    let (mut counter, mut frequency) = (0_i64, 0_i64);
+    unsafe {
+        let _ = QueryPerformanceCounter(&mut counter);
+        let _ = QueryPerformanceFrequency(&mut frequency);
+    }
+    counter as f64 / frequency.max(1) as f64
 }
 pub fn rms(pcm: &[u8]) -> f64 {
     let sum: i64 = pcm
@@ -77,23 +117,6 @@ impl NoiseFloor {
         self.floor = Some(self.floor.map_or(energy, |f| {
             f + (energy - f) * if energy < f { 0.05 } else { 0.0015 }
         }));
-    }
-}
-struct Capture(Child);
-impl Drop for Capture {
-    fn drop(&mut self) {
-        unsafe {
-            libc::kill(self.0.id() as i32, libc::SIGTERM);
-        }
-        let start = std::time::Instant::now();
-        while start.elapsed().as_secs_f64() < 2.0 {
-            if !matches!(self.0.try_wait(), Ok(None)) {
-                return;
-            }
-            std::thread::sleep(std::time::Duration::from_millis(10));
-        }
-        let _ = self.0.kill();
-        let _ = self.0.wait();
     }
 }
 fn ready(engine: Option<&Engine>, listening: bool, deadline: Option<f64>) -> Result<()> {
@@ -142,45 +165,7 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
     if STOP.load(Ordering::Relaxed) {
         return Ok(());
     }
-    let mut capture = Command::new("pw-record");
-    capture.args([
-        "--raw",
-        "--rate",
-        "16000",
-        "--channels",
-        "1",
-        "--format",
-        "s16",
-        "--latency",
-        "30ms",
-    ]);
-    let device = config["audio"]["device"].as_str().unwrap_or("");
-    if !device.is_empty() {
-        capture.args(["--target", device]);
-    }
-    capture
-        .arg("-")
-        .stdin(Stdio::null())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped());
-    let owner = std::process::id() as i32;
-    // SAFETY: only async-signal-safe libc calls run between fork and exec.
-    unsafe {
-        capture.pre_exec(move || {
-            if libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGKILL) != 0 {
-                return Err(std::io::Error::last_os_error());
-            }
-            if libc::getppid() != owner {
-                libc::_exit(1);
-            }
-            Ok(())
-        });
-    }
-    let mut capture = Capture(capture.spawn()?);
-    let mut audio = capture.0.stdout.take().ok_or("Missing capture stdout")?;
-    let mut stderr = capture.0.stderr.take().ok_or("Missing capture stderr")?;
-    let mut stderr_open = true;
-    let mut errors = VecDeque::with_capacity(2048);
+    let mut input = input::open(&config, mode == "wake_word")?;
     let mut control_open = mode == "wake_word";
     let mut listening = mode == "once";
     let mut deadline = if ["test", "once"].contains(&mode.as_str()) {
@@ -189,7 +174,7 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
         None
     };
     if let Some(e) = &mut engine {
-        e.begin(listening);
+        e.begin(listening)?;
     }
     ready(engine.as_ref(), listening, deadline)?;
     let minimum = config["audio"]["vad_rms"]
@@ -206,12 +191,16 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
     let mut settling = false;
     let mut quiet_frames = 0;
     let mut last_frame = now();
-    let mut pending = [0_u8; 960];
-    let mut filled = 0;
+    let mut pending = [0_u8; FRAME];
     while !STOP.load(Ordering::Relaxed) {
         let time = now();
         if time - last_frame >= 3.0 {
-            return Err("No microphone frames for three seconds. Check the input device and PipeWire, then Resume.".into());
+            return Err(if cfg!(windows) {
+                "No microphone frames for three seconds. Check the input device and Windows microphone privacy settings, then Resume."
+            } else {
+                "No microphone frames for three seconds. Check the input device and PipeWire, then Resume."
+            }
+            .into());
         }
         if deadline.is_some_and(|d| time >= d) {
             let stamp = deadline.unwrap();
@@ -233,7 +222,7 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
                 listening = false;
                 deadline = None;
                 settling = false;
-                engine.as_mut().unwrap().begin(false);
+                engine.as_mut().unwrap().begin(false)?;
                 cooldown = now() + 1.5;
                 continue;
             }
@@ -246,67 +235,22 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
             deadline = None;
             settling = false;
             quiet_frames = 0;
-            engine.as_mut().unwrap().begin(false);
+            engine.as_mut().unwrap().begin(false)?;
             emit(json!({"event":"timeout"}))?;
         }
         let next = deadline.map_or(last_frame + 3.0, |d| d.min(last_frame + 3.0));
-        let mut polls = [
-            libc::pollfd {
-                fd: if control_open { 0 } else { -1 },
-                events: libc::POLLIN,
-                revents: 0,
-            },
-            libc::pollfd {
-                fd: audio.as_raw_fd(),
-                events: libc::POLLIN,
-                revents: 0,
-            },
-            libc::pollfd {
-                fd: if stderr_open { stderr.as_raw_fd() } else { -1 },
-                events: libc::POLLIN,
-                revents: 0,
-            },
-        ];
         let wait = if controls.contains(&b'\n') {
-            0
+            Duration::ZERO
         } else {
-            ((next - now()).max(0.0) * 1000.0)
-                .ceil()
-                .min(i32::MAX as f64) as i32
+            Duration::from_secs_f64((next - now()).clamp(0.0, 3.0))
         };
-        if unsafe { libc::poll(polls.as_mut_ptr(), 3, wait) } < 0 {
-            if std::io::Error::last_os_error().kind() == std::io::ErrorKind::Interrupted {
-                continue;
-            }
-            return Err(std::io::Error::last_os_error().into());
-        }
-        if polls[2].revents != 0 {
-            let mut bytes = [0_u8; 512];
-            let n = stderr.read(&mut bytes)?;
-            if n == 0 {
-                stderr_open = false;
-            }
-            for &b in &bytes[..n] {
-                if errors.len() == 2048 {
-                    errors.pop_front();
-                }
-                errors.push_back(b);
-            }
-        }
         // Control wins over audio, including a continuously readable pipe.
-        if control_open && polls[0].revents != 0 {
-            let mut bytes = [0_u8; 4096];
-            let n = unsafe { libc::read(0, bytes.as_mut_ptr().cast(), bytes.len()) };
-            if n < 0 {
-                if std::io::Error::last_os_error().kind() == std::io::ErrorKind::Interrupted {
-                    continue;
-                }
-                return Err(std::io::Error::last_os_error().into());
-            }
-            if n == 0 {
+        let arrived = input.wait(wait, control_open)?;
+        if let Some(bytes) = arrived.control.filter(|_| control_open) {
+            if bytes.is_empty() {
                 control_open = false;
             } else {
-                controls.extend_from_slice(&bytes[..n as usize]);
+                controls.extend_from_slice(&bytes);
             }
         }
         while let Some(end) = controls.iter().position(|&b| b == b'\n') {
@@ -323,28 +267,24 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
             engine
                 .as_mut()
                 .ok_or("Controls require a recognition engine")?
-                .begin(listening);
+                .begin(listening)?;
             ready(engine.as_ref(), listening, deadline)?;
         }
         if controls.len() > 4096 {
             return Err("Voice control line exceeds 4096 bytes".into());
         }
-        if polls[1].revents == 0 {
+        if !arrived.audio {
             continue;
         }
-        let n = audio.read(&mut pending[filled..])?;
-        if n == 0 {
-            return Err(format!(
-                "Microphone stream ended. Check PipeWire and the selected input. {}",
-                String::from_utf8_lossy(&errors.into_iter().collect::<Vec<_>>())
-            )
+        if !input.frame(&mut pending)? {
+            let detail = input.detail();
+            return Err(if !detail.is_empty() {
+                detail
+            } else {
+                "Microphone stream ended. Check the selected input, then Resume.".into()
+            }
             .into());
         }
-        filled += n;
-        if filled < 960 {
-            continue;
-        }
-        filled = 0;
         last_frame = now();
         if mode == "test" {
             if now() >= next_level {
@@ -367,7 +307,7 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
             quiet_frames = if quiet { quiet_frames + 1 } else { 0 };
             if quiet_frames >= 7 {
                 settling = false;
-                engine.as_mut().unwrap().begin(true);
+                engine.as_mut().unwrap().begin(true)?;
             }
             continue;
         }
@@ -405,7 +345,7 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
         }
         listening = false;
         deadline = None;
-        engine.as_mut().unwrap().begin(false);
+        engine.as_mut().unwrap().begin(false)?;
         cooldown = now() + 1.5;
     }
     Ok(())

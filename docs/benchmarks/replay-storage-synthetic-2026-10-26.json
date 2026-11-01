@@ -1,0 +1,3632 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-26T05:12:41.438300+00:00",
+  "platform": "Linux-7.3.0-5-cachyos-x86_64-with-glibc2.44",
+  "scope": "Compare fresh RAM/disk segment stores using one supplied one-second video.\n\nNo capture, voice models or desktop service. Segments have distinct byte objects\nin RAM, as they do after pipe delivery. This measures the Windows buffer classes\non the host OS, including the Rust helper; it is not a Windows/gameplay result.\n",
+  "history_seconds": 120,
+  "segments_appended": 180,
+  "max_mib": 256,
+  "fixture_sha256": "58f10a0a9a8cc60cebf04462b8b690ec1b55faeaf801f4aeffa6bdc80bbe3430",
+  "helper_sha256": "a0c9be6180d435651d23228f5b69de4a263dfea5b002dd10208f3c7d619783e2",
+  "runs": [
+    {
+      "mode": "ram",
+      "append_seconds": 0.1113,
+      "segment_bytes": 2057118,
+      "written_payload_bytes": 0,
+      "retained_payload_bytes": 246854160,
+      "samples": [
+        {
+          "phase": "empty",
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              228
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 228,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 23773184,
+                "pss_bytes": 13853696
+              }
+            ],
+            "totals": {
+              "rss_bytes": 23773184,
+              "pss_bytes": 13853696
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 10,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              228
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 228,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 48316416,
+                "pss_bytes": 38396928
+              }
+            ],
+            "totals": {
+              "rss_bytes": 48316416,
+              "pss_bytes": 38396928
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 20,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              228
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 228,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 68886528,
+                "pss_bytes": 58967040
+              }
+            ],
+            "totals": {
+              "rss_bytes": 68886528,
+              "pss_bytes": 58967040
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 30,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              228
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 228,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 89460736,
+                "pss_bytes": 79541248
+              }
+            ],
+            "totals": {
+              "rss_bytes": 89460736,
+              "pss_bytes": 79541248
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 40,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              228
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 228,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 110030848,
+                "pss_bytes": 100111360
+              }
+            ],
+            "totals": {
+              "rss_bytes": 110030848,
+              "pss_bytes": 100111360
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 50,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              228
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 228,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 130609152,
+                "pss_bytes": 120689664
+              }
+            ],
+            "totals": {
+              "rss_bytes": 130609152,
+              "pss_bytes": 120689664
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 60,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              228
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 228,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 151179264,
+                "pss_bytes": 141259776
+              }
+            ],
+            "totals": {
+              "rss_bytes": 151179264,
+              "pss_bytes": 141259776
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 70,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              228
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 228,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 171749376,
+                "pss_bytes": 161829888
+              }
+            ],
+            "totals": {
+              "rss_bytes": 171749376,
+              "pss_bytes": 161829888
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 80,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              228
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 228,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 192323584,
+                "pss_bytes": 182404096
+              }
+            ],
+            "totals": {
+              "rss_bytes": 192323584,
+              "pss_bytes": 182404096
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 90,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              228
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 228,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 212893696,
+                "pss_bytes": 202974208
+              }
+            ],
+            "totals": {
+              "rss_bytes": 212893696,
+              "pss_bytes": 202974208
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 100,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              228
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 228,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 233467904,
+                "pss_bytes": 223548416
+              }
+            ],
+            "totals": {
+              "rss_bytes": 233467904,
+              "pss_bytes": 223548416
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 110,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              228
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 228,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 254046208,
+                "pss_bytes": 244126720
+              }
+            ],
+            "totals": {
+              "rss_bytes": 254046208,
+              "pss_bytes": 244126720
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 120,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              228
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 228,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 274616320,
+                "pss_bytes": 264696832
+              }
+            ],
+            "totals": {
+              "rss_bytes": 274616320,
+              "pss_bytes": 264696832
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 130,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              228
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 228,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 276672512,
+                "pss_bytes": 266753024
+              }
+            ],
+            "totals": {
+              "rss_bytes": 276672512,
+              "pss_bytes": 266753024
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 140,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              228
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 228,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 276672512,
+                "pss_bytes": 266753024
+              }
+            ],
+            "totals": {
+              "rss_bytes": 276672512,
+              "pss_bytes": 266753024
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 150,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              228
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 228,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 276672512,
+                "pss_bytes": 266753024
+              }
+            ],
+            "totals": {
+              "rss_bytes": 276672512,
+              "pss_bytes": 266753024
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 160,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              228
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 228,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 276672512,
+                "pss_bytes": 266753024
+              }
+            ],
+            "totals": {
+              "rss_bytes": 276672512,
+              "pss_bytes": 266753024
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 170,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              228
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 228,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 278728704,
+                "pss_bytes": 268809216
+              }
+            ],
+            "totals": {
+              "rss_bytes": 278728704,
+              "pss_bytes": 268809216
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 180,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              228
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 228,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 278732800,
+                "pss_bytes": 268813312
+              }
+            ],
+            "totals": {
+              "rss_bytes": 278732800,
+              "pss_bytes": 268813312
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "retained",
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              228
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 228,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 278732800,
+                "pss_bytes": 268813312
+              }
+            ],
+            "totals": {
+              "rss_bytes": 278732800,
+              "pss_bytes": 268813312
+            },
+            "complete": true
+          }
+        }
+      ],
+      "sampled_peak_bytes": {
+        "rss_bytes": 278732800,
+        "pss_bytes": 268813312
+      },
+      "repeat": 1
+    },
+    {
+      "mode": "disk",
+      "append_seconds": 1.097,
+      "segment_bytes": 2057118,
+      "written_payload_bytes": 370281240,
+      "retained_payload_bytes": 246854160,
+      "samples": [
+        {
+          "phase": "empty",
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              229
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 229,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 23666688,
+                "pss_bytes": 13865984
+              },
+              {
+                "pid": 230,
+                "ppid": 229,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2777088,
+                "pss_bytes": 592896
+              }
+            ],
+            "totals": {
+              "rss_bytes": 26443776,
+              "pss_bytes": 14458880
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 10,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              229
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 229,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25849856,
+                "pss_bytes": 16049152
+              },
+              {
+                "pid": 230,
+                "ppid": 229,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2785280,
+                "pss_bytes": 601088
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28635136,
+              "pss_bytes": 16650240
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 20,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              229
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 229,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25853952,
+                "pss_bytes": 16053248
+              },
+              {
+                "pid": 230,
+                "ppid": 229,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2789376,
+                "pss_bytes": 605184
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28643328,
+              "pss_bytes": 16658432
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 30,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              229
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 229,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25853952,
+                "pss_bytes": 16053248
+              },
+              {
+                "pid": 230,
+                "ppid": 229,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2793472,
+                "pss_bytes": 609280
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28647424,
+              "pss_bytes": 16662528
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 40,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              229
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 229,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25853952,
+                "pss_bytes": 16053248
+              },
+              {
+                "pid": 230,
+                "ppid": 229,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2797568,
+                "pss_bytes": 613376
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28651520,
+              "pss_bytes": 16666624
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 50,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              229
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 229,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25858048,
+                "pss_bytes": 16057344
+              },
+              {
+                "pid": 230,
+                "ppid": 229,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2797568,
+                "pss_bytes": 613376
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28655616,
+              "pss_bytes": 16670720
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 60,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              229
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 229,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25858048,
+                "pss_bytes": 16057344
+              },
+              {
+                "pid": 230,
+                "ppid": 229,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2805760,
+                "pss_bytes": 621568
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28663808,
+              "pss_bytes": 16678912
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 70,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              229
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 229,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25862144,
+                "pss_bytes": 16061440
+              },
+              {
+                "pid": 230,
+                "ppid": 229,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2809856,
+                "pss_bytes": 625664
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28672000,
+              "pss_bytes": 16687104
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 80,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              229
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 229,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25866240,
+                "pss_bytes": 16065536
+              },
+              {
+                "pid": 230,
+                "ppid": 229,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2813952,
+                "pss_bytes": 629760
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28680192,
+              "pss_bytes": 16695296
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 90,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              229
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 229,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25870336,
+                "pss_bytes": 16069632
+              },
+              {
+                "pid": 230,
+                "ppid": 229,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2813952,
+                "pss_bytes": 629760
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28684288,
+              "pss_bytes": 16699392
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 100,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              229
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 229,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25866240,
+                "pss_bytes": 16065536
+              },
+              {
+                "pid": 230,
+                "ppid": 229,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2818048,
+                "pss_bytes": 633856
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28684288,
+              "pss_bytes": 16699392
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 110,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              229
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 229,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25866240,
+                "pss_bytes": 16065536
+              },
+              {
+                "pid": 230,
+                "ppid": 229,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2822144,
+                "pss_bytes": 637952
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28688384,
+              "pss_bytes": 16703488
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 120,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              229
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 229,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25866240,
+                "pss_bytes": 16065536
+              },
+              {
+                "pid": 230,
+                "ppid": 229,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2822144,
+                "pss_bytes": 637952
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28688384,
+              "pss_bytes": 16703488
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 130,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              229
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 229,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25997312,
+                "pss_bytes": 16196608
+              },
+              {
+                "pid": 230,
+                "ppid": 229,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2826240,
+                "pss_bytes": 642048
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28823552,
+              "pss_bytes": 16838656
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 140,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              229
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 229,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25866240,
+                "pss_bytes": 16065536
+              },
+              {
+                "pid": 230,
+                "ppid": 229,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2826240,
+                "pss_bytes": 642048
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28692480,
+              "pss_bytes": 16707584
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 150,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              229
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 229,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25874432,
+                "pss_bytes": 16073728
+              },
+              {
+                "pid": 230,
+                "ppid": 229,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2826240,
+                "pss_bytes": 642048
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28700672,
+              "pss_bytes": 16715776
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 160,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              229
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 229,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26009600,
+                "pss_bytes": 16208896
+              },
+              {
+                "pid": 230,
+                "ppid": 229,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2826240,
+                "pss_bytes": 642048
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28835840,
+              "pss_bytes": 16850944
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 170,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              229
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 229,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25878528,
+                "pss_bytes": 16077824
+              },
+              {
+                "pid": 230,
+                "ppid": 229,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2826240,
+                "pss_bytes": 642048
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28704768,
+              "pss_bytes": 16719872
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 180,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              229
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 229,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25878528,
+                "pss_bytes": 16077824
+              },
+              {
+                "pid": 230,
+                "ppid": 229,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2826240,
+                "pss_bytes": 642048
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28704768,
+              "pss_bytes": 16719872
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "retained",
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              229
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 229,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25882624,
+                "pss_bytes": 16081920
+              },
+              {
+                "pid": 230,
+                "ppid": 229,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2826240,
+                "pss_bytes": 642048
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28708864,
+              "pss_bytes": 16723968
+            },
+            "complete": true
+          }
+        }
+      ],
+      "sampled_peak_bytes": {
+        "rss_bytes": 28835840,
+        "pss_bytes": 16850944
+      },
+      "repeat": 1
+    },
+    {
+      "mode": "ram",
+      "append_seconds": 0.0897,
+      "segment_bytes": 2057118,
+      "written_payload_bytes": 0,
+      "retained_payload_bytes": 246854160,
+      "samples": [
+        {
+          "phase": "empty",
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              231
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 231,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 23687168,
+                "pss_bytes": 13860864
+              }
+            ],
+            "totals": {
+              "rss_bytes": 23687168,
+              "pss_bytes": 13860864
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 10,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              231
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 231,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 48230400,
+                "pss_bytes": 38404096
+              }
+            ],
+            "totals": {
+              "rss_bytes": 48230400,
+              "pss_bytes": 38404096
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 20,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              231
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 231,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 68800512,
+                "pss_bytes": 58974208
+              }
+            ],
+            "totals": {
+              "rss_bytes": 68800512,
+              "pss_bytes": 58974208
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 30,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              231
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 231,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 89374720,
+                "pss_bytes": 79548416
+              }
+            ],
+            "totals": {
+              "rss_bytes": 89374720,
+              "pss_bytes": 79548416
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 40,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              231
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 231,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 109944832,
+                "pss_bytes": 100118528
+              }
+            ],
+            "totals": {
+              "rss_bytes": 109944832,
+              "pss_bytes": 100118528
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 50,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              231
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 231,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 130519040,
+                "pss_bytes": 120692736
+              }
+            ],
+            "totals": {
+              "rss_bytes": 130519040,
+              "pss_bytes": 120692736
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 60,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              231
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 231,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 151093248,
+                "pss_bytes": 141266944
+              }
+            ],
+            "totals": {
+              "rss_bytes": 151093248,
+              "pss_bytes": 141266944
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 70,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              231
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 231,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 171663360,
+                "pss_bytes": 161837056
+              }
+            ],
+            "totals": {
+              "rss_bytes": 171663360,
+              "pss_bytes": 161837056
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 80,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              231
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 231,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 192274432,
+                "pss_bytes": 182448128
+              }
+            ],
+            "totals": {
+              "rss_bytes": 192274432,
+              "pss_bytes": 182448128
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 90,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              231
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 231,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 212807680,
+                "pss_bytes": 202981376
+              }
+            ],
+            "totals": {
+              "rss_bytes": 212807680,
+              "pss_bytes": 202981376
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 100,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              231
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 231,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 233381888,
+                "pss_bytes": 223555584
+              }
+            ],
+            "totals": {
+              "rss_bytes": 233381888,
+              "pss_bytes": 223555584
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 110,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              231
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 231,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 253956096,
+                "pss_bytes": 244129792
+              }
+            ],
+            "totals": {
+              "rss_bytes": 253956096,
+              "pss_bytes": 244129792
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 120,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              231
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 231,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 274530304,
+                "pss_bytes": 264704000
+              }
+            ],
+            "totals": {
+              "rss_bytes": 274530304,
+              "pss_bytes": 264704000
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 130,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              231
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 231,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 276586496,
+                "pss_bytes": 266760192
+              }
+            ],
+            "totals": {
+              "rss_bytes": 276586496,
+              "pss_bytes": 266760192
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 140,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              231
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 231,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 276586496,
+                "pss_bytes": 266760192
+              }
+            ],
+            "totals": {
+              "rss_bytes": 276586496,
+              "pss_bytes": 266760192
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 150,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              231
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 231,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 276586496,
+                "pss_bytes": 266760192
+              }
+            ],
+            "totals": {
+              "rss_bytes": 276586496,
+              "pss_bytes": 266760192
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 160,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              231
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 231,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 276586496,
+                "pss_bytes": 266760192
+              }
+            ],
+            "totals": {
+              "rss_bytes": 276586496,
+              "pss_bytes": 266760192
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 170,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              231
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 231,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 278642688,
+                "pss_bytes": 268816384
+              }
+            ],
+            "totals": {
+              "rss_bytes": 278642688,
+              "pss_bytes": 268816384
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 180,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              231
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 231,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 278646784,
+                "pss_bytes": 268820480
+              }
+            ],
+            "totals": {
+              "rss_bytes": 278646784,
+              "pss_bytes": 268820480
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "retained",
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              231
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 231,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 278646784,
+                "pss_bytes": 268820480
+              }
+            ],
+            "totals": {
+              "rss_bytes": 278646784,
+              "pss_bytes": 268820480
+            },
+            "complete": true
+          }
+        }
+      ],
+      "sampled_peak_bytes": {
+        "rss_bytes": 278646784,
+        "pss_bytes": 268820480
+      },
+      "repeat": 2
+    },
+    {
+      "mode": "disk",
+      "append_seconds": 1.1813,
+      "segment_bytes": 2057118,
+      "written_payload_bytes": 370281240,
+      "retained_payload_bytes": 246854160,
+      "samples": [
+        {
+          "phase": "empty",
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              232
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 232,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 23871488,
+                "pss_bytes": 13896704
+              },
+              {
+                "pid": 233,
+                "ppid": 232,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2772992,
+                "pss_bytes": 588800
+              }
+            ],
+            "totals": {
+              "rss_bytes": 26644480,
+              "pss_bytes": 14485504
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 10,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              232
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 232,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26054656,
+                "pss_bytes": 16079872
+              },
+              {
+                "pid": 233,
+                "ppid": 232,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2785280,
+                "pss_bytes": 601088
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28839936,
+              "pss_bytes": 16680960
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 20,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              232
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 232,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26058752,
+                "pss_bytes": 16083968
+              },
+              {
+                "pid": 233,
+                "ppid": 232,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2789376,
+                "pss_bytes": 605184
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28848128,
+              "pss_bytes": 16689152
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 30,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              232
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 232,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26058752,
+                "pss_bytes": 16083968
+              },
+              {
+                "pid": 233,
+                "ppid": 232,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2793472,
+                "pss_bytes": 609280
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28852224,
+              "pss_bytes": 16693248
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 40,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              232
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 232,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26058752,
+                "pss_bytes": 16083968
+              },
+              {
+                "pid": 233,
+                "ppid": 232,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2797568,
+                "pss_bytes": 613376
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28856320,
+              "pss_bytes": 16697344
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 50,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              232
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 232,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26062848,
+                "pss_bytes": 16088064
+              },
+              {
+                "pid": 233,
+                "ppid": 232,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2797568,
+                "pss_bytes": 613376
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28860416,
+              "pss_bytes": 16701440
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 60,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              232
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 232,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26062848,
+                "pss_bytes": 16088064
+              },
+              {
+                "pid": 233,
+                "ppid": 232,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2801664,
+                "pss_bytes": 617472
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28864512,
+              "pss_bytes": 16705536
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 70,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              232
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 232,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26066944,
+                "pss_bytes": 16092160
+              },
+              {
+                "pid": 233,
+                "ppid": 232,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2805760,
+                "pss_bytes": 621568
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28872704,
+              "pss_bytes": 16713728
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 80,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              232
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 232,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26071040,
+                "pss_bytes": 16096256
+              },
+              {
+                "pid": 233,
+                "ppid": 232,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2809856,
+                "pss_bytes": 625664
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28880896,
+              "pss_bytes": 16721920
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 90,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              232
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 232,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26075136,
+                "pss_bytes": 16100352
+              },
+              {
+                "pid": 233,
+                "ppid": 232,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2809856,
+                "pss_bytes": 625664
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28884992,
+              "pss_bytes": 16726016
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 100,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              232
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 232,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26071040,
+                "pss_bytes": 16096256
+              },
+              {
+                "pid": 233,
+                "ppid": 232,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2813952,
+                "pss_bytes": 629760
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28884992,
+              "pss_bytes": 16726016
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 110,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              232
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 232,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26075136,
+                "pss_bytes": 16100352
+              },
+              {
+                "pid": 233,
+                "ppid": 232,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2818048,
+                "pss_bytes": 633856
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28893184,
+              "pss_bytes": 16734208
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 120,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              232
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 232,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26075136,
+                "pss_bytes": 16100352
+              },
+              {
+                "pid": 233,
+                "ppid": 232,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2818048,
+                "pss_bytes": 633856
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28893184,
+              "pss_bytes": 16734208
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 130,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              232
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 232,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26206208,
+                "pss_bytes": 16231424
+              },
+              {
+                "pid": 233,
+                "ppid": 232,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2822144,
+                "pss_bytes": 637952
+              }
+            ],
+            "totals": {
+              "rss_bytes": 29028352,
+              "pss_bytes": 16869376
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 140,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              232
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 232,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26075136,
+                "pss_bytes": 16100352
+              },
+              {
+                "pid": 233,
+                "ppid": 232,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2822144,
+                "pss_bytes": 637952
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28897280,
+              "pss_bytes": 16738304
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 150,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              232
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 232,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26083328,
+                "pss_bytes": 16108544
+              },
+              {
+                "pid": 233,
+                "ppid": 232,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2822144,
+                "pss_bytes": 637952
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28905472,
+              "pss_bytes": 16746496
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 160,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              232
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 232,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26218496,
+                "pss_bytes": 16243712
+              },
+              {
+                "pid": 233,
+                "ppid": 232,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2822144,
+                "pss_bytes": 637952
+              }
+            ],
+            "totals": {
+              "rss_bytes": 29040640,
+              "pss_bytes": 16881664
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 170,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              232
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 232,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26087424,
+                "pss_bytes": 16112640
+              },
+              {
+                "pid": 233,
+                "ppid": 232,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2822144,
+                "pss_bytes": 637952
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28909568,
+              "pss_bytes": 16750592
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 180,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              232
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 232,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26087424,
+                "pss_bytes": 16112640
+              },
+              {
+                "pid": 233,
+                "ppid": 232,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2822144,
+                "pss_bytes": 637952
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28909568,
+              "pss_bytes": 16750592
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "retained",
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              232
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 232,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26091520,
+                "pss_bytes": 16116736
+              },
+              {
+                "pid": 233,
+                "ppid": 232,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2822144,
+                "pss_bytes": 637952
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28913664,
+              "pss_bytes": 16754688
+            },
+            "complete": true
+          }
+        }
+      ],
+      "sampled_peak_bytes": {
+        "rss_bytes": 29040640,
+        "pss_bytes": 16881664
+      },
+      "repeat": 2
+    },
+    {
+      "mode": "ram",
+      "append_seconds": 0.0914,
+      "segment_bytes": 2057118,
+      "written_payload_bytes": 0,
+      "retained_payload_bytes": 246854160,
+      "samples": [
+        {
+          "phase": "empty",
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              234
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 234,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 23642112,
+                "pss_bytes": 13879296
+              }
+            ],
+            "totals": {
+              "rss_bytes": 23642112,
+              "pss_bytes": 13879296
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 10,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              234
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 234,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 48185344,
+                "pss_bytes": 38422528
+              }
+            ],
+            "totals": {
+              "rss_bytes": 48185344,
+              "pss_bytes": 38422528
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 20,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              234
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 234,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 68755456,
+                "pss_bytes": 58992640
+              }
+            ],
+            "totals": {
+              "rss_bytes": 68755456,
+              "pss_bytes": 58992640
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 30,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              234
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 234,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 89329664,
+                "pss_bytes": 79566848
+              }
+            ],
+            "totals": {
+              "rss_bytes": 89329664,
+              "pss_bytes": 79566848
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 40,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              234
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 234,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 109944832,
+                "pss_bytes": 100182016
+              }
+            ],
+            "totals": {
+              "rss_bytes": 109944832,
+              "pss_bytes": 100182016
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 50,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              234
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 234,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 130478080,
+                "pss_bytes": 120715264
+              }
+            ],
+            "totals": {
+              "rss_bytes": 130478080,
+              "pss_bytes": 120715264
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 60,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              234
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 234,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 151048192,
+                "pss_bytes": 141285376
+              }
+            ],
+            "totals": {
+              "rss_bytes": 151048192,
+              "pss_bytes": 141285376
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 70,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              234
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 234,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 171618304,
+                "pss_bytes": 161855488
+              }
+            ],
+            "totals": {
+              "rss_bytes": 171618304,
+              "pss_bytes": 161855488
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 80,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              234
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 234,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 192192512,
+                "pss_bytes": 182429696
+              }
+            ],
+            "totals": {
+              "rss_bytes": 192192512,
+              "pss_bytes": 182429696
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 90,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              234
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 234,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 212762624,
+                "pss_bytes": 202999808
+              }
+            ],
+            "totals": {
+              "rss_bytes": 212762624,
+              "pss_bytes": 202999808
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 100,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              234
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 234,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 233340928,
+                "pss_bytes": 223578112
+              }
+            ],
+            "totals": {
+              "rss_bytes": 233340928,
+              "pss_bytes": 223578112
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 110,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              234
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 234,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 253915136,
+                "pss_bytes": 244152320
+              }
+            ],
+            "totals": {
+              "rss_bytes": 253915136,
+              "pss_bytes": 244152320
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 120,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              234
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 234,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 274485248,
+                "pss_bytes": 264722432
+              }
+            ],
+            "totals": {
+              "rss_bytes": 274485248,
+              "pss_bytes": 264722432
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 130,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              234
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 234,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 276541440,
+                "pss_bytes": 266778624
+              }
+            ],
+            "totals": {
+              "rss_bytes": 276541440,
+              "pss_bytes": 266778624
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 140,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              234
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 234,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 276541440,
+                "pss_bytes": 266778624
+              }
+            ],
+            "totals": {
+              "rss_bytes": 276541440,
+              "pss_bytes": 266778624
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 150,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              234
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 234,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 276541440,
+                "pss_bytes": 266778624
+              }
+            ],
+            "totals": {
+              "rss_bytes": 276541440,
+              "pss_bytes": 266778624
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 160,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              234
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 234,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 276545536,
+                "pss_bytes": 266782720
+              }
+            ],
+            "totals": {
+              "rss_bytes": 276545536,
+              "pss_bytes": 266782720
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 170,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              234
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 234,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 278601728,
+                "pss_bytes": 268838912
+              }
+            ],
+            "totals": {
+              "rss_bytes": 278601728,
+              "pss_bytes": 268838912
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 180,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              234
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 234,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 278601728,
+                "pss_bytes": 268838912
+              }
+            ],
+            "totals": {
+              "rss_bytes": 278601728,
+              "pss_bytes": 268838912
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "retained",
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              234
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 234,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 278601728,
+                "pss_bytes": 268838912
+              }
+            ],
+            "totals": {
+              "rss_bytes": 278601728,
+              "pss_bytes": 268838912
+            },
+            "complete": true
+          }
+        }
+      ],
+      "sampled_peak_bytes": {
+        "rss_bytes": 278601728,
+        "pss_bytes": 268838912
+      },
+      "repeat": 3
+    },
+    {
+      "mode": "disk",
+      "append_seconds": 1.0886,
+      "segment_bytes": 2057118,
+      "written_payload_bytes": 370281240,
+      "retained_payload_bytes": 246854160,
+      "samples": [
+        {
+          "phase": "empty",
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              235
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 235,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 23670784,
+                "pss_bytes": 13865984
+              },
+              {
+                "pid": 236,
+                "ppid": 235,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2772992,
+                "pss_bytes": 588800
+              }
+            ],
+            "totals": {
+              "rss_bytes": 26443776,
+              "pss_bytes": 14454784
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 10,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              235
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 235,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25853952,
+                "pss_bytes": 16049152
+              },
+              {
+                "pid": 236,
+                "ppid": 235,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2785280,
+                "pss_bytes": 601088
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28639232,
+              "pss_bytes": 16650240
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 20,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              235
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 235,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25858048,
+                "pss_bytes": 16053248
+              },
+              {
+                "pid": 236,
+                "ppid": 235,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2789376,
+                "pss_bytes": 605184
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28647424,
+              "pss_bytes": 16658432
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 30,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              235
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 235,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25858048,
+                "pss_bytes": 16053248
+              },
+              {
+                "pid": 236,
+                "ppid": 235,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2793472,
+                "pss_bytes": 609280
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28651520,
+              "pss_bytes": 16662528
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 40,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              235
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 235,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25858048,
+                "pss_bytes": 16053248
+              },
+              {
+                "pid": 236,
+                "ppid": 235,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2797568,
+                "pss_bytes": 613376
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28655616,
+              "pss_bytes": 16666624
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 50,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              235
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 235,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25862144,
+                "pss_bytes": 16057344
+              },
+              {
+                "pid": 236,
+                "ppid": 235,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2797568,
+                "pss_bytes": 613376
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28659712,
+              "pss_bytes": 16670720
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 60,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              235
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 235,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25862144,
+                "pss_bytes": 16057344
+              },
+              {
+                "pid": 236,
+                "ppid": 235,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2801664,
+                "pss_bytes": 617472
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28663808,
+              "pss_bytes": 16674816
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 70,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              235
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 235,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25866240,
+                "pss_bytes": 16061440
+              },
+              {
+                "pid": 236,
+                "ppid": 235,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2805760,
+                "pss_bytes": 621568
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28672000,
+              "pss_bytes": 16683008
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 80,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              235
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 235,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25870336,
+                "pss_bytes": 16065536
+              },
+              {
+                "pid": 236,
+                "ppid": 235,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2809856,
+                "pss_bytes": 625664
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28680192,
+              "pss_bytes": 16691200
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 90,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              235
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 235,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25874432,
+                "pss_bytes": 16069632
+              },
+              {
+                "pid": 236,
+                "ppid": 235,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2809856,
+                "pss_bytes": 625664
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28684288,
+              "pss_bytes": 16695296
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 100,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              235
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 235,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25870336,
+                "pss_bytes": 16065536
+              },
+              {
+                "pid": 236,
+                "ppid": 235,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2813952,
+                "pss_bytes": 629760
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28684288,
+              "pss_bytes": 16695296
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 110,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              235
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 235,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25874432,
+                "pss_bytes": 16069632
+              },
+              {
+                "pid": 236,
+                "ppid": 235,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2818048,
+                "pss_bytes": 633856
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28692480,
+              "pss_bytes": 16703488
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 120,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              235
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 235,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25874432,
+                "pss_bytes": 16069632
+              },
+              {
+                "pid": 236,
+                "ppid": 235,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2818048,
+                "pss_bytes": 633856
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28692480,
+              "pss_bytes": 16703488
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 130,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              235
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 235,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26005504,
+                "pss_bytes": 16200704
+              },
+              {
+                "pid": 236,
+                "ppid": 235,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2822144,
+                "pss_bytes": 637952
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28827648,
+              "pss_bytes": 16838656
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 140,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              235
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 235,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25874432,
+                "pss_bytes": 16069632
+              },
+              {
+                "pid": 236,
+                "ppid": 235,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2822144,
+                "pss_bytes": 637952
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28696576,
+              "pss_bytes": 16707584
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 150,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              235
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 235,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25882624,
+                "pss_bytes": 16077824
+              },
+              {
+                "pid": 236,
+                "ppid": 235,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2822144,
+                "pss_bytes": 637952
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28704768,
+              "pss_bytes": 16715776
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 160,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              235
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 235,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 25890816,
+                "pss_bytes": 16086016
+              },
+              {
+                "pid": 236,
+                "ppid": 235,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2822144,
+                "pss_bytes": 637952
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28712960,
+              "pss_bytes": 16723968
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 170,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              235
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 235,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26017792,
+                "pss_bytes": 16212992
+              },
+              {
+                "pid": 236,
+                "ppid": 235,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2822144,
+                "pss_bytes": 637952
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28839936,
+              "pss_bytes": 16850944
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 180,
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              235
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 235,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26017792,
+                "pss_bytes": 16212992
+              },
+              {
+                "pid": 236,
+                "ppid": 235,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2822144,
+                "pss_bytes": 637952
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28839936,
+              "pss_bytes": 16850944
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "retained",
+          "memory": {
+            "schema_version": 1,
+            "platform": "linux",
+            "roots": [
+              235
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 235,
+                "ppid": 227,
+                "name": "python",
+                "rss_bytes": 26017792,
+                "pss_bytes": 16212992
+              },
+              {
+                "pid": 236,
+                "ppid": 235,
+                "name": "jarvis-replay-s",
+                "rss_bytes": 2822144,
+                "pss_bytes": 637952
+              }
+            ],
+            "totals": {
+              "rss_bytes": 28839936,
+              "pss_bytes": 16850944
+            },
+            "complete": true
+          }
+        }
+      ],
+      "sampled_peak_bytes": {
+        "rss_bytes": 28839936,
+        "pss_bytes": 16850944
+      },
+      "repeat": 3
+    }
+  ],
+  "full_application_acceptance": false,
+  "limitations": [
+    "Store-only Linux-host comparison; excludes encoder, named-pipe readers, voice, controller and settings.",
+    "Accelerated fill/rollover; no sustained disk-throughput or SSD-wear measurement.",
+    "Samples every ten appends; brief peaks can be missed. File cache is outside process RSS/PSS and is reclaimable.",
+    "No native Windows hardware, memory-pressure or live GSR disk-buffer result."
+  ]
+}

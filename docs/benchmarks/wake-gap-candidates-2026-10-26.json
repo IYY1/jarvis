@@ -1,0 +1,283 @@
+{
+  "recorded_at": "2026-10-26T04:18:12.654497+00:00",
+  "scope": "offline Python Vosk engine only, no Whisper/capture/controller; three fresh engines per candidate, each receiving three one-breath commands separated by reversed public speech and literal quiet; not a runtime latency or Windows benchmark",
+  "fixture_sha256": "f15c60ec54059d8b66e410d0064945a0b0a04ea56e1ddca1958e493c0cf70e71",
+  "before_source_sha256": "a9950354234ad980379477d0ae10f89151f9c850e9f8a8bbe6b44ce724fad3be",
+  "after_source_sha256": "a38d8503f71fe6d47305a2b965b369d3fd328da2e03e7bd11ab0fa2f87a4ce85",
+  "sequence": {
+    "cycles": 3,
+    "quiet_after_command_seconds": 1.5,
+    "reversed_fixture_copies": 1,
+    "quiet_after_background_frames": 117,
+    "frame_seconds": 0.03
+  },
+  "runs": [
+    {
+      "variant": "before",
+      "trial": 0,
+      "hangover_frames": 40,
+      "expected_commands": 3,
+      "actual_commands": 1,
+      "events": [
+        [
+          "wake",
+          "go forward"
+        ],
+        [
+          "command",
+          "ten meters"
+        ]
+      ],
+      "decoded_audio_seconds": 19.77,
+      "decode_cpu_seconds": 0.53064494
+    },
+    {
+      "variant": "before",
+      "trial": 1,
+      "hangover_frames": 40,
+      "expected_commands": 3,
+      "actual_commands": 1,
+      "events": [
+        [
+          "wake",
+          "go forward"
+        ],
+        [
+          "command",
+          "ten meters"
+        ]
+      ],
+      "decoded_audio_seconds": 19.77,
+      "decode_cpu_seconds": 0.5221947950000001
+    },
+    {
+      "variant": "before",
+      "trial": 2,
+      "hangover_frames": 40,
+      "expected_commands": 3,
+      "actual_commands": 1,
+      "events": [
+        [
+          "wake",
+          "go forward"
+        ],
+        [
+          "command",
+          "ten meters"
+        ]
+      ],
+      "decoded_audio_seconds": 19.77,
+      "decode_cpu_seconds": 0.526126704
+    },
+    {
+      "variant": "longer-quiet-tail",
+      "trial": 0,
+      "hangover_frames": 100,
+      "expected_commands": 3,
+      "actual_commands": 3,
+      "events": [
+        [
+          "wake",
+          "go forward"
+        ],
+        [
+          "command",
+          "ten meters"
+        ],
+        [
+          "wake",
+          "go forward"
+        ],
+        [
+          "command",
+          "ten meters"
+        ],
+        [
+          "wake",
+          "go forward"
+        ],
+        [
+          "command",
+          "ten meters"
+        ]
+      ],
+      "decoded_audio_seconds": 23.85,
+      "decode_cpu_seconds": 0.6583647859999999
+    },
+    {
+      "variant": "longer-quiet-tail",
+      "trial": 1,
+      "hangover_frames": 100,
+      "expected_commands": 3,
+      "actual_commands": 3,
+      "events": [
+        [
+          "wake",
+          "go forward"
+        ],
+        [
+          "command",
+          "ten meters"
+        ],
+        [
+          "wake",
+          "go forward"
+        ],
+        [
+          "command",
+          "ten meters"
+        ],
+        [
+          "wake",
+          "go forward"
+        ],
+        [
+          "command",
+          "ten meters"
+        ]
+      ],
+      "decoded_audio_seconds": 23.85,
+      "decode_cpu_seconds": 0.6611657950000001
+    },
+    {
+      "variant": "longer-quiet-tail",
+      "trial": 2,
+      "hangover_frames": 100,
+      "expected_commands": 3,
+      "actual_commands": 3,
+      "events": [
+        [
+          "wake",
+          "go forward"
+        ],
+        [
+          "command",
+          "ten meters"
+        ],
+        [
+          "wake",
+          "go forward"
+        ],
+        [
+          "command",
+          "ten meters"
+        ],
+        [
+          "wake",
+          "go forward"
+        ],
+        [
+          "command",
+          "ten meters"
+        ]
+      ],
+      "decoded_audio_seconds": 23.85,
+      "decode_cpu_seconds": 0.6409700429999994
+    },
+    {
+      "variant": "quiet-boundary-reset",
+      "trial": 0,
+      "hangover_frames": 40,
+      "expected_commands": 3,
+      "actual_commands": 3,
+      "events": [
+        [
+          "wake",
+          "go forward"
+        ],
+        [
+          "command",
+          "ten meters"
+        ],
+        [
+          "wake",
+          "go forward"
+        ],
+        [
+          "command",
+          "ten meters"
+        ],
+        [
+          "wake",
+          "go forward"
+        ],
+        [
+          "command",
+          "ten meters"
+        ]
+      ],
+      "decoded_audio_seconds": 18.69,
+      "decode_cpu_seconds": 0.582851003
+    },
+    {
+      "variant": "quiet-boundary-reset",
+      "trial": 1,
+      "hangover_frames": 40,
+      "expected_commands": 3,
+      "actual_commands": 3,
+      "events": [
+        [
+          "wake",
+          "go forward"
+        ],
+        [
+          "command",
+          "ten meters"
+        ],
+        [
+          "wake",
+          "go forward"
+        ],
+        [
+          "command",
+          "ten meters"
+        ],
+        [
+          "wake",
+          "go forward"
+        ],
+        [
+          "command",
+          "ten meters"
+        ]
+      ],
+      "decoded_audio_seconds": 18.69,
+      "decode_cpu_seconds": 0.5960951000000003
+    },
+    {
+      "variant": "quiet-boundary-reset",
+      "trial": 2,
+      "hangover_frames": 40,
+      "expected_commands": 3,
+      "actual_commands": 3,
+      "events": [
+        [
+          "wake",
+          "go forward"
+        ],
+        [
+          "command",
+          "ten meters"
+        ],
+        [
+          "wake",
+          "go forward"
+        ],
+        [
+          "command",
+          "ten meters"
+        ],
+        [
+          "wake",
+          "go forward"
+        ],
+        [
+          "command",
+          "ten meters"
+        ]
+      ],
+      "decoded_audio_seconds": 18.69,
+      "decode_cpu_seconds": 0.5873792119999992
+    }
+  ]
+}

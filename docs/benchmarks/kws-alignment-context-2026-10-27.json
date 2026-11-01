@@ -1,0 +1,357 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-26T22:00:14.574146+00:00",
+  "scope": "Diagnose the aligned candidate's retained miss; never tune or accept it.\n\nCompare the unchanged failing input with crops at the two measured stream\norigins, through saved and current ungated binaries. Expected labels stay\npositive even when a missing detection is the diagnostic prediction.\n",
+  "matrix_sha256": "a82eadb066433567e0bdb79ed2cb9afead2310b269f3df771d947475888f11af",
+  "failed_case": "go-forward-0.1-1110",
+  "original_input_sha256": "46abeb1a768674efc24b11b30fec060246f3092cdf5267d2f6c9d58c1a3ffdeb",
+  "configuration": {
+    "library": "/home/silver/Projects/jarvis/.venv/lib/python3.14/site-packages/sherpa_onnx/lib/libsherpa-onnx-c-api.so",
+    "tokens": "/home/silver/Projects/jarvis/build/memory-plan-kws/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/tokens.txt",
+    "keywords": "/home/silver/Projects/jarvis/build/memory-plan-kws/surrogate-keywords.txt",
+    "score": 1.0,
+    "threshold": 0.25,
+    "encoder": "/home/silver/Projects/jarvis/build/memory-plan-kws/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/encoder-epoch-12-avg-2-chunk-16-left-64.int8.onnx",
+    "decoder": "/home/silver/Projects/jarvis/build/memory-plan-kws/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/decoder-epoch-12-avg-2-chunk-16-left-64.int8.onnx",
+    "joiner": "/home/silver/Projects/jarvis/build/memory-plan-kws/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/joiner-epoch-12-avg-2-chunk-16-left-64.int8.onnx"
+  },
+  "baseline_snapshot": {
+    "scope": "Handoff snapshot of measured ungated KWS baseline; ignored workspace-only copies, not a release",
+    "binary_sha256": "3bead979c897d0c14b9ce2c3394239ec77dc929b0f43ca8ea1eb76d531dfd657",
+    "source_archive_sha256": "ee318e49b4c0457f4597db804055d981719814baa99952c23207a84638bf56a8",
+    "files": {
+      "native/kws-probe/Cargo.lock": "15acd1ee12bebc87b023d18a74b426d56a4195cbd214345de75612c1146491da",
+      "native/kws-probe/Cargo.toml": "0edf22bce37f6f63f6ab8a202faf9cb5c910e84d31302033c5096cae5b337ca4",
+      "native/kws-probe/build.rs": "e7b498f427aebefa2431e913e8d4f6775b71f1b070d3b9c7cc2ddc6dcbf69f7d",
+      "native/kws-probe/shim.c": "3a9436845091f770cd77c61cf3aea920e641212337151da36c5bb57375e91b48",
+      "native/kws-probe/src/main.rs": "249dab3a4aef21c89728ef641e5c737b85e5c6c91787d7998310b1c506eaf34e",
+      "native/kws-probe/vendor/LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "native/kws-probe/vendor/README.md": "e9b5e996cbb2170769cf0eb96c400ad0cc7e4082e065bcb9c8ef4cf6b3c881ee",
+      "native/kws-probe/vendor/c-api.h": "2a1b95084be8fd1deb3228fcad2fd3f7f0258b64582f7402281ec174c7b7f4ce"
+    }
+  },
+  "inputs": [
+    {
+      "name": "whole",
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/alignment-context/whole.raw",
+      "seconds": 5.39625,
+      "expected": [
+        "GO_FORWARD"
+      ],
+      "origin_samples": 0,
+      "sha256": "46abeb1a768674efc24b11b30fec060246f3092cdf5267d2f6c9d58c1a3ffdeb"
+    },
+    {
+      "name": "aligned-origin",
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/alignment-context/aligned-origin.raw",
+      "seconds": 4.11625,
+      "expected": [
+        "GO_FORWARD"
+      ],
+      "origin_samples": 20480,
+      "sha256": "6a79d5289bb533427bf2a6ff3043a977d1dc700f200e82944e217b0c3ee873cd"
+    },
+    {
+      "name": "legacy-origin",
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/alignment-context/legacy-origin.raw",
+      "seconds": 4.07625,
+      "expected": [
+        "GO_FORWARD"
+      ],
+      "origin_samples": 21120,
+      "sha256": "e105b075037264077d510e825d75588a73278029afa537ce5df301518d736eac"
+    }
+  ],
+  "runs": [
+    {
+      "arm": "saved-ungated",
+      "binary_sha256": "3bead979c897d0c14b9ce2c3394239ec77dc929b0f43ca8ea1eb76d531dfd657",
+      "measurement": {
+        "ready": {
+          "backend": "sherpa-onnx-1.13.8-c-api",
+          "event": "ready",
+          "load_seconds": 0.32640626,
+          "memory": {
+            "peak_rss_mib": 48.7578125,
+            "pss_mib": 44.79296875,
+            "rss_mib": 48.7578125
+          },
+          "score": 1.0,
+          "threads": 1,
+          "threshold": 0.25
+        },
+        "cases": [
+          {
+            "name": "whole",
+            "expected": [
+              "GO_FORWARD"
+            ],
+            "actual": [],
+            "passed": false,
+            "hits": [],
+            "measurement": {
+              "audio_seconds": 5.39625,
+              "cpu_seconds": 0.05462,
+              "detections": 0,
+              "elapsed_seconds": 0.055257639,
+              "event": "complete",
+              "memory": {
+                "peak_rss_mib": 53.38671875,
+                "pss_mib": 49.0517578125,
+                "rss_mib": 53.38671875
+              },
+              "paced": false,
+              "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/alignment-context/whole.raw"
+            }
+          },
+          {
+            "name": "aligned-origin",
+            "expected": [
+              "GO_FORWARD"
+            ],
+            "actual": [],
+            "passed": false,
+            "hits": [],
+            "measurement": {
+              "audio_seconds": 4.11625,
+              "cpu_seconds": 0.03767599999999999,
+              "detections": 0,
+              "elapsed_seconds": 0.03806213,
+              "event": "complete",
+              "memory": {
+                "peak_rss_mib": 53.40625,
+                "pss_mib": 49.0712890625,
+                "rss_mib": 53.40625
+              },
+              "paced": false,
+              "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/alignment-context/aligned-origin.raw"
+            }
+          },
+          {
+            "name": "legacy-origin",
+            "expected": [
+              "GO_FORWARD"
+            ],
+            "actual": [
+              "GO_FORWARD"
+            ],
+            "passed": true,
+            "hits": [
+              {
+                "audio_seconds": 1.44,
+                "elapsed_seconds": 0.012911852,
+                "event": "keyword",
+                "result": {
+                  "keyword": "GO_FORWARD",
+                  "start_time": 0.0,
+                  "timestamps": [
+                    0.52,
+                    0.76,
+                    0.88
+                  ],
+                  "tokens": [
+                    " GO",
+                    " FOR",
+                    "WARD"
+                  ]
+                }
+              }
+            ],
+            "measurement": {
+              "audio_seconds": 4.07625,
+              "cpu_seconds": 0.037826000000000026,
+              "detections": 1,
+              "elapsed_seconds": 0.038131031,
+              "event": "complete",
+              "memory": {
+                "peak_rss_mib": 53.40625,
+                "pss_mib": 49.0712890625,
+                "rss_mib": 53.40625
+              },
+              "paced": false,
+              "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/alignment-context/legacy-origin.raw"
+            }
+          }
+        ],
+        "all_cases_pass": false
+      },
+      "matches_context_prediction": true
+    },
+    {
+      "arm": "current-ungated",
+      "binary_sha256": "3f0030314b153a89bac0c96163e668ef838850b93daf22f322929d96623bbe51",
+      "measurement": {
+        "ready": {
+          "backend": "sherpa-onnx-1.13.8-c-api",
+          "event": "ready",
+          "load_seconds": 0.300560598,
+          "memory": {
+            "anonymous_mib": 28.6953125,
+            "heap": {
+              "free_arena_bytes": 4686816,
+              "in_use_bytes": 24988704,
+              "mmap_bytes": 0
+            },
+            "peak_rss_mib": 48.828125,
+            "pss_mib": 44.8173828125,
+            "rss_mib": 48.828125,
+            "rust_allocations": null
+          },
+          "quiet_gate": null,
+          "score": 1.0,
+          "threads": 1,
+          "threshold": 0.25
+        },
+        "cases": [
+          {
+            "name": "whole",
+            "expected": [
+              "GO_FORWARD"
+            ],
+            "actual": [],
+            "passed": false,
+            "hits": [],
+            "measurement": {
+              "accepted_samples": 86340,
+              "audio_seconds": 5.39625,
+              "cpu_seconds": 0.052093999999999974,
+              "decoded_samples": 86340,
+              "detections": 0,
+              "elapsed_seconds": 0.052414044,
+              "event": "complete",
+              "memory": {
+                "anonymous_mib": 31.92578125,
+                "heap": {
+                  "free_arena_bytes": 1734544,
+                  "in_use_bytes": 34859120,
+                  "mmap_bytes": 0
+                },
+                "peak_rss_mib": 53.62109375,
+                "pss_mib": 49.240234375,
+                "rss_mib": 53.62109375,
+                "rust_allocations": null
+              },
+              "paced": false,
+              "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/alignment-context/whole.raw",
+              "quiet_gate": null,
+              "replayed_samples": 0,
+              "skipped_samples": 0,
+              "stream_count": 1,
+              "stream_origins_samples": [
+                0
+              ]
+            }
+          },
+          {
+            "name": "aligned-origin",
+            "expected": [
+              "GO_FORWARD"
+            ],
+            "actual": [],
+            "passed": false,
+            "hits": [],
+            "measurement": {
+              "accepted_samples": 65860,
+              "audio_seconds": 4.11625,
+              "cpu_seconds": 0.03856900000000002,
+              "decoded_samples": 65860,
+              "detections": 0,
+              "elapsed_seconds": 0.038916726,
+              "event": "complete",
+              "memory": {
+                "anonymous_mib": 31.9453125,
+                "heap": {
+                  "free_arena_bytes": 1729824,
+                  "in_use_bytes": 34863840,
+                  "mmap_bytes": 0
+                },
+                "peak_rss_mib": 53.640625,
+                "pss_mib": 49.259765625,
+                "rss_mib": 53.640625,
+                "rust_allocations": null
+              },
+              "paced": false,
+              "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/alignment-context/aligned-origin.raw",
+              "quiet_gate": null,
+              "replayed_samples": 0,
+              "skipped_samples": 0,
+              "stream_count": 1,
+              "stream_origins_samples": [
+                0
+              ]
+            }
+          },
+          {
+            "name": "legacy-origin",
+            "expected": [
+              "GO_FORWARD"
+            ],
+            "actual": [
+              "GO_FORWARD"
+            ],
+            "passed": true,
+            "hits": [
+              {
+                "audio_seconds": 1.44,
+                "elapsed_seconds": 0.013126106,
+                "event": "keyword",
+                "result": {
+                  "keyword": "GO_FORWARD",
+                  "start_time": 0.0,
+                  "timestamps": [
+                    0.52,
+                    0.76,
+                    0.88
+                  ],
+                  "tokens": [
+                    " GO",
+                    " FOR",
+                    "WARD"
+                  ]
+                },
+                "stream_origin_seconds": 0.0
+              }
+            ],
+            "measurement": {
+              "accepted_samples": 65220,
+              "audio_seconds": 4.07625,
+              "cpu_seconds": 0.03868900000000003,
+              "decoded_samples": 65220,
+              "detections": 1,
+              "elapsed_seconds": 0.038973143,
+              "event": "complete",
+              "memory": {
+                "anonymous_mib": 31.9453125,
+                "heap": {
+                  "free_arena_bytes": 1729856,
+                  "in_use_bytes": 34863808,
+                  "mmap_bytes": 0
+                },
+                "peak_rss_mib": 53.640625,
+                "pss_mib": 49.259765625,
+                "rss_mib": 53.640625,
+                "rust_allocations": null
+              },
+              "paced": false,
+              "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/alignment-context/legacy-origin.raw",
+              "quiet_gate": null,
+              "replayed_samples": 0,
+              "skipped_samples": 0,
+              "stream_count": 1,
+              "stream_origins_samples": [
+                0
+              ]
+            }
+          }
+        ],
+        "all_cases_pass": false
+      },
+      "matches_context_prediction": true
+    }
+  ],
+  "complete": true,
+  "recognition_acceptance": false,
+  "production_defaults_changed": false,
+  "enable_by_default": false,
+  "diagnostic_context_prediction_reproduced": true
+}

@@ -1,0 +1,2349 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-26T06:55:08.365943+00:00",
+  "platform": "Linux-7.3.0-5-cachyos-x86_64-with-glibc2.44",
+  "scope": "Pair the default Rust voice path with its opt-in Vosk fast-path experiment.\n\nReal Vosk/Whisper/GTCRN, supplied public fixture and fake capture only. Includes\nan exact-agreement arm and a forced fallback arm with the free decoder disabled.\nThe latter checks retained Whisper behavior and the cost of losing prefetch;\nit is not an accent/noise corpus. All workers run sequentially.\n",
+  "fixture_sha256": "f15c60ec54059d8b66e410d0064945a0b0a04ea56e1ddca1958e493c0cf70e71",
+  "binary_sha256": "29fb92b24352718effd081bc43ec2c635be11f3f51c4cee4ab1b8ba29752a61d",
+  "runs": [
+    {
+      "name": "default_exact",
+      "repeat": 1,
+      "counters": {
+        "final_stats": {
+          "vosk_fast_path": false,
+          "fast_commands": 0,
+          "whisper_transcriptions": 3,
+          "whisper_loads": 1
+        },
+        "results": [
+          {
+            "event": "ready",
+            "load_seconds": 0.205108474,
+            "memory": {
+              "rss_mib": 157.8203125,
+              "peak_rss_mib": 158.234375
+            },
+            "whisper": "rust-tract-0.23.9",
+            "denoiser": "rust-tract-0.23.9"
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false
+              }
+            ],
+            "seconds": 2.201984293,
+            "decode_cpu_seconds": 3.51273581,
+            "settle_cpu_seconds": 6.710000000076377e-07,
+            "memory": {
+              "rss_mib": 485.68359375,
+              "peak_rss_mib": 550.75390625
+            },
+            "recognition_stats": {
+              "vosk_fast_path": false,
+              "fast_commands": 0,
+              "whisper_transcriptions": 1,
+              "whisper_loads": 1
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false
+              }
+            ],
+            "seconds": 0.379412173,
+            "decode_cpu_seconds": 1.3692257049999998,
+            "settle_cpu_seconds": 7.809999997832051e-07,
+            "memory": {
+              "rss_mib": 486.13671875,
+              "peak_rss_mib": 551.1796875
+            },
+            "recognition_stats": {
+              "vosk_fast_path": false,
+              "fast_commands": 0,
+              "whisper_transcriptions": 2,
+              "whisper_loads": 1
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false
+              }
+            ],
+            "seconds": 0.392400571,
+            "decode_cpu_seconds": 1.442428037,
+            "settle_cpu_seconds": 7.819999998659455e-07,
+            "memory": {
+              "rss_mib": 486.3359375,
+              "peak_rss_mib": 551.1796875
+            },
+            "recognition_stats": {
+              "vosk_fast_path": false,
+              "fast_commands": 0,
+              "whisper_transcriptions": 3,
+              "whisper_loads": 1
+            }
+          }
+        ]
+      },
+      "paced": {
+        "binary_sha256": "29fb92b24352718effd081bc43ec2c635be11f3f51c4cee4ab1b8ba29752a61d",
+        "experimental_vosk_fast_path": false,
+        "free_decoder": true,
+        "whisper_idle_seconds": 60,
+        "gap_seconds": 4,
+        "denoise": true,
+        "ready_seconds": 0.221,
+        "waiting_rss_mib": 158.06,
+        "released_rss_mib": null,
+        "max_sampled_rss_mib": 572.71,
+        "peak_rss_mib": 571.79,
+        "cpu_seconds": 6.66,
+        "commands": [
+          {
+            "text": "ten meters",
+            "latency_ms": 1166.3,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 158.06
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 1041.8,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 485.51
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 1025.3,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 485.93
+          }
+        ],
+        "memory_after_commands": [
+          {
+            "rss_bytes": 509095936,
+            "pss_bytes": 503378944
+          },
+          {
+            "rss_bytes": 509530112,
+            "pss_bytes": 503813120
+          },
+          {
+            "rss_bytes": 509718528,
+            "pss_bytes": 504001536
+          }
+        ],
+        "max_observed_whisper_threads": 9,
+        "median_latency_ms": 1041.8,
+        "p95_latency_ms": 1166.3,
+        "unloaded_after_commands_rss_mib": null
+      }
+    },
+    {
+      "name": "fast_exact",
+      "repeat": 1,
+      "counters": {
+        "final_stats": {
+          "vosk_fast_path": true,
+          "fast_commands": 3,
+          "whisper_transcriptions": 0,
+          "whisper_loads": 0
+        },
+        "results": [
+          {
+            "event": "ready",
+            "load_seconds": 0.207483684,
+            "memory": {
+              "rss_mib": 156.96484375,
+              "peak_rss_mib": 156.96484375
+            },
+            "whisper": "rust-tract-0.23.9",
+            "denoiser": "rust-tract-0.23.9"
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false,
+                "recognition_pass": "vosk_fast"
+              }
+            ],
+            "seconds": 0.298986186,
+            "decode_cpu_seconds": 0.29729910800000003,
+            "settle_cpu_seconds": 1.0419999999511376e-06,
+            "memory": {
+              "rss_mib": 174.78125,
+              "peak_rss_mib": 174.78125
+            },
+            "recognition_stats": {
+              "vosk_fast_path": true,
+              "fast_commands": 1,
+              "whisper_transcriptions": 0,
+              "whisper_loads": 0
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false,
+                "recognition_pass": "vosk_fast"
+              }
+            ],
+            "seconds": 0.080269928,
+            "decode_cpu_seconds": 0.07978783700000003,
+            "settle_cpu_seconds": 8.910000000028617e-07,
+            "memory": {
+              "rss_mib": 176.77734375,
+              "peak_rss_mib": 176.77734375
+            },
+            "recognition_stats": {
+              "vosk_fast_path": true,
+              "fast_commands": 2,
+              "whisper_transcriptions": 0,
+              "whisper_loads": 0
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false,
+                "recognition_pass": "vosk_fast"
+              }
+            ],
+            "seconds": 0.073963079,
+            "decode_cpu_seconds": 0.07368821599999997,
+            "settle_cpu_seconds": 8.409999999736684e-07,
+            "memory": {
+              "rss_mib": 177.1484375,
+              "peak_rss_mib": 177.1484375
+            },
+            "recognition_stats": {
+              "vosk_fast_path": true,
+              "fast_commands": 3,
+              "whisper_transcriptions": 0,
+              "whisper_loads": 0
+            }
+          }
+        ]
+      },
+      "paced": {
+        "binary_sha256": "29fb92b24352718effd081bc43ec2c635be11f3f51c4cee4ab1b8ba29752a61d",
+        "experimental_vosk_fast_path": true,
+        "free_decoder": true,
+        "whisper_idle_seconds": 60,
+        "gap_seconds": 4,
+        "denoise": true,
+        "ready_seconds": 0.209,
+        "waiting_rss_mib": 160.26,
+        "released_rss_mib": null,
+        "max_sampled_rss_mib": 179.2,
+        "peak_rss_mib": 179.2,
+        "cpu_seconds": 0.74,
+        "commands": [
+          {
+            "text": "ten meters",
+            "latency_ms": 874.6,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": "vosk_fast",
+            "rss_at_speech_start_mib": 160.26
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 704.0,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": "vosk_fast",
+            "rss_at_speech_start_mib": 175.02
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 698.0,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": "vosk_fast",
+            "rss_at_speech_start_mib": 178.96
+          }
+        ],
+        "memory_after_commands": [
+          {
+            "rss_bytes": 185597952,
+            "pss_bytes": 180020224
+          },
+          {
+            "rss_bytes": 187658240,
+            "pss_bytes": 182080512
+          },
+          {
+            "rss_bytes": 187899904,
+            "pss_bytes": 182322176
+          }
+        ],
+        "max_observed_whisper_threads": 0,
+        "median_latency_ms": 704.0,
+        "p95_latency_ms": 874.6,
+        "unloaded_after_commands_rss_mib": 178.96
+      }
+    },
+    {
+      "name": "default_fallback",
+      "repeat": 1,
+      "counters": {
+        "final_stats": {
+          "vosk_fast_path": false,
+          "fast_commands": 0,
+          "whisper_transcriptions": 3,
+          "whisper_loads": 1
+        },
+        "results": [
+          {
+            "event": "ready",
+            "load_seconds": 0.170767839,
+            "memory": {
+              "rss_mib": 159.7421875,
+              "peak_rss_mib": 159.7421875
+            },
+            "whisper": "rust-tract-0.23.9",
+            "denoiser": "rust-tract-0.23.9"
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false
+              }
+            ],
+            "seconds": 2.054992488,
+            "decode_cpu_seconds": 3.112487839,
+            "settle_cpu_seconds": 8.710000001244111e-07,
+            "memory": {
+              "rss_mib": 473.87109375,
+              "peak_rss_mib": 558.98828125
+            },
+            "recognition_stats": {
+              "vosk_fast_path": false,
+              "fast_commands": 0,
+              "whisper_transcriptions": 1,
+              "whisper_loads": 1
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false
+              }
+            ],
+            "seconds": 0.358894221,
+            "decode_cpu_seconds": 1.3689881699999997,
+            "settle_cpu_seconds": 8.410000003067353e-07,
+            "memory": {
+              "rss_mib": 473.98046875,
+              "peak_rss_mib": 559.49609375
+            },
+            "recognition_stats": {
+              "vosk_fast_path": false,
+              "fast_commands": 0,
+              "whisper_transcriptions": 2,
+              "whisper_loads": 1
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false
+              }
+            ],
+            "seconds": 0.349486232,
+            "decode_cpu_seconds": 1.351802598,
+            "settle_cpu_seconds": 7.719999999267202e-07,
+            "memory": {
+              "rss_mib": 474.0703125,
+              "peak_rss_mib": 559.73828125
+            },
+            "recognition_stats": {
+              "vosk_fast_path": false,
+              "fast_commands": 0,
+              "whisper_transcriptions": 3,
+              "whisper_loads": 1
+            }
+          }
+        ]
+      },
+      "paced": {
+        "binary_sha256": "29fb92b24352718effd081bc43ec2c635be11f3f51c4cee4ab1b8ba29752a61d",
+        "experimental_vosk_fast_path": false,
+        "free_decoder": false,
+        "whisper_idle_seconds": 60,
+        "gap_seconds": 4,
+        "denoise": true,
+        "ready_seconds": 0.182,
+        "waiting_rss_mib": 153.61,
+        "released_rss_mib": null,
+        "max_sampled_rss_mib": 531.9,
+        "peak_rss_mib": 530.55,
+        "cpu_seconds": 6.36,
+        "commands": [
+          {
+            "text": "ten meters",
+            "latency_ms": 905.3,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 153.61
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 981.1,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 467.61
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 1001.7,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 467.68
+          }
+        ],
+        "memory_after_commands": [
+          {
+            "rss_bytes": 490328064,
+            "pss_bytes": 484611072
+          },
+          {
+            "rss_bytes": 490397696,
+            "pss_bytes": 484680704
+          },
+          {
+            "rss_bytes": 490479616,
+            "pss_bytes": 484762624
+          }
+        ],
+        "max_observed_whisper_threads": 9,
+        "median_latency_ms": 981.1,
+        "p95_latency_ms": 1001.7,
+        "unloaded_after_commands_rss_mib": null
+      }
+    },
+    {
+      "name": "fast_fallback",
+      "repeat": 1,
+      "counters": {
+        "final_stats": {
+          "vosk_fast_path": true,
+          "fast_commands": 0,
+          "whisper_transcriptions": 3,
+          "whisper_loads": 1
+        },
+        "results": [
+          {
+            "event": "ready",
+            "load_seconds": 0.171262579,
+            "memory": {
+              "rss_mib": 158.10546875,
+              "peak_rss_mib": 158.10546875
+            },
+            "whisper": "rust-tract-0.23.9",
+            "denoiser": "rust-tract-0.23.9"
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false,
+                "recognition_pass": "whisper"
+              }
+            ],
+            "seconds": 2.136589631,
+            "decode_cpu_seconds": 3.193750985,
+            "settle_cpu_seconds": 7.110000002086281e-07,
+            "memory": {
+              "rss_mib": 471.296875,
+              "peak_rss_mib": 537.0859375
+            },
+            "recognition_stats": {
+              "vosk_fast_path": true,
+              "fast_commands": 0,
+              "whisper_transcriptions": 1,
+              "whisper_loads": 1
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false,
+                "recognition_pass": "whisper"
+              }
+            ],
+            "seconds": 0.343218451,
+            "decode_cpu_seconds": 1.3525249469999996,
+            "settle_cpu_seconds": 7.61000000792933e-07,
+            "memory": {
+              "rss_mib": 471.484375,
+              "peak_rss_mib": 537.60546875
+            },
+            "recognition_stats": {
+              "vosk_fast_path": true,
+              "fast_commands": 0,
+              "whisper_transcriptions": 2,
+              "whisper_loads": 1
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false,
+                "recognition_pass": "whisper"
+              }
+            ],
+            "seconds": 0.343226336,
+            "decode_cpu_seconds": 1.332699313,
+            "settle_cpu_seconds": 7.720000008148986e-07,
+            "memory": {
+              "rss_mib": 471.609375,
+              "peak_rss_mib": 538.015625
+            },
+            "recognition_stats": {
+              "vosk_fast_path": true,
+              "fast_commands": 0,
+              "whisper_transcriptions": 3,
+              "whisper_loads": 1
+            }
+          }
+        ]
+      },
+      "paced": {
+        "binary_sha256": "29fb92b24352718effd081bc43ec2c635be11f3f51c4cee4ab1b8ba29752a61d",
+        "experimental_vosk_fast_path": true,
+        "free_decoder": false,
+        "whisper_idle_seconds": 60,
+        "gap_seconds": 4,
+        "denoise": true,
+        "ready_seconds": 0.174,
+        "waiting_rss_mib": 154.99,
+        "released_rss_mib": null,
+        "max_sampled_rss_mib": 557.88,
+        "peak_rss_mib": 556.68,
+        "cpu_seconds": 6.21,
+        "commands": [
+          {
+            "text": "ten meters",
+            "latency_ms": 2647.7,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": "whisper",
+            "rss_at_speech_start_mib": 154.99
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 980.5,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": "whisper",
+            "rss_at_speech_start_mib": 469.08
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 984.3,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": "whisper",
+            "rss_at_speech_start_mib": 469.21
+          }
+        ],
+        "memory_after_commands": [
+          {
+            "rss_bytes": 491868160,
+            "pss_bytes": 486225920
+          },
+          {
+            "rss_bytes": 492007424,
+            "pss_bytes": 486365184
+          },
+          {
+            "rss_bytes": 492105728,
+            "pss_bytes": 486463488
+          }
+        ],
+        "max_observed_whisper_threads": 8,
+        "median_latency_ms": 984.3,
+        "p95_latency_ms": 2647.7,
+        "unloaded_after_commands_rss_mib": null
+      }
+    },
+    {
+      "name": "default_exact",
+      "repeat": 2,
+      "counters": {
+        "final_stats": {
+          "vosk_fast_path": false,
+          "fast_commands": 0,
+          "whisper_transcriptions": 3,
+          "whisper_loads": 1
+        },
+        "results": [
+          {
+            "event": "ready",
+            "load_seconds": 0.208187765,
+            "memory": {
+              "rss_mib": 159.01171875,
+              "peak_rss_mib": 159.6015625
+            },
+            "whisper": "rust-tract-0.23.9",
+            "denoiser": "rust-tract-0.23.9"
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false
+              }
+            ],
+            "seconds": 2.097112555,
+            "decode_cpu_seconds": 3.427430654,
+            "settle_cpu_seconds": 1.0420000000621599e-06,
+            "memory": {
+              "rss_mib": 486.41015625,
+              "peak_rss_mib": 550.953125
+            },
+            "recognition_stats": {
+              "vosk_fast_path": false,
+              "fast_commands": 0,
+              "whisper_transcriptions": 1,
+              "whisper_loads": 1
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false
+              }
+            ],
+            "seconds": 0.388184021,
+            "decode_cpu_seconds": 1.4058258420000005,
+            "settle_cpu_seconds": 1.0720000007680142e-06,
+            "memory": {
+              "rss_mib": 486.86328125,
+              "peak_rss_mib": 551.99609375
+            },
+            "recognition_stats": {
+              "vosk_fast_path": false,
+              "fast_commands": 0,
+              "whisper_transcriptions": 2,
+              "whisper_loads": 1
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false
+              }
+            ],
+            "seconds": 0.398364604,
+            "decode_cpu_seconds": 1.4784241150000001,
+            "settle_cpu_seconds": 7.810000006713835e-07,
+            "memory": {
+              "rss_mib": 487.0546875,
+              "peak_rss_mib": 552.109375
+            },
+            "recognition_stats": {
+              "vosk_fast_path": false,
+              "fast_commands": 0,
+              "whisper_transcriptions": 3,
+              "whisper_loads": 1
+            }
+          }
+        ]
+      },
+      "paced": {
+        "binary_sha256": "29fb92b24352718effd081bc43ec2c635be11f3f51c4cee4ab1b8ba29752a61d",
+        "experimental_vosk_fast_path": false,
+        "free_decoder": true,
+        "whisper_idle_seconds": 60,
+        "gap_seconds": 4,
+        "denoise": true,
+        "ready_seconds": 0.21,
+        "waiting_rss_mib": 158.38,
+        "released_rss_mib": null,
+        "max_sampled_rss_mib": 572.68,
+        "peak_rss_mib": 571.64,
+        "cpu_seconds": 6.68,
+        "commands": [
+          {
+            "text": "ten meters",
+            "latency_ms": 1170.0,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 158.38
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 1051.2,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 485.26
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 1023.8,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 485.68
+          }
+        ],
+        "memory_after_commands": [
+          {
+            "rss_bytes": 508829696,
+            "pss_bytes": 503115776
+          },
+          {
+            "rss_bytes": 509272064,
+            "pss_bytes": 503558144
+          },
+          {
+            "rss_bytes": 509464576,
+            "pss_bytes": 503750656
+          }
+        ],
+        "max_observed_whisper_threads": 9,
+        "median_latency_ms": 1051.2,
+        "p95_latency_ms": 1170.0,
+        "unloaded_after_commands_rss_mib": null
+      }
+    },
+    {
+      "name": "fast_exact",
+      "repeat": 2,
+      "counters": {
+        "final_stats": {
+          "vosk_fast_path": true,
+          "fast_commands": 3,
+          "whisper_transcriptions": 0,
+          "whisper_loads": 0
+        },
+        "results": [
+          {
+            "event": "ready",
+            "load_seconds": 0.204763065,
+            "memory": {
+              "rss_mib": 161.46875,
+              "peak_rss_mib": 161.8359375
+            },
+            "whisper": "rust-tract-0.23.9",
+            "denoiser": "rust-tract-0.23.9"
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false,
+                "recognition_pass": "vosk_fast"
+              }
+            ],
+            "seconds": 0.296051666,
+            "decode_cpu_seconds": 0.295254907,
+            "settle_cpu_seconds": 8.209999999841955e-07,
+            "memory": {
+              "rss_mib": 178.6171875,
+              "peak_rss_mib": 178.6171875
+            },
+            "recognition_stats": {
+              "vosk_fast_path": true,
+              "fast_commands": 1,
+              "whisper_transcriptions": 0,
+              "whisper_loads": 0
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false,
+                "recognition_pass": "vosk_fast"
+              }
+            ],
+            "seconds": 0.080064263,
+            "decode_cpu_seconds": 0.07965679600000009,
+            "settle_cpu_seconds": 8.220000000669359e-07,
+            "memory": {
+              "rss_mib": 180.6640625,
+              "peak_rss_mib": 180.6640625
+            },
+            "recognition_stats": {
+              "vosk_fast_path": true,
+              "fast_commands": 2,
+              "whisper_transcriptions": 0,
+              "whisper_loads": 0
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false,
+                "recognition_pass": "vosk_fast"
+              }
+            ],
+            "seconds": 0.072257353,
+            "decode_cpu_seconds": 0.07205336800000006,
+            "settle_cpu_seconds": 9.509999999712804e-07,
+            "memory": {
+              "rss_mib": 180.97265625,
+              "peak_rss_mib": 180.97265625
+            },
+            "recognition_stats": {
+              "vosk_fast_path": true,
+              "fast_commands": 3,
+              "whisper_transcriptions": 0,
+              "whisper_loads": 0
+            }
+          }
+        ]
+      },
+      "paced": {
+        "binary_sha256": "29fb92b24352718effd081bc43ec2c635be11f3f51c4cee4ab1b8ba29752a61d",
+        "experimental_vosk_fast_path": true,
+        "free_decoder": true,
+        "whisper_idle_seconds": 60,
+        "gap_seconds": 4,
+        "denoise": true,
+        "ready_seconds": 0.207,
+        "waiting_rss_mib": 161.54,
+        "released_rss_mib": null,
+        "max_sampled_rss_mib": 180.57,
+        "peak_rss_mib": 180.57,
+        "cpu_seconds": 0.73,
+        "commands": [
+          {
+            "text": "ten meters",
+            "latency_ms": 858.9,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": "vosk_fast",
+            "rss_at_speech_start_mib": 161.54
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 703.7,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": "vosk_fast",
+            "rss_at_speech_start_mib": 176.32
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 697.4,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": "vosk_fast",
+            "rss_at_speech_start_mib": 180.33
+          }
+        ],
+        "memory_after_commands": [
+          {
+            "rss_bytes": 186970112,
+            "pss_bytes": 181315584
+          },
+          {
+            "rss_bytes": 189091840,
+            "pss_bytes": 183437312
+          },
+          {
+            "rss_bytes": 189341696,
+            "pss_bytes": 183687168
+          }
+        ],
+        "max_observed_whisper_threads": 0,
+        "median_latency_ms": 703.7,
+        "p95_latency_ms": 858.9,
+        "unloaded_after_commands_rss_mib": 180.33
+      }
+    },
+    {
+      "name": "default_fallback",
+      "repeat": 2,
+      "counters": {
+        "final_stats": {
+          "vosk_fast_path": false,
+          "fast_commands": 0,
+          "whisper_transcriptions": 3,
+          "whisper_loads": 1
+        },
+        "results": [
+          {
+            "event": "ready",
+            "load_seconds": 0.174755137,
+            "memory": {
+              "rss_mib": 158.30078125,
+              "peak_rss_mib": 158.30078125
+            },
+            "whisper": "rust-tract-0.23.9",
+            "denoiser": "rust-tract-0.23.9"
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false
+              }
+            ],
+            "seconds": 2.064810212,
+            "decode_cpu_seconds": 3.1179658220000004,
+            "settle_cpu_seconds": 1.0119999998003948e-06,
+            "memory": {
+              "rss_mib": 472.5234375,
+              "peak_rss_mib": 557.64453125
+            },
+            "recognition_stats": {
+              "vosk_fast_path": false,
+              "fast_commands": 0,
+              "whisper_transcriptions": 1,
+              "whisper_loads": 1
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false
+              }
+            ],
+            "seconds": 0.345252745,
+            "decode_cpu_seconds": 1.3459255580000002,
+            "settle_cpu_seconds": 7.619999999874949e-07,
+            "memory": {
+              "rss_mib": 472.69140625,
+              "peak_rss_mib": 558.11328125
+            },
+            "recognition_stats": {
+              "vosk_fast_path": false,
+              "fast_commands": 0,
+              "whisper_transcriptions": 2,
+              "whisper_loads": 1
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false
+              }
+            ],
+            "seconds": 0.340450674,
+            "decode_cpu_seconds": 1.3100932610000005,
+            "settle_cpu_seconds": 8.820000001463768e-07,
+            "memory": {
+              "rss_mib": 472.73828125,
+              "peak_rss_mib": 558.11328125
+            },
+            "recognition_stats": {
+              "vosk_fast_path": false,
+              "fast_commands": 0,
+              "whisper_transcriptions": 3,
+              "whisper_loads": 1
+            }
+          }
+        ]
+      },
+      "paced": {
+        "binary_sha256": "29fb92b24352718effd081bc43ec2c635be11f3f51c4cee4ab1b8ba29752a61d",
+        "experimental_vosk_fast_path": false,
+        "free_decoder": false,
+        "whisper_idle_seconds": 60,
+        "gap_seconds": 4,
+        "denoise": true,
+        "ready_seconds": 0.177,
+        "waiting_rss_mib": 154.41,
+        "released_rss_mib": null,
+        "max_sampled_rss_mib": 535.24,
+        "peak_rss_mib": 533.87,
+        "cpu_seconds": 6.39,
+        "commands": [
+          {
+            "text": "ten meters",
+            "latency_ms": 916.5,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 154.41
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 1017.7,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 469.11
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 984.9,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 469.18
+          }
+        ],
+        "memory_after_commands": [
+          {
+            "rss_bytes": 491900928,
+            "pss_bytes": 486199296
+          },
+          {
+            "rss_bytes": 491970560,
+            "pss_bytes": 486268928
+          },
+          {
+            "rss_bytes": 492048384,
+            "pss_bytes": 486346752
+          }
+        ],
+        "max_observed_whisper_threads": 9,
+        "median_latency_ms": 984.9,
+        "p95_latency_ms": 1017.7,
+        "unloaded_after_commands_rss_mib": null
+      }
+    },
+    {
+      "name": "fast_fallback",
+      "repeat": 2,
+      "counters": {
+        "final_stats": {
+          "vosk_fast_path": true,
+          "fast_commands": 0,
+          "whisper_transcriptions": 3,
+          "whisper_loads": 1
+        },
+        "results": [
+          {
+            "event": "ready",
+            "load_seconds": 0.175858468,
+            "memory": {
+              "rss_mib": 154.77734375,
+              "peak_rss_mib": 154.77734375
+            },
+            "whisper": "rust-tract-0.23.9",
+            "denoiser": "rust-tract-0.23.9"
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false,
+                "recognition_pass": "whisper"
+              }
+            ],
+            "seconds": 2.121744482,
+            "decode_cpu_seconds": 3.209118672,
+            "settle_cpu_seconds": 7.509999999655292e-07,
+            "memory": {
+              "rss_mib": 468.39453125,
+              "peak_rss_mib": 553.46875
+            },
+            "recognition_stats": {
+              "vosk_fast_path": true,
+              "fast_commands": 0,
+              "whisper_transcriptions": 1,
+              "whisper_loads": 1
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false,
+                "recognition_pass": "whisper"
+              }
+            ],
+            "seconds": 0.348100279,
+            "decode_cpu_seconds": 1.3907625310000005,
+            "settle_cpu_seconds": 9.520000006091323e-07,
+            "memory": {
+              "rss_mib": 468.59765625,
+              "peak_rss_mib": 557.38671875
+            },
+            "recognition_stats": {
+              "vosk_fast_path": true,
+              "fast_commands": 0,
+              "whisper_transcriptions": 2,
+              "whisper_loads": 1
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false,
+                "recognition_pass": "whisper"
+              }
+            ],
+            "seconds": 0.357856029,
+            "decode_cpu_seconds": 1.3972761340000002,
+            "settle_cpu_seconds": 9.119999999640527e-07,
+            "memory": {
+              "rss_mib": 468.671875,
+              "peak_rss_mib": 557.38671875
+            },
+            "recognition_stats": {
+              "vosk_fast_path": true,
+              "fast_commands": 0,
+              "whisper_transcriptions": 3,
+              "whisper_loads": 1
+            }
+          }
+        ]
+      },
+      "paced": {
+        "binary_sha256": "29fb92b24352718effd081bc43ec2c635be11f3f51c4cee4ab1b8ba29752a61d",
+        "experimental_vosk_fast_path": true,
+        "free_decoder": false,
+        "whisper_idle_seconds": 60,
+        "gap_seconds": 4,
+        "denoise": true,
+        "ready_seconds": 0.184,
+        "waiting_rss_mib": 157.6,
+        "released_rss_mib": null,
+        "max_sampled_rss_mib": 537.73,
+        "peak_rss_mib": 536.23,
+        "cpu_seconds": 6.22,
+        "commands": [
+          {
+            "text": "ten meters",
+            "latency_ms": 2662.6,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": "whisper",
+            "rss_at_speech_start_mib": 157.6
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 975.5,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": "whisper",
+            "rss_at_speech_start_mib": 471.29
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 973.3,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": "whisper",
+            "rss_at_speech_start_mib": 471.48
+          }
+        ],
+        "memory_after_commands": [
+          {
+            "rss_bytes": 494182400,
+            "pss_bytes": 488469504
+          },
+          {
+            "rss_bytes": 494383104,
+            "pss_bytes": 488670208
+          },
+          {
+            "rss_bytes": 494465024,
+            "pss_bytes": 488752128
+          }
+        ],
+        "max_observed_whisper_threads": 8,
+        "median_latency_ms": 975.5,
+        "p95_latency_ms": 2662.6,
+        "unloaded_after_commands_rss_mib": null
+      }
+    },
+    {
+      "name": "default_exact",
+      "repeat": 3,
+      "counters": {
+        "final_stats": {
+          "vosk_fast_path": false,
+          "fast_commands": 0,
+          "whisper_transcriptions": 3,
+          "whisper_loads": 1
+        },
+        "results": [
+          {
+            "event": "ready",
+            "load_seconds": 0.219592256,
+            "memory": {
+              "rss_mib": 160.375,
+              "peak_rss_mib": 160.65625
+            },
+            "whisper": "rust-tract-0.23.9",
+            "denoiser": "rust-tract-0.23.9"
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false
+              }
+            ],
+            "seconds": 2.114732641,
+            "decode_cpu_seconds": 3.4375086059999997,
+            "settle_cpu_seconds": 7.420000001090443e-07,
+            "memory": {
+              "rss_mib": 488.14453125,
+              "peak_rss_mib": 573.3984375
+            },
+            "recognition_stats": {
+              "vosk_fast_path": false,
+              "fast_commands": 0,
+              "whisper_transcriptions": 1,
+              "whisper_loads": 1
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false
+              }
+            ],
+            "seconds": 0.394969415,
+            "decode_cpu_seconds": 1.3837572060000003,
+            "settle_cpu_seconds": 1.0420000000621599e-06,
+            "memory": {
+              "rss_mib": 488.6015625,
+              "peak_rss_mib": 574.61328125
+            },
+            "recognition_stats": {
+              "vosk_fast_path": false,
+              "fast_commands": 0,
+              "whisper_transcriptions": 2,
+              "whisper_loads": 1
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false
+              }
+            ],
+            "seconds": 0.390543576,
+            "decode_cpu_seconds": 1.3920911380000005,
+            "settle_cpu_seconds": 7.609999999047545e-07,
+            "memory": {
+              "rss_mib": 488.8203125,
+              "peak_rss_mib": 574.61328125
+            },
+            "recognition_stats": {
+              "vosk_fast_path": false,
+              "fast_commands": 0,
+              "whisper_transcriptions": 3,
+              "whisper_loads": 1
+            }
+          }
+        ]
+      },
+      "paced": {
+        "binary_sha256": "29fb92b24352718effd081bc43ec2c635be11f3f51c4cee4ab1b8ba29752a61d",
+        "experimental_vosk_fast_path": false,
+        "free_decoder": true,
+        "whisper_idle_seconds": 60,
+        "gap_seconds": 4,
+        "denoise": true,
+        "ready_seconds": 0.212,
+        "waiting_rss_mib": 157.97,
+        "released_rss_mib": null,
+        "max_sampled_rss_mib": 549.27,
+        "peak_rss_mib": 548.24,
+        "cpu_seconds": 6.68,
+        "commands": [
+          {
+            "text": "ten meters",
+            "latency_ms": 1169.0,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 157.97
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 1024.7,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 484.66
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 1023.2,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 485.07
+          }
+        ],
+        "memory_after_commands": [
+          {
+            "rss_bytes": 508203008,
+            "pss_bytes": 502601728
+          },
+          {
+            "rss_bytes": 508637184,
+            "pss_bytes": 503035904
+          },
+          {
+            "rss_bytes": 508874752,
+            "pss_bytes": 503273472
+          }
+        ],
+        "max_observed_whisper_threads": 9,
+        "median_latency_ms": 1024.7,
+        "p95_latency_ms": 1169.0,
+        "unloaded_after_commands_rss_mib": null
+      }
+    },
+    {
+      "name": "fast_exact",
+      "repeat": 3,
+      "counters": {
+        "final_stats": {
+          "vosk_fast_path": true,
+          "fast_commands": 3,
+          "whisper_transcriptions": 0,
+          "whisper_loads": 0
+        },
+        "results": [
+          {
+            "event": "ready",
+            "load_seconds": 0.206786365,
+            "memory": {
+              "rss_mib": 156.79296875,
+              "peak_rss_mib": 157.19921875
+            },
+            "whisper": "rust-tract-0.23.9",
+            "denoiser": "rust-tract-0.23.9"
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false,
+                "recognition_pass": "vosk_fast"
+              }
+            ],
+            "seconds": 0.301177914,
+            "decode_cpu_seconds": 0.29962197399999996,
+            "settle_cpu_seconds": 7.720000000377425e-07,
+            "memory": {
+              "rss_mib": 174.625,
+              "peak_rss_mib": 174.625
+            },
+            "recognition_stats": {
+              "vosk_fast_path": true,
+              "fast_commands": 1,
+              "whisper_transcriptions": 0,
+              "whisper_loads": 0
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false,
+                "recognition_pass": "vosk_fast"
+              }
+            ],
+            "seconds": 0.080748802,
+            "decode_cpu_seconds": 0.08052572800000002,
+            "settle_cpu_seconds": 1.0520000000013852e-06,
+            "memory": {
+              "rss_mib": 176.625,
+              "peak_rss_mib": 176.625
+            },
+            "recognition_stats": {
+              "vosk_fast_path": true,
+              "fast_commands": 2,
+              "whisper_transcriptions": 0,
+              "whisper_loads": 0
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false,
+                "recognition_pass": "vosk_fast"
+              }
+            ],
+            "seconds": 0.073115211,
+            "decode_cpu_seconds": 0.07294930300000002,
+            "settle_cpu_seconds": 7.509999999655292e-07,
+            "memory": {
+              "rss_mib": 176.84765625,
+              "peak_rss_mib": 176.84765625
+            },
+            "recognition_stats": {
+              "vosk_fast_path": true,
+              "fast_commands": 3,
+              "whisper_transcriptions": 0,
+              "whisper_loads": 0
+            }
+          }
+        ]
+      },
+      "paced": {
+        "binary_sha256": "29fb92b24352718effd081bc43ec2c635be11f3f51c4cee4ab1b8ba29752a61d",
+        "experimental_vosk_fast_path": true,
+        "free_decoder": true,
+        "whisper_idle_seconds": 60,
+        "gap_seconds": 4,
+        "denoise": true,
+        "ready_seconds": 0.21,
+        "waiting_rss_mib": 159.75,
+        "released_rss_mib": null,
+        "max_sampled_rss_mib": 178.73,
+        "peak_rss_mib": 178.73,
+        "cpu_seconds": 0.76,
+        "commands": [
+          {
+            "text": "ten meters",
+            "latency_ms": 863.1,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": "vosk_fast",
+            "rss_at_speech_start_mib": 159.75
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 707.2,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": "vosk_fast",
+            "rss_at_speech_start_mib": 174.52
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 701.2,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": "vosk_fast",
+            "rss_at_speech_start_mib": 178.46
+          }
+        ],
+        "memory_after_commands": [
+          {
+            "rss_bytes": 185069568,
+            "pss_bytes": 179420160
+          },
+          {
+            "rss_bytes": 187133952,
+            "pss_bytes": 181484544
+          },
+          {
+            "rss_bytes": 187412480,
+            "pss_bytes": 181763072
+          }
+        ],
+        "max_observed_whisper_threads": 0,
+        "median_latency_ms": 707.2,
+        "p95_latency_ms": 863.1,
+        "unloaded_after_commands_rss_mib": 178.46
+      }
+    },
+    {
+      "name": "default_fallback",
+      "repeat": 3,
+      "counters": {
+        "final_stats": {
+          "vosk_fast_path": false,
+          "fast_commands": 0,
+          "whisper_transcriptions": 3,
+          "whisper_loads": 1
+        },
+        "results": [
+          {
+            "event": "ready",
+            "load_seconds": 0.225012402,
+            "memory": {
+              "rss_mib": 153.53515625,
+              "peak_rss_mib": 153.53515625
+            },
+            "whisper": "rust-tract-0.23.9",
+            "denoiser": "rust-tract-0.23.9"
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false
+              }
+            ],
+            "seconds": 2.08003343,
+            "decode_cpu_seconds": 3.20703176,
+            "settle_cpu_seconds": 9.419999997817285e-07,
+            "memory": {
+              "rss_mib": 467.765625,
+              "peak_rss_mib": 530.75
+            },
+            "recognition_stats": {
+              "vosk_fast_path": false,
+              "fast_commands": 0,
+              "whisper_transcriptions": 1,
+              "whisper_loads": 1
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false
+              }
+            ],
+            "seconds": 0.352235249,
+            "decode_cpu_seconds": 1.3907332409999995,
+            "settle_cpu_seconds": 8.320000004502504e-07,
+            "memory": {
+              "rss_mib": 467.91015625,
+              "peak_rss_mib": 531.97265625
+            },
+            "recognition_stats": {
+              "vosk_fast_path": false,
+              "fast_commands": 0,
+              "whisper_transcriptions": 2,
+              "whisper_loads": 1
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false
+              }
+            ],
+            "seconds": 0.372126306,
+            "decode_cpu_seconds": 1.4989349910000005,
+            "settle_cpu_seconds": 7.809999997832051e-07,
+            "memory": {
+              "rss_mib": 467.99609375,
+              "peak_rss_mib": 532.078125
+            },
+            "recognition_stats": {
+              "vosk_fast_path": false,
+              "fast_commands": 0,
+              "whisper_transcriptions": 3,
+              "whisper_loads": 1
+            }
+          }
+        ]
+      },
+      "paced": {
+        "binary_sha256": "29fb92b24352718effd081bc43ec2c635be11f3f51c4cee4ab1b8ba29752a61d",
+        "experimental_vosk_fast_path": false,
+        "free_decoder": false,
+        "whisper_idle_seconds": 60,
+        "gap_seconds": 4,
+        "denoise": true,
+        "ready_seconds": 0.176,
+        "waiting_rss_mib": 157.73,
+        "released_rss_mib": null,
+        "max_sampled_rss_mib": 538.16,
+        "peak_rss_mib": 537.16,
+        "cpu_seconds": 6.36,
+        "commands": [
+          {
+            "text": "ten meters",
+            "latency_ms": 925.8,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 157.73
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 984.0,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 472.02
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 978.8,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": null,
+            "rss_at_speech_start_mib": 472.05
+          }
+        ],
+        "memory_after_commands": [
+          {
+            "rss_bytes": 494952448,
+            "pss_bytes": 489311232
+          },
+          {
+            "rss_bytes": 494977024,
+            "pss_bytes": 489335808
+          },
+          {
+            "rss_bytes": 495067136,
+            "pss_bytes": 489425920
+          }
+        ],
+        "max_observed_whisper_threads": 9,
+        "median_latency_ms": 978.8,
+        "p95_latency_ms": 984.0,
+        "unloaded_after_commands_rss_mib": null
+      }
+    },
+    {
+      "name": "fast_fallback",
+      "repeat": 3,
+      "counters": {
+        "final_stats": {
+          "vosk_fast_path": true,
+          "fast_commands": 0,
+          "whisper_transcriptions": 3,
+          "whisper_loads": 1
+        },
+        "results": [
+          {
+            "event": "ready",
+            "load_seconds": 0.173470374,
+            "memory": {
+              "rss_mib": 156.90625,
+              "peak_rss_mib": 156.90625
+            },
+            "whisper": "rust-tract-0.23.9",
+            "denoiser": "rust-tract-0.23.9"
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false,
+                "recognition_pass": "whisper"
+              }
+            ],
+            "seconds": 2.112359841,
+            "decode_cpu_seconds": 3.190787716,
+            "settle_cpu_seconds": 7.719999999267202e-07,
+            "memory": {
+              "rss_mib": 471.14453125,
+              "peak_rss_mib": 536.04296875
+            },
+            "recognition_stats": {
+              "vosk_fast_path": true,
+              "fast_commands": 0,
+              "whisper_transcriptions": 1,
+              "whisper_loads": 1
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false,
+                "recognition_pass": "whisper"
+              }
+            ],
+            "seconds": 0.358068195,
+            "decode_cpu_seconds": 1.4024532310000004,
+            "settle_cpu_seconds": 7.719999999267202e-07,
+            "memory": {
+              "rss_mib": 471.296875,
+              "peak_rss_mib": 536.68359375
+            },
+            "recognition_stats": {
+              "vosk_fast_path": true,
+              "fast_commands": 0,
+              "whisper_transcriptions": 2,
+              "whisper_loads": 1
+            }
+          },
+          {
+            "event": "result",
+            "text": "",
+            "events": [
+              {
+                "kind": "wake",
+                "text": "go forward",
+                "confidence": null,
+                "min_word_posterior": null,
+                "heard": null,
+                "closest_match": false
+              },
+              {
+                "kind": "command",
+                "text": "ten meters",
+                "confidence": 1.0,
+                "min_word_posterior": 1.0,
+                "heard": null,
+                "closest_match": false,
+                "recognition_pass": "whisper"
+              }
+            ],
+            "seconds": 0.352932522,
+            "decode_cpu_seconds": 1.3821512279999997,
+            "settle_cpu_seconds": 7.819999998659455e-07,
+            "memory": {
+              "rss_mib": 471.375,
+              "peak_rss_mib": 536.73046875
+            },
+            "recognition_stats": {
+              "vosk_fast_path": true,
+              "fast_commands": 0,
+              "whisper_transcriptions": 3,
+              "whisper_loads": 1
+            }
+          }
+        ]
+      },
+      "paced": {
+        "binary_sha256": "29fb92b24352718effd081bc43ec2c635be11f3f51c4cee4ab1b8ba29752a61d",
+        "experimental_vosk_fast_path": true,
+        "free_decoder": false,
+        "whisper_idle_seconds": 60,
+        "gap_seconds": 4,
+        "denoise": true,
+        "ready_seconds": 0.173,
+        "waiting_rss_mib": 157.23,
+        "released_rss_mib": null,
+        "max_sampled_rss_mib": 537.43,
+        "peak_rss_mib": 536.4,
+        "cpu_seconds": 6.37,
+        "commands": [
+          {
+            "text": "ten meters",
+            "latency_ms": 2695.8,
+            "whisper_loaded_at_speech_start": false,
+            "recognition_pass": "whisper",
+            "rss_at_speech_start_mib": 157.23
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 981.2,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": "whisper",
+            "rss_at_speech_start_mib": 471.47
+          },
+          {
+            "text": "ten meters",
+            "latency_ms": 976.4,
+            "whisper_loaded_at_speech_start": true,
+            "recognition_pass": "whisper",
+            "rss_at_speech_start_mib": 471.59
+          }
+        ],
+        "memory_after_commands": [
+          {
+            "rss_bytes": 494370816,
+            "pss_bytes": 488729600
+          },
+          {
+            "rss_bytes": 494501888,
+            "pss_bytes": 488860672
+          },
+          {
+            "rss_bytes": 494637056,
+            "pss_bytes": 488995840
+          }
+        ],
+        "max_observed_whisper_threads": 8,
+        "median_latency_ms": 981.2,
+        "p95_latency_ms": 2695.8,
+        "unloaded_after_commands_rss_mib": null
+      }
+    }
+  ],
+  "production_default_enabled": false,
+  "full_recognition_acceptance": false,
+  "counters_only": false,
+  "summary": {
+    "default_exact": {
+      "workers": 3,
+      "commands": 9,
+      "median_latency_ms": 1041.8,
+      "p95_latency_ms": 1170.0,
+      "peak_rss_mib": [
+        571.79,
+        571.64,
+        548.24
+      ],
+      "command_pss_mib_range": [
+        479.32,
+        480.65
+      ],
+      "cold_latencies_ms": [
+        1166.3,
+        1170.0,
+        1169.0
+      ],
+      "whisper_loads": [
+        1,
+        1,
+        1
+      ]
+    },
+    "fast_exact": {
+      "workers": 3,
+      "commands": 9,
+      "median_latency_ms": 704.0,
+      "p95_latency_ms": 874.6,
+      "peak_rss_mib": [
+        179.2,
+        180.57,
+        178.73
+      ],
+      "command_pss_mib_range": [
+        171.11,
+        175.18
+      ],
+      "cold_latencies_ms": [
+        874.6,
+        858.9,
+        863.1
+      ],
+      "whisper_loads": [
+        0,
+        0,
+        0
+      ]
+    },
+    "default_fallback": {
+      "workers": 3,
+      "commands": 9,
+      "median_latency_ms": 981.1,
+      "p95_latency_ms": 1017.7,
+      "peak_rss_mib": [
+        530.55,
+        533.87,
+        537.16
+      ],
+      "command_pss_mib_range": [
+        462.16,
+        466.75
+      ],
+      "cold_latencies_ms": [
+        905.3,
+        916.5,
+        925.8
+      ],
+      "whisper_loads": [
+        1,
+        1,
+        1
+      ]
+    },
+    "fast_fallback": {
+      "workers": 3,
+      "commands": 9,
+      "median_latency_ms": 981.2,
+      "p95_latency_ms": 2695.8,
+      "peak_rss_mib": [
+        556.68,
+        536.23,
+        536.4
+      ],
+      "command_pss_mib_range": [
+        463.7,
+        466.34
+      ],
+      "cold_latencies_ms": [
+        2647.7,
+        2662.6,
+        2695.8
+      ],
+      "whisper_loads": [
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  "gates": {
+    "paired_fixture_commands_match": true,
+    "exact_latency_nonregression": true,
+    "fallback_latency_nonregression": false,
+    "full_recognition_acceptance": false,
+    "enable_by_default": false
+  },
+  "complete": true
+}

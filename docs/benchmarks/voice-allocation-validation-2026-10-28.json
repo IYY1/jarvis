@@ -1,0 +1,158 @@
+{
+  "date": "2026-10-28",
+  "python": {
+    "tests": 390,
+    "passed": 376,
+    "skipped": 14
+  },
+  "rust": {
+    "whisper": 21,
+    "gtcrn": 3,
+    "voice_worker": 15,
+    "controller": 7
+  },
+  "clippy": "all affected crates, all targets, warnings denied",
+  "numerical": {
+    "whisper_tensor_pairs_byte_identical": 55,
+    "denoised_waveforms_byte_identical": 30
+  },
+  "close_commands": "seven Python tests plus Rust matching regression; fake desktop integration only, no real app closed",
+  "manifest": {
+    "source_sha256": {
+      "native/whisper-recognizer/src/tokens.rs": "9f5ef83b05ca5a9fe9bf475841bcfc6cc3ca04eb0c7fb7c6e6e2bb5f6eaceff6",
+      "native/whisper-recognizer/src/features.rs": "4d9147f3f910f60cce23362cffdc0ea8004e08c6e8b664059603a0a8163493f3",
+      "native/whisper-recognizer/src/graph.rs": "5d7bef6321cd66a22151b40a1079d4e076d167ca31b5933839a65c4c87c59457",
+      "native/whisper-recognizer/src/lib.rs": "0e4c0765f33d0309d443faf3379f15756106b61c64835b5b727a2065c6ef7c76",
+      "native/gtcrn-denoiser/src/lib.rs": "f4fcf05092b5c63211b213479d2821df8656c110ea984fa4671d29a0ca1a3615",
+      "native/voice-worker/src/matching.rs": "a79dbc9dec3f15adf4830970b0707d39b375f03dadc71a8324b3d0cc9612124c",
+      "native/voice-worker/src/engine.rs": "542fade29be741b356eeb28109b7cd32794254aa545c92cd53292caece5bc0e8",
+      "native/controller/src/service.rs": "73ed4b4c77f201c5e52fb4847b300fc7cb6d8f3c435b0d63e22f5dfc702fc75d",
+      "native/controller/src/desktop.rs": "312e5c737e3674e8efdcb306bd9678d3df17d972dc6a49657cc23e36742e23bb",
+      "native/controller/src/policy.rs": "890f682c0208f218c3f5fcfc7671f6aef7da86a5eb38781764cceb6369e930ae",
+      "native/controller/data/commands.json": "e8a5677c6f237668b9d6f61a1cba8ac495e8424d728f38fa1728e565637ddc2a",
+      "src/murmur/actions.py": "ebce81a166dd74215a1881ac490642fd916a3420125be422afabdb0bf4b67c16",
+      "src/murmur/commands.py": "93675c0a3ac67c2326e58f4212dbcf466614e2101a3c58de49f65d3b5e53182b",
+      "src/murmur/vosk_engine.py": "6891b9c71de8903a07e9a088c482741e645b4ba2a7af63c77281481c036b50e8",
+      "src/murmur/hyprland.py": "97473363d9baf5f20d3a91d3bb2629778317580d378af372198127026e932594",
+      "src/murmur/windows/desktop.py": "d58017e78a13d35d2c02984b729ce9dbf5548ea2b9dc771b466a742fb5e4adcc",
+      "src/murmur/ui.py": "c92dfbd9043186804a6d58987a76d7f1c001c93de865c14d0d2e41580aedb12b",
+      "tests/test_close_apps.py": "079f8264487d2699d246487c0a39f135d0c28ffa100378eed5ac09260779f8bd"
+    },
+    "installed_binary_sha256": {
+      "jarvis-controller": "59a16432d8772d9ce48ac3437504d10230da28f3fbc2c19ccfca9e759e87c57b",
+      "jarvis-voice": "3e3fef6b4565b727b66a05eb1221f75e38ddb7a49c62cf93b0dcccb1dc027476",
+      "jarvis-whisper": "c69ca1e6a524646f2e9074c606107ff3eeac8b646983863c96b08e02934199f2",
+      "jarvis-denoise": "0afb53dd48c15d878a0ba15be291be34f4eb94c5f378d43d2ce88b0eedf45f48"
+    }
+  },
+  "activation": {
+    "controller_pid": 2405689,
+    "before": {
+      "state": "idle",
+      "muted": false,
+      "engine": "vosk+whisper-small",
+      "microphone_open": true
+    },
+    "recorder_pids_before": [
+      2405692
+    ],
+    "recorder_pids_after": [
+      2405692
+    ],
+    "voice_pid": 4093651,
+    "voice_sha256": "3e3fef6b4565b727b66a05eb1221f75e38ddb7a49c62cf93b0dcccb1dc027476",
+    "after": {
+      "state": "idle",
+      "muted": false,
+      "engine": "vosk+whisper-small",
+      "microphone_open": true
+    },
+    "replay_state": "on",
+    "activation": "RAM fixes active; controller and replay process preserved; close commands await controller restart"
+  },
+  "final_close_enabled_worker_pair": {
+    "scope": "final close-enabled command grammar supplied identically to old/new voice workers; real Vosk/Whisper/GTCRN, fake paced microphone, no desktop actions; excludes controller/replay/UI",
+    "before": {
+      "worker": "rust",
+      "denoise": true,
+      "commands": [
+        "ten meters",
+        "ten meters",
+        "ten meters"
+      ],
+      "load_seconds": 0.20455511500040302,
+      "binary_sha256": "68bf94e93f9d6940ee572573f7731cace6492c2db100980c9b53d895f630d556",
+      "loaded_rss_mib": 153.109375,
+      "load_peak_rss_mib": 153.109375,
+      "final_rss_mib": 478.88671875,
+      "peak_rss_mib": 540.75390625,
+      "command_rss_mib": [
+        478.1953125,
+        478.640625,
+        478.88671875
+      ],
+      "cpu_seconds": 6.17,
+      "elapsed_seconds": 15.398949569000251
+    },
+    "after": {
+      "worker": "rust",
+      "denoise": true,
+      "commands": [
+        "ten meters",
+        "ten meters",
+        "ten meters"
+      ],
+      "load_seconds": 0.20511057399926358,
+      "binary_sha256": "3e3fef6b4565b727b66a05eb1221f75e38ddb7a49c62cf93b0dcccb1dc027476",
+      "loaded_rss_mib": 151.53515625,
+      "load_peak_rss_mib": 151.53515625,
+      "final_rss_mib": 474.54296875,
+      "peak_rss_mib": 538.3046875,
+      "command_rss_mib": [
+        473.95703125,
+        474.36328125,
+        474.54296875
+      ],
+      "cpu_seconds": 6.04,
+      "elapsed_seconds": 15.419546936002007
+    },
+    "commands_identical": true
+  },
+  "controller_activation": {
+    "date": "2026-10-28",
+    "user_authorized_restart_and_buffer_clear": true,
+    "previous_controller_pid": 2405689,
+    "controller_pid": 4184809,
+    "voice_pid": 4184810,
+    "children": {
+      "4184810": "jarvis-voice",
+      "4184812": "gpu-screen-reco"
+    },
+    "status": {
+      "state": "idle",
+      "muted": false,
+      "engine": "vosk+whisper-small",
+      "microphone_open": true
+    },
+    "replay_state": "on",
+    "replay_settings": {
+      "storage": "ram",
+      "seconds": 120,
+      "autostart": true
+    },
+    "configuration_unchanged": true,
+    "close_commands": [
+      {
+        "category": "Applications",
+        "title": "Close an app",
+        "examples": [
+          "close Firefox",
+          "close Dolphin",
+          "please close Firefox"
+        ]
+      }
+    ],
+    "running_binaries_match_validated_build": true,
+    "real_app_close_action_tested": false
+  }
+}

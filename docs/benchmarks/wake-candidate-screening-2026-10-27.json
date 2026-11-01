@@ -1,0 +1,989 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-27",
+  "scope": "Isolated wake screening and same-input model-reference diagnostics; all workers local and sequential; no microphone, desktop actions, upload, installation change or held-out private decoding.",
+  "user_label": "user-tail-label-2026-10-27.json",
+  "binary_sha256": {
+    "whisper": "8915a1cfb58d7faec35f4409dd7cb1da17b55191f38f511129caf53e06c087b1",
+    "voice": "212ff8655e303b55f0a70f902753d0ab6f87031aa3c71cd40306ddf5cf8d9844"
+  },
+  "tiny_rolling": {
+    "complete": true,
+    "total_cases": 60,
+    "passed_cases": 42,
+    "expected_wakes": 42,
+    "actual_wakes": 24,
+    "extra_wakes": 0,
+    "cases": [
+      {
+        "case": "natural",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "absent-jarvis-natural",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "wake-only",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "quiet-recovery",
+        "expected_wakes_per_repetition": 3,
+        "actual_wakes": [
+          3,
+          3,
+          3
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "pause-inside-name",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "low-volume",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "uniform-noise",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "command-without-wake",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "reversed-speech",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "silence",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "absent-jarvis-published-0",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "unrelated-0",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "absent-jarvis-published-1",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "unrelated-1",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "user-tail-gain-1-lead-0",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 0
+      },
+      {
+        "case": "user-tail-gain-1-lead-0.3",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 0
+      },
+      {
+        "case": "user-tail-gain-0.5-lead-0",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 0
+      },
+      {
+        "case": "user-tail-gain-0.5-lead-0.3",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 0
+      },
+      {
+        "case": "user-tail-gain-0.1-lead-0",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 0
+      },
+      {
+        "case": "user-tail-gain-0.1-lead-0.3",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 0
+      }
+    ],
+    "process_lifetime_peak_rss_mib": 128.01953125,
+    "ready_rss_mib": [
+      87.83984375,
+      87.58203125,
+      87.55078125
+    ]
+  },
+  "micro_wake_word": {
+    "complete": true,
+    "total_cases": 33,
+    "passed_cases": 30,
+    "expected_wakes": 12,
+    "actual_wakes": 9,
+    "extra_wakes": 0,
+    "cases": [
+      {
+        "case": "public-hey_jarvis-1",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "public-hey_jarvis-2",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "public-hey_jarvis-3",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "public-alexa-1",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "public-alexa-2",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "public-alexa-3",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "selected-user-tail",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 0
+      },
+      {
+        "case": "public-goforward-absent-jarvis",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "public-zipformer-0-absent-jarvis",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "public-zipformer-1-absent-jarvis",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "silence",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      }
+    ],
+    "peak_rss_mib": 38.4453125,
+    "user_tail_max_default_mean_probability": [
+      0.003125,
+      0.003125,
+      0.003125
+    ]
+  },
+  "pocketsphinx_energy": {
+    "complete": true,
+    "total_cases": 78,
+    "passed_cases": 72,
+    "expected_wakes": 51,
+    "actual_wakes": 45,
+    "extra_wakes": 0,
+    "cases": [
+      {
+        "case": "natural",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "absent-jarvis-natural",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "wake-only",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "quiet-recovery",
+        "expected_wakes_per_repetition": 3,
+        "actual_wakes": [
+          3,
+          3,
+          3
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "pause-inside-name",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "low-volume",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "uniform-noise",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "command-without-wake",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "reversed-speech",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "silence",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "absent-jarvis-published-0",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "unrelated-0",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "absent-jarvis-published-1",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "unrelated-1",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "user-tail-gain-1-lead-0",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "user-tail-gain-1-lead-0.3",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "user-tail-gain-0.5-lead-0",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "user-tail-gain-0.5-lead-0.3",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "user-tail-gain-0.1-lead-0",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "user-tail-gain-0.1-lead-0.3",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "public-hey_jarvis-1",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 0
+      },
+      {
+        "case": "public-hey_jarvis-2",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 0
+      },
+      {
+        "case": "public-hey_jarvis-3",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "public-alexa-1",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "public-alexa-2",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "public-alexa-3",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      }
+    ],
+    "peak_rss_mib": 53.35546875,
+    "original_tail_input_trigger_seconds": [
+      [
+        3.3899999999999997
+      ],
+      [
+        3.3899999999999997
+      ],
+      [
+        3.3899999999999997
+      ]
+    ]
+  },
+  "native_vosk_control": {
+    "complete": true,
+    "total_cases": 21,
+    "passed_cases": 15,
+    "expected_wakes": 12,
+    "actual_wakes": 6,
+    "extra_wakes": 0,
+    "cases": [
+      {
+        "case": "public-hey_jarvis-1",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 0
+      },
+      {
+        "case": "public-hey_jarvis-2",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 0
+      },
+      {
+        "case": "public-hey_jarvis-3",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "public-alexa-1",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "public-alexa-2",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "public-alexa-3",
+        "expected_wakes_per_repetition": 0,
+        "actual_wakes": [
+          0,
+          0,
+          0
+        ],
+        "passed_repetitions": 3
+      },
+      {
+        "case": "selected-user-tail",
+        "expected_wakes_per_repetition": 1,
+        "actual_wakes": [
+          1,
+          1,
+          1
+        ],
+        "passed_repetitions": 3
+      }
+    ]
+  },
+  "reference_control": {
+    "complete": true,
+    "cases": [
+      {
+        "profile": "tiny.en",
+        "case": "user-whole",
+        "identical": true,
+        "reference_has_jarvis": false,
+        "rust_has_jarvis": false
+      },
+      {
+        "profile": "tiny.en",
+        "case": "user-whole-plus-two-seconds",
+        "identical": true,
+        "reference_has_jarvis": false,
+        "rust_has_jarvis": false
+      },
+      {
+        "profile": "tiny.en",
+        "case": "user-first-3.84-seconds",
+        "identical": true,
+        "reference_has_jarvis": false,
+        "rust_has_jarvis": false
+      },
+      {
+        "profile": "tiny.en",
+        "case": "public-whole",
+        "identical": true,
+        "reference_has_jarvis": false,
+        "rust_has_jarvis": false
+      },
+      {
+        "profile": "small.en",
+        "case": "user-whole",
+        "identical": true,
+        "reference_has_jarvis": true,
+        "rust_has_jarvis": true
+      },
+      {
+        "profile": "small.en",
+        "case": "user-whole-plus-two-seconds",
+        "identical": true,
+        "reference_has_jarvis": true,
+        "rust_has_jarvis": true
+      },
+      {
+        "profile": "small.en",
+        "case": "user-first-3.84-seconds",
+        "identical": true,
+        "reference_has_jarvis": true,
+        "rust_has_jarvis": true
+      },
+      {
+        "profile": "small.en",
+        "case": "public-whole",
+        "identical": true,
+        "reference_has_jarvis": false,
+        "rust_has_jarvis": false
+      }
+    ]
+  },
+  "protocols": {
+    "tiny_rolling": {
+      "declared_at": "2026-10-27T13:12:58.562556+00:00",
+      "scope": "Offline screening of a single resident tiny.en recognizer for wake detection; no live service, microphone, actions, installation or held-out decoding.",
+      "model": "tiny.en",
+      "threads": 8,
+      "minimum_rms": 0.001,
+      "frame_ms": 30,
+      "preroll_ms": 300,
+      "hangover_ms": 1200,
+      "min_window_ms": 960,
+      "max_window_ms": 4980,
+      "stride_ms": 480,
+      "keyword_policy": "Exact consecutive normalized word tokens, no keyword bias or fuzzy wake matching; disarm after a wake until the existing quiet hangover expires.",
+      "input_policy": "Only audio available through each input tick; bounded original-audio ring cleared after hangover. No true endpoint or future samples supplied to a request.",
+      "public_cases": [
+        "natural",
+        "wake-only",
+        "quiet-recovery",
+        "pause-inside-name",
+        "low-volume",
+        "uniform-noise",
+        "command-without-wake",
+        "reversed-speech",
+        "silence",
+        "unrelated-0",
+        "unrelated-1"
+      ],
+      "additional_jarvis_negatives": [
+        "natural",
+        "published-0",
+        "published-1"
+      ],
+      "user_tail_gains": [
+        1,
+        0.5,
+        0.1
+      ],
+      "user_tail_leading_quiet_seconds": [
+        0,
+        0.3
+      ],
+      "repetitions": 3,
+      "intended_labels_are_fixed": true,
+      "user_exact_wording_is_asr_draft": true,
+      "gates": "All expected wake counts, no extra wakes, isolated memory and decode work; no full acceptance or latency nonregression inferred. Keep failures and exit 1 if any intended wake count fails.",
+      "binary_sha256": "8915a1cfb58d7faec35f4409dd7cb1da17b55191f38f511129caf53e06c087b1"
+    },
+    "micro_wake_word": {
+      "declared_at": "2026-10-27T13:22:25.941297+00:00",
+      "model": "Pinned ESPHome v2 hey_jarvis",
+      "settings": "Publisher defaults: cutoff 0.97, mean over 5 predictions, 10 ms feature steps, no extra energy gate, normalization, gain or denoising. Existing pymicro-wakeword=2.5.0 runtime.",
+      "cases": [
+        "public hey_jarvis 1/2/3: expected 1 each",
+        "selected user final five seconds: expected 1 (bare Jarvis intended, command wording remains ASR draft)",
+        "public alexa 1/2/3: expected 0 each",
+        "public goforward and two Zipformer speech fixtures: expected 0",
+        "10 seconds silence: expected 0"
+      ],
+      "trailing_silence_seconds": 2,
+      "repetitions": 3,
+      "process_policy": "Fresh process per case, reset on each actual detection, retain max stock mean probability; do not change settings after a failure.",
+      "stop_rule": "Any selected intended wake failure prevents integration. A phrase-specific model does not provide arbitrary custom wake-name support.",
+      "scope": "Initial isolated wake screening only; no capture, microphone, desktop actions, uploads, held-out decoding or production changes."
+    },
+    "pocketsphinx_energy": {
+      "declared_at": "2026-10-27T13:25:41.456199+00:00",
+      "question": "Does replacing the Endpointer with the already-used bounded energy gate recover wakes discarded by VAD, without changing the keyword model or threshold?",
+      "settings": {
+        "sensitivity": 0.5,
+        "keyword_threshold": 1e-20,
+        "rms": 0.001,
+        "preroll_ms": 300,
+        "hangover_ms": 1200,
+        "maximum_utterance_seconds": 10,
+        "native_vad": "bypassed",
+        "wake_forms": "same primary/alias keyword file as previous PocketSphinx screen"
+      },
+      "cases": "All 20 previous public/user-tail screening cases, plus three upstream Hey Jarvis positives and three Alexa negatives; same labels, gains 1/0.5/0.1, lead 0/300 ms, plus two seconds trailing silence.",
+      "repetitions": 3,
+      "pacing": false,
+      "reset_policy": "Finalize and discard on exhausted quiet or ten-second cap. After a keyword, disarm until quiet. Do not fabricate wakes from a discarded final hypothesis.",
+      "scope": "Wake-only candidate, no commands, external actions, microphone, uploads, held-out decoding or production changes.",
+      "no_parameter_tuning": true
+    },
+    "native_vosk_control": {
+      "declared_at": "2026-10-27T13:27:31.278529+00:00",
+      "purpose": "Matched native Vosk wake-count control for newly acquired public Hey Jarvis and Alexa recordings plus selected user tail.",
+      "settings": "Existing Rust Engine, default hey jarvis variants, sensitivity 0.5, accurate=False, noise_suppression=False, existing RMS 0.005 gate; no new parameter tuning.",
+      "scope": "Fresh worker per input; explicit --engine playback, no real microphone/capture/actions; one possible wake per request.",
+      "repetitions": 3
+    }
+  },
+  "public_model_provenance": [
+    {
+      "file": "model/hey_jarvis.json",
+      "url": "https://raw.githubusercontent.com/esphome/micro-wake-word-models/40ff33f57f8fc6ad71a75ef085abbf742495b225/models/v2/hey_jarvis.json",
+      "sha256": "b153867d818675d8abcc9dace474afe7f83551ae0d5a9b1d71a98681320185af",
+      "git_blob_sha1": "e6733fe13852f04a5a3ae83e0d39b5726aee62cc"
+    },
+    {
+      "file": "model/hey_jarvis.tflite",
+      "url": "https://raw.githubusercontent.com/esphome/micro-wake-word-models/40ff33f57f8fc6ad71a75ef085abbf742495b225/models/v2/hey_jarvis.tflite",
+      "sha256": "21a7976add39ee24ec96c63d96b7aaa18e24d1d9824b963e451da8feb4b78b77",
+      "git_blob_sha1": "0075302434cc72a460ced0b8f6c09c69214e5cf0"
+    },
+    {
+      "file": "model/LICENSE",
+      "url": "https://raw.githubusercontent.com/esphome/micro-wake-word-models/40ff33f57f8fc6ad71a75ef085abbf742495b225/LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "git_blob_sha1": null
+    },
+    {
+      "file": "model/NOTICE",
+      "url": "https://raw.githubusercontent.com/esphome/micro-wake-word-models/40ff33f57f8fc6ad71a75ef085abbf742495b225/NOTICE",
+      "sha256": "bf6c416d88749af557faecbaf874861c6a808c5d45f4c28a2e25f9f613ce91ad",
+      "git_blob_sha1": null
+    },
+    {
+      "file": "model/README.md",
+      "url": "https://raw.githubusercontent.com/esphome/micro-wake-word-models/40ff33f57f8fc6ad71a75ef085abbf742495b225/README.md",
+      "sha256": "bee9ce31bfae0e24aaa1ef71eec099300aaa3486be5e125d32a07831191a674a",
+      "git_blob_sha1": null
+    },
+    {
+      "file": "fixtures/hey_jarvis-1.wav",
+      "url": "https://raw.githubusercontent.com/OHF-Voice/pymicro-wakeword/333da550c54b95192af472cfe37d98dab2f2086e/tests/hey_jarvis/1.wav",
+      "sha256": "c68da6c8f451ca9e12b0fed469e9aa6947d09fec277a3a7adacb4fc91c653c48",
+      "git_blob_sha1": "33f939fbf930df90de2006560cecc1b05a7501a9"
+    },
+    {
+      "file": "fixtures/hey_jarvis-2.wav",
+      "url": "https://raw.githubusercontent.com/OHF-Voice/pymicro-wakeword/333da550c54b95192af472cfe37d98dab2f2086e/tests/hey_jarvis/2.wav",
+      "sha256": "940181f5edc4707b713f47922ad30d048df819cad143aa3a6ee61ffba841ca6c",
+      "git_blob_sha1": "c4b327082012b0b8e25d7dac93596f01b441d51f"
+    },
+    {
+      "file": "fixtures/hey_jarvis-3.wav",
+      "url": "https://raw.githubusercontent.com/OHF-Voice/pymicro-wakeword/333da550c54b95192af472cfe37d98dab2f2086e/tests/hey_jarvis/3.wav",
+      "sha256": "3fa1889593e8f57e62193479fa35b3f819fbb42bfdbdbd45f5abbbbfee154bf3",
+      "git_blob_sha1": "2e14440f1334b141b9b0c48effef065ff0ad011b"
+    },
+    {
+      "file": "fixtures/alexa-1.wav",
+      "url": "https://raw.githubusercontent.com/OHF-Voice/pymicro-wakeword/333da550c54b95192af472cfe37d98dab2f2086e/tests/alexa/1.wav",
+      "sha256": "ef63936b116a808d1023d57c41d19846c798e81ab1fc3c3daffcfa442afdb28f",
+      "git_blob_sha1": "e04e0ee035de7f384c5d7f3c3ee56898e7f16f83"
+    },
+    {
+      "file": "fixtures/alexa-2.wav",
+      "url": "https://raw.githubusercontent.com/OHF-Voice/pymicro-wakeword/333da550c54b95192af472cfe37d98dab2f2086e/tests/alexa/2.wav",
+      "sha256": "3a8598523758276c772a848a12592caedffce1e7d4743fd28ce44ca85936e537",
+      "git_blob_sha1": "765859a2432094ba3ba2a7b06d587d91a6cc7ab8"
+    },
+    {
+      "file": "fixtures/alexa-3.wav",
+      "url": "https://raw.githubusercontent.com/OHF-Voice/pymicro-wakeword/333da550c54b95192af472cfe37d98dab2f2086e/tests/alexa/3.wav",
+      "sha256": "b0c20a9fa2eab4c8c6476e47a16cd570d623b9a1aa5e69df1430d160ccbfce52",
+      "git_blob_sha1": "c8ce59f8aaa5c6aefa23578a4a7243d60c46e430"
+    }
+  ],
+  "workspace_package_provenance": [
+    {
+      "project": "pymicro-wakeword",
+      "version": "2.5.0",
+      "file": "pymicro_wakeword-2.5.0-py3-none-manylinux_2_35_x86_64.whl",
+      "url": "https://files.pythonhosted.org/packages/59/db/651fffa65447022403cb44968a2e2a717c31a33ebe17e77e1e96a6289623/pymicro_wakeword-2.5.0-py3-none-manylinux_2_35_x86_64.whl",
+      "sha256": "3869f536402b1254e3be3549d3a462ecd6ed21ce2c3e77ec8eb501c3c700417c"
+    },
+    {
+      "project": "pymicro-features",
+      "version": "2.0.2",
+      "file": "pymicro_features-2.0.2-cp39-abi3-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+      "url": "https://files.pythonhosted.org/packages/aa/30/a31c5dc56015e55f897d0beb71447f1e10f0062067258856f3735ede133a/pymicro_features-2.0.2-cp39-abi3-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+      "sha256": "65a76a7c7851ee0dd6083dda56b835ab9dc6eddeaf11b34461795758de846d0f"
+    }
+  ],
+  "private_evidence_sha256": {
+    "tiny-wake-screen-2026-10-27/protocol.json": "e4931a95ceb1645e500bccceceb51bbf8916e9c937db1b0e7b1189496ff7dcdc",
+    "tiny-wake-screen-2026-10-27/reference-protocol.json": "6b0532bbba758eb13dd01db80734d2f6de39ce516f8bc65c686b08b6ec49d3d9",
+    "tiny-wake-screen-2026-10-27/reference-results.json": "dca7e185fd70252f9af833b8a5640fbea869f9507e978adc950a8937dcd6f724",
+    "tiny-wake-screen-2026-10-27/results.json": "cfc1eb7f67938350bda4ed1eb412b7c1e05f1058b27becb4bc59b5db7837a847",
+    "tiny-wake-screen-2026-10-27/reference-control.py": "dde990799211b685ecdef6a1b3aad5989021e5da695afc3008aeede33afe5bac",
+    "tiny-wake-screen-2026-10-27/run.py": "0c6bc99144076ba0b9d357cca8284785e580bd92e831517c33e480bfaa2278c8",
+    "mww-screen-2026-10-27/protocol.json": "2beaf75fd8c6f3d63a74858ee46cd097f503231957c45495622228b32241500a",
+    "mww-screen-2026-10-27/results.json": "dfa6b12dcd88cee61ba754e2f5d55473f5b81d6e7cd7c0873774a63e9ac43168",
+    "mww-screen-2026-10-27/vosk-control-protocol.json": "066df26eda498111c7e0b49f5779ad3410c3ccb4e622253fe19bfaf529ece7bb",
+    "mww-screen-2026-10-27/vosk-control-results.json": "6fdb62a4434c244363d97555ea36ae39a1340c08afea368136a188fc9d442853",
+    "mww-screen-2026-10-27/run.py": "7be3c1593493efaad688d2001240b5ad0c3d353799110d02d3d314821c99b650",
+    "mww-screen-2026-10-27/vosk-control.py": "bb63100ad2523c84ab759019bf823d9e57cc2f4c5ece6767ad07f310f39ee6fb",
+    "mww-screen-2026-10-27/worker.py": "699c0e0c655e1eb046afc6597c15934cfb0256b788c3f027c49a2b54e790222c",
+    "pocketsphinx-energy-screen-2026-10-27/protocol.json": "975aae10fe7229ecbfa9e24231da0af361f59e0ce3f059d9a6c85c3b7c4bff5e",
+    "pocketsphinx-energy-screen-2026-10-27/results.json": "469232d83fcbca82372e14ea1adf7177bf54e06bd26b9e1f52456e3a24d11737",
+    "pocketsphinx-energy-screen-2026-10-27/run.py": "b5147d65ed98edc4243067e45d18374fb01cbd7ce329d83ff3e0181ad809c4eb",
+    "pocketsphinx-energy-screen-2026-10-27/worker.py": "113724c5ad0b07dbe950c207dc71ba776afeb30f33dd264bb75b745bc3471409"
+  },
+  "gates": {
+    "tiny_wake_accepted": false,
+    "micro_wake_word_accepted": false,
+    "pocketsphinx_energy_accepted": false,
+    "ensemble_measured": false,
+    "full_recognition": false,
+    "combined_application_memory": false,
+    "command_latency_nonregression": false,
+    "full_soak": false
+  },
+  "production_changed": false,
+  "exit_codes": {
+    "tiny_rolling": 1,
+    "micro_wake_word": 1,
+    "pocketsphinx_energy": 1,
+    "native_vosk_control": 1,
+    "same_input_reference_control": 0
+  }
+}

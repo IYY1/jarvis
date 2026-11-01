@@ -82,7 +82,11 @@ WantedBy=graphical-session.target
             path.write_text(content)
             path.chmod(0o644)
     if a.service and not a.dry_run:
-        subprocess.run(["systemctl", "--user", "daemon-reload"], check=True)
+        # Without a user session bus (SSH, su, containers) systemd reads the
+        # unit at the next login instead; the files are already in place.
+        if subprocess.run(["systemctl", "--user", "daemon-reload"]).returncode:
+            print("Note: no user systemd session here; the service is picked up at your next login.",
+                  file=sys.stderr)
     print("Preview only." if a.dry_run else "Installed for your user. Service enablement is unchanged; configure startup in Jarvis.")
 
 

@@ -23,9 +23,28 @@ pub struct Grammar {
     #[serde(default)]
     pub launches: serde_json::Map<String, Value>,
     #[serde(default)]
-    pub brightness_names: serde_json::Map<String, Value>,
-    #[serde(default)]
     pub blocked_apps: HashSet<String>,
+}
+
+#[cfg(test)]
+mod confidence_tests {
+    use super::*;
+    use serde_json::json;
+    #[test]
+    fn fast_path_never_uses_missing_or_partial_word_confidence() {
+        let good = json!({"text":"open firefox","result":[{"word":"open","conf":0.99},{"word":"firefox","conf":1.0}]});
+        assert_eq!(complete_confidence(&good), Some(0.99));
+        for bad in [
+            json!({"text":"open firefox","result":[]}),
+            json!({"text":"open firefox"}),
+            json!({"text":"open firefox","result":[{"word":"open","conf":0.99},{"word":"firefox"}]}),
+            json!({"text":"open firefox","result":[{"word":"open","conf":1.01},{"word":"firefox","conf":1.0}]}),
+            json!({"text":"open firefox","result":[{"word":"open","conf":1.0}]}),
+            json!({"text":"open firefox","result":[{"word":"open firefox","conf":1.0}]}),
+        ] {
+            assert!(complete_confidence(&bad).is_none(), "{bad}");
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -36,6 +55,8 @@ pub struct Recognition {
     pub min_word_posterior: Option<f64>,
     pub heard: Option<String>,
     pub closest_match: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub recognition_pass: Option<&'static str>,
 }
 impl Recognition {
     pub(crate) fn new(kind: &str, text: String, confidence: Option<f64>) -> Self {
@@ -46,6 +67,7 @@ impl Recognition {
             min_word_posterior: None,
             heard: None,
             closest_match: false,
+            recognition_pass: None,
         }
     }
 }
@@ -56,6 +78,10 @@ pub struct Engine {
     command: Decoder,
     open: Option<Decoder>,
     whisper: Option<OnDemand<Transcriber>>,
+    vosk_fast_path: bool,
+    finalize_utterances: bool,
+    fast_commands: u64,
+    whisper_commands: u64,
     matcher: Matcher,
     sounds: HashMap<String, String>,
     wake_names: Vec<Vec<String>>,
@@ -110,7 +136,38 @@ fn confidence(result: &Value) -> Option<f64> {
     })
 }
 
+/// The fast path requires a posterior for every recognized word. Missing or
+/// malformed word data must never turn a partial confidence into approval.
+fn complete_confidence(result: &Value) -> Option<f64> {
+    let words = result["result"].as_array().filter(|w| !w.is_empty())?;
+    let mut spoken = Vec::with_capacity(words.len());
+    let mut minimum: f64 = 1.0;
+    for word in words {
+        let name = word["word"]
+            .as_str()
+            .filter(|s| !s.is_empty() && !s.contains(char::is_whitespace))?;
+        let confidence = word["conf"]
+            .as_f64()
+            .filter(|c| c.is_finite() && (0.0..=1.0).contains(c))?;
+        spoken.push(name);
+        minimum = minimum.min(confidence);
+    }
+    (spoken.join(" ") == text(result)).then_some(minimum)
+}
+
 impl Engine {
+    /// Only the explicit attribution probe bypasses normal gating/matching.
+    pub(crate) fn history_decoder(&self, name: &str) -> Result<&Decoder> {
+        match name {
+            "wake" => Ok(&self.wake),
+            "command" => Ok(&self.command),
+            "free" => self
+                .open
+                .as_ref()
+                .ok_or_else(|| "Free decoder is disabled".into()),
+            _ => Err("Decoder must be wake, command or free".into()),
+        }
+    }
     pub fn new(native: &NativeConfig, grammar: &Grammar, config: &Value) -> Result<Self> {
         // Without an idle limit, compile Whisper before loading resident Vosk
         // state, so its one-time model-import scratch does not overlap Vosk's
@@ -211,7 +268,7 @@ impl Engine {
             for a in &spoken_apps {
                 let original = sounds.get(a).unwrap_or(a);
                 if grammar.blocked_apps.contains(original)
-                    && !["focus", "switch to"].contains(&v.as_str())
+                    && !["focus", "switch to", "close"].contains(&v.as_str())
                 {
                     continue;
                 }
@@ -239,7 +296,7 @@ impl Engine {
             }
         }
         for p in &prefixes {
-            for k in known.iter().filter(|p| !jarvis_phrases::brightness_like(p)) {
+            for k in &known {
                 full.insert(format!("{p} {k}"));
             }
         }
@@ -274,9 +331,7 @@ impl Engine {
         }
         let wake = Decoder::new(model.clone(), Some(wake_grammar), true)?;
         let command = Decoder::new(model.clone(), Some(full), true)?;
-        let open = if config["recognition"]["closest_match"].as_bool() == Some(true)
-            || !grammar.brightness_names.is_empty()
-        {
+        let open = if config["recognition"]["closest_match"].as_bool() == Some(true) {
             Some(Decoder::new(model, None, false)?)
         } else {
             None
@@ -299,7 +354,6 @@ impl Engine {
             exact_only: config["recognition"]["closest_match"].as_bool() == Some(false),
             rules: jarvis_phrases::Rules {
                 launches: grammar.launches.clone(),
-                monitors: grammar.brightness_names.clone(),
             },
             blocked_apps: grammar.blocked_apps.clone(),
         };
@@ -308,6 +362,10 @@ impl Engine {
             command,
             open,
             whisper,
+            vosk_fast_path: native.vosk_fast_path,
+            finalize_utterances: native.vosk_finalize_utterances,
+            fast_commands: 0,
+            whisper_commands: 0,
             matcher,
             sounds,
             wake_names,
@@ -368,11 +426,11 @@ impl Engine {
         }
         text.to_owned()
     }
-    fn reset(&mut self) {
-        self.wake.reset();
-        self.command.reset();
+    fn reset(&mut self) -> Result<()> {
+        self.wake.clear(self.finalize_utterances)?;
+        self.command.clear(self.finalize_utterances)?;
         if let Some(open) = &self.open {
-            open.reset();
+            open.clear(self.finalize_utterances)?;
         }
         self.preroll.clear();
         self.hangover = 0;
@@ -383,23 +441,35 @@ impl Engine {
         self.command_audio.clear();
         self.speech_frames = 0;
         self.quiet_run = 0;
+        Ok(())
     }
-    pub fn begin(&mut self, command: bool) {
-        self.reset();
+    pub fn begin(&mut self, command: bool) -> Result<()> {
+        self.reset()?;
         self.pending = None;
         self.unmatched = None;
         self.mode = Some(if command { "command" } else { "wake" });
         if command {
             self.prepare_whisper();
         }
+        Ok(())
     }
     pub fn after_wake(&mut self) -> Option<Recognition> {
         self.pending.take()
     }
     fn prepare_whisper(&mut self) {
+        // Prefetching would load weights even when a later exact Vosk result
+        // avoids transcription. Experimental fallbacks load at decision time.
+        if self.vosk_fast_path {
+            return;
+        }
         if let Some(whisper) = &mut self.whisper {
             whisper.prepare();
         }
+    }
+    pub fn recognition_stats(&self) -> Value {
+        serde_json::json!({"vosk_fast_path":self.vosk_fast_path,"vosk_finalize_utterances":self.finalize_utterances,"fast_commands":self.fast_commands,
+            "whisper_transcriptions":self.whisper_commands,
+            "whisper_loads":self.whisper.as_ref().map_or(0, OnDemand::load_count)})
     }
     /// Collects a background Whisper load, releases Whisper once it has gone
     /// unused while waiting for the wake phrase, and keeps trimming the heap
@@ -455,6 +525,13 @@ impl Engine {
         if let Some(result) = self.decode(pcm)? {
             return Ok(Some(result));
         }
+        if quiet && self.hangover == 0 && self.mode == Some("wake") {
+            // The energy gate is about to stop forwarding quiet frames. Vosk
+            // can still have an unfinished [unk] utterance here; retaining it
+            // would attach the next wake name to that background speech.
+            // Discard it instead of forcing a final hypothesis into a wake.
+            self.reset()?;
+        }
         if self.mode == Some("command") && self.whisper.is_some() {
             if quiet {
                 self.quiet_run += 1;
@@ -478,7 +555,7 @@ impl Engine {
     fn decode(&mut self, pcm: &[u8]) -> Result<Option<Recognition>> {
         self.utterance_bytes += pcm.len();
         if self.utterance_bytes > 320000 {
-            self.reset();
+            self.reset()?;
             return Ok(None);
         }
         if self.mode == Some("wake") {
@@ -489,7 +566,7 @@ impl Engine {
                 let audio = std::mem::take(&mut self.wake_audio);
                 let start = self.wake_start;
                 self.wake_start = self.stream_bytes;
-                let result = self.wake.result(false)?;
+                let result = self.wake.result(self.finalize_utterances)?;
                 return self.wake_result(result, &audio, start);
             }
             // Every fourth speech frame, start loading Whisper once the
@@ -511,12 +588,13 @@ impl Engine {
         self.command_audio.extend_from_slice(pcm);
         if let Some(open) = &self.open {
             if open.accept(pcm)? {
-                self.open_text.push(text(&open.result(false)?));
+                self.open_text
+                    .push(text(&open.result(self.finalize_utterances)?));
             }
         }
         if self.command.accept(pcm)? {
             self.utterance_bytes = 0;
-            return self.command_result(self.command.result(false)?);
+            return self.command_result(self.command.result(self.finalize_utterances)?);
         }
         Ok(None)
     }
@@ -578,7 +656,7 @@ impl Engine {
                 self.pending = self.command_from_audio(tail, None)?;
             }
         }
-        self.reset();
+        self.reset()?;
         self.mode = None;
         Ok(Some(Recognition::new(
             "wake",
@@ -594,11 +672,11 @@ impl Engine {
         if strict.is_none() && audio.len() < 6400 {
             return Ok(None);
         }
-        self.command.reset();
+        self.command.clear(self.finalize_utterances)?;
         self.open_text.clear();
         self.command_audio = audio.to_vec();
         if let Some(open) = &self.open {
-            open.reset();
+            open.clear(self.finalize_utterances)?;
             open.accept(audio)?;
         }
         let strict = if let Some(s) = strict {
@@ -627,8 +705,27 @@ impl Engine {
         self.speech_frames = 0;
         self.quiet_run = 0;
         let mut heard_match = self.matcher.closest(&heard);
+        if self.vosk_fast_path
+            && self.whisper.is_some()
+            && self
+                .matcher
+                .confident_exact(&canonical, complete_confidence(&result), &heard)
+        {
+            // Still use the existing chooser: no free-decoder disagreement,
+            // acceptance or command-validation rule is bypassed here.
+            if let Some(mut recognition) =
+                self.matcher
+                    .choose(&canonical, confidence(&result), &heard, heard_match.clone())
+            {
+                recognition.recognition_pass = Some("vosk_fast");
+                self.fast_commands += 1;
+                self.mode = None;
+                return Ok(Some(recognition));
+            }
+        }
         if let Some(whisper) = &mut self.whisper {
             if !audio.is_empty() {
+                self.whisper_commands += 1;
                 let accurate = phrase(&whisper.get()?.transcribe(&audio)?);
                 let accurate_match = self.matcher.closest(&accurate);
                 if accurate_match.is_some() || heard_match.is_none() {
@@ -639,10 +736,18 @@ impl Engine {
                 }
             }
         }
-        if let Some(recognition) =
+        if let Some(mut recognition) =
             self.matcher
                 .choose(&canonical, confidence(&result), &heard, heard_match)
         {
+            if self.vosk_fast_path {
+                recognition.recognition_pass =
+                    Some(if self.whisper.is_some() && !audio.is_empty() {
+                        "whisper"
+                    } else {
+                        "vosk"
+                    });
+            }
             self.mode = None;
             return Ok(Some(recognition));
         }

@@ -1,0 +1,368 @@
+{
+  "evidence_id": "ev_dc651f5becafb358c4a07c12a2caaa11df74673fe9518c3080ce2298a462aa6e",
+  "subject": null,
+  "provider": {
+    "id": "rea-process",
+    "name": "REA process capture",
+    "version": "3"
+  },
+  "analysis_profile": null,
+  "predicate_type": "rea.process-capture",
+  "operation": "capture_process_scenario",
+  "parameters": {
+    "executable_name": "gpu-screen-recorder",
+    "argument_count": 1,
+    "event_count": 0,
+    "filesystem_observation_path_count": 0,
+    "normalization": {
+      "paths": false,
+      "pids": true,
+      "ports": true,
+      "time_bucket_ms": 10,
+      "patterns": []
+    }
+  },
+  "raw_result": null,
+  "normalized_result": {
+    "manifest": {
+      "rea_version": "6.7.0",
+      "provider_version": "3",
+      "platform": "linux",
+      "architecture": "x64",
+      "pty_backend": "node-pty",
+      "started_at": "2026-10-26T23:21:33.175Z",
+      "completed_at": "2026-10-26T23:21:33.326Z",
+      "scenario": {
+        "executable": "/usr/bin/gpu-screen-recorder",
+        "arguments": [
+          "--help"
+        ],
+        "working_directory": "/home/silver/Projects/jarvis",
+        "environment": {},
+        "filesystem_observation_paths": [],
+        "terminal": {
+          "columns": 180,
+          "rows": 50,
+          "scrollback": 500
+        },
+        "events": [],
+        "timeout_ms": 5000,
+        "idle_timeout_ms": 30000,
+        "settle_ms": 100,
+        "limits": {
+          "output_bytes": 131072,
+          "files": 10000,
+          "file_bytes": 10000000,
+          "processes": 8,
+          "filesystem_depth": 16
+        },
+        "normalization": {
+          "paths": false,
+          "pids": true,
+          "ports": true,
+          "time_bucket_ms": 10,
+          "patterns": []
+        },
+        "executable_sha256": "2a8c2db8f4c1f7e1cdd0b21f44335e9b663c299191a1518d4580b0aae55db0c3"
+      },
+      "comparison_contract": {
+        "working_directory": "/home/silver/Projects/jarvis",
+        "environment": {},
+        "ambient_environment": "unknown",
+        "filesystem_observation_paths": [],
+        "terminal": {
+          "columns": 180,
+          "rows": 50,
+          "scrollback": 500
+        },
+        "events": [],
+        "timeout_ms": 5000,
+        "idle_timeout_ms": 30000,
+        "settle_ms": 100,
+        "limits": {
+          "output_bytes": 131072,
+          "files": 10000,
+          "file_bytes": 10000000,
+          "processes": 8,
+          "filesystem_depth": 16
+        },
+        "normalization": {
+          "paths": false,
+          "pids": true,
+          "ports": true,
+          "time_bucket_ms": 10,
+          "patterns": []
+        },
+        "port_normalization_version": "contextual-endpoints-v2",
+        "rendered_line_format": "trailing-spaces-trimmed-v1"
+      },
+      "full_scenario_sha256": "405c2864b0103adb9a2fc49b92c1dd9234fb40a650c89b10292c1303dabd6664",
+      "comparison_contract_sha256": "06ce9504a1565379fb86c0f453fbe7c745d283f174f0f18bb45da74087c19d42",
+      "selected_executable_sha256": "2a8c2db8f4c1f7e1cdd0b21f44335e9b663c299191a1518d4580b0aae55db0c3",
+      "executable_sha256": "2a8c2db8f4c1f7e1cdd0b21f44335e9b663c299191a1518d4580b0aae55db0c3",
+      "executable_identity": {
+        "state": "path_metadata_unchanged",
+        "reason": null
+      },
+      "normalization_sha256": "5c58aa1aa890197f15f9c59ef755d01120e6e07f356fa1ef2f20787e63b6fa87"
+    },
+    "normalization": {
+      "paths": false,
+      "pids": true,
+      "ports": true,
+      "time_bucket_ms": 10,
+      "patterns": []
+    },
+    "frames": [
+      {
+        "sequence": 0,
+        "at_ms": 30,
+        "data": "usage: gpu-screen-recorder [-w <window_id|monitor|focused|portal|region|v4l2_device_path>] [-c <container_format>] [-s WxH] [-region WxH+X+Y] [-f <fps>] [-a <audio_input>] [-q <quality>] [-r <replay_buffer_size_sec>] [-replay-storage ram|disk] [-restart-replay-on-save yes|no] [-k h264|hevc|av1|vp8|vp9|hevc_hdr|av1_hdr|hevc_10bit|av1_10bit] [-ac aac|opus|flac|mp3] [-ab <bitrate>] [-fm cfr|vfr|content] [-bm auto|qp|vbr|cbr] [-cr limited|full] [-tune performance|quality] [-df yes|no] [-sc <script_path>] [-p <plugin_path>] [-cursor yes|no] [-keyint <value>] [-restore-portal-session yes|no] [-portal-session-token-filepath filepath] [-encoder gpu|cpu] [-fallback-cpu-encoding yes|no] [-o <output_file>] [-ro <output_directory>] [-ffmpeg-opts <options>] [-ffmpeg-video-opts <options>] [-ffmpeg-audio-opts <options>]  [-auth <token>] [--list-capture-options [card_path]] [--list-monitors] [--list-audio-devices] [--list-application-audio] [--list-v4l2-devices] [-write-first-frame-ts yes|no] [-low-power yes|no] [-ipc <socket_path>] [-v yes|no] [-gl-debug yes|no] [-exclude-metadata yes|no] [--version] [-h|--help]\r\n\r\nNOTES:\r\n  Run \"man gpu-screen-recorder.1\" to open the man page for GPU Screen Recorder to see an explanation for each option and examples\r\n"
+      }
+    ],
+    "rendered_frames": [
+      {
+        "sequence": 0,
+        "at_ms": 30,
+        "columns": 180,
+        "rows": 50,
+        "cursor_x": 0,
+        "cursor_y": 10,
+        "active_buffer": "normal",
+        "lines": [
+          "usage: gpu-screen-recorder [-w <window_id|monitor|focused|portal|region|v4l2_device_path>] [-c <container_format>] [-s WxH] [-region WxH+X+Y] [-f <fps>] [-a <audio_input>] [-q <qua",
+          "lity>] [-r <replay_buffer_size_sec>] [-replay-storage ram|disk] [-restart-replay-on-save yes|no] [-k h264|hevc|av1|vp8|vp9|hevc_hdr|av1_hdr|hevc_10bit|av1_10bit] [-ac aac|opus|flac",
+          "|mp3] [-ab <bitrate>] [-fm cfr|vfr|content] [-bm auto|qp|vbr|cbr] [-cr limited|full] [-tune performance|quality] [-df yes|no] [-sc <script_path>] [-p <plugin_path>] [-cursor yes|no",
+          "] [-keyint <value>] [-restore-portal-session yes|no] [-portal-session-token-filepath filepath] [-encoder gpu|cpu] [-fallback-cpu-encoding yes|no] [-o <output_file>] [-ro <output_di",
+          "rectory>] [-ffmpeg-opts <options>] [-ffmpeg-video-opts <options>] [-ffmpeg-audio-opts <options>]  [-auth <token>] [--list-capture-options [card_path]] [--list-monitors] [--list-aud",
+          "io-devices] [--list-application-audio] [--list-v4l2-devices] [-write-first-frame-ts yes|no] [-low-power yes|no] [-ipc <socket_path>] [-v yes|no] [-gl-debug yes|no] [-exclude-metada",
+          "ta yes|no] [--version] [-h|--help]",
+          "",
+          "NOTES:",
+          "  Run \"man gpu-screen-recorder.1\" to open the man page for GPU Screen Recorder to see an explanation for each option and examples",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "serialized_state": "usage: gpu-screen-recorder [-w <window_id|monitor|focused|portal|region|v4l2_device_path>] [-c <container_format>] [-s WxH] [-region WxH+X+Y] [-f <fps>] [-a <audio_input>] [-q <quality>] [-r <replay_buffer_size_sec>] [-replay-storage ram|disk] [-restart-replay-on-save yes|no] [-k h264|hevc|av1|vp8|vp9|hevc_hdr|av1_hdr|hevc_10bit|av1_10bit] [-ac aac|opus|flac|mp3] [-ab <bitrate>] [-fm cfr|vfr|content] [-bm auto|qp|vbr|cbr] [-cr limited|full] [-tune performance|quality] [-df yes|no] [-sc <script_path>] [-p <plugin_path>] [-cursor yes|no] [-keyint <value>] [-restore-portal-session yes|no] [-portal-session-token-filepath filepath] [-encoder gpu|cpu] [-fallback-cpu-encoding yes|no] [-o <output_file>] [-ro <output_directory>] [-ffmpeg-opts <options>] [-ffmpeg-video-opts <options>] [-ffmpeg-audio-opts <options>]  [-auth <token>] [--list-capture-options [card_path]] [--list-monitors] [--list-audio-devices] [--list-application-audio] [--list-v4l2-devices] [-write-first-frame-ts yes|no] [-low-power yes|no] [-ipc <socket_path>] [-v yes|no] [-gl-debug yes|no] [-exclude-metadata yes|no] [--version] [-h|--help]\r\n\r\nNOTES:\r\n  Run \"man gpu-screen-recorder.1\" to open the man page for GPU Screen Recorder to see an explanation for each option and examples\u001b[1B\u001b[129D"
+      }
+    ],
+    "interaction_events": [],
+    "exit": {
+      "code": 1,
+      "signal": 0,
+      "reason": "exited"
+    },
+    "settlement": {
+      "state": "quiesced",
+      "elapsed_ms": 87,
+      "cleanup_outcome": "not_required"
+    },
+    "process_samples": [
+      {
+        "at_ms": 10,
+        "pid": 1,
+        "parent_pid": 2,
+        "command": "/usr/bin/gpu-screen-recorder --help",
+        "process_group_id": 1,
+        "session_id": 1
+      }
+    ],
+    "filesystem_checkpoints": [
+      {
+        "name": "before",
+        "at_ms": 0,
+        "files": [],
+        "effects": [],
+        "truncated": false
+      },
+      {
+        "name": "after_settlement",
+        "at_ms": 151,
+        "files": [],
+        "effects": [],
+        "truncated": false
+      }
+    ],
+    "event_journal": [
+      {
+        "capture_order": 0,
+        "collection": "filesystem_checkpoints",
+        "index": 0
+      },
+      {
+        "capture_order": 1,
+        "collection": "process_samples",
+        "index": 0
+      },
+      {
+        "capture_order": 2,
+        "collection": "frames",
+        "index": 0
+      },
+      {
+        "capture_order": 3,
+        "collection": "lifecycle",
+        "index": 0
+      },
+      {
+        "capture_order": 4,
+        "collection": "rendered_frames",
+        "index": 0
+      },
+      {
+        "capture_order": 5,
+        "collection": "lifecycle",
+        "index": 1
+      },
+      {
+        "capture_order": 6,
+        "collection": "filesystem_checkpoints",
+        "index": 1
+      }
+    ],
+    "files_before": [],
+    "files_after": [],
+    "filesystem_effects": [],
+    "truncated": false,
+    "truncation_details": {
+      "raw_terminal": {
+        "budget_bytes": 131072,
+        "observed_bytes": 1257,
+        "retained_bytes": 1257,
+        "observed_frames": 1,
+        "retained_frames": 1
+      },
+      "rendered_terminal": {
+        "budget_bytes": 131072,
+        "observed_bytes": 2514,
+        "retained_bytes": 2514,
+        "observed_frames": 1,
+        "retained_frames": 1
+      },
+      "normalized_terminal": {
+        "budget_bytes": 131072,
+        "retained_bytes": 1257,
+        "omitted_frames": 0
+      },
+      "filesystem_before": {
+        "files_limit": 10000,
+        "depth_limit": 16,
+        "enumeration_truncated": false,
+        "enumeration_reasons": [],
+        "enumeration_omissions": [],
+        "hash_budget_bytes": 10000000,
+        "hashed_bytes": 0,
+        "hash_omissions": []
+      },
+      "filesystem_after": {
+        "files_limit": 10000,
+        "depth_limit": 16,
+        "enumeration_truncated": false,
+        "enumeration_reasons": [],
+        "enumeration_omissions": [],
+        "hash_budget_bytes": 10000000,
+        "hashed_bytes": 0,
+        "hash_omissions": []
+      },
+      "process": {
+        "sample_limit": 8,
+        "sampling_partial": false,
+        "retained_samples": 1,
+        "sample_limit_reached": false,
+        "sampling_failures": 0,
+        "first_sampling_failure": null,
+        "coverage": "sampled"
+      }
+    },
+    "limitations": [
+      "The executable digest is a prelaunch file sample; matching path metadata immediately after spawn does not prove an atomic operating-system image binding.",
+      "Process trees are sampled and may omit short-lived descendants.",
+      "Filesystem observations are before/after snapshots, not syscall traces.",
+      "Inherited host environment variables are not recorded and may affect results.",
+      "No filesystem observation paths were selected; filesystem effects remain unknown."
+    ],
+    "residual_unknowns": [
+      {
+        "scope": "process",
+        "reason": "Process trees are sampled and may omit short-lived descendants."
+      },
+      {
+        "scope": "process",
+        "reason": "The executable digest is a prelaunch file sample; operating-system image binding is not atomically observed."
+      },
+      {
+        "scope": "environment",
+        "reason": "Inherited host environment variables are not recorded."
+      },
+      {
+        "scope": "network",
+        "reason": "Network activity is not observed by this capture."
+      },
+      {
+        "scope": "filesystem",
+        "reason": "No filesystem observation paths were selected; filesystem effects remain unknown."
+      }
+    ],
+    "cleanup": {
+      "owned_process_group": "verified",
+      "temporary_root": "removed"
+    }
+  },
+  "confidence": "observed",
+  "authority": "controlled-replay",
+  "environment": {
+    "id": "linux-x64",
+    "platform": "linux",
+    "architecture": "x64",
+    "isolation": "process"
+  },
+  "limitations": [
+    "Artifact identity is unavailable for this observation.",
+    "The executable digest is a prelaunch file sample; matching path metadata immediately after spawn does not prove an atomic operating-system image binding.",
+    "Process trees are sampled and may omit short-lived descendants.",
+    "Filesystem observations are before/after snapshots, not syscall traces.",
+    "Inherited host environment variables are not recorded and may affect results.",
+    "No filesystem observation paths were selected; filesystem effects remain unknown."
+  ],
+  "relationship_coverage": null,
+  "locations": [],
+  "evidence_links": []
+}

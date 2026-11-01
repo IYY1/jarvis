@@ -1,0 +1,142 @@
+{
+  "source": "https://github.com/k2-fsa/sherpa-onnx/releases/download/kws-models/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01.tar.bz2",
+  "asset_id": 166405338,
+  "updated_at": "2024-05-07T03:14:19Z",
+  "publisher_digest": null,
+  "archive_sha256": "f170013b4716e41b62b9bfd809687c207cef798ef9bc6534d524e17af9b6561a",
+  "size_bytes": 17626723,
+  "files": {
+    "sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/README.md": {
+      "bytes": 726,
+      "sha256": "74e42d37d63acd2366b042151d576fcc0c4917a41de339414a37f1e79f4e80e2"
+    },
+    "sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/bpe.model": {
+      "bytes": 244837,
+      "sha256": "c8a2a0129c4ab8e463164c142f82d25649661b122c8cd0b7aab5c9e80b90ad24"
+    },
+    "sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/decoder-epoch-12-avg-2-chunk-16-left-64.int8.onnx": {
+      "bytes": 277985,
+      "sha256": "e40ff43297abe815e8898494c17e71bba2152d9d40fa3eb803f75d0f7533329a"
+    },
+    "sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/decoder-epoch-12-avg-2-chunk-16-left-64.onnx": {
+      "bytes": 1063189,
+      "sha256": "f61ebd3eed3773a44d088d53dfae92dbb6aec4839f4dcaee2d402414741663a3"
+    },
+    "sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/encoder-epoch-12-avg-2-chunk-16-left-64.int8.onnx": {
+      "bytes": 4807159,
+      "sha256": "1e721676515bcd42a186979733981213c66c80db680e1cc582dfedf3be76e678"
+    },
+    "sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/encoder-epoch-12-avg-2-chunk-16-left-64.onnx": {
+      "bytes": 12174219,
+      "sha256": "063fbc1aeae8a9b574607a331a00e60371846ef9eaa3c1d9ea48176665dfc693"
+    },
+    "sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/joiner-epoch-12-avg-2-chunk-16-left-64.int8.onnx": {
+      "bytes": 163380,
+      "sha256": "eae9da0c7e1e6c6a3f4cc42d167899c388f6c6701b94cb96320e4f55df79624c"
+    },
+    "sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/joiner-epoch-12-avg-2-chunk-16-left-64.onnx": {
+      "bytes": 642462,
+      "sha256": "0d7a37e749d8055223029318d6ffae82db1dae2d315d0892a68ba5dad17c1d2d"
+    },
+    "sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/keywords.txt": {
+      "bytes": 184,
+      "sha256": "b1740c4925d7c83337de2cffa04e8d35450fab2af8f583e65c54aad6257c4bd6"
+    },
+    "sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/keywords_raw.txt": {
+      "bytes": 102,
+      "sha256": "f8d067c3c84bcf9240988b17bd28ce7a21e86f5ad9c01a4f1d6e052f9c38053d"
+    },
+    "sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/test_wavs/0.wav": {
+      "bytes": 212044,
+      "sha256": "6bc58a4efdf20daac252b6b1502632601a71efe0308f6757dc1eda34891a7e4f"
+    },
+    "sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/test_wavs/1.wav": {
+      "bytes": 534924,
+      "sha256": "5143a6ba93c4b274e2c4ac22deb75c2c48936c853f0519add1de828b6c79cc5a"
+    },
+    "sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/test_wavs/test_keywords.txt": {
+      "bytes": 52,
+      "sha256": "fd9c3b504ab922bc96ce8613eff02193f8a5526fcf74a14df436c7af74ad649d"
+    },
+    "sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/test_wavs/trans.txt": {
+      "bytes": 367,
+      "sha256": "55ca91f3ee53c324b2f802f63c50cacc8931da846c4aaa35f115680201ff904b"
+    },
+    "sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/tokens.txt": {
+      "bytes": 5006,
+      "sha256": "fd2ded4050a55d2b1578870ba8697d02371980217806b7558bd0a5cc60f3ba53"
+    }
+  },
+  "scope": "Workspace-only downloads; model not installed into the application; SHA-256 values are local content pins, release has no publisher digest.",
+  "prepared_keywords": {
+    "GO FORWARD": [
+      "\u2581GO",
+      "\u2581FOR",
+      "WARD"
+    ],
+    "JARVIS": [
+      "\u2581JA",
+      "R",
+      "VI",
+      "S"
+    ],
+    "HEY JARVIS": [
+      "\u2581HE",
+      "Y",
+      "\u2581JA",
+      "R",
+      "VI",
+      "S"
+    ],
+    "HELLO WORLD": [
+      "\u2581HE",
+      "LL",
+      "O",
+      "\u2581WORLD"
+    ],
+    "HEY SIRI": [
+      "\u2581HE",
+      "Y",
+      "\u2581S",
+      "I",
+      "RI"
+    ],
+    "LIGHT UP": [
+      "\u2581",
+      "L",
+      "IGHT",
+      "\u2581UP"
+    ],
+    "LOVELY CHILD": [
+      "\u2581LOVE",
+      "LY",
+      "\u2581CHI",
+      "L",
+      "D"
+    ]
+  },
+  "tokenizer": {
+    "package": "sentencepiece",
+    "version": "0.2.2",
+    "wheel": "https://files.pythonhosted.org/packages/24/b3/718847349da7b25c8220ed86d85b89080af94740b2d87a59198104ae5c51/sentencepiece-0.2.2-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "8d44b20234905ff022b7d535f79d1f823ad7670c9851cc4f03cdc34787cdb3ab",
+    "scope": "workspace-only keyword-file generation, not inference"
+  },
+  "native_backend": {
+    "sherpa_onnx": "1.13.8",
+    "platform": "Linux-7.3.0-5-cachyos-x86_64-with-glibc2.44",
+    "source": "official installed sherpa-onnx/core wheels; native libraries loaded without Python",
+    "header": {
+      "bytes": 167657,
+      "sha256": "2a1b95084be8fd1deb3228fcad2fd3f7f0258b64582f7402281ec174c7b7f4ce"
+    },
+    "c_api": {
+      "bytes": 5120672,
+      "sha256": "e50ae8bca4db52b7be04f56f8ac1502b940ca124a26fac0d48d8cef7fc9823d4"
+    },
+    "onnxruntime": {
+      "bytes": 27026609,
+      "sha256": "4b3607aebd1784b26b6f9b20e4bd974c7ab8287043e4d095cb7d2cb40b5e566e"
+    }
+  }
+}

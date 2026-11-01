@@ -4,6 +4,17 @@ use serde_json::{json, Map, Value};
 use std::env;
 
 pub async fn report() -> Value {
+    let memory = match tokio::time::timeout(
+        std::time::Duration::from_secs(2),
+        jarvis_controller::ipc::request(&json!({"op":"status"})),
+    )
+    .await
+    {
+        Ok(Ok(response)) if response["memory"].is_object() => response["memory"].clone(),
+        _ => {
+            json!({"complete":false,"error":"Service unavailable or needs restarting to provide process memory"})
+        }
+    };
     let mut tools = Map::new();
     for (name, arg) in [
         ("hyprctl", "version"),
@@ -35,7 +46,9 @@ pub async fn report() -> Value {
     }
     let settings = match config::load() {
         Ok(value) => value,
-        Err(error) => return json!({"runtime":"Rust","error":error.to_string(),"tools":tools}),
+        Err(error) => {
+            return json!({"runtime":"Rust","error":error.to_string(),"tools":tools,"memory":memory})
+        }
     };
     let model = settings["recognition"]["model_path"]
         .as_str()
@@ -55,6 +68,6 @@ pub async fn report() -> Value {
             "noise_suppression_on":settings["recognition"]["noise_suppression"],
             "denoiser_model_ready":models::root().join(models::DENOISER_NAME).is_file()},
         "settings_ui":{"runtime":"Python/GTK", "launcher":ui,"imports_checked":false},
-        "tools":tools,"note":"Dependency presence is not microphone, capture permission, or recognition verification. The Rust controller requires auto/vosk; PocketSphinx remains a Python fallback."
+        "tools":tools,"memory":memory,"note":"Dependency presence is not microphone, capture permission, or recognition verification. The Rust controller requires auto/vosk; PocketSphinx remains a Python fallback."
     })
 }

@@ -1,0 +1,226 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-26T21:59:07.006395+00:00",
+  "scope": "Single model-derived aligned-onset experiment; isolated KWS detector only",
+  "checks": {
+    "rust_default": {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "--manifest-path",
+        "native/kws-probe/Cargo.toml"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/alignment-validation/rust_default.log"
+    },
+    "rust_diagnostic": {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "--all-features",
+        "--manifest-path",
+        "native/kws-probe/Cargo.toml"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/alignment-validation/rust_diagnostic.log"
+    },
+    "format": {
+      "command": [
+        "cargo",
+        "fmt",
+        "--check",
+        "--manifest-path",
+        "native/kws-probe/Cargo.toml"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/alignment-validation/format.log"
+    },
+    "clippy": {
+      "command": [
+        "cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "--all-targets",
+        "--all-features",
+        "--manifest-path",
+        "native/kws-probe/Cargo.toml",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/alignment-validation/clippy.log"
+    },
+    "python_tests": {
+      "command": [
+        ".venv/bin/python",
+        "-m",
+        "unittest",
+        "tests.test_kws_probe",
+        "-v"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/alignment-validation/python_tests.log"
+    },
+    "python_compile": {
+      "command": [
+        ".venv/bin/python",
+        "-m",
+        "py_compile",
+        "scripts/benchmark_kws_alignment.py",
+        "tests/test_kws_probe.py"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/alignment-validation/python_compile.log"
+    },
+    "diff": {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/alignment-validation/diff.log"
+    },
+    "sdist": {
+      "command": [
+        ".venv/bin/python",
+        "-c",
+        "import setuptools.build_meta; setuptools.build_meta.build_sdist('build/memory-plan-kws/alignment-validation')"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/alignment-validation/sdist.log"
+    },
+    "final_python_compile": {
+      "command": [
+        ".venv/bin/python",
+        "-m",
+        "py_compile",
+        "scripts/benchmark_kws_alignment.py",
+        "scripts/benchmark_kws_alignment_context.py",
+        "tests/test_kws_probe.py"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/alignment-validation/final_python_compile.log"
+    },
+    "release_build": {
+      "command": [
+        "cargo",
+        "build",
+        "--release",
+        "--offline",
+        "--locked",
+        "--manifest-path",
+        "native/kws-probe/Cargo.toml"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/alignment-validation/release_build.log"
+    },
+    "final_diff": {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/alignment-validation/final_diff.log"
+    },
+    "final_sdist": {
+      "command": [
+        ".venv/bin/python",
+        "-c",
+        "import setuptools.build_meta; setuptools.build_meta.build_sdist('build/memory-plan-kws/alignment-final-package')"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/alignment-validation/final_sdist.log"
+    }
+  },
+  "complete": true,
+  "production_defaults_changed": false,
+  "real_capture_started": false,
+  "installed_service_restarted": false,
+  "full_python_suite_rerun": false,
+  "full_acoustic_acceptance": false,
+  "whole_application_acceptance": false,
+  "windows_acceptance": false,
+  "pressure_release_acceptance": false,
+  "full_duration_soak_acceptance": false,
+  "allocator_policy_adopted": false,
+  "enable_by_default": false,
+  "source_retrieval": "Official k2-fsa/sherpa-onnx v1.13.8 source through connected GitHub; installed-library build byte equivalence unverified",
+  "protocol_recorded_before_measurement": true,
+  "protocol_sha256": "a001de3d8a333741a11e44698730bab2a162b5a88ce352c174586db8ad998b0c",
+  "matrix_exit_code": 1,
+  "matrix_intended_label_gate_pass": false,
+  "matrix_strict_timing_label_identity_gate_pass": false,
+  "matrix_input_hashes_reverified": 971,
+  "aligned_accounting_cases_reverified": 313,
+  "package_inclusion_and_target_exclusion": true,
+  "candidate_source_archive_and_binaries_verified": true,
+  "binary_sha256": {
+    "jarvis-kws-probe": "3f0030314b153a89bac0c96163e668ef838850b93daf22f322929d96623bbe51",
+    "jarvis-kws-handoff-probe": "2f1843d9a6c0224219354c0b39364b9b08b553b33aabd972fad51f5fe3fa4791"
+  },
+  "source_sha256": {
+    "native/kws-probe/Cargo.toml": "fa942fdfd34edc52c9fd09da0c911ef7845a67456a26bf09a410288ccf6bf8ee",
+    "native/kws-probe/build.rs": "e7b498f427aebefa2431e913e8d4f6775b71f1b070d3b9c7cc2ddc6dcbf69f7d",
+    "native/kws-probe/shim.c": "3a9436845091f770cd77c61cf3aea920e641212337151da36c5bb57375e91b48",
+    "native/kws-probe/Cargo.lock": "15acd1ee12bebc87b023d18a74b426d56a4195cbd214345de75612c1146491da",
+    "native/kws-probe/src/main.rs": "08cf15c2b81eed83b71100f5ac5b225e1a0a5e06825664c3d34366ea072c94f9",
+    "native/kws-probe/src/gate.rs": "2f0f5affc5b33af8d14b95595eb36afe71de6f4b6371fa6b6f9dc7ffc5e9685a",
+    "native/kws-probe/src/allocation.rs": "5c2dc32f08db730f90b8fe19e47079bc465ca2c8a1c766f9537a7c40d18e6283",
+    "native/kws-probe/vendor/c-api.h": "2a1b95084be8fd1deb3228fcad2fd3f7f0258b64582f7402281ec174c7b7f4ce",
+    "native/kws-probe/vendor/LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "native/kws-probe/vendor/README.md": "e9b5e996cbb2170769cf0eb96c400ad0cc7e4082e065bcb9c8ef4cf6b3c881ee",
+    "native/kws-probe/src/bin/jarvis-kws-handoff-probe.rs": "c45bb2ff9d2f4ed17f0b7175a03d65c02c112ade97d065a4ffbae68ca70312f5",
+    "native/kws-probe/src/bin/handoff/continuous.rs": "5df5ca48769736e98a0f4853f473f8c4ea11315245151bb3271f51a226b3fb6c",
+    "native/kws-probe/src/bin/handoff/reader.rs": "61e687a6e6c7a9014d74f7b276e1016cb085c6352e70d9998f80172cd91e93b2",
+    "scripts/benchmark_kws_alignment.py": "df41c6af768826a90af893c083f8f5fd166ed687d2bc1b28250eb6378681a9e1",
+    "tests/test_kws_probe.py": "61af41a54d0d74ff7be44323c63d1282626a7358608acec839389dbff40803b4",
+    "scripts/benchmark_kws_alignment_context.py": "35208f3535fa9a780586a2f52377d9c39c748fe747f2903bc7d0839ed5579ee5"
+  },
+  "keyword_sha256": {
+    "surrogate-keywords.txt": "7b3ba4dc555f16a3f4a8bfb11fd49369e140397ceaf74465a2aa8c4c5e27c4e5",
+    "published-keywords.txt": "b422de24b9de40e079fd469ac4c21b9fa5af06fbecc36d28b6cf51e53597c3e1",
+    "names-keywords.txt": "1512ca29cb37ce950c51005c8a9c6d8b3bccfe42730c51e2efaebf591a4de32c"
+  },
+  "evidence_sha256": {
+    "kws-alignment-2026-10-27.json": "935dfb1354b9967564b91c99710df3828960b8411fd30e4ee7fa6a71370aaff6",
+    "kws-alignment-provenance-2026-10-27.json": "96a0ded68738ae90a7e139e7f6debf4516812c1ddb2e420967d5a6bbb5328152",
+    "kws-alignment-v2-2026-10-27.json": "a82eadb066433567e0bdb79ed2cb9afead2310b269f3df771d947475888f11af",
+    "kws-alignment-analysis-2026-10-27.json": "db8fdf76f449635191643a2b5f67b2e78b6610560e7648eca4c6d905e08450b3",
+    "kws-alignment-context-2026-10-27.json": "7ada0d77240b93b8729a8ce1178319265bcd9b7f040d340ec233571f27ba5cfa"
+  },
+  "rust_default_unit_tests_passed": 18,
+  "rust_diagnostic_unit_tests_passed": 18,
+  "python_tests_passed": 10,
+  "python_tests_skipped": 0,
+  "all_experiment_processes_exited": true,
+  "baseline_phase_misses": 35,
+  "legacy_phase_misses": 0,
+  "aligned_phase_misses": 1,
+  "unchanged_default_focused_cases": 19,
+  "aligned_focused_cases": 19,
+  "paced_fresh_workers_per_arm": 3,
+  "prior_rms_0_005_endpoint_gate_pass": false,
+  "prior_small_en_memory_gate_pass": false,
+  "full_duration_plateau_established": false,
+  "context_diagnostic_exit_code": 0,
+  "context_rows": 6,
+  "context_prediction_reproduced": true,
+  "context_recognition_gate_pass": false,
+  "documentation_sha256": {
+    "docs/kws-alignment.md": "974b0ae0910ffed23ae6347fbbb714d025e97c294fa74771b83d6e2bae500d5a",
+    "docs/memory-plan.md": "c1ac79800971c46bbe7f088eae0d70b1994589550fcf7561408f8d87a79667c8",
+    "docs/memory-plan-handoff.md": "8f34fb0d979556b6ae2b22d983866d6f31e3fa646b50a05aa911f5afdf3fb97e",
+    "docs/README.md": "5aa4ec507b623b678437d67fc3802710e4fa7a69cd9dee5b52266568de22feca"
+  },
+  "final_package_sha256": "b886556590e678c2b61ee6ef4d6f93af3860d85eac19d9a6b290a15f82450c4e",
+  "platform": "Linux-7.3.0-5-cachyos-x86_64-with-glibc2.44",
+  "final_verified_at": "2026-10-26T22:02:44.619608+00:00"
+}

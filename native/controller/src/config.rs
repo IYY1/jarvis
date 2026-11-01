@@ -242,6 +242,18 @@ pub fn validate(data: &Value) -> Result<Value> {
         "Choose H.264, HEVC or AV1 recording encoding",
     )?;
     choices(
+        &c["replay"]["storage"],
+        &["ram", "disk"],
+        "Replay storage must be ram or disk",
+    )?;
+    if !c["replay"]["max_mb"]
+        .as_u64()
+        .is_some_and(|n| (64..=16384).contains(&n))
+    {
+        return err("Replay budget must be 64–16384 MiB");
+    }
+    text(&c["replay"]["buffer_dir"], 4096, "replay buffer directory")?;
+    choices(
         &r["rate_control"],
         &["quality", "bitrate"],
         "Choose quality or bitrate control",

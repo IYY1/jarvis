@@ -10,21 +10,23 @@ window can close while Jarvis keeps listening in the background.
 
 Jarvis is early software. Recognition depends on your voice, microphone and room.
 
-## What's new in 0.2.0
+## What's new in 0.3.0
 
-- **Windows 10/11**: installer and portable ZIP with the models and FFmpeg included.
-- **Brightness by voice**: name your monitors, then say “dim Samsung” or “set KTC brightness to 60 percent”.
-- **Your own wake names and launch words**: answer to “Alfred” too, or say “watch video” instead of “open video”.
-- **Lighter on Linux**: Whisper and noise suppression now run in Rust and load only after the wake word, so Jarvis waits in 156 MiB instead of 469 MiB.
-- **More recording choices**: GPU H.264, HEVC or AV1, size or quality budgets and an FPS slider.
-- **One-line install on Arch Linux.**
+- **Much lighter on Windows**: speech now runs in the same native Rust worker as
+  on Linux, so Jarvis waits for its name in about 165 MiB instead of about
+  600 MiB ([measurements](docs/windows-memory.md)).
+- **One setup file for Windows** with a desktop-shortcut and start-at-sign-in
+  choice, clean in-place upgrades, and an uninstaller that can keep or delete
+  your settings.
+- **Fixed**: Jarvis could hang on shutdown while the settings window or the
+  Waybar module was open.
+- **Removed**: monitor brightness by voice. Old settings files still load.
 
 See the [changelog](CHANGELOG.md) for everything else.
 
 ## Features
 
 - Open or focus installed applications, with exact voice aliases.
-- Set monitor brightness by name, with a main monitor and a dim/brighten step.
 - Switch workspaces, move a window, set fullscreen and adjust volume.
 - Start and stop preconfigured screen recording, with automatic HDR detection.
 - Optional instant replay: the last two minutes of screen, game sound and
@@ -72,11 +74,13 @@ then `bash install.sh`.
 
 ### Windows 10/11
 
-Download `Jarvis-0.2.0-Windows-x64-Setup.exe` or the portable ZIP from the
-[latest release](https://github.com/abdullaho21/jarvis/releases/latest). Both
-include the models and FFmpeg and need no administrator rights. The Windows
-build has passed its checks under Wine but not yet on real Windows hardware;
-see [Windows setup](docs/windows.md) for details and known limits.
+Download `Jarvis-0.3.0-Windows-x64-Setup.exe` from the
+[releases page](https://github.com/abdullaho21/jarvis/releases) and run it. It
+installs for your account only, with no administrator rights, downloads or
+restart, and upgrades an earlier Jarvis in place. A portable ZIP is also
+available. The installer passed its install, upgrade, voice, restart and
+uninstall checks on Windows 10 in a virtual machine, not yet on physical
+hardware; see [Windows setup](docs/windows.md) for details and known limits.
 
 ### By hand from a checkout
 
@@ -127,7 +131,6 @@ fallback recognizes less accurately.
 | Applications | “open Firefox”, “launch Dolphin”, “switch to Steam” |
 | Workspaces | “go to workspace three”, “move this window to workspace two” |
 | Fullscreen | “make this window fullscreen”, “exit fullscreen” |
-| Brightness | “set KTC brightness to sixty seven percent”, “dim Samsung”, “brighten main” |
 | Volume | “turn the volume down”, “mute volume”, “turn the sound back on” |
 | Recording | “start recording”, “stop recording”, “open the video recorder” |
 | Instant replay | “clip that”, “save replay”, “start replay”, “stop replay” |
@@ -149,19 +152,6 @@ launch word is ignored. A wake name (or Listen once) is still required.
 An alias selects the application; it never adds an executable. Close matches
 must clearly beat other commands. If both native and Flatpak copies exist,
 Jarvis prefers the native one; use an alias to pick the other.
-
-### Brightness
-
-In **Displays**, refresh monitors, give each one a name and optional aliases
-(for example `KTC` and `k t c`), choose your main monitor and save. Dim and
-brighten without a number use the saved step, initially 10 points. Percentages
-are whole numbers from 0 to 100, and monitor names are never guessed.
-
-On Linux this needs `ddcutil`, DDC/CI enabled in the monitor's menu, and access
-to the monitor's `/dev/i2c-*` device. Names follow the monitor's EDID identity,
-so they survive bus reordering; monitors without a unique serial are tied to
-their current connection. On Windows, laptops use WMI and external monitors
-use DDC/CI.
 
 ## Background startup and recording
 
@@ -212,7 +202,8 @@ Python:
 | [Command-line client](docs/rust-cli.md) | `scripts/build_cli.py --test` | `MURMUR_CLI=python` selects Python |
 | [Background controller](docs/rust-controller.md) | `scripts/build_controller.py` | Opt in with `MURMUR_CONTROLLER=rust` |
 
-The settings window and Windows build use Python. Tests and checks:
+The settings window and the Windows service use Python; Windows releases
+ship only the Rust voice worker. Tests and checks:
 
 ```sh
 .venv/bin/python -m unittest discover -s tests -v
@@ -229,7 +220,7 @@ src/murmur/       Voice engine, service, desktop adapters and GTK UI
 native/           Rust voice worker, Whisper, denoiser, controller and CLI
 tests/            Policy, lifecycle, model and regression tests
 scripts/          Installer, build scripts, integration checks and benchmarks
-packaging/        Windows installer and PyInstaller files
+packaging/        Windows installer, PyInstaller files and the build container
 examples/         Portable configuration, Hyprland and Waybar examples
 docs/             Architecture, setup, verification and review notes
 docs/benchmarks/  Raw measurements, with workload boundaries

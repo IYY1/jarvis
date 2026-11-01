@@ -8,6 +8,19 @@ permissions:
   contents: read
 
 jobs:
+  kws-probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: rustup toolchain install stable --profile minimal
+      # No inference libraries, audio or models are downloaded for this probe.
+      - run: cargo +stable test --manifest-path native/kws-probe/Cargo.toml --locked
+      - run: cargo +stable build --release --manifest-path native/kws-probe/Cargo.toml --locked
+      - run: python3 -m unittest tests.test_kws_probe -v
+
   windows-policy:
     runs-on: windows-2022
     timeout-minutes: 10
@@ -21,6 +34,15 @@ jobs:
       - run: python -m pip install -e '.[windows]'
       - run: python -m compileall -q src scripts
       - run: python -m unittest tests.test_windows -v
+      - run: python -m unittest tests.test_process_memory -v
+      - run: python -m unittest tests.test_voice_upgrade.FakeVoskEngineTests -v
+      - run: rustup toolchain install stable --profile minimal
+      - run: python scripts/build_replay_store.py --test
+        env:
+          RUSTUP_TOOLCHAIN: stable
+      - run: python -m unittest tests.test_replay_store -v
+      # The Windows release voice worker: WASAPI input, paced test capture, matching.
+      - run: cargo +stable test --release --locked --manifest-path native/voice-worker/Cargo.toml
 
   test:
     runs-on: ubuntu-24.04
@@ -75,6 +97,10 @@ jobs:
       - run: python scripts/build_cli.py --test
         env:
           RUSTUP_TOOLCHAIN: stable
+      - run: python scripts/build_replay_store.py --test
+        env:
+          RUSTUP_TOOLCHAIN: stable
+      - run: python -m unittest tests.test_replay_store -v
       - run: python -m unittest tests.test_rust_controller tests.test_rust_cli -v
 
   package:

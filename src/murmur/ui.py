@@ -76,7 +76,7 @@ def _button(text: str, callback: Callable, css: str = "") -> Any:
     return widget
 
 
-PAGES = {"dashboard", "commands", "applications", "recording", "clips", "voice", "privacy", "displays"}
+PAGES = {"dashboard", "commands", "applications", "recording", "clips", "voice", "privacy"}
 
 
 class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
@@ -92,6 +92,8 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self._watch_stop = threading.Event()
         self._watch_thread: threading.Thread | None = None
         self._command_rows: list[tuple[Any, str]] = []
+        self._command_data: list[dict] = []
+        self._command_page = 0
         self._devices: list[dict] = []
         self._monitors: list[dict] = []
         self._recording_devices: list[dict] = []
@@ -154,7 +156,6 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self._dashboard()
         self._commands_page()
         self._applications_page()
-        self._displays_page()
         self._recording_page()
         self._clips_page()
         self._voice_page()
@@ -180,7 +181,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         scroller.set_child(body)
         self.stack.add_titled(scroller, name, {
             "dashboard": "Overview", "commands": "Commands", "applications": "Applications", "clips": "Clips",
-            "displays": "Displays", "recording": "Recorder", "voice": "Voice & microphone", "privacy": "Privacy & startup",
+            "recording": "Recorder", "voice": "Voice & microphone", "privacy": "Privacy & startup",
         }[name])
         return body
 
@@ -279,6 +280,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
 
         ideas = self._card("Small phrases. Useful actions.", "After activation, try one of the supported commands.")
         for phrase, detail in [("“Open Firefox”", "Find and launch an installed app"),
+                               ("“Close Firefox”", "Close the app's windows normally"),
                                ("“Go to workspace three”", "Move around Hyprland"),
                                ("“Start recording”", "Capture without leaving your game")]:
             line = _box(4)
@@ -297,6 +299,14 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         body.append(self.command_search)
         self.command_list = _box(12)
         body.append(self.command_list)
+        navigation = _box(8, True)
+        self.command_previous = _button("Previous", lambda: self._change_command_page(-1))
+        self.command_next = _button("Next", lambda: self._change_command_page(1))
+        self.command_count = _label("", "caption")
+        navigation.append(self.command_previous)
+        navigation.append(self.command_count)
+        navigation.append(self.command_next)
+        body.append(navigation)
         custom = self._card("Your command shortcuts", "A shortcut maps a whole phrase to a supported command. No shell commands are accepted.")
         self.phrase_list = _box(8)
         custom.append(self.phrase_list)
@@ -312,7 +322,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         body.append(custom)
 
     def _applications_page(self) -> None:
-        body = self._page("applications", "Give your apps familiar names.", "Jarvis discovers your installed desktop applications. Aliases are exact names you can say.")
+        body = self._page("applications", "Give your apps familiar names.", "Open, focus or close your installed desktop applications. Aliases work with all three commands.")
         self.app_search = Gtk.SearchEntry()
         self.app_search.set_placeholder_text("Search installed applications")
         self.app_search.connect("search-changed", lambda _entry: self._render_apps())
@@ -342,90 +352,6 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         aliases.append(_button("Add application alias", self._add_alias))
         body.append(aliases)
 
-    def _displays_page(self) -> None:
-        body = self._page("displays", "Brightness by name.", "Name each monitor, then say ‘Alfred, set KTC brightness to sixty seven percent’ or ‘Jarvis, dim Samsung’.")
-        card = self._card("Your monitors", "Choose a name and optional aliases for each display. Save names before using voice commands or Apply brightness.")
-        self.display_help = _label("Refresh to find monitors with DDC/CI brightness controls.", "caption")
-        card.append(self.display_help)
-        card.append(_button("Refresh monitors", self._refresh_displays))
-        self.display_list = _box(16)
-        self._brightness_monitors = []
-        self._display_editors = {}
-        card.append(self.display_list)
-        self.brightness_step = self._spin(1, 100, 1)
-        self.brightness_step.set_value(10)
-        self._row(card, "Brighten / dim step (%)", self.brightness_step, "Used when you do not specify an absolute percentage.")
-        card.append(_button("Save monitor names", self._save_displays, "primary"))
-        body.append(card)
-
-    def _refresh_displays(self) -> None:
-        self.display_help.set_text("Looking for monitors… You can keep using the other pages.")
-        self._work(lambda: client.request("brightness_monitors"), self._got_displays)
-
-    def _got_displays(self, response: dict) -> None:
-        self._brightness_monitors = response.get("monitors", []) if response.get("ok") else []
-        self.display_help.set_text("Name your displays below. Enable DDC/CI in each monitor’s menu." if response.get("ok") else str(response.get("error", "Could not discover monitors")))
-        self._render_displays()
-
-    def _render_displays(self) -> None:
-        self._clear(self.display_list)
-        self._display_editors = {}
-        settings = self.config.get("brightness", {"monitors": {}, "default": "", "step": 10})
-        self.brightness_step.set_value(settings["step"])
-        found = {m["id"]: m for m in self._brightness_monitors}
-        for identity in dict.fromkeys([*settings["monitors"], *found]):
-            monitor = found.get(identity, {})
-            saved = settings["monitors"].get(identity, {})
-            row = self._card(str(monitor.get("label", saved.get("name", identity))), "Connected" if monitor else "Saved monitor — disconnected or discovery unavailable")
-            name = self._entry("Name, e.g. KTC or Samsung; blank = do not configure")
-            name.set_text(saved.get("name", ""))
-            aliases = self._entry("Other names, separated by commas; e.g. k t c")
-            aliases.set_text(", ".join(saved.get("aliases", [])))
-            default = Gtk.CheckButton(label="Use for ‘dim’, ‘brighten’, and ‘main’")
-            default.set_active(settings["default"] == identity)
-            default.connect("toggled", lambda control, key=identity: self._display_default_changed(control, key))
-            self._row(row, "Voice name", name)
-            self._row(row, "Other names", aliases)
-            row.append(default)
-            if monitor and not monitor.get("stable", True):
-                row.append(_label("No unique serial reported: this name is tied to the current connection. Check it after reconnecting.", "caption"))
-            if monitor.get("error") or monitor.get("ambiguous"):
-                row.append(_label(str(monitor.get("error", "Duplicate monitor identity; brightness cannot be changed safely.")), "caption"))
-            percent = self._spin(0, 100, 1)
-            percent.set_value(monitor.get("percent", 50))
-            self._row(row, "Brightness (%)", percent)
-            apply = _button("Apply brightness", lambda key=identity, control=percent: self._apply_brightness(key, control.get_value_as_int()))
-            apply.set_sensitive(bool(monitor) and not monitor.get("error") and not monitor.get("ambiguous"))
-            row.append(apply)
-            self._display_editors[identity] = (name, aliases, default)
-            self.display_list.append(row)
-        if not self._display_editors:
-            self.display_list.append(_label("No monitors found. Install ddcutil, enable DDC/CI, and check access to /dev/i2c-*.", "caption"))
-
-    def _display_default_changed(self, control: Any, identity: str) -> None:
-        if control.get_active():
-            for key, (_, _, other) in self._display_editors.items():
-                if key != identity:
-                    other.set_active(False)
-
-    def _save_displays(self) -> None:
-        monitors, default = {}, ""
-        for identity, (name, aliases, primary) in self._display_editors.items():
-            if name.get_text().strip():
-                monitors[identity] = {"name": name.get_text().strip(), "aliases": [a.strip() for a in aliases.get_text().split(",") if a.strip()]}
-                if primary.get_active():
-                    default = identity
-        self._save({"brightness": {"monitors": monitors, "default": default, "step": self.brightness_step.get_value_as_int()}}, "Monitor names saved. Voice brightness controls are ready.", replace_keys=("brightness",))
-
-    def _apply_brightness(self, identity: str, percent: int) -> None:
-        saved = self.config.get("brightness", {}).get("monitors", {}).get(identity)
-        if not saved:
-            self._notice("Give this monitor a name and save monitor names first.", True)
-            return
-        # Raw names such as "LG-27" or "Dell 24.5" read as negative or decimal percentages.
-        phrase = f"set {normalize(saved['name'])} brightness to {percent} percent"
-        self._work(lambda: client.request("execute", phrase=phrase), lambda result: self._notice(str(result.get("message", result.get("error", "Brightness updated"))), not result.get("ok", False)))
-
     def _recording_page(self) -> None:
         body = self._page("recording", "Keep the moment.", "Set up once, then start and stop recording with your voice.")
         live = self._card("Capture status")
@@ -441,8 +367,9 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         controls.append(self.record_stop)
         live.append(controls)
         body.append(live)
-        replay = self._card("Instant replay", "Keeps the last moments of your screen and sound in memory with gpu-screen-recorder. "
-                            "Nothing is written until you save, here or by saying “clip that”. Uses the display and folder below.")
+        replay = self._card("Instant replay", "Keeps recent screen and sound using the display below. "
+                            "RAM writes video only when you save. Choosing Disk writes unsaved screen and sound continuously; "
+                            "it can survive a crash until cleanup on next start. Disk writes follow bitrate (roughly 1–10 GB/hour).")
         self.replay_status = _label("Replay off", "state-title")
         self.replay_detail = _label("Start replay to keep the last moments ready to save.", "caption")
         self.replay_detail.set_selectable(True)
@@ -457,6 +384,15 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         replay.append(replay_controls)
         self.replay_seconds = self._spin(10, 600, 10)
         self._row(replay, "Replay length (seconds)", self.replay_seconds)
+        self.replay_storage = Gtk.DropDown.new_from_strings(["RAM", "Disk (continuous writes)"])
+        self._row(replay, "Replay storage", self.replay_storage, "Disk requires the Rust controller and a real disk; tmpfs is refused.")
+        self.replay_max_mb = self._spin(64, 16384, 64)
+        self._row(replay, "Disk buffer budget (MiB)", self.replay_max_mb,
+                  "Disk only: replay stops when the buffer reaches this size, checked every 250 ms. At least 512 MiB, "
+                  "because gpu-screen-recorder writes 256 MiB buffer files. RAM replay is not capped on Linux.")
+        self.replay_storage.connect("notify::selected", lambda *_: self._replay_storage_changed())
+        self.replay_buffer_dir = self._entry("Default private app-data directory")
+        self._row(replay, "Private disk-buffer directory", self.replay_buffer_dir, "Optional dedicated directory. Unsaved buffers are deleted on stop and stale buffers on next start.")
         self.replay_game = Gtk.Switch()
         self._row(replay, "Game sound", self.replay_game, "Everything you hear, from your default output.")
         self.replay_mic = Gtk.Switch()
@@ -763,13 +699,15 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
             self._load_settings()
         self._apply_devices(result.get("devices", {}), result.get("monitors", {}), result.get("recording_devices", {}))
         self._apps = result.get("apps", {}).get("apps", [])
+        pairs = {row["app_id"]: row["examples"] for row in result.get("commands", {}).get("applications", [])}
+        for app in self._apps:
+            app["voice_commands"] = pairs.get(app["id"], [])
         self._grammar_signature = None
         self.app_grammar_notice.set_visible(False)
         self.voice_grammar_notice.set_visible(False)
         self._render_apps()
         self._render_aliases()
-        self._render_displays()
-        self._render_commands(result.get("commands", {}).get("commands", []))
+        self._render_commands([*result.get("commands", {}).get("commands", []), *result.get("commands", {}).get("applications", [])])
         self._render_phrases()
         self._set_status(result)
         self._notice("Connected to the local service. Settings are saved only when you choose Save.")
@@ -953,6 +891,9 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.sound_feedback.set_active(bool(recorder.get("sound_feedback", False)))
         replay = self.config.get("replay", {})
         self.replay_seconds.set_value(float(replay.get("seconds", 120)))
+        self.replay_storage.set_selected(1 if replay.get("storage", "ram") == "disk" else 0)
+        self.replay_max_mb.set_value(float(replay.get("max_mb", 256)))
+        self.replay_buffer_dir.set_text(replay.get("buffer_dir", ""))
         self.replay_autostart.set_active(bool(replay.get("autostart", False)))
         self.replay_game.set_active(bool(replay.get("game_audio", True)))
         self.replay_mic.set_active(bool(replay.get("microphone", True)))
@@ -1028,24 +969,37 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
             container.remove(child)
 
     def _render_commands(self, commands: list) -> None:
-        self._clear(self.command_list)
-        self._command_rows = []
-        for command in commands:
-            examples = command.get("examples", [])
-            card = self._card(str(command.get("title", "Command")), str(command.get("category", "Desktop")))
-            for example in examples:
-                card.append(_label(f"“{example}”", "example"))
-            self.command_list.append(card)
-            search = " ".join([str(command.get("title", "")), str(command.get("category", "")), *map(str, examples)]).casefold()
-            self._command_rows.append((card, search))
-        if not commands:
-            self.command_list.append(_label("Connect to the service to load the supported command reference.", "caption"))
-        self._filter_commands()
+        self._command_data = commands
+        self._command_page = 0
+        self._render_command_page()
 
     def _filter_commands(self, _entry: Any = None) -> None:
+        self._command_page = 0
+        self._render_command_page()
+
+    def _change_command_page(self, delta: int) -> None:
+        self._command_page += delta
+        self._render_command_page()
+
+    def _render_command_page(self) -> None:
+        self._clear(self.command_list)
+        self._command_rows = []
         needle = self.command_search.get_text().casefold().strip()
-        for widget, haystack in self._command_rows:
-            widget.set_visible(not needle or needle in haystack)
+        matches = [command for command in self._command_data if not needle or needle in " ".join([
+            str(command.get("title", "")), str(command.get("category", "")),
+            str(command.get("app_id", "")), *map(str, command.get("examples", []))]).casefold()]
+        self._command_page = max(0, min(self._command_page, max(0, (len(matches) - 1) // 30)))
+        start = self._command_page * 30
+        for command in matches[start:start + 30]:
+            card = self._card(str(command.get("title", "Command")), str(command.get("category", "Desktop")))
+            for example in command.get("examples", []):
+                card.append(_label(f"“{example}”", "example"))
+            self.command_list.append(card)
+        self.command_count.set_text(f"{start + 1 if matches else 0}–{min(start + 30, len(matches))} of {len(matches)} entries")
+        self.command_previous.set_sensitive(self._command_page > 0)
+        self.command_next.set_sensitive(start + 30 < len(matches))
+        if not matches:
+            self.command_list.append(_label("No matching commands." if self._command_data else "Connect to load commands for every installed app.", "caption"))
 
     def _render_apps(self) -> None:
         self._clear(self.app_list)
@@ -1062,6 +1016,8 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
                 aliases = app.get("voice_aliases", [])
                 detail = f"The direct name is unavailable. Say “Open {aliases[0]}” using your alias." if aliases else "This name is outside the speech dictionary. Add an alias using common English words."
                 row.append(_label(detail, "caption"))
+            for phrase in app.get("voice_commands", []):
+                row.append(_label(f"“{phrase}”", "example"))
             row.append(self._voice_name_editor(app))
             self.app_list.append(row)
         if len(visible) > 30:
@@ -1172,8 +1128,6 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
             self._render_aliases()
             self._render_phrases()
             self._render_apps()
-            if "brightness" in patch:
-                self._render_displays()
             if patch.get("privacy", {}).get("onboarded"):
                 self.onboard_button.set_label("Privacy setup complete")
                 self.onboard_button.set_sensitive(False)
@@ -1234,8 +1188,16 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
             "codec": CODECS[self.codec.get_selected()], "quality": self.quality.get_value_as_int()},
             "replay": {"seconds": self.replay_seconds.get_value_as_int(), "autostart": self.replay_autostart.get_active(),
                        "game_audio": self.replay_game.get_active(), "microphone": self.replay_mic.get_active(),
-                       "sound": self.replay_sound.get_active()}},
+                       "sound": self.replay_sound.get_active(),
+                       "storage": "disk" if self.replay_storage.get_selected() == 1 else "ram",
+                       "max_mb": self.replay_max_mb.get_value_as_int(), "buffer_dir": self.replay_buffer_dir.get_text().strip()}},
             "Recorder settings saved. Start recording explicitly, or say “Start recording”.")
+
+    def _replay_storage_changed(self) -> None:
+        # Disk needs room for gpu-screen-recorder's 256 MiB files. Raise, never
+        # lower, so a larger saved budget is kept.
+        if self.replay_storage.get_selected() == 1:
+            self.replay_max_mb.set_value(max(512, self.replay_max_mb.get_value()))
 
     def _encoding_changed(self) -> None:
         budget = self.rate_control.get_selected() == 1

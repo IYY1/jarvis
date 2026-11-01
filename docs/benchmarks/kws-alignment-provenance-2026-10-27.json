@@ -1,0 +1,37 @@
+{
+  "scope": "Source/version and metadata basis of the single aligned-onset experiment",
+  "installed_library_reported_version": "1.13.8",
+  "upstream_ref": "v1.13.8",
+  "upstream_sources": [
+    {
+      "url": "https://github.com/k2-fsa/sherpa-onnx/blob/v1.13.8/sherpa-onnx/csrc/keyword-spotter-transducer-impl.h",
+      "git_blob_sha": "c8cb18d0787e24e15fa0524f5155841cf5ef706e"
+    },
+    {
+      "url": "https://github.com/k2-fsa/sherpa-onnx/blob/v1.13.8/sherpa-onnx/csrc/online-zipformer2-transducer-model.h",
+      "git_blob_sha": "b072b73d087ee3a1ff7170a6383743e991d5b64a"
+    },
+    {
+      "url": "https://github.com/k2-fsa/sherpa-onnx/blob/v1.13.8/sherpa-onnx/csrc/online-stream.cc",
+      "git_blob_sha": "91e80b4303800869ae6389d7437fe2bef073eb3a"
+    },
+    {
+      "url": "https://github.com/k2-fsa/sherpa-onnx/blob/v1.13.8/sherpa-onnx/csrc/features.cc",
+      "git_blob_sha": "9942e923a0d396ed28f2754538c2efef6066f948"
+    }
+  ],
+  "model_metadata": {
+    "model_type": "zipformer2",
+    "T": "45",
+    "decode_chunk_len": "32",
+    "left_context_len": "64,32,16,8,16,32"
+  },
+  "metadata_reader": "Separate metadata-only ONNX Runtime 1.31 diagnostic process; not the KWS inference runtime",
+  "native_model_shift_ms": 320,
+  "feature_shift_ms": 10,
+  "input_chunk_ms": 30,
+  "phase_steps": 32,
+  "protocol_sha256": "a001de3d8a333741a11e44698730bab2a162b5a88ce352c174586db8ad998b0c",
+  "source_build_byte_equivalence_verified": false,
+  "production_defaults_changed": false
+}

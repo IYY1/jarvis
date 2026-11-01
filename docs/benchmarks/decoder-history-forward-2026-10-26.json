@@ -1,0 +1,2396 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-26T07:08:57.006017+00:00",
+  "platform": "Linux-7.3.0-5-cachyos-x86_64-with-glibc2.44",
+  "scope": "Attribute Vosk history to one decoder at a time with the Rust offline probe.\n\nAll three production decoders stay resident. One consumes repeated fixture PCM\nwithout real-time pacing or an energy gate, with a ten-second utterance bound.\nWhisper, capture and actions never run. Finalization is an experiment, not a\nrecognition-quality result or a change to the normal worker reset policy.\n",
+  "fixture_sha256": "f15c60ec54059d8b66e410d0064945a0b0a04ea56e1ddca1958e493c0cf70e71",
+  "binary_sha256": "29fb92b24352718effd081bc43ec2c635be11f3f51c4cee4ab1b8ba29752a61d",
+  "seconds_per_cycle": 42,
+  "runs": [
+    {
+      "decoder": "free",
+      "policy": "reset",
+      "reverse_fixture": false,
+      "ready": {
+        "event": "ready",
+        "memory": {
+          "rss_mib": 160.921875,
+          "peak_rss_mib": 160.9765625,
+          "pss_mib": 155.64453125
+        }
+      },
+      "cycles": [
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 1,
+          "decoded_seconds": 42.0,
+          "elapsed_seconds": 1.006130588,
+          "cpu_seconds": 0.99780753,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 184.91015625,
+            "peak_rss_mib": 184.91015625,
+            "pss_mib": 179.591796875
+          },
+          "memory": {
+            "rss_mib": 183.03125,
+            "peak_rss_mib": 183.93359375,
+            "pss_mib": 177.712890625
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 2,
+          "decoded_seconds": 84.0,
+          "elapsed_seconds": 1.701958683,
+          "cpu_seconds": 1.687052535,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 187.86328125,
+            "peak_rss_mib": 187.86328125,
+            "pss_mib": 182.544921875
+          },
+          "memory": {
+            "rss_mib": 186.06640625,
+            "peak_rss_mib": 186.796875,
+            "pss_mib": 180.748046875
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 3,
+          "decoded_seconds": 126.0,
+          "elapsed_seconds": 2.399834165,
+          "cpu_seconds": 2.377291241,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.65234375,
+            "peak_rss_mib": 190.65234375,
+            "pss_mib": 185.333984375
+          },
+          "memory": {
+            "rss_mib": 188.88671875,
+            "peak_rss_mib": 189.62109375,
+            "pss_mib": 183.568359375
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 4,
+          "decoded_seconds": 168.0,
+          "elapsed_seconds": 3.105133883,
+          "cpu_seconds": 3.0747169640000003,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 192.7734375,
+            "peak_rss_mib": 192.7734375,
+            "pss_mib": 187.455078125
+          },
+          "memory": {
+            "rss_mib": 191.66796875,
+            "peak_rss_mib": 191.8203125,
+            "pss_mib": 186.349609375
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 5,
+          "decoded_seconds": 210.0,
+          "elapsed_seconds": 3.814497346,
+          "cpu_seconds": 3.778781253,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 196.1796875,
+            "peak_rss_mib": 196.1796875,
+            "pss_mib": 190.861328125
+          },
+          "memory": {
+            "rss_mib": 194.70703125,
+            "peak_rss_mib": 195.38671875,
+            "pss_mib": 189.388671875
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 6,
+          "decoded_seconds": 252.0,
+          "elapsed_seconds": 4.5275536800000005,
+          "cpu_seconds": 4.483794731,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 198.453125,
+            "peak_rss_mib": 198.453125,
+            "pss_mib": 193.134765625
+          },
+          "memory": {
+            "rss_mib": 197.5,
+            "peak_rss_mib": 197.57421875,
+            "pss_mib": 192.181640625
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 7,
+          "decoded_seconds": 294.0,
+          "elapsed_seconds": 5.26589127,
+          "cpu_seconds": 5.20862785,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 201.7578125,
+            "peak_rss_mib": 201.7578125,
+            "pss_mib": 196.439453125
+          },
+          "memory": {
+            "rss_mib": 200.3671875,
+            "peak_rss_mib": 200.76953125,
+            "pss_mib": 195.048828125
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 8,
+          "decoded_seconds": 336.0,
+          "elapsed_seconds": 5.989254849,
+          "cpu_seconds": 5.924173231,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 204.546875,
+            "peak_rss_mib": 204.546875,
+            "pss_mib": 199.228515625
+          },
+          "memory": {
+            "rss_mib": 203.140625,
+            "peak_rss_mib": 203.484375,
+            "pss_mib": 197.822265625
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 9,
+          "decoded_seconds": 378.0,
+          "elapsed_seconds": 6.719184691,
+          "cpu_seconds": 6.6438230769999995,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 207.3203125,
+            "peak_rss_mib": 207.3203125,
+            "pss_mib": 202.001953125
+          },
+          "memory": {
+            "rss_mib": 205.88671875,
+            "peak_rss_mib": 206.09765625,
+            "pss_mib": 200.568359375
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 10,
+          "decoded_seconds": 420.0,
+          "elapsed_seconds": 7.48414201,
+          "cpu_seconds": 7.396823678,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 209.58984375,
+            "peak_rss_mib": 209.58984375,
+            "pss_mib": 204.271484375
+          },
+          "memory": {
+            "rss_mib": 208.6796875,
+            "peak_rss_mib": 208.6796875,
+            "pss_mib": 203.361328125
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 11,
+          "decoded_seconds": 462.0,
+          "elapsed_seconds": 8.23234061,
+          "cpu_seconds": 8.138674003,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 212.91015625,
+            "peak_rss_mib": 212.91015625,
+            "pss_mib": 207.591796875
+          },
+          "memory": {
+            "rss_mib": 211.5234375,
+            "peak_rss_mib": 211.76953125,
+            "pss_mib": 206.205078125
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 12,
+          "decoded_seconds": 504.0,
+          "elapsed_seconds": 8.982661418,
+          "cpu_seconds": 8.878723196,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 216.15234375,
+            "peak_rss_mib": 216.15234375,
+            "pss_mib": 210.833984375
+          },
+          "memory": {
+            "rss_mib": 214.359375,
+            "peak_rss_mib": 214.9296875,
+            "pss_mib": 209.041015625
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 13,
+          "decoded_seconds": 546.0,
+          "elapsed_seconds": 9.745396932,
+          "cpu_seconds": 9.638335349,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 218.53515625,
+            "peak_rss_mib": 218.53515625,
+            "pss_mib": 213.216796875
+          },
+          "memory": {
+            "rss_mib": 217.1640625,
+            "peak_rss_mib": 217.578125,
+            "pss_mib": 211.845703125
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 14,
+          "decoded_seconds": 588.0,
+          "elapsed_seconds": 10.511892464,
+          "cpu_seconds": 10.39760799,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 221.3125,
+            "peak_rss_mib": 221.3125,
+            "pss_mib": 215.994140625
+          },
+          "memory": {
+            "rss_mib": 220.02734375,
+            "peak_rss_mib": 220.1015625,
+            "pss_mib": 214.708984375
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 15,
+          "decoded_seconds": 630.0,
+          "elapsed_seconds": 11.241109386,
+          "cpu_seconds": 11.122875279,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 224.37109375,
+            "peak_rss_mib": 224.37109375,
+            "pss_mib": 219.052734375
+          },
+          "memory": {
+            "rss_mib": 184.21875,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 178.900390625
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 16,
+          "decoded_seconds": 672.0,
+          "elapsed_seconds": 11.931578867,
+          "cpu_seconds": 11.810034073,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 188.796875,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 183.478515625
+          },
+          "memory": {
+            "rss_mib": 186.984375,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 181.666015625
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 17,
+          "decoded_seconds": 714.0,
+          "elapsed_seconds": 12.613787547,
+          "cpu_seconds": 12.489945889,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 191.6796875,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 186.361328125
+          },
+          "memory": {
+            "rss_mib": 189.80859375,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 184.490234375
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 18,
+          "decoded_seconds": 756.0,
+          "elapsed_seconds": 13.31183735,
+          "cpu_seconds": 13.183290242,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 193.98828125,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 188.669921875
+          },
+          "memory": {
+            "rss_mib": 192.71484375,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 187.396484375
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 19,
+          "decoded_seconds": 798.0,
+          "elapsed_seconds": 14.021536519,
+          "cpu_seconds": 13.886171292,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 197.16796875,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 191.849609375
+          },
+          "memory": {
+            "rss_mib": 195.640625,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 190.322265625
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 20,
+          "decoded_seconds": 840.0,
+          "elapsed_seconds": 14.741522915000001,
+          "cpu_seconds": 14.597529704,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 200.22265625,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 194.904296875
+          },
+          "memory": {
+            "rss_mib": 198.55078125,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 193.232421875
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 21,
+          "decoded_seconds": 882.0,
+          "elapsed_seconds": 15.458557282,
+          "cpu_seconds": 15.311874985,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 202.63671875,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 197.318359375
+          },
+          "memory": {
+            "rss_mib": 201.2890625,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 195.970703125
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 22,
+          "decoded_seconds": 924.0,
+          "elapsed_seconds": 16.192421663,
+          "cpu_seconds": 16.039466724,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 205.43359375,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 200.115234375
+          },
+          "memory": {
+            "rss_mib": 204.1015625,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 198.783203125
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 23,
+          "decoded_seconds": 966.0,
+          "elapsed_seconds": 16.921113071,
+          "cpu_seconds": 16.762873950000003,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 207.98046875,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 202.662109375
+          },
+          "memory": {
+            "rss_mib": 206.87109375,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 201.552734375
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 24,
+          "decoded_seconds": 1008.0,
+          "elapsed_seconds": 17.639973636,
+          "cpu_seconds": 17.479309478,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 210.9609375,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 205.642578125
+          },
+          "memory": {
+            "rss_mib": 209.60546875,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 204.287109375
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 25,
+          "decoded_seconds": 1050.0,
+          "elapsed_seconds": 18.38180958,
+          "cpu_seconds": 18.21663577,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 214.140625,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 208.822265625
+          },
+          "memory": {
+            "rss_mib": 212.45703125,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 207.138671875
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 26,
+          "decoded_seconds": 1092.0,
+          "elapsed_seconds": 19.114921006,
+          "cpu_seconds": 18.946825916,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 216.859375,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 211.541015625
+          },
+          "memory": {
+            "rss_mib": 215.29296875,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 209.974609375
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 27,
+          "decoded_seconds": 1134.0,
+          "elapsed_seconds": 19.875085392,
+          "cpu_seconds": 19.70253301,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 219.03125,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 213.712890625
+          },
+          "memory": {
+            "rss_mib": 217.953125,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 212.634765625
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 28,
+          "decoded_seconds": 1176.0,
+          "elapsed_seconds": 20.628465835,
+          "cpu_seconds": 20.451420234,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 221.80078125,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 216.482421875
+          },
+          "memory": {
+            "rss_mib": 220.765625,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 215.447265625
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 29,
+          "decoded_seconds": 1218.0,
+          "elapsed_seconds": 21.376750148,
+          "cpu_seconds": 21.193986453,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 223.88671875,
+            "peak_rss_mib": 223.88671875,
+            "pss_mib": 218.568359375
+          },
+          "memory": {
+            "rss_mib": 184.13671875,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 178.818359375
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 30,
+          "decoded_seconds": 1260.0,
+          "elapsed_seconds": 22.075598574,
+          "cpu_seconds": 21.886599501000003,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 189.41015625,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 184.091796875
+          },
+          "memory": {
+            "rss_mib": 186.77734375,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 181.458984375
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 31,
+          "decoded_seconds": 1302.0,
+          "elapsed_seconds": 22.760627374,
+          "cpu_seconds": 22.566757003000003,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 191.28515625,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 185.966796875
+          },
+          "memory": {
+            "rss_mib": 189.5,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 184.181640625
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "reset",
+          "cycle": 32,
+          "decoded_seconds": 1344.0,
+          "elapsed_seconds": 23.451045639,
+          "cpu_seconds": 23.252540058,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 193.45703125,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 188.138671875
+          },
+          "memory": {
+            "rss_mib": 192.109375,
+            "peak_rss_mib": 223.109375,
+            "pss_mib": 186.791015625
+          }
+        }
+      ],
+      "first_floor_mib": 183.03125,
+      "last_floor_mib": 192.109375,
+      "peak_rss_mib": 223.109375,
+      "max_floor_mib": 220.765625,
+      "cpu_seconds": 23.252540058,
+      "elapsed_seconds": 23.451045639,
+      "repeat": 1
+    },
+    {
+      "decoder": "free",
+      "policy": "finalize",
+      "reverse_fixture": false,
+      "ready": {
+        "event": "ready",
+        "memory": {
+          "rss_mib": 160.40234375,
+          "peak_rss_mib": 160.50390625,
+          "pss_mib": 155.001953125
+        }
+      },
+      "cycles": [
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 1,
+          "decoded_seconds": 42.0,
+          "elapsed_seconds": 1.139290094,
+          "cpu_seconds": 1.128540665,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 189.19921875,
+            "peak_rss_mib": 189.19921875,
+            "pss_mib": 183.7578125
+          },
+          "memory": {
+            "rss_mib": 185.48828125,
+            "peak_rss_mib": 187.80078125,
+            "pss_mib": 180.046875
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 2,
+          "decoded_seconds": 84.0,
+          "elapsed_seconds": 1.886044551,
+          "cpu_seconds": 1.866766053,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 189.61328125,
+            "peak_rss_mib": 189.61328125,
+            "pss_mib": 184.171875
+          },
+          "memory": {
+            "rss_mib": 185.84765625,
+            "peak_rss_mib": 188.27734375,
+            "pss_mib": 180.40625
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 3,
+          "decoded_seconds": 126.0,
+          "elapsed_seconds": 2.621945329,
+          "cpu_seconds": 2.5976280970000003,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 189.73828125,
+            "peak_rss_mib": 189.73828125,
+            "pss_mib": 184.296875
+          },
+          "memory": {
+            "rss_mib": 185.95703125,
+            "peak_rss_mib": 188.38671875,
+            "pss_mib": 180.515625
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 4,
+          "decoded_seconds": 168.0,
+          "elapsed_seconds": 3.349547746,
+          "cpu_seconds": 3.319953271,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 189.83203125,
+            "peak_rss_mib": 189.83203125,
+            "pss_mib": 184.390625
+          },
+          "memory": {
+            "rss_mib": 186.06640625,
+            "peak_rss_mib": 188.55859375,
+            "pss_mib": 180.625
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 5,
+          "decoded_seconds": 210.0,
+          "elapsed_seconds": 4.073996802,
+          "cpu_seconds": 4.037350161,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 189.9140625,
+            "peak_rss_mib": 189.9140625,
+            "pss_mib": 184.47265625
+          },
+          "memory": {
+            "rss_mib": 186.11328125,
+            "peak_rss_mib": 188.73046875,
+            "pss_mib": 180.671875
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 6,
+          "decoded_seconds": 252.0,
+          "elapsed_seconds": 4.807061511,
+          "cpu_seconds": 4.762117777,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 189.84375,
+            "peak_rss_mib": 189.84375,
+            "pss_mib": 184.40234375
+          },
+          "memory": {
+            "rss_mib": 186.12890625,
+            "peak_rss_mib": 188.73046875,
+            "pss_mib": 180.6875
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 7,
+          "decoded_seconds": 294.0,
+          "elapsed_seconds": 5.531015039,
+          "cpu_seconds": 5.480496305,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 189.87109375,
+            "peak_rss_mib": 189.87109375,
+            "pss_mib": 184.4296875
+          },
+          "memory": {
+            "rss_mib": 186.17578125,
+            "peak_rss_mib": 188.73046875,
+            "pss_mib": 180.734375
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 8,
+          "decoded_seconds": 336.0,
+          "elapsed_seconds": 6.264733846,
+          "cpu_seconds": 6.206748064,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 189.96484375,
+            "peak_rss_mib": 189.96484375,
+            "pss_mib": 184.5234375
+          },
+          "memory": {
+            "rss_mib": 186.203125,
+            "peak_rss_mib": 188.73046875,
+            "pss_mib": 180.76171875
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 9,
+          "decoded_seconds": 378.0,
+          "elapsed_seconds": 6.988121313,
+          "cpu_seconds": 6.926187829,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 189.984375,
+            "peak_rss_mib": 189.984375,
+            "pss_mib": 184.54296875
+          },
+          "memory": {
+            "rss_mib": 186.234375,
+            "peak_rss_mib": 188.73046875,
+            "pss_mib": 180.79296875
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 10,
+          "decoded_seconds": 420.0,
+          "elapsed_seconds": 7.710348493,
+          "cpu_seconds": 7.643102129,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.01171875,
+            "peak_rss_mib": 190.01171875,
+            "pss_mib": 184.5703125
+          },
+          "memory": {
+            "rss_mib": 186.26953125,
+            "peak_rss_mib": 188.73046875,
+            "pss_mib": 180.828125
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 11,
+          "decoded_seconds": 462.0,
+          "elapsed_seconds": 8.435137583,
+          "cpu_seconds": 8.365712465,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.06640625,
+            "peak_rss_mib": 190.06640625,
+            "pss_mib": 184.625
+          },
+          "memory": {
+            "rss_mib": 186.359375,
+            "peak_rss_mib": 188.76171875,
+            "pss_mib": 180.91796875
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 12,
+          "decoded_seconds": 504.0,
+          "elapsed_seconds": 9.162789314,
+          "cpu_seconds": 9.090473404,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.02734375,
+            "peak_rss_mib": 190.02734375,
+            "pss_mib": 184.5859375
+          },
+          "memory": {
+            "rss_mib": 186.34375,
+            "peak_rss_mib": 188.765625,
+            "pss_mib": 180.90234375
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 13,
+          "decoded_seconds": 546.0,
+          "elapsed_seconds": 9.884731935,
+          "cpu_seconds": 9.809600048,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.1484375,
+            "peak_rss_mib": 190.1484375,
+            "pss_mib": 184.70703125
+          },
+          "memory": {
+            "rss_mib": 186.390625,
+            "peak_rss_mib": 188.9375,
+            "pss_mib": 180.94921875
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 14,
+          "decoded_seconds": 588.0,
+          "elapsed_seconds": 10.608533666,
+          "cpu_seconds": 10.53099251,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.13671875,
+            "peak_rss_mib": 190.13671875,
+            "pss_mib": 184.6953125
+          },
+          "memory": {
+            "rss_mib": 186.46484375,
+            "peak_rss_mib": 188.9375,
+            "pss_mib": 181.0234375
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 15,
+          "decoded_seconds": 630.0,
+          "elapsed_seconds": 11.344000012,
+          "cpu_seconds": 11.263567484,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.09375,
+            "peak_rss_mib": 190.09375,
+            "pss_mib": 184.65234375
+          },
+          "memory": {
+            "rss_mib": 186.48828125,
+            "peak_rss_mib": 188.9375,
+            "pss_mib": 181.046875
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 16,
+          "decoded_seconds": 672.0,
+          "elapsed_seconds": 12.070765024,
+          "cpu_seconds": 11.987614141,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.15625,
+            "peak_rss_mib": 190.15625,
+            "pss_mib": 184.71484375
+          },
+          "memory": {
+            "rss_mib": 186.48828125,
+            "peak_rss_mib": 188.9375,
+            "pss_mib": 181.046875
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 17,
+          "decoded_seconds": 714.0,
+          "elapsed_seconds": 12.813773861,
+          "cpu_seconds": 12.727705038,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.09765625,
+            "peak_rss_mib": 190.09765625,
+            "pss_mib": 184.65625
+          },
+          "memory": {
+            "rss_mib": 186.49609375,
+            "peak_rss_mib": 188.9375,
+            "pss_mib": 181.0546875
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 18,
+          "decoded_seconds": 756.0,
+          "elapsed_seconds": 13.565439037,
+          "cpu_seconds": 13.476781251,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.22265625,
+            "peak_rss_mib": 190.22265625,
+            "pss_mib": 184.78125
+          },
+          "memory": {
+            "rss_mib": 186.54296875,
+            "peak_rss_mib": 188.9375,
+            "pss_mib": 181.1015625
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 19,
+          "decoded_seconds": 798.0,
+          "elapsed_seconds": 14.289929863,
+          "cpu_seconds": 14.198705289,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.1953125,
+            "peak_rss_mib": 190.1953125,
+            "pss_mib": 184.75390625
+          },
+          "memory": {
+            "rss_mib": 186.52734375,
+            "peak_rss_mib": 188.9375,
+            "pss_mib": 181.0859375
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 20,
+          "decoded_seconds": 840.0,
+          "elapsed_seconds": 15.024805762,
+          "cpu_seconds": 14.930842994,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.15625,
+            "peak_rss_mib": 190.15625,
+            "pss_mib": 184.71484375
+          },
+          "memory": {
+            "rss_mib": 186.52734375,
+            "peak_rss_mib": 188.9375,
+            "pss_mib": 181.0859375
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 21,
+          "decoded_seconds": 882.0,
+          "elapsed_seconds": 15.752993187,
+          "cpu_seconds": 15.655974947,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.25390625,
+            "peak_rss_mib": 190.25390625,
+            "pss_mib": 184.8125
+          },
+          "memory": {
+            "rss_mib": 186.5390625,
+            "peak_rss_mib": 188.953125,
+            "pss_mib": 181.09765625
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 22,
+          "decoded_seconds": 924.0,
+          "elapsed_seconds": 16.47704903,
+          "cpu_seconds": 16.377411675,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.15625,
+            "peak_rss_mib": 190.15625,
+            "pss_mib": 184.71484375
+          },
+          "memory": {
+            "rss_mib": 186.515625,
+            "peak_rss_mib": 188.953125,
+            "pss_mib": 181.07421875
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 23,
+          "decoded_seconds": 966.0,
+          "elapsed_seconds": 17.210873458000002,
+          "cpu_seconds": 17.109027894,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.25,
+            "peak_rss_mib": 190.25,
+            "pss_mib": 184.80859375
+          },
+          "memory": {
+            "rss_mib": 186.57421875,
+            "peak_rss_mib": 189.0703125,
+            "pss_mib": 181.1328125
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 24,
+          "decoded_seconds": 1008.0,
+          "elapsed_seconds": 17.933384296,
+          "cpu_seconds": 17.828670133,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.23828125,
+            "peak_rss_mib": 190.23828125,
+            "pss_mib": 184.796875
+          },
+          "memory": {
+            "rss_mib": 186.56640625,
+            "peak_rss_mib": 189.0703125,
+            "pss_mib": 181.125
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 25,
+          "decoded_seconds": 1050.0,
+          "elapsed_seconds": 18.65644779,
+          "cpu_seconds": 18.549136715,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.18359375,
+            "peak_rss_mib": 190.18359375,
+            "pss_mib": 184.7421875
+          },
+          "memory": {
+            "rss_mib": 186.55078125,
+            "peak_rss_mib": 189.0703125,
+            "pss_mib": 181.109375
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 26,
+          "decoded_seconds": 1092.0,
+          "elapsed_seconds": 19.383014347,
+          "cpu_seconds": 19.272836402,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.1640625,
+            "peak_rss_mib": 190.1640625,
+            "pss_mib": 184.72265625
+          },
+          "memory": {
+            "rss_mib": 186.5625,
+            "peak_rss_mib": 189.0703125,
+            "pss_mib": 181.12109375
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 27,
+          "decoded_seconds": 1134.0,
+          "elapsed_seconds": 20.106046722,
+          "cpu_seconds": 19.993014526,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.25390625,
+            "peak_rss_mib": 190.25390625,
+            "pss_mib": 184.8125
+          },
+          "memory": {
+            "rss_mib": 186.58203125,
+            "peak_rss_mib": 189.0703125,
+            "pss_mib": 181.140625
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 28,
+          "decoded_seconds": 1176.0,
+          "elapsed_seconds": 20.847530462,
+          "cpu_seconds": 20.731566204,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.21484375,
+            "peak_rss_mib": 190.21484375,
+            "pss_mib": 184.7734375
+          },
+          "memory": {
+            "rss_mib": 186.61328125,
+            "peak_rss_mib": 189.0703125,
+            "pss_mib": 181.171875
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 29,
+          "decoded_seconds": 1218.0,
+          "elapsed_seconds": 21.58817347,
+          "cpu_seconds": 21.466858098,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.203125,
+            "peak_rss_mib": 190.203125,
+            "pss_mib": 184.76171875
+          },
+          "memory": {
+            "rss_mib": 186.5859375,
+            "peak_rss_mib": 189.0703125,
+            "pss_mib": 181.1484375
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 30,
+          "decoded_seconds": 1260.0,
+          "elapsed_seconds": 22.321001071,
+          "cpu_seconds": 22.195883669,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.1953125,
+            "peak_rss_mib": 190.1953125,
+            "pss_mib": 184.75390625
+          },
+          "memory": {
+            "rss_mib": 186.59375,
+            "peak_rss_mib": 189.0703125,
+            "pss_mib": 181.15234375
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 31,
+          "decoded_seconds": 1302.0,
+          "elapsed_seconds": 23.051083795,
+          "cpu_seconds": 22.920354503,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.3125,
+            "peak_rss_mib": 190.3125,
+            "pss_mib": 184.87109375
+          },
+          "memory": {
+            "rss_mib": 186.5859375,
+            "peak_rss_mib": 189.1015625,
+            "pss_mib": 181.14453125
+          }
+        },
+        {
+          "event": "cycle",
+          "decoder": "free",
+          "policy": "finalize",
+          "cycle": 32,
+          "decoded_seconds": 1344.0,
+          "elapsed_seconds": 23.783339504,
+          "cpu_seconds": 23.647275401,
+          "endpoints": 14,
+          "texts": [
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters",
+            "go forward ten meters"
+          ],
+          "before_trim": {
+            "rss_mib": 190.234375,
+            "peak_rss_mib": 190.234375,
+            "pss_mib": 184.79296875
+          },
+          "memory": {
+            "rss_mib": 186.625,
+            "peak_rss_mib": 189.1015625,
+            "pss_mib": 181.18359375
+          }
+        }
+      ],
+      "first_floor_mib": 185.48828125,
+      "last_floor_mib": 186.625,
+      "peak_rss_mib": 189.1015625,
+      "max_floor_mib": 186.625,
+      "cpu_seconds": 23.647275401,
+      "elapsed_seconds": 23.783339504,
+      "repeat": 1
+    }
+  ],
+  "production_policy_changed": false,
+  "full_recognition_acceptance": false,
+  "cycles_per_run": 32,
+  "expected_runs": 2,
+  "complete": true
+}

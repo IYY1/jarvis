@@ -1,0 +1,6267 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-26T09:59:13.322414+00:00",
+  "scope": "Measure a separate Rust buffered handoff, using explicit public audio only.\n\nThe Rust parent, KWS child, unchanged voice --engine child, bounded audio ring,\nretained PCM and native model state count together. Endpointing is an explicit\nfile boundary, not a live command endpoint. No capture or actions are started.\n",
+  "platform": "Linux-7.3.0-5-cachyos-x86_64-with-glibc2.44",
+  "binary_sha256": "42d2a534cacca9f2d383e37b41c6285945e9c74518e1f0a956a5d48b554d5dc7",
+  "detector_sha256": "d6b2ddef281e3edc464271f9d01499c07465e7efb3bbb554be1e54504637716f",
+  "voice_sha256": "212ff8655e303b55f0a70f902753d0ab6f87031aa3c71cd40306ddf5cf8d9844",
+  "fixture_sha256": "f15c60ec54059d8b66e410d0064945a0b0a04ea56e1ddca1958e493c0cf70e71",
+  "configuration": {
+    "quiet_gate": {
+      "rms": 0.001,
+      "preroll_ms": 300,
+      "hangover_ms": 1200
+    },
+    "threshold": 0.25,
+    "preroll_ms": 2000,
+    "max_buffer_ms": 10000,
+    "sampler_interval_ms": 20,
+    "allocator_trim_requested": false,
+    "existing_worker_allocator_policy_unchanged": true,
+    "sequential_fresh_workers": true,
+    "surrogate_command_cut_input_seconds": 1.8
+  },
+  "detector_files": {
+    "library": {
+      "path": "/home/silver/Projects/jarvis/.venv/lib/python3.14/site-packages/sherpa_onnx/lib/libsherpa-onnx-c-api.so",
+      "sha256": "e50ae8bca4db52b7be04f56f8ac1502b940ca124a26fac0d48d8cef7fc9823d4"
+    },
+    "tokens": {
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/tokens.txt",
+      "sha256": "fd2ded4050a55d2b1578870ba8697d02371980217806b7558bd0a5cc60f3ba53"
+    },
+    "keywords": {
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/surrogate-keywords.txt",
+      "sha256": "7b3ba4dc555f16a3f4a8bfb11fd49369e140397ceaf74465a2aa8c4c5e27c4e5"
+    },
+    "encoder": {
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/encoder-epoch-12-avg-2-chunk-16-left-64.int8.onnx",
+      "sha256": "1e721676515bcd42a186979733981213c66c80db680e1cc582dfedf3be76e678"
+    },
+    "decoder": {
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/decoder-epoch-12-avg-2-chunk-16-left-64.int8.onnx",
+      "sha256": "e40ff43297abe815e8898494c17e71bba2152d9d40fa3eb803f75d0f7533329a"
+    },
+    "joiner": {
+      "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01/joiner-epoch-12-avg-2-chunk-16-left-64.int8.onnx",
+      "sha256": "eae9da0c7e1e6c6a3f4cc42d167899c388f6c6701b94cb96320e4f55df79624c"
+    }
+  },
+  "command_files": {
+    "vosk": {},
+    "small.en": {
+      "encoder": {
+        "path": "/home/silver/.local/share/murmur/models/sherpa-onnx-whisper-small.en/small.en-encoder.int8.onnx",
+        "sha256": "8bdac288f369aa94ee2194059238c465ed82ea9d47ee8fa4a8c0a891873e462f"
+      },
+      "decoder": {
+        "path": "/home/silver/.local/share/murmur/models/sherpa-onnx-whisper-small.en/small.en-decoder.int8.onnx",
+        "sha256": "710ccf890e10f3faa15f51ec346081a2723c9f3adb6e4da81c6573a5a6f877fb"
+      },
+      "tokens": {
+        "path": "/home/silver/.local/share/murmur/models/sherpa-onnx-whisper-small.en/small.en-tokens.txt",
+        "sha256": "306cd27f03c1a714eca7108e03d66b7dc042abe8c258b44c199a7ed9838dd930"
+      }
+    },
+    "tiny.en": {
+      "encoder": {
+        "path": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-tiny.en/tiny.en-encoder.int8.onnx",
+        "sha256": "0ce578b827c94a961aacb8fa14b02f096504b337e5c94be37c36238cbe3e8bc6"
+      },
+      "decoder": {
+        "path": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-tiny.en/tiny.en-decoder.int8.onnx",
+        "sha256": "06c0e6ff6348d427e51839219d1c886c18cfdf411e629e33f5e1679bff9c1527"
+      },
+      "tokens": {
+        "path": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-tiny.en/tiny.en-tokens.txt",
+        "sha256": "306cd27f03c1a714eca7108e03d66b7dc042abe8c258b44c199a7ed9838dd930"
+      }
+    }
+  },
+  "payloads": {
+    "vosk": {
+      "config": {
+        "activation": {
+          "mode": "wake_word",
+          "wake_phrase": "go forward",
+          "wake_aliases": [],
+          "sensitivity": 0.5,
+          "command_timeout": 8,
+          "confidence": 0.35
+        },
+        "audio": {
+          "device": "",
+          "vad_rms": 0.005,
+          "adaptive_gate": true
+        },
+        "recognition": {
+          "backend": "auto",
+          "model_path": "",
+          "closest_match": true,
+          "accurate": false,
+          "noise_suppression": false
+        },
+        "privacy": {
+          "onboarded": false
+        },
+        "aliases": {},
+        "commands": {},
+        "app_prefixes": {},
+        "startup": false,
+        "brightness": {
+          "monitors": {},
+          "default": "",
+          "step": 10
+        },
+        "recording": {
+          "output_dir": "~/Videos/Murmur",
+          "monitor": "",
+          "system_audio": false,
+          "microphone": false,
+          "audio_device": "",
+          "fps": 30,
+          "codec": "libx264",
+          "quality": 23,
+          "rate_control": "quality",
+          "bitrate_mbps": 8,
+          "quality_preset": "very_high",
+          "encoder": "auto",
+          "configured": false,
+          "color_mode": "auto",
+          "combined_audio_source": false,
+          "sound_feedback": false,
+          "vaapi_device": "/dev/dri/renderD128"
+        },
+        "replay": {
+          "seconds": 120,
+          "autostart": false,
+          "game_audio": true,
+          "microphone": true,
+          "sound": true,
+          "storage": "ram",
+          "max_mb": 256,
+          "buffer_dir": ""
+        }
+      },
+      "mode": "wake_word",
+      "grammar": {
+        "launches": {},
+        "brightness_names": {},
+        "blocked_apps": [],
+        "phrases": [
+          "cancel",
+          "cancel that",
+          "clip that",
+          "decrease the volume",
+          "end recording",
+          "exit full screen",
+          "go full screen",
+          "go to the workspace eight",
+          "go to the workspace five",
+          "go to the workspace four",
+          "go to the workspace nine",
+          "go to the workspace one",
+          "go to the workspace seven",
+          "go to the workspace six",
+          "go to the workspace ten",
+          "go to the workspace three",
+          "go to the workspace two",
+          "go to workspace eight",
+          "go to workspace five",
+          "go to workspace four",
+          "go to workspace nine",
+          "go to workspace one",
+          "go to workspace seven",
+          "go to workspace six",
+          "go to workspace ten",
+          "go to workspace three",
+          "go to workspace two",
+          "increase the volume",
+          "leave full screen",
+          "lower the volume",
+          "lower volume",
+          "make the window full screen",
+          "make this full screen",
+          "make this window full screen",
+          "move the window to the workspace eight",
+          "move the window to the workspace five",
+          "move the window to the workspace four",
+          "move the window to the workspace nine",
+          "move the window to the workspace one",
+          "move the window to the workspace seven",
+          "move the window to the workspace six",
+          "move the window to the workspace ten",
+          "move the window to the workspace three",
+          "move the window to the workspace two",
+          "move the window to workspace eight",
+          "move the window to workspace five",
+          "move the window to workspace four",
+          "move the window to workspace nine",
+          "move the window to workspace one",
+          "move the window to workspace seven",
+          "move the window to workspace six",
+          "move the window to workspace ten",
+          "move the window to workspace three",
+          "move the window to workspace two",
+          "move this window to the workspace eight",
+          "move this window to the workspace five",
+          "move this window to the workspace four",
+          "move this window to the workspace nine",
+          "move this window to the workspace one",
+          "move this window to the workspace seven",
+          "move this window to the workspace six",
+          "move this window to the workspace ten",
+          "move this window to the workspace three",
+          "move this window to the workspace two",
+          "move this window to workspace eight",
+          "move this window to workspace five",
+          "move this window to workspace four",
+          "move this window to workspace nine",
+          "move this window to workspace one",
+          "move this window to workspace seven",
+          "move this window to workspace six",
+          "move this window to workspace ten",
+          "move this window to workspace three",
+          "move this window to workspace two",
+          "mute audio",
+          "mute the audio",
+          "mute the volume",
+          "mute volume",
+          "never mind",
+          "open recorder",
+          "open the recorder",
+          "open the video recorder",
+          "open video recorder",
+          "pause listening",
+          "raise the volume",
+          "record my screen",
+          "restore the volume",
+          "save a replay",
+          "save replay",
+          "save that",
+          "save the replay",
+          "sound on",
+          "start a recording",
+          "start instant replay",
+          "start recording",
+          "start recording my screen",
+          "start replay",
+          "start screen recording",
+          "stop instant replay",
+          "stop listening",
+          "stop listening to me",
+          "stop recording",
+          "stop recording my screen",
+          "stop replay",
+          "stop screen recording",
+          "stop the recording",
+          "switch to the workspace eight",
+          "switch to the workspace five",
+          "switch to the workspace four",
+          "switch to the workspace nine",
+          "switch to the workspace one",
+          "switch to the workspace seven",
+          "switch to the workspace six",
+          "switch to the workspace ten",
+          "switch to the workspace three",
+          "switch to the workspace two",
+          "switch to workspace eight",
+          "switch to workspace five",
+          "switch to workspace four",
+          "switch to workspace nine",
+          "switch to workspace one",
+          "switch to workspace seven",
+          "switch to workspace six",
+          "switch to workspace ten",
+          "switch to workspace three",
+          "switch to workspace two",
+          "switch workspace eight",
+          "switch workspace five",
+          "switch workspace four",
+          "switch workspace nine",
+          "switch workspace one",
+          "switch workspace seven",
+          "switch workspace six",
+          "switch workspace ten",
+          "switch workspace three",
+          "switch workspace two",
+          "ten meters",
+          "turn down the volume",
+          "turn off instant replay",
+          "turn on instant replay",
+          "turn the sound back on",
+          "turn the sound off",
+          "turn the sound on",
+          "turn the volume down",
+          "turn the volume up",
+          "turn up the volume",
+          "volume down",
+          "volume up"
+        ],
+        "apps": [
+          "firefox",
+          "steam",
+          "stremio"
+        ],
+        "custom": {
+          "ten meters": "start recording"
+        },
+        "verbs": [
+          "focus",
+          "launch",
+          "open",
+          "start",
+          "switch to"
+        ],
+        "prefixes": [
+          "please",
+          "can you",
+          "could you",
+          "would you",
+          "can you please",
+          "could you please",
+          "would you please"
+        ],
+        "suffixes": [],
+        "overflow": []
+      },
+      "native": {
+        "vosk_library": "/home/silver/Projects/jarvis/.venv/lib/python3.14/site-packages/vosk/libvosk.so",
+        "model_path": "/home/silver/.local/share/murmur/models/vosk-model-small-en-us-0.15",
+        "whisper": null,
+        "denoiser": null,
+        "threads": 8,
+        "candidates": [
+          [
+            "cancel",
+            "cancel:None"
+          ],
+          [
+            "cancel that",
+            "cancel:None"
+          ],
+          [
+            "clip that",
+            "replay_save:None"
+          ],
+          [
+            "decrease the volume",
+            "volume_down:None"
+          ],
+          [
+            "end recording",
+            "record_stop:None"
+          ],
+          [
+            "exit full screen",
+            "unfullscreen:None"
+          ],
+          [
+            "go full screen",
+            "fullscreen:None"
+          ],
+          [
+            "go to the workspace eight",
+            "workspace:8"
+          ],
+          [
+            "go to the workspace five",
+            "workspace:5"
+          ],
+          [
+            "go to the workspace four",
+            "workspace:4"
+          ],
+          [
+            "go to the workspace nine",
+            "workspace:9"
+          ],
+          [
+            "go to the workspace one",
+            "workspace:1"
+          ],
+          [
+            "go to the workspace seven",
+            "workspace:7"
+          ],
+          [
+            "go to the workspace six",
+            "workspace:6"
+          ],
+          [
+            "go to the workspace ten",
+            "workspace:10"
+          ],
+          [
+            "go to the workspace three",
+            "workspace:3"
+          ],
+          [
+            "go to the workspace two",
+            "workspace:2"
+          ],
+          [
+            "go to workspace eight",
+            "workspace:8"
+          ],
+          [
+            "go to workspace five",
+            "workspace:5"
+          ],
+          [
+            "go to workspace four",
+            "workspace:4"
+          ],
+          [
+            "go to workspace nine",
+            "workspace:9"
+          ],
+          [
+            "go to workspace one",
+            "workspace:1"
+          ],
+          [
+            "go to workspace seven",
+            "workspace:7"
+          ],
+          [
+            "go to workspace six",
+            "workspace:6"
+          ],
+          [
+            "go to workspace ten",
+            "workspace:10"
+          ],
+          [
+            "go to workspace three",
+            "workspace:3"
+          ],
+          [
+            "go to workspace two",
+            "workspace:2"
+          ],
+          [
+            "increase the volume",
+            "volume_up:None"
+          ],
+          [
+            "leave full screen",
+            "unfullscreen:None"
+          ],
+          [
+            "lower the volume",
+            "volume_down:None"
+          ],
+          [
+            "lower volume",
+            "volume_down:None"
+          ],
+          [
+            "make the window full screen",
+            "fullscreen:None"
+          ],
+          [
+            "make this full screen",
+            "fullscreen:None"
+          ],
+          [
+            "make this window full screen",
+            "fullscreen:None"
+          ],
+          [
+            "move the window to the workspace eight",
+            "move_workspace:8"
+          ],
+          [
+            "move the window to the workspace five",
+            "move_workspace:5"
+          ],
+          [
+            "move the window to the workspace four",
+            "move_workspace:4"
+          ],
+          [
+            "move the window to the workspace nine",
+            "move_workspace:9"
+          ],
+          [
+            "move the window to the workspace one",
+            "move_workspace:1"
+          ],
+          [
+            "move the window to the workspace seven",
+            "move_workspace:7"
+          ],
+          [
+            "move the window to the workspace six",
+            "move_workspace:6"
+          ],
+          [
+            "move the window to the workspace ten",
+            "move_workspace:10"
+          ],
+          [
+            "move the window to the workspace three",
+            "move_workspace:3"
+          ],
+          [
+            "move the window to the workspace two",
+            "move_workspace:2"
+          ],
+          [
+            "move the window to workspace eight",
+            "move_workspace:8"
+          ],
+          [
+            "move the window to workspace five",
+            "move_workspace:5"
+          ],
+          [
+            "move the window to workspace four",
+            "move_workspace:4"
+          ],
+          [
+            "move the window to workspace nine",
+            "move_workspace:9"
+          ],
+          [
+            "move the window to workspace one",
+            "move_workspace:1"
+          ],
+          [
+            "move the window to workspace seven",
+            "move_workspace:7"
+          ],
+          [
+            "move the window to workspace six",
+            "move_workspace:6"
+          ],
+          [
+            "move the window to workspace ten",
+            "move_workspace:10"
+          ],
+          [
+            "move the window to workspace three",
+            "move_workspace:3"
+          ],
+          [
+            "move the window to workspace two",
+            "move_workspace:2"
+          ],
+          [
+            "move this window to the workspace eight",
+            "move_workspace:8"
+          ],
+          [
+            "move this window to the workspace five",
+            "move_workspace:5"
+          ],
+          [
+            "move this window to the workspace four",
+            "move_workspace:4"
+          ],
+          [
+            "move this window to the workspace nine",
+            "move_workspace:9"
+          ],
+          [
+            "move this window to the workspace one",
+            "move_workspace:1"
+          ],
+          [
+            "move this window to the workspace seven",
+            "move_workspace:7"
+          ],
+          [
+            "move this window to the workspace six",
+            "move_workspace:6"
+          ],
+          [
+            "move this window to the workspace ten",
+            "move_workspace:10"
+          ],
+          [
+            "move this window to the workspace three",
+            "move_workspace:3"
+          ],
+          [
+            "move this window to the workspace two",
+            "move_workspace:2"
+          ],
+          [
+            "move this window to workspace eight",
+            "move_workspace:8"
+          ],
+          [
+            "move this window to workspace five",
+            "move_workspace:5"
+          ],
+          [
+            "move this window to workspace four",
+            "move_workspace:4"
+          ],
+          [
+            "move this window to workspace nine",
+            "move_workspace:9"
+          ],
+          [
+            "move this window to workspace one",
+            "move_workspace:1"
+          ],
+          [
+            "move this window to workspace seven",
+            "move_workspace:7"
+          ],
+          [
+            "move this window to workspace six",
+            "move_workspace:6"
+          ],
+          [
+            "move this window to workspace ten",
+            "move_workspace:10"
+          ],
+          [
+            "move this window to workspace three",
+            "move_workspace:3"
+          ],
+          [
+            "move this window to workspace two",
+            "move_workspace:2"
+          ],
+          [
+            "mute audio",
+            "volume_mute:None"
+          ],
+          [
+            "mute the audio",
+            "volume_mute:None"
+          ],
+          [
+            "mute the volume",
+            "volume_mute:None"
+          ],
+          [
+            "mute volume",
+            "volume_mute:None"
+          ],
+          [
+            "never mind",
+            "cancel:None"
+          ],
+          [
+            "open recorder",
+            "open_recorder:None"
+          ],
+          [
+            "open the recorder",
+            "open_recorder:None"
+          ],
+          [
+            "open the video recorder",
+            "open_recorder:None"
+          ],
+          [
+            "open video recorder",
+            "open_recorder:None"
+          ],
+          [
+            "pause listening",
+            "pause:None"
+          ],
+          [
+            "raise the volume",
+            "volume_up:None"
+          ],
+          [
+            "record my screen",
+            "record_start:None"
+          ],
+          [
+            "restore the volume",
+            "volume_unmute:None"
+          ],
+          [
+            "save a replay",
+            "replay_save:None"
+          ],
+          [
+            "save replay",
+            "replay_save:None"
+          ],
+          [
+            "save that",
+            "replay_save:None"
+          ],
+          [
+            "save the replay",
+            "replay_save:None"
+          ],
+          [
+            "sound on",
+            "volume_unmute:None"
+          ],
+          [
+            "start a recording",
+            "record_start:None"
+          ],
+          [
+            "start instant replay",
+            "replay_start:None"
+          ],
+          [
+            "start recording",
+            "record_start:None"
+          ],
+          [
+            "start recording my screen",
+            "record_start:None"
+          ],
+          [
+            "start replay",
+            "replay_start:None"
+          ],
+          [
+            "start screen recording",
+            "record_start:None"
+          ],
+          [
+            "stop instant replay",
+            "replay_stop:None"
+          ],
+          [
+            "stop listening",
+            "pause:None"
+          ],
+          [
+            "stop listening to me",
+            "pause:None"
+          ],
+          [
+            "stop recording",
+            "record_stop:None"
+          ],
+          [
+            "stop recording my screen",
+            "record_stop:None"
+          ],
+          [
+            "stop replay",
+            "replay_stop:None"
+          ],
+          [
+            "stop screen recording",
+            "record_stop:None"
+          ],
+          [
+            "stop the recording",
+            "record_stop:None"
+          ],
+          [
+            "switch to the workspace eight",
+            "workspace:8"
+          ],
+          [
+            "switch to the workspace five",
+            "workspace:5"
+          ],
+          [
+            "switch to the workspace four",
+            "workspace:4"
+          ],
+          [
+            "switch to the workspace nine",
+            "workspace:9"
+          ],
+          [
+            "switch to the workspace one",
+            "workspace:1"
+          ],
+          [
+            "switch to the workspace seven",
+            "workspace:7"
+          ],
+          [
+            "switch to the workspace six",
+            "workspace:6"
+          ],
+          [
+            "switch to the workspace ten",
+            "workspace:10"
+          ],
+          [
+            "switch to the workspace three",
+            "workspace:3"
+          ],
+          [
+            "switch to the workspace two",
+            "workspace:2"
+          ],
+          [
+            "switch to workspace eight",
+            "workspace:8"
+          ],
+          [
+            "switch to workspace five",
+            "workspace:5"
+          ],
+          [
+            "switch to workspace four",
+            "workspace:4"
+          ],
+          [
+            "switch to workspace nine",
+            "workspace:9"
+          ],
+          [
+            "switch to workspace one",
+            "workspace:1"
+          ],
+          [
+            "switch to workspace seven",
+            "workspace:7"
+          ],
+          [
+            "switch to workspace six",
+            "workspace:6"
+          ],
+          [
+            "switch to workspace ten",
+            "workspace:10"
+          ],
+          [
+            "switch to workspace three",
+            "workspace:3"
+          ],
+          [
+            "switch to workspace two",
+            "workspace:2"
+          ],
+          [
+            "switch workspace eight",
+            "workspace:8"
+          ],
+          [
+            "switch workspace five",
+            "workspace:5"
+          ],
+          [
+            "switch workspace four",
+            "workspace:4"
+          ],
+          [
+            "switch workspace nine",
+            "workspace:9"
+          ],
+          [
+            "switch workspace one",
+            "workspace:1"
+          ],
+          [
+            "switch workspace seven",
+            "workspace:7"
+          ],
+          [
+            "switch workspace six",
+            "workspace:6"
+          ],
+          [
+            "switch workspace ten",
+            "workspace:10"
+          ],
+          [
+            "switch workspace three",
+            "workspace:3"
+          ],
+          [
+            "switch workspace two",
+            "workspace:2"
+          ],
+          [
+            "ten meters",
+            "record_start:None"
+          ],
+          [
+            "turn down the volume",
+            "volume_down:None"
+          ],
+          [
+            "turn off instant replay",
+            "replay_stop:None"
+          ],
+          [
+            "turn on instant replay",
+            "replay_start:None"
+          ],
+          [
+            "turn the sound back on",
+            "volume_unmute:None"
+          ],
+          [
+            "turn the sound off",
+            "volume_mute:None"
+          ],
+          [
+            "turn the sound on",
+            "volume_unmute:None"
+          ],
+          [
+            "turn the volume down",
+            "volume_down:None"
+          ],
+          [
+            "turn the volume up",
+            "volume_up:None"
+          ],
+          [
+            "turn up the volume",
+            "volume_up:None"
+          ],
+          [
+            "volume down",
+            "volume_down:None"
+          ],
+          [
+            "volume up",
+            "volume_up:None"
+          ],
+          [
+            "focus firefox",
+            "focus_app:firefox"
+          ],
+          [
+            "focus steam",
+            "focus_app:steam"
+          ],
+          [
+            "focus stremio",
+            "focus_app:stremio"
+          ],
+          [
+            "launch firefox",
+            "open_app:firefox"
+          ],
+          [
+            "launch steam",
+            "open_app:steam"
+          ],
+          [
+            "launch stremio",
+            "open_app:stremio"
+          ],
+          [
+            "open firefox",
+            "open_app:firefox"
+          ],
+          [
+            "open steam",
+            "open_app:steam"
+          ],
+          [
+            "open stremio",
+            "open_app:stremio"
+          ],
+          [
+            "start firefox",
+            "open_app:firefox"
+          ],
+          [
+            "start steam",
+            "open_app:steam"
+          ],
+          [
+            "start stremio",
+            "open_app:stremio"
+          ],
+          [
+            "switch to firefox",
+            "focus_app:firefox"
+          ],
+          [
+            "switch to steam",
+            "focus_app:steam"
+          ],
+          [
+            "switch to stremio",
+            "focus_app:stremio"
+          ]
+        ],
+        "wake_forms": [
+          "go forward"
+        ],
+        "greetings": [
+          "hey",
+          "hi",
+          "hello",
+          "okay",
+          "ok"
+        ],
+        "prefixes": [
+          "please",
+          "can you",
+          "could you",
+          "would you",
+          "can you please",
+          "could you please",
+          "would you please"
+        ],
+        "suffixes": [
+          "please",
+          "for me",
+          "for me please"
+        ],
+        "whisper_idle_seconds": null
+      }
+    },
+    "small.en": {
+      "config": {
+        "activation": {
+          "mode": "wake_word",
+          "wake_phrase": "go forward",
+          "wake_aliases": [],
+          "sensitivity": 0.5,
+          "command_timeout": 8,
+          "confidence": 0.35
+        },
+        "audio": {
+          "device": "",
+          "vad_rms": 0.005,
+          "adaptive_gate": true
+        },
+        "recognition": {
+          "backend": "auto",
+          "model_path": "",
+          "closest_match": true,
+          "accurate": true,
+          "noise_suppression": false
+        },
+        "privacy": {
+          "onboarded": false
+        },
+        "aliases": {},
+        "commands": {},
+        "app_prefixes": {},
+        "startup": false,
+        "brightness": {
+          "monitors": {},
+          "default": "",
+          "step": 10
+        },
+        "recording": {
+          "output_dir": "~/Videos/Murmur",
+          "monitor": "",
+          "system_audio": false,
+          "microphone": false,
+          "audio_device": "",
+          "fps": 30,
+          "codec": "libx264",
+          "quality": 23,
+          "rate_control": "quality",
+          "bitrate_mbps": 8,
+          "quality_preset": "very_high",
+          "encoder": "auto",
+          "configured": false,
+          "color_mode": "auto",
+          "combined_audio_source": false,
+          "sound_feedback": false,
+          "vaapi_device": "/dev/dri/renderD128"
+        },
+        "replay": {
+          "seconds": 120,
+          "autostart": false,
+          "game_audio": true,
+          "microphone": true,
+          "sound": true,
+          "storage": "ram",
+          "max_mb": 256,
+          "buffer_dir": ""
+        }
+      },
+      "mode": "wake_word",
+      "grammar": {
+        "launches": {},
+        "brightness_names": {},
+        "blocked_apps": [],
+        "phrases": [
+          "cancel",
+          "cancel that",
+          "clip that",
+          "decrease the volume",
+          "end recording",
+          "exit full screen",
+          "go full screen",
+          "go to the workspace eight",
+          "go to the workspace five",
+          "go to the workspace four",
+          "go to the workspace nine",
+          "go to the workspace one",
+          "go to the workspace seven",
+          "go to the workspace six",
+          "go to the workspace ten",
+          "go to the workspace three",
+          "go to the workspace two",
+          "go to workspace eight",
+          "go to workspace five",
+          "go to workspace four",
+          "go to workspace nine",
+          "go to workspace one",
+          "go to workspace seven",
+          "go to workspace six",
+          "go to workspace ten",
+          "go to workspace three",
+          "go to workspace two",
+          "increase the volume",
+          "leave full screen",
+          "lower the volume",
+          "lower volume",
+          "make the window full screen",
+          "make this full screen",
+          "make this window full screen",
+          "move the window to the workspace eight",
+          "move the window to the workspace five",
+          "move the window to the workspace four",
+          "move the window to the workspace nine",
+          "move the window to the workspace one",
+          "move the window to the workspace seven",
+          "move the window to the workspace six",
+          "move the window to the workspace ten",
+          "move the window to the workspace three",
+          "move the window to the workspace two",
+          "move the window to workspace eight",
+          "move the window to workspace five",
+          "move the window to workspace four",
+          "move the window to workspace nine",
+          "move the window to workspace one",
+          "move the window to workspace seven",
+          "move the window to workspace six",
+          "move the window to workspace ten",
+          "move the window to workspace three",
+          "move the window to workspace two",
+          "move this window to the workspace eight",
+          "move this window to the workspace five",
+          "move this window to the workspace four",
+          "move this window to the workspace nine",
+          "move this window to the workspace one",
+          "move this window to the workspace seven",
+          "move this window to the workspace six",
+          "move this window to the workspace ten",
+          "move this window to the workspace three",
+          "move this window to the workspace two",
+          "move this window to workspace eight",
+          "move this window to workspace five",
+          "move this window to workspace four",
+          "move this window to workspace nine",
+          "move this window to workspace one",
+          "move this window to workspace seven",
+          "move this window to workspace six",
+          "move this window to workspace ten",
+          "move this window to workspace three",
+          "move this window to workspace two",
+          "mute audio",
+          "mute the audio",
+          "mute the volume",
+          "mute volume",
+          "never mind",
+          "open recorder",
+          "open the recorder",
+          "open the video recorder",
+          "open video recorder",
+          "pause listening",
+          "raise the volume",
+          "record my screen",
+          "restore the volume",
+          "save a replay",
+          "save replay",
+          "save that",
+          "save the replay",
+          "sound on",
+          "start a recording",
+          "start instant replay",
+          "start recording",
+          "start recording my screen",
+          "start replay",
+          "start screen recording",
+          "stop instant replay",
+          "stop listening",
+          "stop listening to me",
+          "stop recording",
+          "stop recording my screen",
+          "stop replay",
+          "stop screen recording",
+          "stop the recording",
+          "switch to the workspace eight",
+          "switch to the workspace five",
+          "switch to the workspace four",
+          "switch to the workspace nine",
+          "switch to the workspace one",
+          "switch to the workspace seven",
+          "switch to the workspace six",
+          "switch to the workspace ten",
+          "switch to the workspace three",
+          "switch to the workspace two",
+          "switch to workspace eight",
+          "switch to workspace five",
+          "switch to workspace four",
+          "switch to workspace nine",
+          "switch to workspace one",
+          "switch to workspace seven",
+          "switch to workspace six",
+          "switch to workspace ten",
+          "switch to workspace three",
+          "switch to workspace two",
+          "switch workspace eight",
+          "switch workspace five",
+          "switch workspace four",
+          "switch workspace nine",
+          "switch workspace one",
+          "switch workspace seven",
+          "switch workspace six",
+          "switch workspace ten",
+          "switch workspace three",
+          "switch workspace two",
+          "ten meters",
+          "turn down the volume",
+          "turn off instant replay",
+          "turn on instant replay",
+          "turn the sound back on",
+          "turn the sound off",
+          "turn the sound on",
+          "turn the volume down",
+          "turn the volume up",
+          "turn up the volume",
+          "volume down",
+          "volume up"
+        ],
+        "apps": [
+          "firefox",
+          "steam",
+          "stremio"
+        ],
+        "custom": {
+          "ten meters": "start recording"
+        },
+        "verbs": [
+          "focus",
+          "launch",
+          "open",
+          "start",
+          "switch to"
+        ],
+        "prefixes": [
+          "please",
+          "can you",
+          "could you",
+          "would you",
+          "can you please",
+          "could you please",
+          "would you please"
+        ],
+        "suffixes": [],
+        "overflow": []
+      },
+      "native": {
+        "vosk_library": "/home/silver/Projects/jarvis/.venv/lib/python3.14/site-packages/vosk/libvosk.so",
+        "model_path": "/home/silver/.local/share/murmur/models/vosk-model-small-en-us-0.15",
+        "whisper": {
+          "encoder": "/home/silver/.local/share/murmur/models/sherpa-onnx-whisper-small.en/small.en-encoder.int8.onnx",
+          "decoder": "/home/silver/.local/share/murmur/models/sherpa-onnx-whisper-small.en/small.en-decoder.int8.onnx",
+          "tokens": "/home/silver/.local/share/murmur/models/sherpa-onnx-whisper-small.en/small.en-tokens.txt"
+        },
+        "denoiser": null,
+        "threads": 8,
+        "candidates": [
+          [
+            "cancel",
+            "cancel:None"
+          ],
+          [
+            "cancel that",
+            "cancel:None"
+          ],
+          [
+            "clip that",
+            "replay_save:None"
+          ],
+          [
+            "decrease the volume",
+            "volume_down:None"
+          ],
+          [
+            "end recording",
+            "record_stop:None"
+          ],
+          [
+            "exit full screen",
+            "unfullscreen:None"
+          ],
+          [
+            "go full screen",
+            "fullscreen:None"
+          ],
+          [
+            "go to the workspace eight",
+            "workspace:8"
+          ],
+          [
+            "go to the workspace five",
+            "workspace:5"
+          ],
+          [
+            "go to the workspace four",
+            "workspace:4"
+          ],
+          [
+            "go to the workspace nine",
+            "workspace:9"
+          ],
+          [
+            "go to the workspace one",
+            "workspace:1"
+          ],
+          [
+            "go to the workspace seven",
+            "workspace:7"
+          ],
+          [
+            "go to the workspace six",
+            "workspace:6"
+          ],
+          [
+            "go to the workspace ten",
+            "workspace:10"
+          ],
+          [
+            "go to the workspace three",
+            "workspace:3"
+          ],
+          [
+            "go to the workspace two",
+            "workspace:2"
+          ],
+          [
+            "go to workspace eight",
+            "workspace:8"
+          ],
+          [
+            "go to workspace five",
+            "workspace:5"
+          ],
+          [
+            "go to workspace four",
+            "workspace:4"
+          ],
+          [
+            "go to workspace nine",
+            "workspace:9"
+          ],
+          [
+            "go to workspace one",
+            "workspace:1"
+          ],
+          [
+            "go to workspace seven",
+            "workspace:7"
+          ],
+          [
+            "go to workspace six",
+            "workspace:6"
+          ],
+          [
+            "go to workspace ten",
+            "workspace:10"
+          ],
+          [
+            "go to workspace three",
+            "workspace:3"
+          ],
+          [
+            "go to workspace two",
+            "workspace:2"
+          ],
+          [
+            "increase the volume",
+            "volume_up:None"
+          ],
+          [
+            "leave full screen",
+            "unfullscreen:None"
+          ],
+          [
+            "lower the volume",
+            "volume_down:None"
+          ],
+          [
+            "lower volume",
+            "volume_down:None"
+          ],
+          [
+            "make the window full screen",
+            "fullscreen:None"
+          ],
+          [
+            "make this full screen",
+            "fullscreen:None"
+          ],
+          [
+            "make this window full screen",
+            "fullscreen:None"
+          ],
+          [
+            "move the window to the workspace eight",
+            "move_workspace:8"
+          ],
+          [
+            "move the window to the workspace five",
+            "move_workspace:5"
+          ],
+          [
+            "move the window to the workspace four",
+            "move_workspace:4"
+          ],
+          [
+            "move the window to the workspace nine",
+            "move_workspace:9"
+          ],
+          [
+            "move the window to the workspace one",
+            "move_workspace:1"
+          ],
+          [
+            "move the window to the workspace seven",
+            "move_workspace:7"
+          ],
+          [
+            "move the window to the workspace six",
+            "move_workspace:6"
+          ],
+          [
+            "move the window to the workspace ten",
+            "move_workspace:10"
+          ],
+          [
+            "move the window to the workspace three",
+            "move_workspace:3"
+          ],
+          [
+            "move the window to the workspace two",
+            "move_workspace:2"
+          ],
+          [
+            "move the window to workspace eight",
+            "move_workspace:8"
+          ],
+          [
+            "move the window to workspace five",
+            "move_workspace:5"
+          ],
+          [
+            "move the window to workspace four",
+            "move_workspace:4"
+          ],
+          [
+            "move the window to workspace nine",
+            "move_workspace:9"
+          ],
+          [
+            "move the window to workspace one",
+            "move_workspace:1"
+          ],
+          [
+            "move the window to workspace seven",
+            "move_workspace:7"
+          ],
+          [
+            "move the window to workspace six",
+            "move_workspace:6"
+          ],
+          [
+            "move the window to workspace ten",
+            "move_workspace:10"
+          ],
+          [
+            "move the window to workspace three",
+            "move_workspace:3"
+          ],
+          [
+            "move the window to workspace two",
+            "move_workspace:2"
+          ],
+          [
+            "move this window to the workspace eight",
+            "move_workspace:8"
+          ],
+          [
+            "move this window to the workspace five",
+            "move_workspace:5"
+          ],
+          [
+            "move this window to the workspace four",
+            "move_workspace:4"
+          ],
+          [
+            "move this window to the workspace nine",
+            "move_workspace:9"
+          ],
+          [
+            "move this window to the workspace one",
+            "move_workspace:1"
+          ],
+          [
+            "move this window to the workspace seven",
+            "move_workspace:7"
+          ],
+          [
+            "move this window to the workspace six",
+            "move_workspace:6"
+          ],
+          [
+            "move this window to the workspace ten",
+            "move_workspace:10"
+          ],
+          [
+            "move this window to the workspace three",
+            "move_workspace:3"
+          ],
+          [
+            "move this window to the workspace two",
+            "move_workspace:2"
+          ],
+          [
+            "move this window to workspace eight",
+            "move_workspace:8"
+          ],
+          [
+            "move this window to workspace five",
+            "move_workspace:5"
+          ],
+          [
+            "move this window to workspace four",
+            "move_workspace:4"
+          ],
+          [
+            "move this window to workspace nine",
+            "move_workspace:9"
+          ],
+          [
+            "move this window to workspace one",
+            "move_workspace:1"
+          ],
+          [
+            "move this window to workspace seven",
+            "move_workspace:7"
+          ],
+          [
+            "move this window to workspace six",
+            "move_workspace:6"
+          ],
+          [
+            "move this window to workspace ten",
+            "move_workspace:10"
+          ],
+          [
+            "move this window to workspace three",
+            "move_workspace:3"
+          ],
+          [
+            "move this window to workspace two",
+            "move_workspace:2"
+          ],
+          [
+            "mute audio",
+            "volume_mute:None"
+          ],
+          [
+            "mute the audio",
+            "volume_mute:None"
+          ],
+          [
+            "mute the volume",
+            "volume_mute:None"
+          ],
+          [
+            "mute volume",
+            "volume_mute:None"
+          ],
+          [
+            "never mind",
+            "cancel:None"
+          ],
+          [
+            "open recorder",
+            "open_recorder:None"
+          ],
+          [
+            "open the recorder",
+            "open_recorder:None"
+          ],
+          [
+            "open the video recorder",
+            "open_recorder:None"
+          ],
+          [
+            "open video recorder",
+            "open_recorder:None"
+          ],
+          [
+            "pause listening",
+            "pause:None"
+          ],
+          [
+            "raise the volume",
+            "volume_up:None"
+          ],
+          [
+            "record my screen",
+            "record_start:None"
+          ],
+          [
+            "restore the volume",
+            "volume_unmute:None"
+          ],
+          [
+            "save a replay",
+            "replay_save:None"
+          ],
+          [
+            "save replay",
+            "replay_save:None"
+          ],
+          [
+            "save that",
+            "replay_save:None"
+          ],
+          [
+            "save the replay",
+            "replay_save:None"
+          ],
+          [
+            "sound on",
+            "volume_unmute:None"
+          ],
+          [
+            "start a recording",
+            "record_start:None"
+          ],
+          [
+            "start instant replay",
+            "replay_start:None"
+          ],
+          [
+            "start recording",
+            "record_start:None"
+          ],
+          [
+            "start recording my screen",
+            "record_start:None"
+          ],
+          [
+            "start replay",
+            "replay_start:None"
+          ],
+          [
+            "start screen recording",
+            "record_start:None"
+          ],
+          [
+            "stop instant replay",
+            "replay_stop:None"
+          ],
+          [
+            "stop listening",
+            "pause:None"
+          ],
+          [
+            "stop listening to me",
+            "pause:None"
+          ],
+          [
+            "stop recording",
+            "record_stop:None"
+          ],
+          [
+            "stop recording my screen",
+            "record_stop:None"
+          ],
+          [
+            "stop replay",
+            "replay_stop:None"
+          ],
+          [
+            "stop screen recording",
+            "record_stop:None"
+          ],
+          [
+            "stop the recording",
+            "record_stop:None"
+          ],
+          [
+            "switch to the workspace eight",
+            "workspace:8"
+          ],
+          [
+            "switch to the workspace five",
+            "workspace:5"
+          ],
+          [
+            "switch to the workspace four",
+            "workspace:4"
+          ],
+          [
+            "switch to the workspace nine",
+            "workspace:9"
+          ],
+          [
+            "switch to the workspace one",
+            "workspace:1"
+          ],
+          [
+            "switch to the workspace seven",
+            "workspace:7"
+          ],
+          [
+            "switch to the workspace six",
+            "workspace:6"
+          ],
+          [
+            "switch to the workspace ten",
+            "workspace:10"
+          ],
+          [
+            "switch to the workspace three",
+            "workspace:3"
+          ],
+          [
+            "switch to the workspace two",
+            "workspace:2"
+          ],
+          [
+            "switch to workspace eight",
+            "workspace:8"
+          ],
+          [
+            "switch to workspace five",
+            "workspace:5"
+          ],
+          [
+            "switch to workspace four",
+            "workspace:4"
+          ],
+          [
+            "switch to workspace nine",
+            "workspace:9"
+          ],
+          [
+            "switch to workspace one",
+            "workspace:1"
+          ],
+          [
+            "switch to workspace seven",
+            "workspace:7"
+          ],
+          [
+            "switch to workspace six",
+            "workspace:6"
+          ],
+          [
+            "switch to workspace ten",
+            "workspace:10"
+          ],
+          [
+            "switch to workspace three",
+            "workspace:3"
+          ],
+          [
+            "switch to workspace two",
+            "workspace:2"
+          ],
+          [
+            "switch workspace eight",
+            "workspace:8"
+          ],
+          [
+            "switch workspace five",
+            "workspace:5"
+          ],
+          [
+            "switch workspace four",
+            "workspace:4"
+          ],
+          [
+            "switch workspace nine",
+            "workspace:9"
+          ],
+          [
+            "switch workspace one",
+            "workspace:1"
+          ],
+          [
+            "switch workspace seven",
+            "workspace:7"
+          ],
+          [
+            "switch workspace six",
+            "workspace:6"
+          ],
+          [
+            "switch workspace ten",
+            "workspace:10"
+          ],
+          [
+            "switch workspace three",
+            "workspace:3"
+          ],
+          [
+            "switch workspace two",
+            "workspace:2"
+          ],
+          [
+            "ten meters",
+            "record_start:None"
+          ],
+          [
+            "turn down the volume",
+            "volume_down:None"
+          ],
+          [
+            "turn off instant replay",
+            "replay_stop:None"
+          ],
+          [
+            "turn on instant replay",
+            "replay_start:None"
+          ],
+          [
+            "turn the sound back on",
+            "volume_unmute:None"
+          ],
+          [
+            "turn the sound off",
+            "volume_mute:None"
+          ],
+          [
+            "turn the sound on",
+            "volume_unmute:None"
+          ],
+          [
+            "turn the volume down",
+            "volume_down:None"
+          ],
+          [
+            "turn the volume up",
+            "volume_up:None"
+          ],
+          [
+            "turn up the volume",
+            "volume_up:None"
+          ],
+          [
+            "volume down",
+            "volume_down:None"
+          ],
+          [
+            "volume up",
+            "volume_up:None"
+          ],
+          [
+            "focus firefox",
+            "focus_app:firefox"
+          ],
+          [
+            "focus steam",
+            "focus_app:steam"
+          ],
+          [
+            "focus stremio",
+            "focus_app:stremio"
+          ],
+          [
+            "launch firefox",
+            "open_app:firefox"
+          ],
+          [
+            "launch steam",
+            "open_app:steam"
+          ],
+          [
+            "launch stremio",
+            "open_app:stremio"
+          ],
+          [
+            "open firefox",
+            "open_app:firefox"
+          ],
+          [
+            "open steam",
+            "open_app:steam"
+          ],
+          [
+            "open stremio",
+            "open_app:stremio"
+          ],
+          [
+            "start firefox",
+            "open_app:firefox"
+          ],
+          [
+            "start steam",
+            "open_app:steam"
+          ],
+          [
+            "start stremio",
+            "open_app:stremio"
+          ],
+          [
+            "switch to firefox",
+            "focus_app:firefox"
+          ],
+          [
+            "switch to steam",
+            "focus_app:steam"
+          ],
+          [
+            "switch to stremio",
+            "focus_app:stremio"
+          ]
+        ],
+        "wake_forms": [
+          "go forward"
+        ],
+        "greetings": [
+          "hey",
+          "hi",
+          "hello",
+          "okay",
+          "ok"
+        ],
+        "prefixes": [
+          "please",
+          "can you",
+          "could you",
+          "would you",
+          "can you please",
+          "could you please",
+          "would you please"
+        ],
+        "suffixes": [
+          "please",
+          "for me",
+          "for me please"
+        ],
+        "whisper_idle_seconds": null
+      }
+    },
+    "tiny.en": {
+      "config": {
+        "activation": {
+          "mode": "wake_word",
+          "wake_phrase": "go forward",
+          "wake_aliases": [],
+          "sensitivity": 0.5,
+          "command_timeout": 8,
+          "confidence": 0.35
+        },
+        "audio": {
+          "device": "",
+          "vad_rms": 0.005,
+          "adaptive_gate": true
+        },
+        "recognition": {
+          "backend": "auto",
+          "model_path": "",
+          "closest_match": true,
+          "accurate": true,
+          "noise_suppression": false
+        },
+        "privacy": {
+          "onboarded": false
+        },
+        "aliases": {},
+        "commands": {},
+        "app_prefixes": {},
+        "startup": false,
+        "brightness": {
+          "monitors": {},
+          "default": "",
+          "step": 10
+        },
+        "recording": {
+          "output_dir": "~/Videos/Murmur",
+          "monitor": "",
+          "system_audio": false,
+          "microphone": false,
+          "audio_device": "",
+          "fps": 30,
+          "codec": "libx264",
+          "quality": 23,
+          "rate_control": "quality",
+          "bitrate_mbps": 8,
+          "quality_preset": "very_high",
+          "encoder": "auto",
+          "configured": false,
+          "color_mode": "auto",
+          "combined_audio_source": false,
+          "sound_feedback": false,
+          "vaapi_device": "/dev/dri/renderD128"
+        },
+        "replay": {
+          "seconds": 120,
+          "autostart": false,
+          "game_audio": true,
+          "microphone": true,
+          "sound": true,
+          "storage": "ram",
+          "max_mb": 256,
+          "buffer_dir": ""
+        }
+      },
+      "mode": "wake_word",
+      "grammar": {
+        "launches": {},
+        "brightness_names": {},
+        "blocked_apps": [],
+        "phrases": [
+          "cancel",
+          "cancel that",
+          "clip that",
+          "decrease the volume",
+          "end recording",
+          "exit full screen",
+          "go full screen",
+          "go to the workspace eight",
+          "go to the workspace five",
+          "go to the workspace four",
+          "go to the workspace nine",
+          "go to the workspace one",
+          "go to the workspace seven",
+          "go to the workspace six",
+          "go to the workspace ten",
+          "go to the workspace three",
+          "go to the workspace two",
+          "go to workspace eight",
+          "go to workspace five",
+          "go to workspace four",
+          "go to workspace nine",
+          "go to workspace one",
+          "go to workspace seven",
+          "go to workspace six",
+          "go to workspace ten",
+          "go to workspace three",
+          "go to workspace two",
+          "increase the volume",
+          "leave full screen",
+          "lower the volume",
+          "lower volume",
+          "make the window full screen",
+          "make this full screen",
+          "make this window full screen",
+          "move the window to the workspace eight",
+          "move the window to the workspace five",
+          "move the window to the workspace four",
+          "move the window to the workspace nine",
+          "move the window to the workspace one",
+          "move the window to the workspace seven",
+          "move the window to the workspace six",
+          "move the window to the workspace ten",
+          "move the window to the workspace three",
+          "move the window to the workspace two",
+          "move the window to workspace eight",
+          "move the window to workspace five",
+          "move the window to workspace four",
+          "move the window to workspace nine",
+          "move the window to workspace one",
+          "move the window to workspace seven",
+          "move the window to workspace six",
+          "move the window to workspace ten",
+          "move the window to workspace three",
+          "move the window to workspace two",
+          "move this window to the workspace eight",
+          "move this window to the workspace five",
+          "move this window to the workspace four",
+          "move this window to the workspace nine",
+          "move this window to the workspace one",
+          "move this window to the workspace seven",
+          "move this window to the workspace six",
+          "move this window to the workspace ten",
+          "move this window to the workspace three",
+          "move this window to the workspace two",
+          "move this window to workspace eight",
+          "move this window to workspace five",
+          "move this window to workspace four",
+          "move this window to workspace nine",
+          "move this window to workspace one",
+          "move this window to workspace seven",
+          "move this window to workspace six",
+          "move this window to workspace ten",
+          "move this window to workspace three",
+          "move this window to workspace two",
+          "mute audio",
+          "mute the audio",
+          "mute the volume",
+          "mute volume",
+          "never mind",
+          "open recorder",
+          "open the recorder",
+          "open the video recorder",
+          "open video recorder",
+          "pause listening",
+          "raise the volume",
+          "record my screen",
+          "restore the volume",
+          "save a replay",
+          "save replay",
+          "save that",
+          "save the replay",
+          "sound on",
+          "start a recording",
+          "start instant replay",
+          "start recording",
+          "start recording my screen",
+          "start replay",
+          "start screen recording",
+          "stop instant replay",
+          "stop listening",
+          "stop listening to me",
+          "stop recording",
+          "stop recording my screen",
+          "stop replay",
+          "stop screen recording",
+          "stop the recording",
+          "switch to the workspace eight",
+          "switch to the workspace five",
+          "switch to the workspace four",
+          "switch to the workspace nine",
+          "switch to the workspace one",
+          "switch to the workspace seven",
+          "switch to the workspace six",
+          "switch to the workspace ten",
+          "switch to the workspace three",
+          "switch to the workspace two",
+          "switch to workspace eight",
+          "switch to workspace five",
+          "switch to workspace four",
+          "switch to workspace nine",
+          "switch to workspace one",
+          "switch to workspace seven",
+          "switch to workspace six",
+          "switch to workspace ten",
+          "switch to workspace three",
+          "switch to workspace two",
+          "switch workspace eight",
+          "switch workspace five",
+          "switch workspace four",
+          "switch workspace nine",
+          "switch workspace one",
+          "switch workspace seven",
+          "switch workspace six",
+          "switch workspace ten",
+          "switch workspace three",
+          "switch workspace two",
+          "ten meters",
+          "turn down the volume",
+          "turn off instant replay",
+          "turn on instant replay",
+          "turn the sound back on",
+          "turn the sound off",
+          "turn the sound on",
+          "turn the volume down",
+          "turn the volume up",
+          "turn up the volume",
+          "volume down",
+          "volume up"
+        ],
+        "apps": [
+          "firefox",
+          "steam",
+          "stremio"
+        ],
+        "custom": {
+          "ten meters": "start recording"
+        },
+        "verbs": [
+          "focus",
+          "launch",
+          "open",
+          "start",
+          "switch to"
+        ],
+        "prefixes": [
+          "please",
+          "can you",
+          "could you",
+          "would you",
+          "can you please",
+          "could you please",
+          "would you please"
+        ],
+        "suffixes": [],
+        "overflow": []
+      },
+      "native": {
+        "vosk_library": "/home/silver/Projects/jarvis/.venv/lib/python3.14/site-packages/vosk/libvosk.so",
+        "model_path": "/home/silver/.local/share/murmur/models/vosk-model-small-en-us-0.15",
+        "whisper": {
+          "encoder": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-tiny.en/tiny.en-encoder.int8.onnx",
+          "decoder": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-tiny.en/tiny.en-decoder.int8.onnx",
+          "tokens": "/home/silver/Projects/jarvis/build/memory-plan-models/models/sherpa-onnx-whisper-tiny.en/tiny.en-tokens.txt"
+        },
+        "denoiser": null,
+        "threads": 8,
+        "candidates": [
+          [
+            "cancel",
+            "cancel:None"
+          ],
+          [
+            "cancel that",
+            "cancel:None"
+          ],
+          [
+            "clip that",
+            "replay_save:None"
+          ],
+          [
+            "decrease the volume",
+            "volume_down:None"
+          ],
+          [
+            "end recording",
+            "record_stop:None"
+          ],
+          [
+            "exit full screen",
+            "unfullscreen:None"
+          ],
+          [
+            "go full screen",
+            "fullscreen:None"
+          ],
+          [
+            "go to the workspace eight",
+            "workspace:8"
+          ],
+          [
+            "go to the workspace five",
+            "workspace:5"
+          ],
+          [
+            "go to the workspace four",
+            "workspace:4"
+          ],
+          [
+            "go to the workspace nine",
+            "workspace:9"
+          ],
+          [
+            "go to the workspace one",
+            "workspace:1"
+          ],
+          [
+            "go to the workspace seven",
+            "workspace:7"
+          ],
+          [
+            "go to the workspace six",
+            "workspace:6"
+          ],
+          [
+            "go to the workspace ten",
+            "workspace:10"
+          ],
+          [
+            "go to the workspace three",
+            "workspace:3"
+          ],
+          [
+            "go to the workspace two",
+            "workspace:2"
+          ],
+          [
+            "go to workspace eight",
+            "workspace:8"
+          ],
+          [
+            "go to workspace five",
+            "workspace:5"
+          ],
+          [
+            "go to workspace four",
+            "workspace:4"
+          ],
+          [
+            "go to workspace nine",
+            "workspace:9"
+          ],
+          [
+            "go to workspace one",
+            "workspace:1"
+          ],
+          [
+            "go to workspace seven",
+            "workspace:7"
+          ],
+          [
+            "go to workspace six",
+            "workspace:6"
+          ],
+          [
+            "go to workspace ten",
+            "workspace:10"
+          ],
+          [
+            "go to workspace three",
+            "workspace:3"
+          ],
+          [
+            "go to workspace two",
+            "workspace:2"
+          ],
+          [
+            "increase the volume",
+            "volume_up:None"
+          ],
+          [
+            "leave full screen",
+            "unfullscreen:None"
+          ],
+          [
+            "lower the volume",
+            "volume_down:None"
+          ],
+          [
+            "lower volume",
+            "volume_down:None"
+          ],
+          [
+            "make the window full screen",
+            "fullscreen:None"
+          ],
+          [
+            "make this full screen",
+            "fullscreen:None"
+          ],
+          [
+            "make this window full screen",
+            "fullscreen:None"
+          ],
+          [
+            "move the window to the workspace eight",
+            "move_workspace:8"
+          ],
+          [
+            "move the window to the workspace five",
+            "move_workspace:5"
+          ],
+          [
+            "move the window to the workspace four",
+            "move_workspace:4"
+          ],
+          [
+            "move the window to the workspace nine",
+            "move_workspace:9"
+          ],
+          [
+            "move the window to the workspace one",
+            "move_workspace:1"
+          ],
+          [
+            "move the window to the workspace seven",
+            "move_workspace:7"
+          ],
+          [
+            "move the window to the workspace six",
+            "move_workspace:6"
+          ],
+          [
+            "move the window to the workspace ten",
+            "move_workspace:10"
+          ],
+          [
+            "move the window to the workspace three",
+            "move_workspace:3"
+          ],
+          [
+            "move the window to the workspace two",
+            "move_workspace:2"
+          ],
+          [
+            "move the window to workspace eight",
+            "move_workspace:8"
+          ],
+          [
+            "move the window to workspace five",
+            "move_workspace:5"
+          ],
+          [
+            "move the window to workspace four",
+            "move_workspace:4"
+          ],
+          [
+            "move the window to workspace nine",
+            "move_workspace:9"
+          ],
+          [
+            "move the window to workspace one",
+            "move_workspace:1"
+          ],
+          [
+            "move the window to workspace seven",
+            "move_workspace:7"
+          ],
+          [
+            "move the window to workspace six",
+            "move_workspace:6"
+          ],
+          [
+            "move the window to workspace ten",
+            "move_workspace:10"
+          ],
+          [
+            "move the window to workspace three",
+            "move_workspace:3"
+          ],
+          [
+            "move the window to workspace two",
+            "move_workspace:2"
+          ],
+          [
+            "move this window to the workspace eight",
+            "move_workspace:8"
+          ],
+          [
+            "move this window to the workspace five",
+            "move_workspace:5"
+          ],
+          [
+            "move this window to the workspace four",
+            "move_workspace:4"
+          ],
+          [
+            "move this window to the workspace nine",
+            "move_workspace:9"
+          ],
+          [
+            "move this window to the workspace one",
+            "move_workspace:1"
+          ],
+          [
+            "move this window to the workspace seven",
+            "move_workspace:7"
+          ],
+          [
+            "move this window to the workspace six",
+            "move_workspace:6"
+          ],
+          [
+            "move this window to the workspace ten",
+            "move_workspace:10"
+          ],
+          [
+            "move this window to the workspace three",
+            "move_workspace:3"
+          ],
+          [
+            "move this window to the workspace two",
+            "move_workspace:2"
+          ],
+          [
+            "move this window to workspace eight",
+            "move_workspace:8"
+          ],
+          [
+            "move this window to workspace five",
+            "move_workspace:5"
+          ],
+          [
+            "move this window to workspace four",
+            "move_workspace:4"
+          ],
+          [
+            "move this window to workspace nine",
+            "move_workspace:9"
+          ],
+          [
+            "move this window to workspace one",
+            "move_workspace:1"
+          ],
+          [
+            "move this window to workspace seven",
+            "move_workspace:7"
+          ],
+          [
+            "move this window to workspace six",
+            "move_workspace:6"
+          ],
+          [
+            "move this window to workspace ten",
+            "move_workspace:10"
+          ],
+          [
+            "move this window to workspace three",
+            "move_workspace:3"
+          ],
+          [
+            "move this window to workspace two",
+            "move_workspace:2"
+          ],
+          [
+            "mute audio",
+            "volume_mute:None"
+          ],
+          [
+            "mute the audio",
+            "volume_mute:None"
+          ],
+          [
+            "mute the volume",
+            "volume_mute:None"
+          ],
+          [
+            "mute volume",
+            "volume_mute:None"
+          ],
+          [
+            "never mind",
+            "cancel:None"
+          ],
+          [
+            "open recorder",
+            "open_recorder:None"
+          ],
+          [
+            "open the recorder",
+            "open_recorder:None"
+          ],
+          [
+            "open the video recorder",
+            "open_recorder:None"
+          ],
+          [
+            "open video recorder",
+            "open_recorder:None"
+          ],
+          [
+            "pause listening",
+            "pause:None"
+          ],
+          [
+            "raise the volume",
+            "volume_up:None"
+          ],
+          [
+            "record my screen",
+            "record_start:None"
+          ],
+          [
+            "restore the volume",
+            "volume_unmute:None"
+          ],
+          [
+            "save a replay",
+            "replay_save:None"
+          ],
+          [
+            "save replay",
+            "replay_save:None"
+          ],
+          [
+            "save that",
+            "replay_save:None"
+          ],
+          [
+            "save the replay",
+            "replay_save:None"
+          ],
+          [
+            "sound on",
+            "volume_unmute:None"
+          ],
+          [
+            "start a recording",
+            "record_start:None"
+          ],
+          [
+            "start instant replay",
+            "replay_start:None"
+          ],
+          [
+            "start recording",
+            "record_start:None"
+          ],
+          [
+            "start recording my screen",
+            "record_start:None"
+          ],
+          [
+            "start replay",
+            "replay_start:None"
+          ],
+          [
+            "start screen recording",
+            "record_start:None"
+          ],
+          [
+            "stop instant replay",
+            "replay_stop:None"
+          ],
+          [
+            "stop listening",
+            "pause:None"
+          ],
+          [
+            "stop listening to me",
+            "pause:None"
+          ],
+          [
+            "stop recording",
+            "record_stop:None"
+          ],
+          [
+            "stop recording my screen",
+            "record_stop:None"
+          ],
+          [
+            "stop replay",
+            "replay_stop:None"
+          ],
+          [
+            "stop screen recording",
+            "record_stop:None"
+          ],
+          [
+            "stop the recording",
+            "record_stop:None"
+          ],
+          [
+            "switch to the workspace eight",
+            "workspace:8"
+          ],
+          [
+            "switch to the workspace five",
+            "workspace:5"
+          ],
+          [
+            "switch to the workspace four",
+            "workspace:4"
+          ],
+          [
+            "switch to the workspace nine",
+            "workspace:9"
+          ],
+          [
+            "switch to the workspace one",
+            "workspace:1"
+          ],
+          [
+            "switch to the workspace seven",
+            "workspace:7"
+          ],
+          [
+            "switch to the workspace six",
+            "workspace:6"
+          ],
+          [
+            "switch to the workspace ten",
+            "workspace:10"
+          ],
+          [
+            "switch to the workspace three",
+            "workspace:3"
+          ],
+          [
+            "switch to the workspace two",
+            "workspace:2"
+          ],
+          [
+            "switch to workspace eight",
+            "workspace:8"
+          ],
+          [
+            "switch to workspace five",
+            "workspace:5"
+          ],
+          [
+            "switch to workspace four",
+            "workspace:4"
+          ],
+          [
+            "switch to workspace nine",
+            "workspace:9"
+          ],
+          [
+            "switch to workspace one",
+            "workspace:1"
+          ],
+          [
+            "switch to workspace seven",
+            "workspace:7"
+          ],
+          [
+            "switch to workspace six",
+            "workspace:6"
+          ],
+          [
+            "switch to workspace ten",
+            "workspace:10"
+          ],
+          [
+            "switch to workspace three",
+            "workspace:3"
+          ],
+          [
+            "switch to workspace two",
+            "workspace:2"
+          ],
+          [
+            "switch workspace eight",
+            "workspace:8"
+          ],
+          [
+            "switch workspace five",
+            "workspace:5"
+          ],
+          [
+            "switch workspace four",
+            "workspace:4"
+          ],
+          [
+            "switch workspace nine",
+            "workspace:9"
+          ],
+          [
+            "switch workspace one",
+            "workspace:1"
+          ],
+          [
+            "switch workspace seven",
+            "workspace:7"
+          ],
+          [
+            "switch workspace six",
+            "workspace:6"
+          ],
+          [
+            "switch workspace ten",
+            "workspace:10"
+          ],
+          [
+            "switch workspace three",
+            "workspace:3"
+          ],
+          [
+            "switch workspace two",
+            "workspace:2"
+          ],
+          [
+            "ten meters",
+            "record_start:None"
+          ],
+          [
+            "turn down the volume",
+            "volume_down:None"
+          ],
+          [
+            "turn off instant replay",
+            "replay_stop:None"
+          ],
+          [
+            "turn on instant replay",
+            "replay_start:None"
+          ],
+          [
+            "turn the sound back on",
+            "volume_unmute:None"
+          ],
+          [
+            "turn the sound off",
+            "volume_mute:None"
+          ],
+          [
+            "turn the sound on",
+            "volume_unmute:None"
+          ],
+          [
+            "turn the volume down",
+            "volume_down:None"
+          ],
+          [
+            "turn the volume up",
+            "volume_up:None"
+          ],
+          [
+            "turn up the volume",
+            "volume_up:None"
+          ],
+          [
+            "volume down",
+            "volume_down:None"
+          ],
+          [
+            "volume up",
+            "volume_up:None"
+          ],
+          [
+            "focus firefox",
+            "focus_app:firefox"
+          ],
+          [
+            "focus steam",
+            "focus_app:steam"
+          ],
+          [
+            "focus stremio",
+            "focus_app:stremio"
+          ],
+          [
+            "launch firefox",
+            "open_app:firefox"
+          ],
+          [
+            "launch steam",
+            "open_app:steam"
+          ],
+          [
+            "launch stremio",
+            "open_app:stremio"
+          ],
+          [
+            "open firefox",
+            "open_app:firefox"
+          ],
+          [
+            "open steam",
+            "open_app:steam"
+          ],
+          [
+            "open stremio",
+            "open_app:stremio"
+          ],
+          [
+            "start firefox",
+            "open_app:firefox"
+          ],
+          [
+            "start steam",
+            "open_app:steam"
+          ],
+          [
+            "start stremio",
+            "open_app:stremio"
+          ],
+          [
+            "switch to firefox",
+            "focus_app:firefox"
+          ],
+          [
+            "switch to steam",
+            "focus_app:steam"
+          ],
+          [
+            "switch to stremio",
+            "focus_app:stremio"
+          ]
+        ],
+        "wake_forms": [
+          "go forward"
+        ],
+        "greetings": [
+          "hey",
+          "hi",
+          "hello",
+          "okay",
+          "ok"
+        ],
+        "prefixes": [
+          "please",
+          "can you",
+          "could you",
+          "would you",
+          "can you please",
+          "could you please",
+          "would you please"
+        ],
+        "suffixes": [
+          "please",
+          "for me",
+          "for me please"
+        ],
+        "whisper_idle_seconds": null
+      }
+    }
+  },
+  "runs": [
+    {
+      "profile": "vosk",
+      "name": "natural",
+      "repeat": 1,
+      "input_sha256": "e1e4e81f8c48060017cccc329b6b6f4e6c3df01489d5b6a61cc003cd5a7c4349",
+      "expected_commands": [
+        "ten meters"
+      ],
+      "actual_commands": [
+        "ten meters"
+      ],
+      "passed": true,
+      "buffer_identical": true,
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.303074227,
+            "memory": {
+              "peak_rss_mib": 48.62890625,
+              "pss_mib": 44.59765625,
+              "rss_mib": 48.62890625
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.4794921875,
+            "peak_combined_rss_mib": 51.58984375,
+            "sample_interval_ms": 20,
+            "samples": 16,
+            "sum_process_hwm_upper_bound_mib": 51.58984375
+          }
+        },
+        {
+          "buffer_bytes": 65280,
+          "buffer_start_seconds": 0.06,
+          "elapsed_seconds": 2.100232804,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074532002,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          }
+        },
+        {
+          "event": "recognizer_ready",
+          "ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.220068358,
+              "memory": {
+                "peak_rss_mib": 157.4375,
+                "rss_mib": 157.0234375
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.340009008
+          }
+        },
+        {
+          "buffer_bytes": 154440,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/vosk-natural-1/buffer-4.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.220068358,
+              "memory": {
+                "peak_rss_mib": 157.4375,
+                "rss_mib": 157.0234375
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.340009008
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.30794457,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 174.2265625,
+              "rss_mib": 174.2265625
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 0,
+              "whisper_transcriptions": 0
+            },
+            "seconds": 0.310018753,
+            "settle_cpu_seconds": 9.920000000329663e-07,
+            "text": ""
+          },
+          "detector_complete": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.058861,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.88625849,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.03125,
+              "pss_mib": 49.6025390625,
+              "rss_mib": 54.03125
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/vosk-natural-1/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "event": "complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 4.88625,
+          "memory": {
+            "overlap_peak_pss_mib": 219.46484375,
+            "overlap_peak_rss_mib": 231.47265625,
+            "overlap_samples": 149,
+            "peak_combined_pss_mib": 219.46484375,
+            "peak_combined_rss_mib": 231.47265625,
+            "sample_interval_ms": 20,
+            "samples": 268,
+            "sum_process_hwm_upper_bound_mib": 231.47265625
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "result_elapsed_seconds": 5.202530271,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074532002,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "whole_application_acceptance": false,
+          "buffer_sha256": "0f2239b900854af95627df424644a4fa8b31b5e2a2268eb429793f72b728fd88"
+        }
+      ],
+      "latency_from_fixture_speech_end_ms": 1816.2802709999996
+    },
+    {
+      "profile": "vosk",
+      "name": "late-loader",
+      "repeat": 1,
+      "input_sha256": "e1e4e81f8c48060017cccc329b6b6f4e6c3df01489d5b6a61cc003cd5a7c4349",
+      "expected_commands": [
+        "ten meters"
+      ],
+      "actual_commands": [
+        "ten meters"
+      ],
+      "passed": true,
+      "buffer_identical": true,
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.300200167,
+            "memory": {
+              "peak_rss_mib": 48.49609375,
+              "pss_mib": 44.48828125,
+              "rss_mib": 48.49609375
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.4560546875,
+            "peak_combined_rss_mib": 51.5546875,
+            "sample_interval_ms": 20,
+            "samples": 16,
+            "sum_process_hwm_upper_bound_mib": 51.5546875
+          }
+        },
+        {
+          "buffer_bytes": 65280,
+          "buffer_start_seconds": 0.06,
+          "elapsed_seconds": 2.1002069,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074450432,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          }
+        },
+        {
+          "buffer_bytes": 154440,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/vosk-late-loader-1/buffer-522.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.230558797,
+              "memory": {
+                "peak_rss_mib": 154.55859375,
+                "rss_mib": 154.23828125
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 5.333799806
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.30163937199999996,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 171.4375,
+              "rss_mib": 171.4375
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 0,
+              "whisper_transcriptions": 0
+            },
+            "seconds": 0.30608604,
+            "settle_cpu_seconds": 1.011999999911417e-06,
+            "text": ""
+          },
+          "detector_complete": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.05919399999999997,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.886258101,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.6953125,
+              "pss_mib": 50.3583984375,
+              "rss_mib": 54.6953125
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/vosk-late-loader-1/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "event": "complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 4.88625,
+          "memory": {
+            "overlap_peak_pss_mib": 217.4404296875,
+            "overlap_peak_rss_mib": 229.390625,
+            "overlap_samples": 173,
+            "peak_combined_pss_mib": 217.4404296875,
+            "peak_combined_rss_mib": 229.390625,
+            "sample_interval_ms": 20,
+            "samples": 292,
+            "sum_process_hwm_upper_bound_mib": 229.390625
+          },
+          "payload_delay_ms": 3000,
+          "production_defaults_changed": false,
+          "result_elapsed_seconds": 5.64101305,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074450432,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "whole_application_acceptance": false,
+          "buffer_sha256": "0f2239b900854af95627df424644a4fa8b31b5e2a2268eb429793f72b728fd88"
+        }
+      ],
+      "latency_from_fixture_speech_end_ms": 2254.7630499999996
+    },
+    {
+      "profile": "vosk",
+      "name": "command-without-wake",
+      "repeat": 1,
+      "input_sha256": "9f0ca3624258c1e786a85ed56c2ca0f870a1717f5b7a904ec939dbc23f576f1f",
+      "expected_commands": [],
+      "actual_commands": [],
+      "passed": true,
+      "buffer_identical": null,
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.303676579,
+            "memory": {
+              "peak_rss_mib": 48.6171875,
+              "pss_mib": 44.59375,
+              "rss_mib": 48.6171875
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.4833984375,
+            "peak_combined_rss_mib": 51.58984375,
+            "sample_interval_ms": 20,
+            "samples": 16,
+            "sum_process_hwm_upper_bound_mib": 51.58984375
+          }
+        },
+        {
+          "buffer_bytes": 0,
+          "buffer_capacity_bytes": 0,
+          "buffer_path": null,
+          "buffer_start_seconds": null,
+          "command_ready": null,
+          "command_result": null,
+          "detector_complete": {
+            "audio_seconds": 3.68625,
+            "cpu_seconds": 0.04442400000000002,
+            "decoded_samples": 48480,
+            "detections": 0,
+            "elapsed_seconds": 3.68625992,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.46875,
+              "pss_mib": 49.0703125,
+              "rss_mib": 53.46875
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/vosk-command-without-wake-1/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "event": "complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 3.68625,
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 50.0380859375,
+            "peak_combined_rss_mib": 56.51953125,
+            "sample_interval_ms": 20,
+            "samples": 198,
+            "sum_process_hwm_upper_bound_mib": 56.51953125
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "result_elapsed_seconds": 3.6915911919999997,
+          "ring_capacity_bytes": 73920,
+          "trigger": null,
+          "whole_application_acceptance": false
+        }
+      ],
+      "latency_from_fixture_speech_end_ms": null
+    },
+    {
+      "profile": "vosk",
+      "name": "wake-without-command",
+      "repeat": 1,
+      "input_sha256": "19b60cf43fdfe136070e946bcebaa19bcab3da2585fddcc0c23fb1afc127da21",
+      "expected_commands": [],
+      "actual_commands": [],
+      "passed": true,
+      "buffer_identical": true,
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.332349698,
+            "memory": {
+              "peak_rss_mib": 48.62890625,
+              "pss_mib": 44.60546875,
+              "rss_mib": 48.62890625
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.5615234375,
+            "peak_combined_rss_mib": 51.671875,
+            "sample_interval_ms": 20,
+            "samples": 18,
+            "sum_process_hwm_upper_bound_mib": 51.671875
+          }
+        },
+        {
+          "buffer_bytes": 65280,
+          "buffer_start_seconds": 0.06,
+          "elapsed_seconds": 2.10022878,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074654748,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          }
+        },
+        {
+          "event": "recognizer_ready",
+          "ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.2219442,
+              "memory": {
+                "peak_rss_mib": 157.21484375,
+                "rss_mib": 156.9921875
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.340011899
+          }
+        },
+        {
+          "buffer_bytes": 103680,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/vosk-wake-without-command-1/buffer-1044.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.2219442,
+              "memory": {
+                "peak_rss_mib": 157.21484375,
+                "rss_mib": 156.9921875
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.340011899
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.03115462400000002,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 159.60546875,
+              "rss_mib": 159.60546875
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 0,
+              "whisper_transcriptions": 0
+            },
+            "seconds": 0.031953628,
+            "settle_cpu_seconds": 1.0120000000224394e-06,
+            "text": ""
+          },
+          "detector_complete": {
+            "audio_seconds": 3.3,
+            "cpu_seconds": 0.035943,
+            "decoded_samples": 43200,
+            "detections": 1,
+            "elapsed_seconds": 3.30000721,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.52734375,
+              "pss_mib": 49.0986328125,
+              "rss_mib": 53.52734375
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/vosk-wake-without-command-1/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 9600,
+            "stream_count": 1
+          },
+          "event": "complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 3.3,
+          "memory": {
+            "overlap_peak_pss_mib": 204.359375,
+            "overlap_peak_rss_mib": 216.33203125,
+            "overlap_samples": 60,
+            "peak_combined_pss_mib": 204.359375,
+            "peak_combined_rss_mib": 216.33203125,
+            "sample_interval_ms": 20,
+            "samples": 181,
+            "sum_process_hwm_upper_bound_mib": 216.33203125
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "result_elapsed_seconds": 3.338124085,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074654748,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "whole_application_acceptance": false,
+          "buffer_sha256": "6344200b1367c4c38a783a3925dfd64c5a88b8b23b9b04a98b7782a2382d13de"
+        }
+      ],
+      "latency_from_fixture_speech_end_ms": null
+    },
+    {
+      "profile": "small.en",
+      "name": "natural",
+      "repeat": 1,
+      "input_sha256": "e1e4e81f8c48060017cccc329b6b6f4e6c3df01489d5b6a61cc003cd5a7c4349",
+      "expected_commands": [
+        "ten meters"
+      ],
+      "actual_commands": [
+        "ten meters"
+      ],
+      "passed": true,
+      "buffer_identical": true,
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.333619662,
+            "memory": {
+              "peak_rss_mib": 48.5078125,
+              "pss_mib": 44.484375,
+              "rss_mib": 48.5078125
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.4013671875,
+            "peak_combined_rss_mib": 51.5078125,
+            "sample_interval_ms": 20,
+            "samples": 18,
+            "sum_process_hwm_upper_bound_mib": 51.5078125
+          }
+        },
+        {
+          "buffer_bytes": 65280,
+          "buffer_start_seconds": 0.06,
+          "elapsed_seconds": 2.100206611,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074629754,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          }
+        },
+        {
+          "event": "recognizer_ready",
+          "ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 1.820345345,
+              "memory": {
+                "peak_rss_mib": 460.15234375,
+                "rss_mib": 460.15234375
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 3.930007355
+          }
+        },
+        {
+          "buffer_bytes": 154440,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/small.en-natural-1/buffer-1562.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 1.820345345,
+              "memory": {
+                "peak_rss_mib": 460.15234375,
+                "rss_mib": 460.15234375
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 3.930007355
+          },
+          "command_result": {
+            "decode_cpu_seconds": 1.424263881,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 558.625,
+              "rss_mib": 477.2109375
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.526899422,
+            "settle_cpu_seconds": 1.1020000001416008e-06,
+            "text": ""
+          },
+          "detector_complete": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.06145999999999996,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.886265724,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.125,
+              "pss_mib": 49.6962890625,
+              "rss_mib": 54.125
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/small.en-natural-1/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "event": "complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 4.88625,
+          "memory": {
+            "overlap_peak_pss_mib": 605.099609375,
+            "overlap_peak_rss_mib": 617.21484375,
+            "overlap_samples": 148,
+            "peak_combined_pss_mib": 605.099609375,
+            "peak_combined_rss_mib": 617.21484375,
+            "sample_interval_ms": 20,
+            "samples": 269,
+            "sum_process_hwm_upper_bound_mib": 617.21484375
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "result_elapsed_seconds": 5.425452105,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074629754,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "whole_application_acceptance": false,
+          "buffer_sha256": "0f2239b900854af95627df424644a4fa8b31b5e2a2268eb429793f72b728fd88"
+        }
+      ],
+      "latency_from_fixture_speech_end_ms": 2039.2021049999998
+    },
+    {
+      "profile": "small.en",
+      "name": "late-loader",
+      "repeat": 1,
+      "input_sha256": "e1e4e81f8c48060017cccc329b6b6f4e6c3df01489d5b6a61cc003cd5a7c4349",
+      "expected_commands": [
+        "ten meters"
+      ],
+      "actual_commands": [
+        "ten meters"
+      ],
+      "passed": true,
+      "buffer_identical": true,
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.299467904,
+            "memory": {
+              "peak_rss_mib": 48.59375,
+              "pss_mib": 44.5703125,
+              "rss_mib": 48.59375
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.5224609375,
+            "peak_combined_rss_mib": 51.6328125,
+            "sample_interval_ms": 20,
+            "samples": 16,
+            "sum_process_hwm_upper_bound_mib": 51.6328125
+          }
+        },
+        {
+          "buffer_bytes": 65280,
+          "buffer_start_seconds": 0.06,
+          "elapsed_seconds": 2.100227265,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074908527,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          }
+        },
+        {
+          "buffer_bytes": 154440,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/small.en-late-loader-1/buffer-2088.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 1.867900434,
+              "memory": {
+                "peak_rss_mib": 461.7265625,
+                "rss_mib": 461.7265625
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 6.9710834550000005
+          },
+          "command_result": {
+            "decode_cpu_seconds": 1.4537610239999998,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 557.55859375,
+              "rss_mib": 478.328125
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.535500365,
+            "settle_cpu_seconds": 1.081999999819061e-06,
+            "text": ""
+          },
+          "detector_complete": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.05935999999999997,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.886258312,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.03125,
+              "pss_mib": 49.62890625,
+              "rss_mib": 54.03125
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/small.en-late-loader-1/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "event": "complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 4.88625,
+          "memory": {
+            "overlap_peak_pss_mib": 604.4296875,
+            "overlap_peak_rss_mib": 616.41796875,
+            "overlap_samples": 249,
+            "peak_combined_pss_mib": 604.4296875,
+            "peak_combined_rss_mib": 616.41796875,
+            "sample_interval_ms": 20,
+            "samples": 368,
+            "sum_process_hwm_upper_bound_mib": 616.41796875
+          },
+          "payload_delay_ms": 3000,
+          "production_defaults_changed": false,
+          "result_elapsed_seconds": 7.513834235,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074908527,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "whole_application_acceptance": false,
+          "buffer_sha256": "0f2239b900854af95627df424644a4fa8b31b5e2a2268eb429793f72b728fd88"
+        }
+      ],
+      "latency_from_fixture_speech_end_ms": 4127.584235
+    },
+    {
+      "profile": "small.en",
+      "name": "command-without-wake",
+      "repeat": 1,
+      "input_sha256": "9f0ca3624258c1e786a85ed56c2ca0f870a1717f5b7a904ec939dbc23f576f1f",
+      "expected_commands": [],
+      "actual_commands": [],
+      "passed": true,
+      "buffer_identical": null,
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.304439465,
+            "memory": {
+              "peak_rss_mib": 48.60546875,
+              "pss_mib": 44.6015625,
+              "rss_mib": 48.60546875
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.5537109375,
+            "peak_combined_rss_mib": 51.64453125,
+            "sample_interval_ms": 20,
+            "samples": 16,
+            "sum_process_hwm_upper_bound_mib": 51.64453125
+          }
+        },
+        {
+          "buffer_bytes": 0,
+          "buffer_capacity_bytes": 0,
+          "buffer_path": null,
+          "buffer_start_seconds": null,
+          "command_ready": null,
+          "command_result": null,
+          "detector_complete": {
+            "audio_seconds": 3.68625,
+            "cpu_seconds": 0.043684,
+            "decoded_samples": 48480,
+            "detections": 0,
+            "elapsed_seconds": 3.686259322,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.87890625,
+              "pss_mib": 50.4765625,
+              "rss_mib": 54.87890625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/small.en-command-without-wake-1/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "event": "complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 3.68625,
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 51.4599609375,
+            "peak_combined_rss_mib": 57.9453125,
+            "sample_interval_ms": 20,
+            "samples": 199,
+            "sum_process_hwm_upper_bound_mib": 57.9453125
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "result_elapsed_seconds": 3.6915525110000003,
+          "ring_capacity_bytes": 73920,
+          "trigger": null,
+          "whole_application_acceptance": false
+        }
+      ],
+      "latency_from_fixture_speech_end_ms": null
+    },
+    {
+      "profile": "small.en",
+      "name": "wake-without-command",
+      "repeat": 1,
+      "input_sha256": "19b60cf43fdfe136070e946bcebaa19bcab3da2585fddcc0c23fb1afc127da21",
+      "expected_commands": [],
+      "actual_commands": [],
+      "passed": true,
+      "buffer_identical": true,
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.330577566,
+            "memory": {
+              "peak_rss_mib": 48.625,
+              "pss_mib": 44.6015625,
+              "rss_mib": 48.625
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.5263671875,
+            "peak_combined_rss_mib": 51.63671875,
+            "sample_interval_ms": 20,
+            "samples": 18,
+            "sum_process_hwm_upper_bound_mib": 51.63671875
+          }
+        },
+        {
+          "buffer_bytes": 65280,
+          "buffer_start_seconds": 0.06,
+          "elapsed_seconds": 2.100210785,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074628908,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          }
+        },
+        {
+          "buffer_bytes": 103680,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/small.en-wake-without-command-1/buffer-2618.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 1.85136019,
+              "memory": {
+                "peak_rss_mib": 462.91796875,
+                "rss_mib": 462.91796875
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 3.953344462
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.02995742899999998,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 463.76171875,
+              "rss_mib": 463.76171875
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 0
+            },
+            "seconds": 0.030145516,
+            "settle_cpu_seconds": 1.0720000001018803e-06,
+            "text": ""
+          },
+          "detector_complete": {
+            "audio_seconds": 3.3,
+            "cpu_seconds": 0.03656799999999999,
+            "decoded_samples": 43200,
+            "detections": 1,
+            "elapsed_seconds": 3.300011438,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.39453125,
+              "pss_mib": 48.9921875,
+              "rss_mib": 53.39453125
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/small.en-wake-without-command-1/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 9600,
+            "stream_count": 1
+          },
+          "event": "complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 3.3,
+          "memory": {
+            "overlap_peak_pss_mib": 508.2470703125,
+            "overlap_peak_rss_mib": 520.32421875,
+            "overlap_samples": 84,
+            "peak_combined_pss_mib": 508.2470703125,
+            "peak_combined_rss_mib": 520.32421875,
+            "sample_interval_ms": 20,
+            "samples": 205,
+            "sum_process_hwm_upper_bound_mib": 520.32421875
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "result_elapsed_seconds": 3.985347464,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074628908,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "whole_application_acceptance": false,
+          "buffer_sha256": "6344200b1367c4c38a783a3925dfd64c5a88b8b23b9b04a98b7782a2382d13de"
+        }
+      ],
+      "latency_from_fixture_speech_end_ms": null
+    },
+    {
+      "profile": "tiny.en",
+      "name": "natural",
+      "repeat": 1,
+      "input_sha256": "e1e4e81f8c48060017cccc329b6b6f4e6c3df01489d5b6a61cc003cd5a7c4349",
+      "expected_commands": [
+        "ten meters"
+      ],
+      "actual_commands": [
+        "ten meters"
+      ],
+      "passed": true,
+      "buffer_identical": true,
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.31417194,
+            "memory": {
+              "peak_rss_mib": 48.6171875,
+              "pss_mib": 44.640625,
+              "rss_mib": 48.6171875
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.5341796875,
+            "peak_combined_rss_mib": 51.59375,
+            "sample_interval_ms": 20,
+            "samples": 17,
+            "sum_process_hwm_upper_bound_mib": 51.59375
+          }
+        },
+        {
+          "buffer_bytes": 65280,
+          "buffer_start_seconds": 0.06,
+          "elapsed_seconds": 2.100197784,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074545885,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          }
+        },
+        {
+          "event": "recognizer_ready",
+          "ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.533450567,
+              "memory": {
+                "peak_rss_mib": 235.109375,
+                "rss_mib": 235.109375
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.640017378
+          }
+        },
+        {
+          "buffer_bytes": 154440,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/tiny.en-natural-1/buffer-3144.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.533450567,
+              "memory": {
+                "peak_rss_mib": 235.109375,
+                "rss_mib": 235.109375
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.640017378
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.521115628,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 271.4296875,
+              "rss_mib": 251.70703125
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.371550699,
+            "settle_cpu_seconds": 9.109999998813124e-07,
+            "text": ""
+          },
+          "detector_complete": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.05930000000000002,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.886268755,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.7734375,
+              "pss_mib": 49.3984375,
+              "rss_mib": 53.7734375
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/tiny.en-natural-1/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "event": "complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 4.88625,
+          "memory": {
+            "overlap_peak_pss_mib": 310.8388671875,
+            "overlap_peak_rss_mib": 322.91796875,
+            "overlap_samples": 150,
+            "peak_combined_pss_mib": 310.8388671875,
+            "peak_combined_rss_mib": 322.91796875,
+            "sample_interval_ms": 20,
+            "samples": 270,
+            "sum_process_hwm_upper_bound_mib": 328.43359375
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "result_elapsed_seconds": 5.266798542,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074545885,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "whole_application_acceptance": false,
+          "buffer_sha256": "0f2239b900854af95627df424644a4fa8b31b5e2a2268eb429793f72b728fd88"
+        }
+      ],
+      "latency_from_fixture_speech_end_ms": 1880.548542
+    },
+    {
+      "profile": "tiny.en",
+      "name": "late-loader",
+      "repeat": 1,
+      "input_sha256": "e1e4e81f8c48060017cccc329b6b6f4e6c3df01489d5b6a61cc003cd5a7c4349",
+      "expected_commands": [
+        "ten meters"
+      ],
+      "actual_commands": [
+        "ten meters"
+      ],
+      "passed": true,
+      "buffer_identical": true,
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.301989589,
+            "memory": {
+              "peak_rss_mib": 48.62109375,
+              "pss_mib": 44.60546875,
+              "rss_mib": 48.62109375
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.4873046875,
+            "peak_combined_rss_mib": 51.58203125,
+            "sample_interval_ms": 20,
+            "samples": 16,
+            "sum_process_hwm_upper_bound_mib": 51.58203125
+          }
+        },
+        {
+          "buffer_bytes": 65280,
+          "buffer_start_seconds": 0.06,
+          "elapsed_seconds": 2.100207767,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074598729,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          }
+        },
+        {
+          "buffer_bytes": 154440,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/tiny.en-late-loader-1/buffer-3670.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.54724416,
+              "memory": {
+                "peak_rss_mib": 234.83203125,
+                "rss_mib": 234.83203125
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 5.650506828
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.5088230589999999,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 270.96484375,
+              "rss_mib": 251.22265625
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.345896066,
+            "settle_cpu_seconds": 1.2719999999966092e-06,
+            "text": ""
+          },
+          "detector_complete": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.059889000000000026,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.886257173,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.75390625,
+              "pss_mib": 49.36328125,
+              "rss_mib": 53.75390625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/tiny.en-late-loader-1/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "event": "complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 4.88625,
+          "memory": {
+            "overlap_peak_pss_mib": 310.193359375,
+            "overlap_peak_rss_mib": 322.42578125,
+            "overlap_samples": 190,
+            "peak_combined_pss_mib": 310.193359375,
+            "peak_combined_rss_mib": 322.42578125,
+            "sample_interval_ms": 20,
+            "samples": 309,
+            "sum_process_hwm_upper_bound_mib": 327.9375
+          },
+          "payload_delay_ms": 3000,
+          "production_defaults_changed": false,
+          "result_elapsed_seconds": 5.998026918,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074598729,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "whole_application_acceptance": false,
+          "buffer_sha256": "0f2239b900854af95627df424644a4fa8b31b5e2a2268eb429793f72b728fd88"
+        }
+      ],
+      "latency_from_fixture_speech_end_ms": 2611.776918
+    },
+    {
+      "profile": "tiny.en",
+      "name": "command-without-wake",
+      "repeat": 1,
+      "input_sha256": "9f0ca3624258c1e786a85ed56c2ca0f870a1717f5b7a904ec939dbc23f576f1f",
+      "expected_commands": [],
+      "actual_commands": [],
+      "passed": true,
+      "buffer_identical": null,
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.298202902,
+            "memory": {
+              "peak_rss_mib": 48.5,
+              "pss_mib": 44.5126953125,
+              "rss_mib": 48.5
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.4140625,
+            "peak_combined_rss_mib": 51.48046875,
+            "sample_interval_ms": 20,
+            "samples": 16,
+            "sum_process_hwm_upper_bound_mib": 51.48046875
+          }
+        },
+        {
+          "buffer_bytes": 0,
+          "buffer_capacity_bytes": 0,
+          "buffer_path": null,
+          "buffer_start_seconds": null,
+          "command_ready": null,
+          "command_result": null,
+          "detector_complete": {
+            "audio_seconds": 3.68625,
+            "cpu_seconds": 0.04411300000000001,
+            "decoded_samples": 48480,
+            "detections": 0,
+            "elapsed_seconds": 3.686261405,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.640625,
+              "pss_mib": 49.2197265625,
+              "rss_mib": 53.640625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/tiny.en-command-without-wake-1/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "event": "complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 3.68625,
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 50.19921875,
+            "peak_combined_rss_mib": 56.69921875,
+            "sample_interval_ms": 20,
+            "samples": 198,
+            "sum_process_hwm_upper_bound_mib": 56.69921875
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "result_elapsed_seconds": 3.691651018,
+          "ring_capacity_bytes": 73920,
+          "trigger": null,
+          "whole_application_acceptance": false
+        }
+      ],
+      "latency_from_fixture_speech_end_ms": null
+    },
+    {
+      "profile": "tiny.en",
+      "name": "wake-without-command",
+      "repeat": 1,
+      "input_sha256": "19b60cf43fdfe136070e946bcebaa19bcab3da2585fddcc0c23fb1afc127da21",
+      "expected_commands": [],
+      "actual_commands": [],
+      "passed": true,
+      "buffer_identical": true,
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.329028786,
+            "memory": {
+              "peak_rss_mib": 48.6328125,
+              "pss_mib": 44.609375,
+              "rss_mib": 48.6328125
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.4873046875,
+            "peak_combined_rss_mib": 51.58984375,
+            "sample_interval_ms": 20,
+            "samples": 18,
+            "sum_process_hwm_upper_bound_mib": 51.58984375
+          }
+        },
+        {
+          "buffer_bytes": 65280,
+          "buffer_start_seconds": 0.06,
+          "elapsed_seconds": 2.100207295,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074690822,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          }
+        },
+        {
+          "event": "recognizer_ready",
+          "ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.527614303,
+              "memory": {
+                "peak_rss_mib": 232.75,
+                "rss_mib": 232.75
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.6400189469999997
+          }
+        },
+        {
+          "buffer_bytes": 103680,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/tiny.en-wake-without-command-1/buffer-4200.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.527614303,
+              "memory": {
+                "peak_rss_mib": 232.75,
+                "rss_mib": 232.75
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.6400189469999997
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.03029019899999996,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 233.6171875,
+              "rss_mib": 233.6171875
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 0
+            },
+            "seconds": 0.031317264,
+            "settle_cpu_seconds": 8.910000000028617e-07,
+            "text": ""
+          },
+          "detector_complete": {
+            "audio_seconds": 3.3,
+            "cpu_seconds": 0.03515499999999999,
+            "decoded_samples": 43200,
+            "detections": 1,
+            "elapsed_seconds": 3.300008779,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.32421875,
+              "pss_mib": 48.8994140625,
+              "rss_mib": 53.32421875
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/tiny.en-wake-without-command-1/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 9600,
+            "stream_count": 1
+          },
+          "event": "complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 3.3,
+          "memory": {
+            "overlap_peak_pss_mib": 278.1591796875,
+            "overlap_peak_rss_mib": 290.109375,
+            "overlap_samples": 58,
+            "peak_combined_pss_mib": 278.1591796875,
+            "peak_combined_rss_mib": 290.109375,
+            "sample_interval_ms": 20,
+            "samples": 179,
+            "sum_process_hwm_upper_bound_mib": 290.109375
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "result_elapsed_seconds": 3.337704707,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074690822,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "whole_application_acceptance": false,
+          "buffer_sha256": "6344200b1367c4c38a783a3925dfd64c5a88b8b23b9b04a98b7782a2382d13de"
+        }
+      ],
+      "latency_from_fixture_speech_end_ms": null
+    },
+    {
+      "profile": "vosk",
+      "name": "natural",
+      "repeat": 2,
+      "input_sha256": "e1e4e81f8c48060017cccc329b6b6f4e6c3df01489d5b6a61cc003cd5a7c4349",
+      "expected_commands": [
+        "ten meters"
+      ],
+      "actual_commands": [
+        "ten meters"
+      ],
+      "passed": true,
+      "buffer_identical": true,
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.306455305,
+            "memory": {
+              "peak_rss_mib": 48.58984375,
+              "pss_mib": 44.57421875,
+              "rss_mib": 48.58984375
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.4833984375,
+            "peak_combined_rss_mib": 51.58203125,
+            "sample_interval_ms": 20,
+            "samples": 17,
+            "sum_process_hwm_upper_bound_mib": 51.58203125
+          }
+        },
+        {
+          "buffer_bytes": 65280,
+          "buffer_start_seconds": 0.06,
+          "elapsed_seconds": 2.100219832,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074579284,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          }
+        },
+        {
+          "event": "recognizer_ready",
+          "ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.220042685,
+              "memory": {
+                "peak_rss_mib": 153.40625,
+                "rss_mib": 153.40625
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.34001038
+          }
+        },
+        {
+          "buffer_bytes": 154440,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/vosk-natural-2/buffer-4726.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.220042685,
+              "memory": {
+                "peak_rss_mib": 153.40625,
+                "rss_mib": 153.40625
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.34001038
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.306720203,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 171.37890625,
+              "rss_mib": 171.37890625
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 0,
+              "whisper_transcriptions": 0
+            },
+            "seconds": 0.310871576,
+            "settle_cpu_seconds": 9.61999999993246e-07,
+            "text": ""
+          },
+          "detector_complete": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.058877999999999986,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.886269164,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.9296875,
+              "pss_mib": 50.56640625,
+              "rss_mib": 54.9296875
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/vosk-natural-2/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "event": "complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 4.88625,
+          "memory": {
+            "overlap_peak_pss_mib": 217.61328125,
+            "overlap_peak_rss_mib": 229.5546875,
+            "overlap_samples": 148,
+            "peak_combined_pss_mib": 217.61328125,
+            "peak_combined_rss_mib": 229.5546875,
+            "sample_interval_ms": 20,
+            "samples": 268,
+            "sum_process_hwm_upper_bound_mib": 229.5546875
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "result_elapsed_seconds": 5.203519223,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074579284,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "whole_application_acceptance": false,
+          "buffer_sha256": "0f2239b900854af95627df424644a4fa8b31b5e2a2268eb429793f72b728fd88"
+        }
+      ],
+      "latency_from_fixture_speech_end_ms": 1817.2692229999998
+    },
+    {
+      "profile": "small.en",
+      "name": "natural",
+      "repeat": 2,
+      "input_sha256": "e1e4e81f8c48060017cccc329b6b6f4e6c3df01489d5b6a61cc003cd5a7c4349",
+      "expected_commands": [
+        "ten meters"
+      ],
+      "actual_commands": [
+        "ten meters"
+      ],
+      "passed": true,
+      "buffer_identical": true,
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.300516273,
+            "memory": {
+              "peak_rss_mib": 47.66796875,
+              "pss_mib": 43.64453125,
+              "rss_mib": 47.66796875
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 44.5341796875,
+            "peak_combined_rss_mib": 50.63671875,
+            "sample_interval_ms": 20,
+            "samples": 16,
+            "sum_process_hwm_upper_bound_mib": 50.63671875
+          }
+        },
+        {
+          "buffer_bytes": 65280,
+          "buffer_start_seconds": 0.06,
+          "elapsed_seconds": 2.100190862,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074597954,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          }
+        },
+        {
+          "event": "recognizer_ready",
+          "ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 1.790038418,
+              "memory": {
+                "peak_rss_mib": 461.328125,
+                "rss_mib": 461.328125
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 3.9000116780000003
+          }
+        },
+        {
+          "buffer_bytes": 154440,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/small.en-natural-2/buffer-5244.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 1.790038418,
+              "memory": {
+                "peak_rss_mib": 461.328125,
+                "rss_mib": 461.328125
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 3.9000116780000003
+          },
+          "command_result": {
+            "decode_cpu_seconds": 1.3462741780000005,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 535.31640625,
+              "rss_mib": 477.5859375
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.494765331,
+            "settle_cpu_seconds": 9.81999999982719e-07,
+            "text": ""
+          },
+          "detector_complete": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.06023600000000001,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.886258484,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.62890625,
+              "pss_mib": 49.2041015625,
+              "rss_mib": 53.62890625
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/small.en-natural-2/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "event": "complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 4.88625,
+          "memory": {
+            "overlap_peak_pss_mib": 581.552734375,
+            "overlap_peak_rss_mib": 593.62109375,
+            "overlap_samples": 148,
+            "peak_combined_pss_mib": 581.552734375,
+            "peak_combined_rss_mib": 593.62109375,
+            "sample_interval_ms": 20,
+            "samples": 267,
+            "sum_process_hwm_upper_bound_mib": 593.62109375
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "result_elapsed_seconds": 5.392983004,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074597954,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "whole_application_acceptance": false,
+          "buffer_sha256": "0f2239b900854af95627df424644a4fa8b31b5e2a2268eb429793f72b728fd88"
+        }
+      ],
+      "latency_from_fixture_speech_end_ms": 2006.7330040000004
+    },
+    {
+      "profile": "tiny.en",
+      "name": "natural",
+      "repeat": 2,
+      "input_sha256": "e1e4e81f8c48060017cccc329b6b6f4e6c3df01489d5b6a61cc003cd5a7c4349",
+      "expected_commands": [
+        "ten meters"
+      ],
+      "actual_commands": [
+        "ten meters"
+      ],
+      "passed": true,
+      "buffer_identical": true,
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.292727921,
+            "memory": {
+              "peak_rss_mib": 48.703125,
+              "pss_mib": 44.68359375,
+              "rss_mib": 48.703125
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.6552734375,
+            "peak_combined_rss_mib": 51.76171875,
+            "sample_interval_ms": 20,
+            "samples": 16,
+            "sum_process_hwm_upper_bound_mib": 51.76171875
+          }
+        },
+        {
+          "buffer_bytes": 65280,
+          "buffer_start_seconds": 0.06,
+          "elapsed_seconds": 2.10018218,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074460508,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          }
+        },
+        {
+          "event": "recognizer_ready",
+          "ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.546131709,
+              "memory": {
+                "peak_rss_mib": 232.9609375,
+                "rss_mib": 232.9609375
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.670009475
+          }
+        },
+        {
+          "buffer_bytes": 154440,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/tiny.en-natural-2/buffer-5770.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.546131709,
+              "memory": {
+                "peak_rss_mib": 232.9609375,
+                "rss_mib": 232.9609375
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.670009475
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.544774362,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 268.80859375,
+              "rss_mib": 249.30078125
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.37950955,
+            "settle_cpu_seconds": 1.0520000000013852e-06,
+            "text": ""
+          },
+          "detector_complete": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.05777100000000002,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.886268062,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 53.48046875,
+              "pss_mib": 49.0556640625,
+              "rss_mib": 53.48046875
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/tiny.en-natural-2/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "event": "complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 4.88625,
+          "memory": {
+            "overlap_peak_pss_mib": 310.271484375,
+            "overlap_peak_rss_mib": 320.06640625,
+            "overlap_samples": 150,
+            "peak_combined_pss_mib": 310.271484375,
+            "peak_combined_rss_mib": 320.06640625,
+            "sample_interval_ms": 20,
+            "samples": 269,
+            "sum_process_hwm_upper_bound_mib": 325.54296875
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "result_elapsed_seconds": 5.277135964,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074460508,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "whole_application_acceptance": false,
+          "buffer_sha256": "0f2239b900854af95627df424644a4fa8b31b5e2a2268eb429793f72b728fd88"
+        }
+      ],
+      "latency_from_fixture_speech_end_ms": 1890.8859640000003
+    },
+    {
+      "profile": "vosk",
+      "name": "natural",
+      "repeat": 3,
+      "input_sha256": "e1e4e81f8c48060017cccc329b6b6f4e6c3df01489d5b6a61cc003cd5a7c4349",
+      "expected_commands": [
+        "ten meters"
+      ],
+      "actual_commands": [
+        "ten meters"
+      ],
+      "passed": true,
+      "buffer_identical": true,
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.29634588,
+            "memory": {
+              "peak_rss_mib": 48.64453125,
+              "pss_mib": 44.62109375,
+              "rss_mib": 48.64453125
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.4951171875,
+            "peak_combined_rss_mib": 51.6015625,
+            "sample_interval_ms": 20,
+            "samples": 16,
+            "sum_process_hwm_upper_bound_mib": 51.6015625
+          }
+        },
+        {
+          "buffer_bytes": 65280,
+          "buffer_start_seconds": 0.06,
+          "elapsed_seconds": 2.100188917,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074373909,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          }
+        },
+        {
+          "event": "recognizer_ready",
+          "ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.217993988,
+              "memory": {
+                "peak_rss_mib": 153.515625,
+                "rss_mib": 153.40625
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.340008531
+          }
+        },
+        {
+          "buffer_bytes": 154440,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/vosk-natural-3/buffer-6296.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.217993988,
+              "memory": {
+                "peak_rss_mib": 153.515625,
+                "rss_mib": 153.40625
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.340008531
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.305613793,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 170.609375,
+              "rss_mib": 170.609375
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 0,
+              "whisper_transcriptions": 0
+            },
+            "seconds": 0.308438732,
+            "settle_cpu_seconds": 1.18199999998847e-06,
+            "text": ""
+          },
+          "detector_complete": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.05677199999999999,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.886259958,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.45703125,
+              "pss_mib": 50.0322265625,
+              "rss_mib": 54.45703125
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/vosk-natural-3/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "event": "complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 4.88625,
+          "memory": {
+            "overlap_peak_pss_mib": 216.2744140625,
+            "overlap_peak_rss_mib": 228.27734375,
+            "overlap_samples": 149,
+            "peak_combined_pss_mib": 216.2744140625,
+            "peak_combined_rss_mib": 228.27734375,
+            "sample_interval_ms": 20,
+            "samples": 268,
+            "sum_process_hwm_upper_bound_mib": 228.27734375
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "result_elapsed_seconds": 5.200954121,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074373909,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "whole_application_acceptance": false,
+          "buffer_sha256": "0f2239b900854af95627df424644a4fa8b31b5e2a2268eb429793f72b728fd88"
+        }
+      ],
+      "latency_from_fixture_speech_end_ms": 1814.7041209999998
+    },
+    {
+      "profile": "small.en",
+      "name": "natural",
+      "repeat": 3,
+      "input_sha256": "e1e4e81f8c48060017cccc329b6b6f4e6c3df01489d5b6a61cc003cd5a7c4349",
+      "expected_commands": [
+        "ten meters"
+      ],
+      "actual_commands": [
+        "ten meters"
+      ],
+      "passed": true,
+      "buffer_identical": true,
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.308780489,
+            "memory": {
+              "peak_rss_mib": 48.625,
+              "pss_mib": 44.62890625,
+              "rss_mib": 48.625
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.5263671875,
+            "peak_combined_rss_mib": 51.6015625,
+            "sample_interval_ms": 20,
+            "samples": 17,
+            "sum_process_hwm_upper_bound_mib": 51.6015625
+          }
+        },
+        {
+          "buffer_bytes": 65280,
+          "buffer_start_seconds": 0.06,
+          "elapsed_seconds": 2.1002146,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074384273,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          }
+        },
+        {
+          "event": "recognizer_ready",
+          "ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 1.802557198,
+              "memory": {
+                "peak_rss_mib": 464.15625,
+                "rss_mib": 464.15625
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 3.930010712
+          }
+        },
+        {
+          "buffer_bytes": 154440,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/small.en-natural-3/buffer-6814.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 1.802557198,
+              "memory": {
+                "peak_rss_mib": 464.15625,
+                "rss_mib": 464.15625
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 3.930010712
+          },
+          "command_result": {
+            "decode_cpu_seconds": 1.421825696,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 538.01171875,
+              "rss_mib": 480.51953125
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.513872395,
+            "settle_cpu_seconds": 1.131999999959277e-06,
+            "text": ""
+          },
+          "detector_complete": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.058004,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.886268444,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.15234375,
+              "pss_mib": 49.666015625,
+              "rss_mib": 54.15234375
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/small.en-natural-3/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "event": "complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 4.88625,
+          "memory": {
+            "overlap_peak_pss_mib": 584.8125,
+            "overlap_peak_rss_mib": 597.09765625,
+            "overlap_samples": 149,
+            "peak_combined_pss_mib": 584.8125,
+            "peak_combined_rss_mib": 597.09765625,
+            "sample_interval_ms": 20,
+            "samples": 269,
+            "sum_process_hwm_upper_bound_mib": 597.09765625
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "result_elapsed_seconds": 5.412163587,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074384273,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "whole_application_acceptance": false,
+          "buffer_sha256": "0f2239b900854af95627df424644a4fa8b31b5e2a2268eb429793f72b728fd88"
+        }
+      ],
+      "latency_from_fixture_speech_end_ms": 2025.9135870000002
+    },
+    {
+      "profile": "tiny.en",
+      "name": "natural",
+      "repeat": 3,
+      "input_sha256": "e1e4e81f8c48060017cccc329b6b6f4e6c3df01489d5b6a61cc003cd5a7c4349",
+      "expected_commands": [
+        "ten meters"
+      ],
+      "actual_commands": [
+        "ten meters"
+      ],
+      "passed": true,
+      "buffer_identical": true,
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.2951465,
+            "memory": {
+              "peak_rss_mib": 48.62890625,
+              "pss_mib": 44.609375,
+              "rss_mib": 48.62890625
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.4990234375,
+            "peak_combined_rss_mib": 51.6015625,
+            "sample_interval_ms": 20,
+            "samples": 16,
+            "sum_process_hwm_upper_bound_mib": 51.6015625
+          }
+        },
+        {
+          "buffer_bytes": 65280,
+          "buffer_start_seconds": 0.06,
+          "elapsed_seconds": 2.100185039,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.075011404,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          }
+        },
+        {
+          "event": "recognizer_ready",
+          "ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.536641518,
+              "memory": {
+                "peak_rss_mib": 236.59765625,
+                "rss_mib": 236.59765625
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.640011045
+          }
+        },
+        {
+          "buffer_bytes": 154440,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/tiny.en-natural-3/buffer-7340.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "event": {
+              "denoiser": "rust-tract-0.23.9",
+              "event": "ready",
+              "load_seconds": 0.536641518,
+              "memory": {
+                "peak_rss_mib": 236.59765625,
+                "rss_mib": 236.59765625
+              },
+              "whisper": "rust-tract-0.23.9"
+            },
+            "observed_elapsed_seconds": 2.640011045
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.535962392,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 273.453125,
+              "rss_mib": 253.6953125
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.361542751,
+            "settle_cpu_seconds": 1.193000000121458e-06,
+            "text": ""
+          },
+          "detector_complete": {
+            "audio_seconds": 4.88625,
+            "cpu_seconds": 0.05901600000000001,
+            "decoded_samples": 67680,
+            "detections": 1,
+            "elapsed_seconds": 4.886268594,
+            "event": "complete",
+            "memory": {
+              "peak_rss_mib": 54.59375,
+              "pss_mib": 50.23046875,
+              "rss_mib": 54.59375
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/handoff/tiny.en-natural-3/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 10500,
+            "stream_count": 1
+          },
+          "event": "complete",
+          "full_recognition_acceptance": false,
+          "input_seconds": 4.88625,
+          "memory": {
+            "overlap_peak_pss_mib": 313.6474609375,
+            "overlap_peak_rss_mib": 325.59765625,
+            "overlap_samples": 143,
+            "peak_combined_pss_mib": 313.6474609375,
+            "peak_combined_rss_mib": 325.59765625,
+            "sample_interval_ms": 20,
+            "samples": 262,
+            "sum_process_hwm_upper_bound_mib": 331.2734375
+          },
+          "payload_delay_ms": 0,
+          "production_defaults_changed": false,
+          "result_elapsed_seconds": 5.258316742,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.075011404,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "whole_application_acceptance": false,
+          "buffer_sha256": "0f2239b900854af95627df424644a4fa8b31b5e2a2268eb429793f72b728fd88"
+        }
+      ],
+      "latency_from_fixture_speech_end_ms": 1872.066742
+    }
+  ],
+  "complete": true,
+  "full_recognition_acceptance": false,
+  "whole_application_acceptance": false,
+  "windows_acceptance": false,
+  "production_defaults_changed": false,
+  "summary": {
+    "vosk": {
+      "cases": 6,
+      "passed_cases": 6,
+      "natural_peak_combined_rss_mib": [
+        231.47265625,
+        229.5546875,
+        228.27734375
+      ],
+      "natural_peak_combined_pss_mib": [
+        219.46484375,
+        217.61328125,
+        216.2744140625
+      ],
+      "natural_hwm_sum_upper_bound_mib": [
+        231.47265625,
+        229.5546875,
+        228.27734375
+      ],
+      "natural_latency_from_fixture_speech_end_ms": [
+        1816.2802709999996,
+        1817.2692229999998,
+        1814.7041209999998
+      ],
+      "natural_command_load_seconds": [
+        0.220068358,
+        0.220042685,
+        0.217993988
+      ],
+      "observed_under_400_mib": true,
+      "full_application_budget_pass": false
+    },
+    "small.en": {
+      "cases": 6,
+      "passed_cases": 6,
+      "natural_peak_combined_rss_mib": [
+        617.21484375,
+        593.62109375,
+        597.09765625
+      ],
+      "natural_peak_combined_pss_mib": [
+        605.099609375,
+        581.552734375,
+        584.8125
+      ],
+      "natural_hwm_sum_upper_bound_mib": [
+        617.21484375,
+        593.62109375,
+        597.09765625
+      ],
+      "natural_latency_from_fixture_speech_end_ms": [
+        2039.2021049999998,
+        2006.7330040000004,
+        2025.9135870000002
+      ],
+      "natural_command_load_seconds": [
+        1.820345345,
+        1.790038418,
+        1.802557198
+      ],
+      "observed_under_400_mib": false,
+      "full_application_budget_pass": false
+    },
+    "tiny.en": {
+      "cases": 6,
+      "passed_cases": 6,
+      "natural_peak_combined_rss_mib": [
+        322.91796875,
+        320.06640625,
+        325.59765625
+      ],
+      "natural_peak_combined_pss_mib": [
+        310.8388671875,
+        310.271484375,
+        313.6474609375
+      ],
+      "natural_hwm_sum_upper_bound_mib": [
+        328.43359375,
+        325.54296875,
+        331.2734375
+      ],
+      "natural_latency_from_fixture_speech_end_ms": [
+        1880.548542,
+        1890.8859640000003,
+        1872.066742
+      ],
+      "natural_command_load_seconds": [
+        0.533450567,
+        0.546131709,
+        0.536641518
+      ],
+      "observed_under_400_mib": true,
+      "full_application_budget_pass": false
+    }
+  },
+  "gates": {
+    "available_fixture_cases_pass": true,
+    "buffered_audio_byte_identical": true,
+    "enable_by_default": false
+  }
+}

@@ -1,0 +1,176 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-26T20:14:27.299256+00:00",
+  "scope": "Isolated KWS allocation diagnostics and cgroup worker-failure recovery",
+  "checks": {
+    "rust_default": {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "--manifest-path",
+        "native/kws-probe/Cargo.toml"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/pressure-allocation-validation/rust_default.log"
+    },
+    "rust_diagnostic": {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "--all-features",
+        "--manifest-path",
+        "native/kws-probe/Cargo.toml"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/pressure-allocation-validation/rust_diagnostic.log"
+    },
+    "format": {
+      "command": [
+        "cargo",
+        "fmt",
+        "--check",
+        "--manifest-path",
+        "native/kws-probe/Cargo.toml"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/pressure-allocation-validation/format.log"
+    },
+    "clippy": {
+      "command": [
+        "cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "--all-targets",
+        "--all-features",
+        "--manifest-path",
+        "native/kws-probe/Cargo.toml",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/pressure-allocation-validation/clippy.log"
+    },
+    "python_tests": {
+      "command": [
+        ".venv/bin/python",
+        "-m",
+        "unittest",
+        "tests.test_kws_probe",
+        "-v"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/pressure-allocation-validation/python_tests.log"
+    },
+    "python_compile": {
+      "command": [
+        ".venv/bin/python",
+        "-m",
+        "py_compile",
+        "scripts/benchmark_kws_allocations.py",
+        "scripts/benchmark_kws_pressure.py",
+        "tests/test_kws_probe.py"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/pressure-allocation-validation/python_compile.log"
+    },
+    "diff": {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/pressure-allocation-validation/diff.log"
+    },
+    "sdist": {
+      "command": [
+        ".venv/bin/python",
+        "-c",
+        "import setuptools.build_meta; setuptools.build_meta.build_sdist('build/memory-plan-kws/pressure-allocation-validation')"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/pressure-allocation-validation/sdist.log"
+    }
+  },
+  "complete": true,
+  "production_defaults_changed": false,
+  "real_capture_started": false,
+  "installed_service_restarted": false,
+  "full_python_suite_rerun": false,
+  "full_acoustic_acceptance": false,
+  "whole_application_acceptance": false,
+  "windows_acceptance": false,
+  "pressure_release_acceptance": false,
+  "full_duration_soak_acceptance": false,
+  "enable_by_default": false,
+  "package_inclusion_and_target_exclusion": true,
+  "candidate_snapshot_verified": true,
+  "binary_sha256": {
+    "normal-jarvis-kws-probe": "df6d5df9c716c5f93ae2c02367546616b2d1d093f108965fc5be51a9aee331c2",
+    "normal-jarvis-kws-handoff-probe": "8691d2bef0fad8d59e5a8772f6e0ba01721ea0afffa9e3d777350c876c802ecf",
+    "allocation-jarvis-kws-probe": "3422f23742f3328637dc6cb2ee76041e143c8b06e57a77ee481fc4e9c90b659f",
+    "allocation-jarvis-kws-handoff-probe": "423bb8bf96d2789352a3cc066a0eb6cc3b4ad9812127b081adf4dcce26235e84"
+  },
+  "source_sha256": {
+    "native/kws-probe/Cargo.toml": "fa942fdfd34edc52c9fd09da0c911ef7845a67456a26bf09a410288ccf6bf8ee",
+    "native/kws-probe/build.rs": "e7b498f427aebefa2431e913e8d4f6775b71f1b070d3b9c7cc2ddc6dcbf69f7d",
+    "native/kws-probe/shim.c": "3a9436845091f770cd77c61cf3aea920e641212337151da36c5bb57375e91b48",
+    "native/kws-probe/Cargo.lock": "15acd1ee12bebc87b023d18a74b426d56a4195cbd214345de75612c1146491da",
+    "native/kws-probe/src/main.rs": "b5df1eaca51310c8ae3fd9927209d1e95b813e85283fc33b83d96014e41caad5",
+    "native/kws-probe/src/gate.rs": "6b0669babfe1ea62346200d33e46413787fdfb2a07f574c627ca07a1c7989000",
+    "native/kws-probe/src/allocation.rs": "5c2dc32f08db730f90b8fe19e47079bc465ca2c8a1c766f9537a7c40d18e6283",
+    "native/kws-probe/vendor/c-api.h": "2a1b95084be8fd1deb3228fcad2fd3f7f0258b64582f7402281ec174c7b7f4ce",
+    "native/kws-probe/vendor/LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "native/kws-probe/vendor/README.md": "e9b5e996cbb2170769cf0eb96c400ad0cc7e4082e065bcb9c8ef4cf6b3c881ee",
+    "native/kws-probe/src/bin/jarvis-kws-handoff-probe.rs": "146c5601d02854d882dd2e1a40efcba5e489915861aef12e40d7d5ae95920dc8",
+    "native/kws-probe/src/bin/handoff/continuous.rs": "386528394074d55dca8aae327dcdd0cc3c2bfc8706916039ceec418a0d0d4823",
+    "scripts/benchmark_kws_allocations.py": "f72108f267aab3d7518e6b5885c0d6f27f12f9227fdb417a6423e419041f1141",
+    "scripts/benchmark_kws_pressure.py": "fb50c71414c70d26d4996abf400aa73e90412a12c3b2269fe134412c3df19366",
+    "tests/test_kws_probe.py": "afd4b538467ade7d05cbd5f1e851194617c4afcc6a62c69c7ccefb8807da6047"
+  },
+  "evidence_sha256": {
+    "kws-allocation-attribution-2026-10-26.json": "349c4a242bf2c8c24f2a940d26bca2fba01acf9be900a13a16627aa4aeb88b02",
+    "kws-pressure-recovery-2026-10-26.json": "345fc3e9094e6ba974ee5ab0a00631551179b35f169874034e7110bf1739f282",
+    "kws-pressure-recovery-v2-2026-10-26.json": "62c6a747507b783d944c800a9abdfc7fcfe496f7d6e7ece86e4af40295ef1ed7"
+  },
+  "rust_default_unit_tests_passed": 12,
+  "rust_diagnostic_unit_tests_passed": 12,
+  "python_tests_passed": 9,
+  "python_tests_skipped": 0,
+  "synthetic_fault_scenarios": 3,
+  "parent_cycles": 32,
+  "detector_requests_per_arm": 128,
+  "all_saved_buffers_reverified": 35,
+  "pressure_lifecycle_controls_passed": 3,
+  "pressure_raw_exit_codes": [
+    0,
+    1,
+    1
+  ],
+  "pressure_oom_kills": [
+    0,
+    1,
+    2
+  ],
+  "all_transient_units_collected": true,
+  "all_experiment_processes_exited": true,
+  "earlier_pressure_setup_failure": "Unsupported systemd MemoryOOMGroup property; no probes started; preserved separately",
+  "prior_timing_gate_pass": false,
+  "prior_rms_0_005_endpoint_gate_pass": false,
+  "prior_small_en_memory_gate_pass": false,
+  "native_allocation_leak_freedom_established": false,
+  "full_duration_plateau_established": false,
+  "documentation_sha256": {
+    "docs/kws-pressure-allocations.md": "298b7da12a2e9541aa7432e95ec9f1d08dfb8b3cb9abaa45f28c42ad3b743daf",
+    "docs/memory-plan-handoff.md": "d748eca4bc3bdb4fcb8606181737e1835feace9bb1dc11a43f77c5ad53a46f0e",
+    "docs/memory-plan.md": "c0d58d2c4344688483c1f4724d6ef1e3ccb40dd3ec4bf10d2418e8765921ce8a",
+    "docs/kws-continuous-diagnostics.md": "5fca5edd751ab2850560263a61f8590908743f7f48774c781c6c2761a843ac13",
+    "docs/README.md": "117b3d1ff4bd7e932c82dd4cd87a72b3797e840969d5b472c64347680488291f"
+  }
+}

@@ -1,0 +1,135 @@
+{
+  "onnxruntime_reference": "1.31.0",
+  "scope": "offline tensor diagnostic; excludes resource comparisons",
+  "fixture_sha256": "f15c60ec54059d8b66e410d0064945a0b0a04ea56e1ddca1958e493c0cf70e71",
+  "model_name": "base.en",
+  "model_sha256": {
+    "base.en-encoder.int8.onnx": "ef6b936f4c9b1d90a3b68634b60c4ed8576b26172b33c2535ec0e933c9edb823",
+    "base.en-decoder.int8.onnx": "f7162ad6db2dbef16cfaeaa7f945b9d7dd9c1b8d472f6aca82f2273d185e4d41"
+  },
+  "cases": [
+    {
+      "case": "noise",
+      "text": "Go forward 10 meters",
+      "feature_frames": 329,
+      "cross_k": {
+        "max_abs": 0.505587100982666,
+        "relative_rms": 0.03251663527824923
+      },
+      "cross_v": {
+        "max_abs": 0.38273531198501587,
+        "relative_rms": 0.060678710271934395
+      },
+      "decoder_steps": [
+        {
+          "rust_token": 1514,
+          "reference_token": 1514,
+          "max_abs": 0.29130327701568604,
+          "relative_rms": 0.040644031737598035
+        },
+        {
+          "rust_token": 2651,
+          "reference_token": 2651,
+          "max_abs": 0.18449139595031738,
+          "relative_rms": 0.03669262957504879
+        },
+        {
+          "rust_token": 838,
+          "reference_token": 838,
+          "max_abs": 0.2428903579711914,
+          "relative_rms": 0.038233139453943514
+        },
+        {
+          "rust_token": 10700,
+          "reference_token": 10700,
+          "max_abs": 0.1995077133178711,
+          "relative_rms": 0.010568874394964104
+        },
+        {
+          "rust_token": 50256,
+          "reference_token": 50256,
+          "max_abs": 0.3058687299489975,
+          "relative_rms": 0.07897970234703892
+        }
+      ]
+    },
+    {
+      "case": "short",
+      "text": "Go go go go go go go go go",
+      "feature_frames": 150,
+      "cross_k": {
+        "max_abs": 1.5028282403945923,
+        "relative_rms": 0.029605872812316695
+      },
+      "cross_v": {
+        "max_abs": 0.6994854807853699,
+        "relative_rms": 0.05296159007059542
+      },
+      "decoder_steps": [
+        {
+          "rust_token": 1514,
+          "reference_token": 1514,
+          "max_abs": 1.4781951904296875e-05,
+          "relative_rms": 5.274543180968901e-07
+        },
+        {
+          "rust_token": 467,
+          "reference_token": 467,
+          "max_abs": 0.24137210845947266,
+          "relative_rms": 0.015642655407489693
+        },
+        {
+          "rust_token": 467,
+          "reference_token": 467,
+          "max_abs": 0.16365337371826172,
+          "relative_rms": 0.005697394441598067
+        },
+        {
+          "rust_token": 467,
+          "reference_token": 467,
+          "max_abs": 0.2881144881248474,
+          "relative_rms": 0.014351609501731774
+        },
+        {
+          "rust_token": 467,
+          "reference_token": 467,
+          "max_abs": 0.24792945384979248,
+          "relative_rms": 0.03278472036087616
+        },
+        {
+          "rust_token": 467,
+          "reference_token": 467,
+          "max_abs": 0.24899911880493164,
+          "relative_rms": 0.02763691164322225
+        },
+        {
+          "rust_token": 467,
+          "reference_token": 467,
+          "max_abs": 0.146767258644104,
+          "relative_rms": 0.009965272510458445
+        },
+        {
+          "rust_token": 467,
+          "reference_token": 467,
+          "max_abs": 0.2660868167877197,
+          "relative_rms": 0.03452702463450506
+        },
+        {
+          "rust_token": 467,
+          "reference_token": 467,
+          "max_abs": 0.218711256980896,
+          "relative_rms": 0.016248680818997187
+        },
+        {
+          "rust_token": 467,
+          "reference_token": 467,
+          "max_abs": 0.20867300033569336,
+          "relative_rms": 0.025193834785097565
+        }
+      ]
+    }
+  ],
+  "decoder_argmax_identical": true,
+  "numerically_identical": false,
+  "interpretation": "Matching argmax on this fixture does not prove tensor equivalence or general recognition accuracy."
+}

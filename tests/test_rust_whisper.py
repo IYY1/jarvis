@@ -14,6 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 BINARY = ROOT / "native/whisper-recognizer/target/release/jarvis-whisper"
 MODEL = os.environ.get("MURMUR_WHISPER_MODEL")
 FIXTURE = os.environ.get("MURMUR_SPEECH_TEST_RAW")
+TINY = os.environ.get("MURMUR_WHISPER_TINY_MODEL")
+BASE = os.environ.get("MURMUR_WHISPER_BASE_MODEL")
 
 
 @unittest.skipUnless(BINARY.is_file(), "build the standalone Rust recognizer")
@@ -30,10 +32,49 @@ class RustWhisperBinaryTests(unittest.TestCase):
         self.assertIn("Rust Whisper", version)
 
     def test_incomplete_arguments_return_an_error_without_panicking(self):
-        for args in ([], ["--threads"], ["--batch"], ["--diagnose"]):
+        for args in ([], ["--threads"], ["--batch"], ["--diagnose"], ["--model-name"],
+                     ["--model-name", "medium.en", "/missing", "/missing.raw"]):
             out = subprocess.run([str(BINARY), *args], capture_output=True, text=True, timeout=5)
             self.assertNotEqual(out.returncode, 0)
             self.assertNotIn("panicked", out.stderr)
+
+
+@unittest.skipUnless(BINARY.is_file() and TINY and BASE and FIXTURE, "supply tiny/base exports and public fixture")
+class RustWhisperProfileTests(unittest.TestCase):
+    def test_smaller_profiles_decode_full_commands_and_reset_caches(self):
+        from scripts.benchmark_whisper_models import isolated, reference
+        for name, folder in (("tiny.en", TINY), ("base.en", BASE)):
+            with self.subTest(model=name):
+                expected = reference(Path(folder), name, Path(FIXTURE))
+                actual = isolated(BINARY, Path(folder), name, Path(FIXTURE), 2, expected)
+                self.assertEqual(actual["ready"]["model"], name)
+                first, second = actual["cases"][:7], actual["cases"][7:]
+                self.assertEqual([row["text"] for row in first], [row["text"] for row in second])
+                for row in actual["cases"]:
+                    # Base's noisy punctuation and truncated-clip divergence
+                    # remain explicit failures of the benchmark's strict gate.
+                    # These supported full-utterance controls must still agree.
+                    if name == "tiny.en" or row["case"] not in ("noise", "short"):
+                        self.assertTrue(row["reference_identical"], row)
+
+    def test_mismatched_encoder_and_decoder_are_rejected_without_panicking(self):
+        from murmur.commands import Parser
+        from murmur.config import DEFAULTS
+        from murmur.native_worker import prepare
+        config = copy.deepcopy(DEFAULTS)
+        config["recognition"].update(accurate=True, noise_suppression=False)
+        with patch.dict(os.environ, MURMUR_VOICE_WORKER="rust"):
+            argv, payload, env = prepare(config, "test", Parser().grammar([]))
+        payload["native"]["whisper"] = {
+            "encoder": str(Path(TINY) / "tiny.en-encoder.int8.onnx"),
+            "decoder": str(Path(BASE) / "base.en-decoder.int8.onnx"),
+            "tokens": str(Path(TINY) / "tiny.en-tokens.txt"),
+        }
+        output = subprocess.run(argv + ["--transcribe"], input=json.dumps(payload) + "\n",
+                                text=True, capture_output=True, env=env, timeout=20)
+        self.assertNotEqual(output.returncode, 0)
+        self.assertIn("export wiring", output.stdout)
+        self.assertNotIn("panicked", output.stderr)
 
 
 @unittest.skipUnless(BINARY.is_file() and MODEL and FIXTURE, "supply Whisper model and public fixture")

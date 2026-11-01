@@ -1,0 +1,867 @@
+{
+  "schema_version": 1,
+  "scope": "Apply the authorized local disk-replay setting through the service API.\n\nKeep an ignored private config backup. Never save a clip or read video/audio.\nObserve process memory and file metadata only. Preserve recognition settings.\n",
+  "recorded_at": "2026-10-26T22:24:58.500208+00:00",
+  "observational_live_desktop": true,
+  "controlled_identical_scene": false,
+  "changed_settings": {
+    "replay.storage": {
+      "before": "ram",
+      "after": "disk"
+    },
+    "replay.max_mb": {
+      "before": 256,
+      "after": 2048
+    }
+  },
+  "replay_seconds": 120,
+  "recording_settings_unchanged": true,
+  "recognition_settings_unchanged": true,
+  "private_ignored_config_backup": "build/memory-plan-live/2026-10-27/config-before.json",
+  "baseline": [
+    {
+      "recorded_at": "2026-10-26T22:24:58.498173+00:00",
+      "monotonic": 12110.768503287,
+      "service_pid": 2854670,
+      "voice_state": "idle",
+      "muted": false,
+      "engine": "vosk+whisper-small",
+      "microphone_open": true,
+      "recording": {
+        "state": "idle",
+        "message": "Recorder ready.",
+        "file": null
+      },
+      "replay": {
+        "state": "on",
+        "message": "Instant replay on \u00b7 HDR \u00b7 keeping the last 120 seconds in memory.",
+        "file": null
+      },
+      "processes": [
+        {
+          "pid": 2854670,
+          "ppid": 1111,
+          "name": "jarvis-controll",
+          "rss_bytes": 9809920,
+          "pss_bytes": 7399424
+        },
+        {
+          "pid": 2854671,
+          "ppid": 2854670,
+          "name": "jarvis-voice",
+          "rss_bytes": 557490176,
+          "pss_bytes": 552866816
+        },
+        {
+          "pid": 2854674,
+          "ppid": 2854670,
+          "name": "gpu-screen-reco",
+          "rss_bytes": 157093888,
+          "pss_bytes": 94872576,
+          "replay_storage": "ram",
+          "buffer_dir": "/home/silver/Videos/Murmur",
+          "clip_output_dir": "/home/silver/Videos/Murmur"
+        },
+        {
+          "pid": 2855217,
+          "ppid": 2854674,
+          "name": "gsr-kms-server",
+          "rss_bytes": null,
+          "pss_bytes": null,
+          "error": "Permission denied (os error 13)"
+        },
+        {
+          "pid": 2855266,
+          "ppid": 2854671,
+          "name": "pw-record",
+          "rss_bytes": 9428992,
+          "pss_bytes": 3257344
+        }
+      ],
+      "memory_complete": false,
+      "memory_totals": {
+        "rss_bytes": null,
+        "pss_bytes": null
+      },
+      "readable_rss_lower_bound_mib": 699.828125,
+      "readable_pss_lower_bound_mib": 627.8955078125
+    },
+    {
+      "recorded_at": "2026-10-26T22:25:03.515005+00:00",
+      "monotonic": 12115.785336401,
+      "service_pid": 2854670,
+      "voice_state": "idle",
+      "muted": false,
+      "engine": "vosk+whisper-small",
+      "microphone_open": true,
+      "recording": {
+        "state": "idle",
+        "message": "Recorder ready.",
+        "file": null
+      },
+      "replay": {
+        "state": "on",
+        "message": "Instant replay on \u00b7 HDR \u00b7 keeping the last 120 seconds in memory.",
+        "file": null
+      },
+      "processes": [
+        {
+          "pid": 2854670,
+          "ppid": 1111,
+          "name": "jarvis-controll",
+          "rss_bytes": 9809920,
+          "pss_bytes": 7399424
+        },
+        {
+          "pid": 2854671,
+          "ppid": 2854670,
+          "name": "jarvis-voice",
+          "rss_bytes": 567132160,
+          "pss_bytes": 562508800
+        },
+        {
+          "pid": 2854674,
+          "ppid": 2854670,
+          "name": "gpu-screen-reco",
+          "rss_bytes": 157237248,
+          "pss_bytes": 95015936,
+          "replay_storage": "ram",
+          "buffer_dir": "/home/silver/Videos/Murmur",
+          "clip_output_dir": "/home/silver/Videos/Murmur"
+        },
+        {
+          "pid": 2855217,
+          "ppid": 2854674,
+          "name": "gsr-kms-server",
+          "rss_bytes": null,
+          "pss_bytes": null,
+          "error": "Permission denied (os error 13)"
+        },
+        {
+          "pid": 2855266,
+          "ppid": 2854671,
+          "name": "pw-record",
+          "rss_bytes": 9428992,
+          "pss_bytes": 3257344
+        }
+      ],
+      "memory_complete": false,
+      "memory_totals": {
+        "rss_bytes": null,
+        "pss_bytes": null
+      },
+      "readable_rss_lower_bound_mib": 709.16015625,
+      "readable_pss_lower_bound_mib": 637.2275390625
+    },
+    {
+      "recorded_at": "2026-10-26T22:25:08.529912+00:00",
+      "monotonic": 12120.800243325,
+      "service_pid": 2854670,
+      "voice_state": "idle",
+      "muted": false,
+      "engine": "vosk+whisper-small",
+      "microphone_open": true,
+      "recording": {
+        "state": "idle",
+        "message": "Recorder ready.",
+        "file": null
+      },
+      "replay": {
+        "state": "on",
+        "message": "Instant replay on \u00b7 HDR \u00b7 keeping the last 120 seconds in memory.",
+        "file": null
+      },
+      "processes": [
+        {
+          "pid": 2854670,
+          "ppid": 1111,
+          "name": "jarvis-controll",
+          "rss_bytes": 9809920,
+          "pss_bytes": 7399424
+        },
+        {
+          "pid": 2854671,
+          "ppid": 2854670,
+          "name": "jarvis-voice",
+          "rss_bytes": 567185408,
+          "pss_bytes": 562562048
+        },
+        {
+          "pid": 2854674,
+          "ppid": 2854670,
+          "name": "gpu-screen-reco",
+          "rss_bytes": 157310976,
+          "pss_bytes": 95089664,
+          "replay_storage": "ram",
+          "buffer_dir": "/home/silver/Videos/Murmur",
+          "clip_output_dir": "/home/silver/Videos/Murmur"
+        },
+        {
+          "pid": 2855217,
+          "ppid": 2854674,
+          "name": "gsr-kms-server",
+          "rss_bytes": null,
+          "pss_bytes": null,
+          "error": "Permission denied (os error 13)"
+        },
+        {
+          "pid": 2855266,
+          "ppid": 2854671,
+          "name": "pw-record",
+          "rss_bytes": 9428992,
+          "pss_bytes": 3257344
+        }
+      ],
+      "memory_complete": false,
+      "memory_totals": {
+        "rss_bytes": null,
+        "pss_bytes": null
+      },
+      "readable_rss_lower_bound_mib": 709.28125,
+      "readable_pss_lower_bound_mib": 637.3486328125
+    }
+  ],
+  "after": [
+    {
+      "recorded_at": "2026-10-26T22:25:41.816972+00:00",
+      "monotonic": 12154.087303587,
+      "service_pid": 2854670,
+      "voice_state": "idle",
+      "muted": false,
+      "engine": null,
+      "microphone_open": true,
+      "recording": {
+        "state": "idle",
+        "message": "Recorder ready.",
+        "file": null
+      },
+      "replay": {
+        "state": "on",
+        "message": "Instant replay on \u00b7 HDR \u00b7 up to 120 seconds \u00b7 disk buffer \u00b7 2048 MiB budget.",
+        "file": null
+      },
+      "processes": [
+        {
+          "pid": 2854670,
+          "ppid": 1111,
+          "name": "jarvis-controll",
+          "rss_bytes": 9818112,
+          "pss_bytes": 7407616
+        },
+        {
+          "pid": 3091115,
+          "ppid": 2854670,
+          "name": "jarvis-voice",
+          "rss_bytes": 37019648,
+          "pss_bytes": 32590848
+        },
+        {
+          "pid": 3091124,
+          "ppid": 2854670,
+          "name": "gpu-screen-reco",
+          "rss_bytes": 12541952,
+          "pss_bytes": 6149120,
+          "replay_storage": "disk",
+          "buffer_dir": "/home/silver/.local/share/murmur/replay-buffer/session-2b8f0e-18e234b23d4b11b2",
+          "clip_output_dir": "/home/silver/Videos/Murmur"
+        }
+      ],
+      "memory_complete": true,
+      "memory_totals": {
+        "rss_bytes": 59379712,
+        "pss_bytes": 46147584
+      },
+      "readable_rss_lower_bound_mib": 56.62890625,
+      "readable_pss_lower_bound_mib": 44.009765625
+    },
+    {
+      "recorded_at": "2026-10-26T22:25:55.651004+00:00",
+      "monotonic": 12167.921333307,
+      "service_pid": 2854670,
+      "voice_state": "idle",
+      "muted": false,
+      "engine": "vosk+whisper-small",
+      "microphone_open": true,
+      "recording": {
+        "state": "idle",
+        "message": "Recorder ready.",
+        "file": null
+      },
+      "replay": {
+        "state": "on",
+        "message": "Instant replay on \u00b7 HDR \u00b7 up to 120 seconds \u00b7 disk buffer \u00b7 2048 MiB budget.",
+        "file": null
+      },
+      "processes": [
+        {
+          "pid": 2854670,
+          "ppid": 1111,
+          "name": "jarvis-controll",
+          "rss_bytes": 9818112,
+          "pss_bytes": 7407616
+        },
+        {
+          "pid": 3091115,
+          "ppid": 2854670,
+          "name": "jarvis-voice",
+          "rss_bytes": 168611840,
+          "pss_bytes": 163988480
+        },
+        {
+          "pid": 3091124,
+          "ppid": 2854670,
+          "name": "gpu-screen-reco",
+          "rss_bytes": 119595008,
+          "pss_bytes": 57361408,
+          "replay_storage": "disk",
+          "buffer_dir": "/home/silver/.local/share/murmur/replay-buffer/session-2b8f0e-18e234b23d4b11b2",
+          "clip_output_dir": "/home/silver/Videos/Murmur"
+        },
+        {
+          "pid": 3091652,
+          "ppid": 3091124,
+          "name": "gsr-kms-server",
+          "rss_bytes": null,
+          "pss_bytes": null,
+          "error": "Permission denied (os error 13)"
+        },
+        {
+          "pid": 3091692,
+          "ppid": 3091115,
+          "name": "pw-record",
+          "rss_bytes": 9465856,
+          "pss_bytes": 3250176
+        }
+      ],
+      "memory_complete": false,
+      "memory_totals": {
+        "rss_bytes": null,
+        "pss_bytes": null
+      },
+      "readable_rss_lower_bound_mib": 293.24609375,
+      "readable_pss_lower_bound_mib": 221.259765625
+    },
+    {
+      "recorded_at": "2026-10-26T22:26:05.651823+00:00",
+      "monotonic": 12177.922157187,
+      "service_pid": 2854670,
+      "voice_state": "idle",
+      "muted": false,
+      "engine": "vosk+whisper-small",
+      "microphone_open": true,
+      "recording": {
+        "state": "idle",
+        "message": "Recorder ready.",
+        "file": null
+      },
+      "replay": {
+        "state": "on",
+        "message": "Instant replay on \u00b7 HDR \u00b7 up to 120 seconds \u00b7 disk buffer \u00b7 2048 MiB budget.",
+        "file": null
+      },
+      "processes": [
+        {
+          "pid": 2854670,
+          "ppid": 1111,
+          "name": "jarvis-controll",
+          "rss_bytes": 9818112,
+          "pss_bytes": 7407616
+        },
+        {
+          "pid": 3091115,
+          "ppid": 2854670,
+          "name": "jarvis-voice",
+          "rss_bytes": 170319872,
+          "pss_bytes": 165632000
+        },
+        {
+          "pid": 3091124,
+          "ppid": 2854670,
+          "name": "gpu-screen-reco",
+          "rss_bytes": 119689216,
+          "pss_bytes": 57452544,
+          "replay_storage": "disk",
+          "buffer_dir": "/home/silver/.local/share/murmur/replay-buffer/session-2b8f0e-18e234b23d4b11b2",
+          "clip_output_dir": "/home/silver/Videos/Murmur"
+        },
+        {
+          "pid": 3091652,
+          "ppid": 3091124,
+          "name": "gsr-kms-server",
+          "rss_bytes": null,
+          "pss_bytes": null,
+          "error": "Permission denied (os error 13)"
+        },
+        {
+          "pid": 3091692,
+          "ppid": 3091115,
+          "name": "pw-record",
+          "rss_bytes": 9465856,
+          "pss_bytes": 3250176
+        }
+      ],
+      "memory_complete": false,
+      "memory_totals": {
+        "rss_bytes": null,
+        "pss_bytes": null
+      },
+      "readable_rss_lower_bound_mib": 294.96484375,
+      "readable_pss_lower_bound_mib": 222.9140625
+    },
+    {
+      "recorded_at": "2026-10-26T22:26:25.651399+00:00",
+      "monotonic": 12197.921729378,
+      "service_pid": 2854670,
+      "voice_state": "idle",
+      "muted": false,
+      "engine": "vosk+whisper-small",
+      "microphone_open": true,
+      "recording": {
+        "state": "idle",
+        "message": "Recorder ready.",
+        "file": null
+      },
+      "replay": {
+        "state": "on",
+        "message": "Instant replay on \u00b7 HDR \u00b7 up to 120 seconds \u00b7 disk buffer \u00b7 2048 MiB budget.",
+        "file": null
+      },
+      "processes": [
+        {
+          "pid": 2854670,
+          "ppid": 1111,
+          "name": "jarvis-controll",
+          "rss_bytes": 9818112,
+          "pss_bytes": 7407616
+        },
+        {
+          "pid": 3091115,
+          "ppid": 2854670,
+          "name": "jarvis-voice",
+          "rss_bytes": 170414080,
+          "pss_bytes": 165725184
+        },
+        {
+          "pid": 3091124,
+          "ppid": 2854670,
+          "name": "gpu-screen-reco",
+          "rss_bytes": 119889920,
+          "pss_bytes": 57628672,
+          "replay_storage": "disk",
+          "buffer_dir": "/home/silver/.local/share/murmur/replay-buffer/session-2b8f0e-18e234b23d4b11b2",
+          "clip_output_dir": "/home/silver/Videos/Murmur"
+        },
+        {
+          "pid": 3091652,
+          "ppid": 3091124,
+          "name": "gsr-kms-server",
+          "rss_bytes": null,
+          "pss_bytes": null,
+          "error": "Permission denied (os error 13)"
+        },
+        {
+          "pid": 3091692,
+          "ppid": 3091115,
+          "name": "pw-record",
+          "rss_bytes": 9465856,
+          "pss_bytes": 3250176
+        }
+      ],
+      "memory_complete": false,
+      "memory_totals": {
+        "rss_bytes": null,
+        "pss_bytes": null
+      },
+      "readable_rss_lower_bound_mib": 295.24609375,
+      "readable_pss_lower_bound_mib": 223.1708984375
+    },
+    {
+      "recorded_at": "2026-10-26T22:26:55.650816+00:00",
+      "monotonic": 12227.92114632,
+      "service_pid": 2854670,
+      "voice_state": "idle",
+      "muted": false,
+      "engine": "vosk+whisper-small",
+      "microphone_open": true,
+      "recording": {
+        "state": "idle",
+        "message": "Recorder ready.",
+        "file": null
+      },
+      "replay": {
+        "state": "on",
+        "message": "Instant replay on \u00b7 HDR \u00b7 up to 120 seconds \u00b7 disk buffer \u00b7 2048 MiB budget.",
+        "file": null
+      },
+      "processes": [
+        {
+          "pid": 2854670,
+          "ppid": 1111,
+          "name": "jarvis-controll",
+          "rss_bytes": 9818112,
+          "pss_bytes": 7407616
+        },
+        {
+          "pid": 3091115,
+          "ppid": 2854670,
+          "name": "jarvis-voice",
+          "rss_bytes": 170549248,
+          "pss_bytes": 165860352
+        },
+        {
+          "pid": 3091124,
+          "ppid": 2854670,
+          "name": "gpu-screen-reco",
+          "rss_bytes": 120197120,
+          "pss_bytes": 57946112,
+          "replay_storage": "disk",
+          "buffer_dir": "/home/silver/.local/share/murmur/replay-buffer/session-2b8f0e-18e234b23d4b11b2",
+          "clip_output_dir": "/home/silver/Videos/Murmur"
+        },
+        {
+          "pid": 3091652,
+          "ppid": 3091124,
+          "name": "gsr-kms-server",
+          "rss_bytes": null,
+          "pss_bytes": null,
+          "error": "Permission denied (os error 13)"
+        },
+        {
+          "pid": 3091692,
+          "ppid": 3091115,
+          "name": "pw-record",
+          "rss_bytes": 9465856,
+          "pss_bytes": 3250176
+        }
+      ],
+      "memory_complete": false,
+      "memory_totals": {
+        "rss_bytes": null,
+        "pss_bytes": null
+      },
+      "readable_rss_lower_bound_mib": 295.66796875,
+      "readable_pss_lower_bound_mib": 223.6025390625
+    },
+    {
+      "recorded_at": "2026-10-26T22:27:25.650908+00:00",
+      "monotonic": 12257.921239795,
+      "service_pid": 2854670,
+      "voice_state": "idle",
+      "muted": false,
+      "engine": "vosk+whisper-small",
+      "microphone_open": true,
+      "recording": {
+        "state": "idle",
+        "message": "Recorder ready.",
+        "file": null
+      },
+      "replay": {
+        "state": "on",
+        "message": "Instant replay on \u00b7 HDR \u00b7 up to 120 seconds \u00b7 disk buffer \u00b7 2048 MiB budget.",
+        "file": null
+      },
+      "processes": [
+        {
+          "pid": 2854670,
+          "ppid": 1111,
+          "name": "jarvis-controll",
+          "rss_bytes": 9818112,
+          "pss_bytes": 7407616
+        },
+        {
+          "pid": 3091115,
+          "ppid": 2854670,
+          "name": "jarvis-voice",
+          "rss_bytes": 171020288,
+          "pss_bytes": 166331392
+        },
+        {
+          "pid": 3091124,
+          "ppid": 2854670,
+          "name": "gpu-screen-reco",
+          "rss_bytes": 120487936,
+          "pss_bytes": 58236928,
+          "replay_storage": "disk",
+          "buffer_dir": "/home/silver/.local/share/murmur/replay-buffer/session-2b8f0e-18e234b23d4b11b2",
+          "clip_output_dir": "/home/silver/Videos/Murmur"
+        },
+        {
+          "pid": 3091652,
+          "ppid": 3091124,
+          "name": "gsr-kms-server",
+          "rss_bytes": null,
+          "pss_bytes": null,
+          "error": "Permission denied (os error 13)"
+        },
+        {
+          "pid": 3091692,
+          "ppid": 3091115,
+          "name": "pw-record",
+          "rss_bytes": 9465856,
+          "pss_bytes": 3250176
+        }
+      ],
+      "memory_complete": false,
+      "memory_totals": {
+        "rss_bytes": null,
+        "pss_bytes": null
+      },
+      "readable_rss_lower_bound_mib": 296.39453125,
+      "readable_pss_lower_bound_mib": 224.3291015625
+    },
+    {
+      "recorded_at": "2026-10-26T22:28:00.651839+00:00",
+      "monotonic": 12292.922169958,
+      "service_pid": 2854670,
+      "voice_state": "idle",
+      "muted": false,
+      "engine": "vosk+whisper-small",
+      "microphone_open": true,
+      "recording": {
+        "state": "idle",
+        "message": "Recorder ready.",
+        "file": null
+      },
+      "replay": {
+        "state": "on",
+        "message": "Instant replay on \u00b7 HDR \u00b7 up to 120 seconds \u00b7 disk buffer \u00b7 2048 MiB budget.",
+        "file": null
+      },
+      "processes": [
+        {
+          "pid": 2854670,
+          "ppid": 1111,
+          "name": "jarvis-controll",
+          "rss_bytes": 9818112,
+          "pss_bytes": 7407616
+        },
+        {
+          "pid": 3091115,
+          "ppid": 2854670,
+          "name": "jarvis-voice",
+          "rss_bytes": 172343296,
+          "pss_bytes": 167654400
+        },
+        {
+          "pid": 3091124,
+          "ppid": 2854670,
+          "name": "gpu-screen-reco",
+          "rss_bytes": 120868864,
+          "pss_bytes": 58613760,
+          "replay_storage": "disk",
+          "buffer_dir": "/home/silver/.local/share/murmur/replay-buffer/session-2b8f0e-18e234b23d4b11b2",
+          "clip_output_dir": "/home/silver/Videos/Murmur"
+        },
+        {
+          "pid": 3091652,
+          "ppid": 3091124,
+          "name": "gsr-kms-server",
+          "rss_bytes": null,
+          "pss_bytes": null,
+          "error": "Permission denied (os error 13)"
+        },
+        {
+          "pid": 3091692,
+          "ppid": 3091115,
+          "name": "pw-record",
+          "rss_bytes": 9465856,
+          "pss_bytes": 3250176
+        }
+      ],
+      "memory_complete": false,
+      "memory_totals": {
+        "rss_bytes": null,
+        "pss_bytes": null
+      },
+      "readable_rss_lower_bound_mib": 298.01953125,
+      "readable_pss_lower_bound_mib": 225.9501953125
+    }
+  ],
+  "buffer_metadata": [
+    {
+      "session_path": "/home/silver/.local/share/murmur/replay-buffer/session-2b8f0e-18e234b23d4b11b2",
+      "session_mode": "0o700",
+      "files": [
+        {
+          "relative_path": ".jarvis-replay-v1",
+          "size_bytes": 0,
+          "allocated_bytes": 0,
+          "mode": "0o600"
+        }
+      ],
+      "total_logical_bytes": 0,
+      "total_allocated_bytes": 0
+    },
+    {
+      "session_path": "/home/silver/.local/share/murmur/replay-buffer/session-2b8f0e-18e234b23d4b11b2",
+      "session_mode": "0o700",
+      "files": [
+        {
+          "relative_path": ".jarvis-replay-v1",
+          "size_bytes": 0,
+          "allocated_bytes": 0,
+          "mode": "0o600"
+        },
+        {
+          "relative_path": "gsr-replay-2026-10-27_01-25-41.gsr/Replay_0.gsr",
+          "size_bytes": 1444583,
+          "allocated_bytes": 1445888,
+          "mode": "0o700"
+        }
+      ],
+      "total_logical_bytes": 1444583,
+      "total_allocated_bytes": 1445888
+    },
+    {
+      "session_path": "/home/silver/.local/share/murmur/replay-buffer/session-2b8f0e-18e234b23d4b11b2",
+      "session_mode": "0o700",
+      "files": [
+        {
+          "relative_path": ".jarvis-replay-v1",
+          "size_bytes": 0,
+          "allocated_bytes": 0,
+          "mode": "0o600"
+        },
+        {
+          "relative_path": "gsr-replay-2026-10-27_01-25-41.gsr/Replay_0.gsr",
+          "size_bytes": 2493209,
+          "allocated_bytes": 2494464,
+          "mode": "0o700"
+        }
+      ],
+      "total_logical_bytes": 2493209,
+      "total_allocated_bytes": 2494464
+    },
+    {
+      "session_path": "/home/silver/.local/share/murmur/replay-buffer/session-2b8f0e-18e234b23d4b11b2",
+      "session_mode": "0o700",
+      "files": [
+        {
+          "relative_path": ".jarvis-replay-v1",
+          "size_bytes": 0,
+          "allocated_bytes": 0,
+          "mode": "0o600"
+        },
+        {
+          "relative_path": "gsr-replay-2026-10-27_01-25-41.gsr/Replay_0.gsr",
+          "size_bytes": 4530213,
+          "allocated_bytes": 4534272,
+          "mode": "0o700"
+        }
+      ],
+      "total_logical_bytes": 4530213,
+      "total_allocated_bytes": 4534272
+    },
+    {
+      "session_path": "/home/silver/.local/share/murmur/replay-buffer/session-2b8f0e-18e234b23d4b11b2",
+      "session_mode": "0o700",
+      "files": [
+        {
+          "relative_path": ".jarvis-replay-v1",
+          "size_bytes": 0,
+          "allocated_bytes": 0,
+          "mode": "0o600"
+        },
+        {
+          "relative_path": "gsr-replay-2026-10-27_01-25-41.gsr/Replay_0.gsr",
+          "size_bytes": 7660277,
+          "allocated_bytes": 7663616,
+          "mode": "0o700"
+        }
+      ],
+      "total_logical_bytes": 7660277,
+      "total_allocated_bytes": 7663616
+    },
+    {
+      "session_path": "/home/silver/.local/share/murmur/replay-buffer/session-2b8f0e-18e234b23d4b11b2",
+      "session_mode": "0o700",
+      "files": [
+        {
+          "relative_path": ".jarvis-replay-v1",
+          "size_bytes": 0,
+          "allocated_bytes": 0,
+          "mode": "0o600"
+        },
+        {
+          "relative_path": "gsr-replay-2026-10-27_01-25-41.gsr/Replay_0.gsr",
+          "size_bytes": 10742644,
+          "allocated_bytes": 10743808,
+          "mode": "0o700"
+        }
+      ],
+      "total_logical_bytes": 10742644,
+      "total_allocated_bytes": 10743808
+    },
+    {
+      "session_path": "/home/silver/.local/share/murmur/replay-buffer/session-2b8f0e-18e234b23d4b11b2",
+      "session_mode": "0o700",
+      "files": [
+        {
+          "relative_path": ".jarvis-replay-v1",
+          "size_bytes": 0,
+          "allocated_bytes": 0,
+          "mode": "0o600"
+        },
+        {
+          "relative_path": "gsr-replay-2026-10-27_01-25-41.gsr/Replay_0.gsr",
+          "size_bytes": 14412278,
+          "allocated_bytes": 14413824,
+          "mode": "0o700"
+        }
+      ],
+      "total_logical_bytes": 14412278,
+      "total_allocated_bytes": 14413824
+    }
+  ],
+  "activation_complete": true,
+  "whole_application_budget_acceptance": false,
+  "strict_linux_byte_quota_acceptance": false,
+  "full_acoustic_acceptance": false,
+  "windows_acceptance": false,
+  "full_duration_soak_acceptance": false,
+  "voice_worker_reloaded_by_config_save": true,
+  "same_controller_pid": true,
+  "replay_observed_after_switch_seconds": 125.01179206300003,
+  "actual_storage_verified": "disk",
+  "complete": true,
+  "summary": {
+    "baseline_recorder_rss_mib": [
+      149.81640625,
+      149.953125,
+      150.0234375
+    ],
+    "baseline_recorder_pss_mib": [
+      90.4775390625,
+      90.6142578125,
+      90.6845703125
+    ],
+    "final_recorder_rss_mib": 115.26953125,
+    "final_recorder_pss_mib": 55.8984375,
+    "observed_recorder_rss_difference_mib": 34.66145833333334,
+    "final_readable_process_rss_lower_bound_mib": 298.01953125,
+    "final_readable_process_pss_lower_bound_mib": 225.9501953125,
+    "final_buffer_logical_bytes": 14412278,
+    "voice_worker_reloaded": true,
+    "same_controller_pid": true,
+    "unreadable_processes": [
+      "gsr-kms-server"
+    ],
+    "recorder_only_comparison": true,
+    "total_memory_difference_not_attributed_to_disk": true,
+    "source_script_sha256": "5168089f4d5793d6a13d13f1b9a0d0d2cf52475bc5ae39245f4b0e1323ffc9a7"
+  },
+  "persisted_config_verified": true,
+  "verified_buffer_filesystem": "btrfs",
+  "final_service_verification": {
+    "replay": {
+      "state": "on",
+      "message": "Instant replay on \u00b7 HDR \u00b7 up to 120 seconds \u00b7 disk buffer \u00b7 2048 MiB budget.",
+      "file": null
+    },
+    "engine": "vosk+whisper-small",
+    "microphone_open": true,
+    "same_controller_pid": true,
+    "current_readable_rss_lower_bound_mib": 299.9375,
+    "memory_complete": false
+  }
+}

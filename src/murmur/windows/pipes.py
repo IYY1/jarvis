@@ -1,4 +1,4 @@
-"""User-only named pipes for FFmpeg audio and in-memory replay segments."""
+"""User-only named pipes for FFmpeg audio and bounded replay segments."""
 
 from __future__ import annotations
 import threading
@@ -128,6 +128,7 @@ class SegmentReader:
                     chunks.append(chunk)
                 if chunks and not self.closed.is_set():
                     on_segment(b"".join(chunks), index + 3 * cycle)
+                    chunks.clear()
                     cycle += 1
                 win32pipe.DisconnectNamedPipe(pipe.handle)
                 pipe.connected = False

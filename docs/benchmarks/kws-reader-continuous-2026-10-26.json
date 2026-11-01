@@ -1,0 +1,4389 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-26T20:30:59.176880+00:00",
+  "scope": "File-only continuous multi-window/recovery controls; never dispatches actions.",
+  "binary_sha256": "2f1843d9a6c0224219354c0b39364b9b08b553b33aabd972fad51f5fe3fa4791",
+  "detector_sha256": "df6d5df9c716c5f93ae2c02367546616b2d1d093f108965fc5be51a9aee331c2",
+  "voice_sha256": "212ff8655e303b55f0a70f902753d0ab6f87031aa3c71cd40306ddf5cf8d9844",
+  "fixture_sha256": "f15c60ec54059d8b66e410d0064945a0b0a04ea56e1ddca1958e493c0cf70e71",
+  "runs": [
+    {
+      "name": "three-windows",
+      "configuration": {
+        "detector_binary": "/home/silver/Projects/jarvis/native/kws-probe/target/release/jarvis-kws-probe",
+        "detector_config": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/detector.json",
+        "voice_binary": "/home/silver/Projects/jarvis/native/voice-worker/target/release/jarvis-voice",
+        "voice_payload": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/voice.json",
+        "work_dir": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/three-windows",
+        "cycles": 1,
+        "settle_ms": 1000,
+        "quiet_endpoint": {
+          "rms": 0.001,
+          "min_speech_ms": 240,
+          "quiet_ms": 600,
+          "timeout_ms": 5000
+        },
+        "continuous": {
+          "max_windows": 8,
+          "worker_timeout_ms": 12000,
+          "recovery_quiet_ms": 600
+        }
+      },
+      "input_sha256": "c515d0344c1467770af39c0733d6404fae7c4dfcba547cbd2c6762bdcbacc5b5",
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.317734321,
+            "memory": {
+              "anonymous_mib": 28.8359375,
+              "heap": {
+                "free_arena_bytes": 4826208,
+                "in_use_bytes": 24992672,
+                "mmap_bytes": 0
+              },
+              "peak_rss_mib": 48.921875,
+              "pss_mib": 44.8974609375,
+              "rss_mib": 48.921875,
+              "rust_allocations": null
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.8828125,
+            "peak_combined_rss_mib": 51.98828125,
+            "sample_interval_ms": 20,
+            "samples": 17,
+            "sum_process_hwm_upper_bound_mib": 51.98828125
+          },
+          "waiting": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.28515625,
+                "pid": 3,
+                "private_dirty_mib": 0.28515625,
+                "pss_mib": 0.9775390625,
+                "role": "parent",
+                "rss_mib": 3.05859375,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 28.8359375,
+                "pid": 5,
+                "private_dirty_mib": 28.8359375,
+                "pss_mib": 44.8974609375,
+                "role": "detector",
+                "rss_mib": 48.921875,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 0,
+              "spawned": 1
+            },
+            "parent_heap": {
+              "free_arena_bytes": 275936,
+              "in_use_bytes": 129568,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 45.875,
+            "rss_mib": 51.98046875
+          }
+        },
+        {
+          "buffer_start_seconds": 0.06,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074572606,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "window": 1,
+          "worker_pid": 7
+        },
+        {
+          "buffer_bytes": 123840,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/three-windows/continuous-3-1.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "denoiser": "rust-tract-0.23.9",
+            "event": "ready",
+            "load_seconds": 0.536458684,
+            "memory": {
+              "peak_rss_mib": 239.06640625,
+              "rss_mib": 239.06640625
+            },
+            "whisper": "rust-tract-0.23.9"
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.565435971,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 275.20703125,
+              "rss_mib": 255.1875
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.379125521,
+            "settle_cpu_seconds": 1.2819999999358345e-06,
+            "text": ""
+          },
+          "endpoint_input_seconds": 3.93,
+          "endpoint_reason": "quiet",
+          "event": "window_complete",
+          "release_reason": "result",
+          "released_input_seconds": 4.38,
+          "result_elapsed_seconds": 4.320012516,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074572606,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "waiting_after_release": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.41796875,
+                "pid": 3,
+                "private_dirty_mib": 0.41796875,
+                "pss_mib": 1.1123046875,
+                "role": "parent",
+                "rss_mib": 3.31640625,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 31.83203125,
+                "pid": 5,
+                "private_dirty_mib": 31.83203125,
+                "pss_mib": 49.0888671875,
+                "role": "detector",
+                "rss_mib": 53.5,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 1,
+              "spawned": 2
+            },
+            "parent_heap": {
+              "free_arena_bytes": 494704,
+              "in_use_bytes": 246672,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 50.201171875,
+            "rss_mib": 56.81640625
+          },
+          "window": 1,
+          "worker_error": null,
+          "worker_exit_code": 0,
+          "worker_exit_signal": null
+        },
+        {
+          "event": "rearmed",
+          "input_seconds": 4.98
+        },
+        {
+          "buffer_start_seconds": 6.45,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 8.46,
+            "elapsed_seconds": 8.464728326,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 6.69
+          },
+          "window": 2,
+          "worker_pid": 529
+        },
+        {
+          "buffer_bytes": 123840,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/three-windows/continuous-3-2.raw",
+          "buffer_start_seconds": 6.45,
+          "command_ready": {
+            "denoiser": "rust-tract-0.23.9",
+            "event": "ready",
+            "load_seconds": 0.511258053,
+            "memory": {
+              "peak_rss_mib": 238.28515625,
+              "rss_mib": 238.28515625
+            },
+            "whisper": "rust-tract-0.23.9"
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.4856583769999999,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 274.1484375,
+              "rss_mib": 254.390625
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.330673749,
+            "settle_cpu_seconds": 1.6940000000520428e-06,
+            "text": ""
+          },
+          "endpoint_input_seconds": 10.32,
+          "endpoint_reason": "quiet",
+          "event": "window_complete",
+          "release_reason": "result",
+          "released_input_seconds": 10.71,
+          "result_elapsed_seconds": 10.680008983,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 8.46,
+            "elapsed_seconds": 8.464728326,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 6.69
+          },
+          "waiting_after_release": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.5625,
+                "pid": 3,
+                "private_dirty_mib": 0.5625,
+                "pss_mib": 1.2568359375,
+                "role": "parent",
+                "rss_mib": 3.4609375,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 31.83203125,
+                "pid": 5,
+                "private_dirty_mib": 31.83203125,
+                "pss_mib": 49.0888671875,
+                "role": "detector",
+                "rss_mib": 53.5,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 2,
+              "spawned": 3
+            },
+            "parent_heap": {
+              "free_arena_bytes": 818528,
+              "in_use_bytes": 271008,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 50.345703125,
+            "rss_mib": 56.9609375
+          },
+          "window": 2,
+          "worker_error": null,
+          "worker_exit_code": 0,
+          "worker_exit_signal": null
+        },
+        {
+          "event": "rearmed",
+          "input_seconds": 11.31
+        },
+        {
+          "buffer_start_seconds": 12.84,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 14.85,
+            "elapsed_seconds": 14.854343656,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 13.08
+          },
+          "window": 3,
+          "worker_pid": 1051
+        },
+        {
+          "buffer_bytes": 123840,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/three-windows/continuous-3-3.raw",
+          "buffer_start_seconds": 12.84,
+          "command_ready": {
+            "denoiser": "rust-tract-0.23.9",
+            "event": "ready",
+            "load_seconds": 0.538106162,
+            "memory": {
+              "peak_rss_mib": 238.8203125,
+              "rss_mib": 238.8203125
+            },
+            "whisper": "rust-tract-0.23.9"
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.50614115,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 274.97265625,
+              "rss_mib": 254.9375
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.351474483,
+            "settle_cpu_seconds": 1.131999999959277e-06,
+            "text": ""
+          },
+          "endpoint_input_seconds": 16.71,
+          "endpoint_reason": "quiet",
+          "event": "window_complete",
+          "release_reason": "result",
+          "released_input_seconds": 17.13,
+          "result_elapsed_seconds": 17.070010745,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 14.85,
+            "elapsed_seconds": 14.854343656,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 13.08
+          },
+          "waiting_after_release": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.6875,
+                "pid": 3,
+                "private_dirty_mib": 0.6875,
+                "pss_mib": 1.3818359375,
+                "role": "parent",
+                "rss_mib": 3.5859375,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 31.83203125,
+                "pid": 5,
+                "private_dirty_mib": 31.83203125,
+                "pss_mib": 49.0888671875,
+                "role": "detector",
+                "rss_mib": 53.5,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 3,
+              "spawned": 4
+            },
+            "parent_heap": {
+              "free_arena_bytes": 1130128,
+              "in_use_bytes": 291184,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 50.470703125,
+            "rss_mib": 57.0859375
+          },
+          "window": 3,
+          "worker_error": null,
+          "worker_exit_code": 0,
+          "worker_exit_signal": null
+        },
+        {
+          "event": "rearmed",
+          "input_seconds": 17.73
+        },
+        {
+          "aborted_windows": 0,
+          "all_command_workers_succeeded": true,
+          "continuous": true,
+          "detector_complete": {
+            "audio_seconds": 19.15875,
+            "cpu_seconds": 0.177023,
+            "decoded_samples": 203040,
+            "detections": 3,
+            "elapsed_seconds": 19.158758879,
+            "event": "complete",
+            "memory": {
+              "anonymous_mib": 31.83203125,
+              "heap": {
+                "free_arena_bytes": 1707600,
+                "in_use_bytes": 34886064,
+                "mmap_bytes": 0
+              },
+              "peak_rss_mib": 53.5,
+              "pss_mib": 49.0888671875,
+              "rss_mib": 53.5,
+              "rust_allocations": null
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/three-windows/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 103500,
+            "stream_count": 3
+          },
+          "event": "complete",
+          "final_waiting": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.6875,
+                "pid": 3,
+                "private_dirty_mib": 0.6875,
+                "pss_mib": 1.3818359375,
+                "role": "parent",
+                "rss_mib": 3.5859375,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 31.83203125,
+                "pid": 5,
+                "private_dirty_mib": 31.83203125,
+                "pss_mib": 49.0888671875,
+                "role": "detector",
+                "rss_mib": 53.5,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 3,
+              "spawned": 4
+            },
+            "parent_heap": {
+              "free_arena_bytes": 1079312,
+              "in_use_bytes": 342000,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 50.470703125,
+            "rss_mib": 57.0859375
+          },
+          "ignored_triggers": 0,
+          "memory": {
+            "overlap_peak_pss_mib": 317.875,
+            "overlap_peak_rss_mib": 328.8515625,
+            "overlap_samples": 317,
+            "peak_combined_pss_mib": 317.875,
+            "peak_combined_rss_mib": 328.8515625,
+            "sample_interval_ms": 20,
+            "samples": 975,
+            "sum_process_hwm_upper_bound_mib": 332.05859375
+          },
+          "production_defaults_changed": false,
+          "reports": [
+            {
+              "buffer_bytes": 123840,
+              "buffer_capacity_bytes": 320000,
+              "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/three-windows/continuous-3-1.raw",
+              "buffer_start_seconds": 0.06,
+              "command_ready": {
+                "denoiser": "rust-tract-0.23.9",
+                "event": "ready",
+                "load_seconds": 0.536458684,
+                "memory": {
+                  "peak_rss_mib": 239.06640625,
+                  "rss_mib": 239.06640625
+                },
+                "whisper": "rust-tract-0.23.9"
+              },
+              "command_result": {
+                "decode_cpu_seconds": 0.565435971,
+                "event": "result",
+                "events": [
+                  {
+                    "closest_match": false,
+                    "confidence": null,
+                    "heard": null,
+                    "kind": "wake",
+                    "min_word_posterior": null,
+                    "text": "go forward"
+                  },
+                  {
+                    "closest_match": false,
+                    "confidence": 1.0,
+                    "heard": null,
+                    "kind": "command",
+                    "min_word_posterior": 1.0,
+                    "text": "ten meters"
+                  }
+                ],
+                "memory": {
+                  "peak_rss_mib": 275.20703125,
+                  "rss_mib": 255.1875
+                },
+                "recognition_stats": {
+                  "fast_commands": 0,
+                  "vosk_fast_path": false,
+                  "vosk_finalize_utterances": false,
+                  "whisper_loads": 1,
+                  "whisper_transcriptions": 1
+                },
+                "seconds": 0.379125521,
+                "settle_cpu_seconds": 1.2819999999358345e-06,
+                "text": ""
+              },
+              "endpoint_input_seconds": 3.93,
+              "endpoint_reason": "quiet",
+              "event": "window_complete",
+              "release_reason": "result",
+              "released_input_seconds": 4.38,
+              "result_elapsed_seconds": 4.320012516,
+              "ring_capacity_bytes": 73920,
+              "trigger": {
+                "audio_seconds": 2.07,
+                "elapsed_seconds": 2.074572606,
+                "event": "keyword",
+                "result": {
+                  "keyword": "GO_FORWARD",
+                  "start_time": 0.0,
+                  "timestamps": [
+                    1.0,
+                    1.28,
+                    1.4
+                  ],
+                  "tokens": [
+                    " GO",
+                    " FOR",
+                    "WARD"
+                  ]
+                },
+                "stream_origin_seconds": 0.3
+              },
+              "waiting_after_release": {
+                "by_process": [
+                  {
+                    "anonymous_mib": 0.41796875,
+                    "pid": 3,
+                    "private_dirty_mib": 0.41796875,
+                    "pss_mib": 1.1123046875,
+                    "role": "parent",
+                    "rss_mib": 3.31640625,
+                    "threads": 3
+                  },
+                  {
+                    "anonymous_mib": 31.83203125,
+                    "pid": 5,
+                    "private_dirty_mib": 31.83203125,
+                    "pss_mib": 49.0888671875,
+                    "role": "detector",
+                    "rss_mib": 53.5,
+                    "threads": 1
+                  }
+                ],
+                "child_readers": {
+                  "active": 1,
+                  "joined": 1,
+                  "spawned": 2
+                },
+                "parent_heap": {
+                  "free_arena_bytes": 494704,
+                  "in_use_bytes": 246672,
+                  "mmap_bytes": 0
+                },
+                "parent_rust_allocations": null,
+                "processes": 2,
+                "pss_mib": 50.201171875,
+                "rss_mib": 56.81640625
+              },
+              "window": 1,
+              "worker_error": null,
+              "worker_exit_code": 0,
+              "worker_exit_signal": null
+            },
+            {
+              "buffer_bytes": 123840,
+              "buffer_capacity_bytes": 320000,
+              "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/three-windows/continuous-3-2.raw",
+              "buffer_start_seconds": 6.45,
+              "command_ready": {
+                "denoiser": "rust-tract-0.23.9",
+                "event": "ready",
+                "load_seconds": 0.511258053,
+                "memory": {
+                  "peak_rss_mib": 238.28515625,
+                  "rss_mib": 238.28515625
+                },
+                "whisper": "rust-tract-0.23.9"
+              },
+              "command_result": {
+                "decode_cpu_seconds": 0.4856583769999999,
+                "event": "result",
+                "events": [
+                  {
+                    "closest_match": false,
+                    "confidence": null,
+                    "heard": null,
+                    "kind": "wake",
+                    "min_word_posterior": null,
+                    "text": "go forward"
+                  },
+                  {
+                    "closest_match": false,
+                    "confidence": 1.0,
+                    "heard": null,
+                    "kind": "command",
+                    "min_word_posterior": 1.0,
+                    "text": "ten meters"
+                  }
+                ],
+                "memory": {
+                  "peak_rss_mib": 274.1484375,
+                  "rss_mib": 254.390625
+                },
+                "recognition_stats": {
+                  "fast_commands": 0,
+                  "vosk_fast_path": false,
+                  "vosk_finalize_utterances": false,
+                  "whisper_loads": 1,
+                  "whisper_transcriptions": 1
+                },
+                "seconds": 0.330673749,
+                "settle_cpu_seconds": 1.6940000000520428e-06,
+                "text": ""
+              },
+              "endpoint_input_seconds": 10.32,
+              "endpoint_reason": "quiet",
+              "event": "window_complete",
+              "release_reason": "result",
+              "released_input_seconds": 10.71,
+              "result_elapsed_seconds": 10.680008983,
+              "ring_capacity_bytes": 73920,
+              "trigger": {
+                "audio_seconds": 8.46,
+                "elapsed_seconds": 8.464728326,
+                "event": "keyword",
+                "result": {
+                  "keyword": "GO_FORWARD",
+                  "start_time": 0.0,
+                  "timestamps": [
+                    1.0,
+                    1.28,
+                    1.4
+                  ],
+                  "tokens": [
+                    " GO",
+                    " FOR",
+                    "WARD"
+                  ]
+                },
+                "stream_origin_seconds": 6.69
+              },
+              "waiting_after_release": {
+                "by_process": [
+                  {
+                    "anonymous_mib": 0.5625,
+                    "pid": 3,
+                    "private_dirty_mib": 0.5625,
+                    "pss_mib": 1.2568359375,
+                    "role": "parent",
+                    "rss_mib": 3.4609375,
+                    "threads": 3
+                  },
+                  {
+                    "anonymous_mib": 31.83203125,
+                    "pid": 5,
+                    "private_dirty_mib": 31.83203125,
+                    "pss_mib": 49.0888671875,
+                    "role": "detector",
+                    "rss_mib": 53.5,
+                    "threads": 1
+                  }
+                ],
+                "child_readers": {
+                  "active": 1,
+                  "joined": 2,
+                  "spawned": 3
+                },
+                "parent_heap": {
+                  "free_arena_bytes": 818528,
+                  "in_use_bytes": 271008,
+                  "mmap_bytes": 0
+                },
+                "parent_rust_allocations": null,
+                "processes": 2,
+                "pss_mib": 50.345703125,
+                "rss_mib": 56.9609375
+              },
+              "window": 2,
+              "worker_error": null,
+              "worker_exit_code": 0,
+              "worker_exit_signal": null
+            },
+            {
+              "buffer_bytes": 123840,
+              "buffer_capacity_bytes": 320000,
+              "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/three-windows/continuous-3-3.raw",
+              "buffer_start_seconds": 12.84,
+              "command_ready": {
+                "denoiser": "rust-tract-0.23.9",
+                "event": "ready",
+                "load_seconds": 0.538106162,
+                "memory": {
+                  "peak_rss_mib": 238.8203125,
+                  "rss_mib": 238.8203125
+                },
+                "whisper": "rust-tract-0.23.9"
+              },
+              "command_result": {
+                "decode_cpu_seconds": 0.50614115,
+                "event": "result",
+                "events": [
+                  {
+                    "closest_match": false,
+                    "confidence": null,
+                    "heard": null,
+                    "kind": "wake",
+                    "min_word_posterior": null,
+                    "text": "go forward"
+                  },
+                  {
+                    "closest_match": false,
+                    "confidence": 1.0,
+                    "heard": null,
+                    "kind": "command",
+                    "min_word_posterior": 1.0,
+                    "text": "ten meters"
+                  }
+                ],
+                "memory": {
+                  "peak_rss_mib": 274.97265625,
+                  "rss_mib": 254.9375
+                },
+                "recognition_stats": {
+                  "fast_commands": 0,
+                  "vosk_fast_path": false,
+                  "vosk_finalize_utterances": false,
+                  "whisper_loads": 1,
+                  "whisper_transcriptions": 1
+                },
+                "seconds": 0.351474483,
+                "settle_cpu_seconds": 1.131999999959277e-06,
+                "text": ""
+              },
+              "endpoint_input_seconds": 16.71,
+              "endpoint_reason": "quiet",
+              "event": "window_complete",
+              "release_reason": "result",
+              "released_input_seconds": 17.13,
+              "result_elapsed_seconds": 17.070010745,
+              "ring_capacity_bytes": 73920,
+              "trigger": {
+                "audio_seconds": 14.85,
+                "elapsed_seconds": 14.854343656,
+                "event": "keyword",
+                "result": {
+                  "keyword": "GO_FORWARD",
+                  "start_time": 0.0,
+                  "timestamps": [
+                    1.0,
+                    1.28,
+                    1.4
+                  ],
+                  "tokens": [
+                    " GO",
+                    " FOR",
+                    "WARD"
+                  ]
+                },
+                "stream_origin_seconds": 13.08
+              },
+              "waiting_after_release": {
+                "by_process": [
+                  {
+                    "anonymous_mib": 0.6875,
+                    "pid": 3,
+                    "private_dirty_mib": 0.6875,
+                    "pss_mib": 1.3818359375,
+                    "role": "parent",
+                    "rss_mib": 3.5859375,
+                    "threads": 3
+                  },
+                  {
+                    "anonymous_mib": 31.83203125,
+                    "pid": 5,
+                    "private_dirty_mib": 31.83203125,
+                    "pss_mib": 49.0888671875,
+                    "role": "detector",
+                    "rss_mib": 53.5,
+                    "threads": 1
+                  }
+                ],
+                "child_readers": {
+                  "active": 1,
+                  "joined": 3,
+                  "spawned": 4
+                },
+                "parent_heap": {
+                  "free_arena_bytes": 1130128,
+                  "in_use_bytes": 291184,
+                  "mmap_bytes": 0
+                },
+                "parent_rust_allocations": null,
+                "processes": 2,
+                "pss_mib": 50.470703125,
+                "rss_mib": 57.0859375
+              },
+              "window": 3,
+              "worker_error": null,
+              "worker_exit_code": 0,
+              "worker_exit_signal": null
+            }
+          ],
+          "retain_reports": true,
+          "successful_workers": 3,
+          "whole_application_acceptance": false,
+          "windows": 3,
+          "worker_failures": 0
+        }
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "expected_commands": [
+        [
+          "ten meters"
+        ],
+        [
+          "ten meters"
+        ],
+        [
+          "ten meters"
+        ]
+      ],
+      "actual_commands": [
+        [
+          "ten meters"
+        ],
+        [
+          "ten meters"
+        ],
+        [
+          "ten meters"
+        ]
+      ],
+      "expected_release_reasons": [
+        "result",
+        "result",
+        "result"
+      ],
+      "actual_release_reasons": [
+        "result",
+        "result",
+        "result"
+      ],
+      "expected_ignored_triggers": 0,
+      "slices": [
+        {
+          "window": 1,
+          "identical": true,
+          "sha256": "63bf26aac4903c84c7db01f5afdf18ed112467d25eb5c456a861e0b4d0d7b9e0",
+          "start_byte": 1920,
+          "end_byte": 125760
+        },
+        {
+          "window": 2,
+          "identical": true,
+          "sha256": "7554222f9961c7b622b0515fa7f4dd716dbd2ed9a2a8004840c3ee4058775aeb",
+          "start_byte": 206400,
+          "end_byte": 330240
+        },
+        {
+          "window": 3,
+          "identical": true,
+          "sha256": "a9b96145d4a1ee84a90442e819e0e087cc67de5c61b58b1b7eb101d55ab4e22c",
+          "start_byte": 410880,
+          "end_byte": 534720
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "busy-discard-and-recover",
+      "configuration": {
+        "detector_binary": "/home/silver/Projects/jarvis/native/kws-probe/target/release/jarvis-kws-probe",
+        "detector_config": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/detector.json",
+        "voice_binary": "/home/silver/Projects/jarvis/native/voice-worker/target/release/jarvis-voice",
+        "voice_payload": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/voice.json",
+        "work_dir": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/busy-discard-and-recover",
+        "cycles": 1,
+        "settle_ms": 1000,
+        "quiet_endpoint": {
+          "rms": 0.001,
+          "min_speech_ms": 240,
+          "quiet_ms": 600,
+          "timeout_ms": 5000
+        },
+        "continuous": {
+          "max_windows": 8,
+          "worker_timeout_ms": 12000,
+          "recovery_quiet_ms": 600
+        },
+        "payload_delay_ms": 5000
+      },
+      "input_sha256": "43296479844e429ccb56ca46ef64c5b35562e68fd0dd42d59fa7ec96c6985286",
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.321180022,
+            "memory": {
+              "anonymous_mib": 27.7265625,
+              "heap": {
+                "free_arena_bytes": 3655216,
+                "in_use_bytes": 25000400,
+                "mmap_bytes": 0
+              },
+              "peak_rss_mib": 47.84375,
+              "pss_mib": 43.8037109375,
+              "rss_mib": 47.84375,
+              "rust_allocations": null
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 44.8125,
+            "peak_combined_rss_mib": 50.9296875,
+            "sample_interval_ms": 20,
+            "samples": 17,
+            "sum_process_hwm_upper_bound_mib": 50.9296875
+          },
+          "waiting": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.28515625,
+                "pid": 1573,
+                "private_dirty_mib": 0.28515625,
+                "pss_mib": 1.0009765625,
+                "role": "parent",
+                "rss_mib": 3.08203125,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 27.7265625,
+                "pid": 1575,
+                "private_dirty_mib": 27.7265625,
+                "pss_mib": 43.8037109375,
+                "role": "detector",
+                "rss_mib": 47.84375,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 0,
+              "spawned": 1
+            },
+            "parent_heap": {
+              "free_arena_bytes": 277600,
+              "in_use_bytes": 127904,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 44.8046875,
+            "rss_mib": 50.92578125
+          }
+        },
+        {
+          "buffer_start_seconds": 0.06,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074876142,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "window": 1,
+          "worker_pid": 1577
+        },
+        {
+          "buffer_bytes": 123840,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/busy-discard-and-recover/continuous-1573-1.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "denoiser": "rust-tract-0.23.9",
+            "event": "ready",
+            "load_seconds": 0.545732304,
+            "memory": {
+              "peak_rss_mib": 236.9140625,
+              "rss_mib": 236.9140625
+            },
+            "whisper": "rust-tract-0.23.9"
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.5287860350000001,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 273.69921875,
+              "rss_mib": 253.859375
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.351581175,
+            "settle_cpu_seconds": 9.709999999607533e-07,
+            "text": ""
+          },
+          "endpoint_input_seconds": 3.93,
+          "endpoint_reason": "quiet",
+          "event": "window_complete",
+          "release_reason": "result",
+          "released_input_seconds": 8.04,
+          "result_elapsed_seconds": 8.010011973,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074876142,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "waiting_after_release": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.421875,
+                "pid": 1573,
+                "private_dirty_mib": 0.421875,
+                "pss_mib": 1.1396484375,
+                "role": "parent",
+                "rss_mib": 3.34375,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 32.18359375,
+                "pid": 1575,
+                "private_dirty_mib": 32.18359375,
+                "pss_mib": 49.455078125,
+                "role": "detector",
+                "rss_mib": 53.8671875,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 1,
+              "spawned": 2
+            },
+            "parent_heap": {
+              "free_arena_bytes": 494672,
+              "in_use_bytes": 246704,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 50.5947265625,
+            "rss_mib": 57.2109375
+          },
+          "window": 1,
+          "worker_error": null,
+          "worker_exit_code": 0,
+          "worker_exit_signal": null
+        },
+        {
+          "event": "trigger_ignored",
+          "reason": "recovering_or_stale",
+          "trigger": {
+            "audio_seconds": 8.46,
+            "elapsed_seconds": 8.464721483,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 6.69
+          }
+        },
+        {
+          "event": "rearmed",
+          "input_seconds": 10.32
+        },
+        {
+          "buffer_start_seconds": 15.84,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 17.85,
+            "elapsed_seconds": 17.854584802,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 16.08
+          },
+          "window": 2,
+          "worker_pid": 2099
+        },
+        {
+          "buffer_bytes": 123840,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/busy-discard-and-recover/continuous-1573-2.raw",
+          "buffer_start_seconds": 15.84,
+          "command_ready": {
+            "denoiser": "rust-tract-0.23.9",
+            "event": "ready",
+            "load_seconds": 0.5328998,
+            "memory": {
+              "peak_rss_mib": 236.36328125,
+              "rss_mib": 236.36328125
+            },
+            "whisper": "rust-tract-0.23.9"
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.4976544289999999,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 273.2734375,
+              "rss_mib": 253.24609375
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.339801613,
+            "settle_cpu_seconds": 1.1519999998377273e-06,
+            "text": ""
+          },
+          "endpoint_input_seconds": 19.71,
+          "endpoint_reason": "quiet",
+          "event": "window_complete",
+          "release_reason": "result",
+          "released_input_seconds": 22.15875,
+          "result_elapsed_seconds": 23.762519742,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 17.85,
+            "elapsed_seconds": 17.854584802,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 16.08
+          },
+          "waiting_after_release": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.578125,
+                "pid": 1573,
+                "private_dirty_mib": 0.578125,
+                "pss_mib": 1.2958984375,
+                "role": "parent",
+                "rss_mib": 3.5,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 32.18359375,
+                "pid": 1575,
+                "private_dirty_mib": 32.18359375,
+                "pss_mib": 49.455078125,
+                "role": "detector",
+                "rss_mib": 53.8671875,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 2,
+              "spawned": 3
+            },
+            "parent_heap": {
+              "free_arena_bytes": 809536,
+              "in_use_bytes": 275904,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 50.7509765625,
+            "rss_mib": 57.3671875
+          },
+          "window": 2,
+          "worker_error": null,
+          "worker_exit_code": 0,
+          "worker_exit_signal": null
+        },
+        {
+          "aborted_windows": 0,
+          "all_command_workers_succeeded": true,
+          "continuous": true,
+          "detector_complete": {
+            "audio_seconds": 22.15875,
+            "cpu_seconds": 0.175778,
+            "decoded_samples": 203040,
+            "detections": 3,
+            "elapsed_seconds": 22.1587569,
+            "event": "complete",
+            "memory": {
+              "anonymous_mib": 32.18359375,
+              "heap": {
+                "free_arena_bytes": 2074016,
+                "in_use_bytes": 34892384,
+                "mmap_bytes": 0
+              },
+              "peak_rss_mib": 53.8671875,
+              "pss_mib": 49.455078125,
+              "rss_mib": 53.8671875,
+              "rust_allocations": null
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/busy-discard-and-recover/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 151500,
+            "stream_count": 3
+          },
+          "event": "complete",
+          "final_waiting": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.578125,
+                "pid": 1573,
+                "private_dirty_mib": 0.578125,
+                "pss_mib": 1.2958984375,
+                "role": "parent",
+                "rss_mib": 3.5,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 32.18359375,
+                "pid": 1575,
+                "private_dirty_mib": 32.18359375,
+                "pss_mib": 49.455078125,
+                "role": "detector",
+                "rss_mib": 53.8671875,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 2,
+              "spawned": 3
+            },
+            "parent_heap": {
+              "free_arena_bytes": 776608,
+              "in_use_bytes": 308832,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 50.7509765625,
+            "rss_mib": 57.3671875
+          },
+          "ignored_triggers": 1,
+          "memory": {
+            "overlap_peak_pss_mib": 314.232421875,
+            "overlap_peak_rss_mib": 325.234375,
+            "overlap_samples": 578,
+            "peak_combined_pss_mib": 314.232421875,
+            "peak_combined_rss_mib": 325.234375,
+            "sample_interval_ms": 20,
+            "samples": 1214,
+            "sum_process_hwm_upper_bound_mib": 330.90234375
+          },
+          "production_defaults_changed": false,
+          "reports": [
+            {
+              "buffer_bytes": 123840,
+              "buffer_capacity_bytes": 320000,
+              "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/busy-discard-and-recover/continuous-1573-1.raw",
+              "buffer_start_seconds": 0.06,
+              "command_ready": {
+                "denoiser": "rust-tract-0.23.9",
+                "event": "ready",
+                "load_seconds": 0.545732304,
+                "memory": {
+                  "peak_rss_mib": 236.9140625,
+                  "rss_mib": 236.9140625
+                },
+                "whisper": "rust-tract-0.23.9"
+              },
+              "command_result": {
+                "decode_cpu_seconds": 0.5287860350000001,
+                "event": "result",
+                "events": [
+                  {
+                    "closest_match": false,
+                    "confidence": null,
+                    "heard": null,
+                    "kind": "wake",
+                    "min_word_posterior": null,
+                    "text": "go forward"
+                  },
+                  {
+                    "closest_match": false,
+                    "confidence": 1.0,
+                    "heard": null,
+                    "kind": "command",
+                    "min_word_posterior": 1.0,
+                    "text": "ten meters"
+                  }
+                ],
+                "memory": {
+                  "peak_rss_mib": 273.69921875,
+                  "rss_mib": 253.859375
+                },
+                "recognition_stats": {
+                  "fast_commands": 0,
+                  "vosk_fast_path": false,
+                  "vosk_finalize_utterances": false,
+                  "whisper_loads": 1,
+                  "whisper_transcriptions": 1
+                },
+                "seconds": 0.351581175,
+                "settle_cpu_seconds": 9.709999999607533e-07,
+                "text": ""
+              },
+              "endpoint_input_seconds": 3.93,
+              "endpoint_reason": "quiet",
+              "event": "window_complete",
+              "release_reason": "result",
+              "released_input_seconds": 8.04,
+              "result_elapsed_seconds": 8.010011973,
+              "ring_capacity_bytes": 73920,
+              "trigger": {
+                "audio_seconds": 2.07,
+                "elapsed_seconds": 2.074876142,
+                "event": "keyword",
+                "result": {
+                  "keyword": "GO_FORWARD",
+                  "start_time": 0.0,
+                  "timestamps": [
+                    1.0,
+                    1.28,
+                    1.4
+                  ],
+                  "tokens": [
+                    " GO",
+                    " FOR",
+                    "WARD"
+                  ]
+                },
+                "stream_origin_seconds": 0.3
+              },
+              "waiting_after_release": {
+                "by_process": [
+                  {
+                    "anonymous_mib": 0.421875,
+                    "pid": 1573,
+                    "private_dirty_mib": 0.421875,
+                    "pss_mib": 1.1396484375,
+                    "role": "parent",
+                    "rss_mib": 3.34375,
+                    "threads": 3
+                  },
+                  {
+                    "anonymous_mib": 32.18359375,
+                    "pid": 1575,
+                    "private_dirty_mib": 32.18359375,
+                    "pss_mib": 49.455078125,
+                    "role": "detector",
+                    "rss_mib": 53.8671875,
+                    "threads": 1
+                  }
+                ],
+                "child_readers": {
+                  "active": 1,
+                  "joined": 1,
+                  "spawned": 2
+                },
+                "parent_heap": {
+                  "free_arena_bytes": 494672,
+                  "in_use_bytes": 246704,
+                  "mmap_bytes": 0
+                },
+                "parent_rust_allocations": null,
+                "processes": 2,
+                "pss_mib": 50.5947265625,
+                "rss_mib": 57.2109375
+              },
+              "window": 1,
+              "worker_error": null,
+              "worker_exit_code": 0,
+              "worker_exit_signal": null
+            },
+            {
+              "buffer_bytes": 123840,
+              "buffer_capacity_bytes": 320000,
+              "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/busy-discard-and-recover/continuous-1573-2.raw",
+              "buffer_start_seconds": 15.84,
+              "command_ready": {
+                "denoiser": "rust-tract-0.23.9",
+                "event": "ready",
+                "load_seconds": 0.5328998,
+                "memory": {
+                  "peak_rss_mib": 236.36328125,
+                  "rss_mib": 236.36328125
+                },
+                "whisper": "rust-tract-0.23.9"
+              },
+              "command_result": {
+                "decode_cpu_seconds": 0.4976544289999999,
+                "event": "result",
+                "events": [
+                  {
+                    "closest_match": false,
+                    "confidence": null,
+                    "heard": null,
+                    "kind": "wake",
+                    "min_word_posterior": null,
+                    "text": "go forward"
+                  },
+                  {
+                    "closest_match": false,
+                    "confidence": 1.0,
+                    "heard": null,
+                    "kind": "command",
+                    "min_word_posterior": 1.0,
+                    "text": "ten meters"
+                  }
+                ],
+                "memory": {
+                  "peak_rss_mib": 273.2734375,
+                  "rss_mib": 253.24609375
+                },
+                "recognition_stats": {
+                  "fast_commands": 0,
+                  "vosk_fast_path": false,
+                  "vosk_finalize_utterances": false,
+                  "whisper_loads": 1,
+                  "whisper_transcriptions": 1
+                },
+                "seconds": 0.339801613,
+                "settle_cpu_seconds": 1.1519999998377273e-06,
+                "text": ""
+              },
+              "endpoint_input_seconds": 19.71,
+              "endpoint_reason": "quiet",
+              "event": "window_complete",
+              "release_reason": "result",
+              "released_input_seconds": 22.15875,
+              "result_elapsed_seconds": 23.762519742,
+              "ring_capacity_bytes": 73920,
+              "trigger": {
+                "audio_seconds": 17.85,
+                "elapsed_seconds": 17.854584802,
+                "event": "keyword",
+                "result": {
+                  "keyword": "GO_FORWARD",
+                  "start_time": 0.0,
+                  "timestamps": [
+                    1.0,
+                    1.28,
+                    1.4
+                  ],
+                  "tokens": [
+                    " GO",
+                    " FOR",
+                    "WARD"
+                  ]
+                },
+                "stream_origin_seconds": 16.08
+              },
+              "waiting_after_release": {
+                "by_process": [
+                  {
+                    "anonymous_mib": 0.578125,
+                    "pid": 1573,
+                    "private_dirty_mib": 0.578125,
+                    "pss_mib": 1.2958984375,
+                    "role": "parent",
+                    "rss_mib": 3.5,
+                    "threads": 3
+                  },
+                  {
+                    "anonymous_mib": 32.18359375,
+                    "pid": 1575,
+                    "private_dirty_mib": 32.18359375,
+                    "pss_mib": 49.455078125,
+                    "role": "detector",
+                    "rss_mib": 53.8671875,
+                    "threads": 1
+                  }
+                ],
+                "child_readers": {
+                  "active": 1,
+                  "joined": 2,
+                  "spawned": 3
+                },
+                "parent_heap": {
+                  "free_arena_bytes": 809536,
+                  "in_use_bytes": 275904,
+                  "mmap_bytes": 0
+                },
+                "parent_rust_allocations": null,
+                "processes": 2,
+                "pss_mib": 50.7509765625,
+                "rss_mib": 57.3671875
+              },
+              "window": 2,
+              "worker_error": null,
+              "worker_exit_code": 0,
+              "worker_exit_signal": null
+            }
+          ],
+          "retain_reports": true,
+          "successful_workers": 2,
+          "whole_application_acceptance": false,
+          "windows": 2,
+          "worker_failures": 0
+        }
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "expected_commands": [
+        [
+          "ten meters"
+        ],
+        [
+          "ten meters"
+        ]
+      ],
+      "actual_commands": [
+        [
+          "ten meters"
+        ],
+        [
+          "ten meters"
+        ]
+      ],
+      "expected_release_reasons": [
+        "result",
+        "result"
+      ],
+      "actual_release_reasons": [
+        "result",
+        "result"
+      ],
+      "expected_ignored_triggers": 1,
+      "slices": [
+        {
+          "window": 1,
+          "identical": true,
+          "sha256": "63bf26aac4903c84c7db01f5afdf18ed112467d25eb5c456a861e0b4d0d7b9e0",
+          "start_byte": 1920,
+          "end_byte": 125760
+        },
+        {
+          "window": 2,
+          "identical": true,
+          "sha256": "a9b96145d4a1ee84a90442e819e0e087cc67de5c61b58b1b7eb101d55ab4e22c",
+          "start_byte": 506880,
+          "end_byte": 630720
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "speech-timeout-then-recover",
+      "configuration": {
+        "detector_binary": "/home/silver/Projects/jarvis/native/kws-probe/target/release/jarvis-kws-probe",
+        "detector_config": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/detector.json",
+        "voice_binary": "/home/silver/Projects/jarvis/native/voice-worker/target/release/jarvis-voice",
+        "voice_payload": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/voice.json",
+        "work_dir": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/speech-timeout-then-recover",
+        "cycles": 1,
+        "settle_ms": 1000,
+        "quiet_endpoint": {
+          "rms": 0.001,
+          "min_speech_ms": 240,
+          "quiet_ms": 600,
+          "timeout_ms": 5000
+        },
+        "continuous": {
+          "max_windows": 8,
+          "worker_timeout_ms": 12000,
+          "recovery_quiet_ms": 600
+        }
+      },
+      "input_sha256": "f0fec291e6643a867ef4d58e2a6792f2cc238a167f413cf44d2b2c2dd11e2437",
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.322454515,
+            "memory": {
+              "anonymous_mib": 28.703125,
+              "heap": {
+                "free_arena_bytes": 4688224,
+                "in_use_bytes": 24991392,
+                "mmap_bytes": 0
+              },
+              "peak_rss_mib": 48.76171875,
+              "pss_mib": 44.7587890625,
+              "rss_mib": 48.76171875,
+              "rust_allocations": null
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.728515625,
+            "peak_combined_rss_mib": 51.8125,
+            "sample_interval_ms": 20,
+            "samples": 17,
+            "sum_process_hwm_upper_bound_mib": 51.8125
+          },
+          "waiting": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.28515625,
+                "pid": 2621,
+                "private_dirty_mib": 0.28515625,
+                "pss_mib": 0.9619140625,
+                "role": "parent",
+                "rss_mib": 3.04296875,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 28.703125,
+                "pid": 2623,
+                "private_dirty_mib": 28.703125,
+                "pss_mib": 44.7587890625,
+                "role": "detector",
+                "rss_mib": 48.76171875,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 0,
+              "spawned": 1
+            },
+            "parent_heap": {
+              "free_arena_bytes": 275888,
+              "in_use_bytes": 129616,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 45.720703125,
+            "rss_mib": 51.8046875
+          }
+        },
+        {
+          "buffer_start_seconds": 0.06,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074533015,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "window": 1,
+          "worker_pid": 2625
+        },
+        {
+          "buffer_bytes": 224640,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": null,
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "denoiser": "rust-tract-0.23.9",
+            "event": "ready",
+            "load_seconds": 0.527814186,
+            "memory": {
+              "peak_rss_mib": 237.0546875,
+              "rss_mib": 237.0546875
+            },
+            "whisper": "rust-tract-0.23.9"
+          },
+          "command_result": null,
+          "endpoint_input_seconds": 7.08,
+          "endpoint_reason": "command_timeout",
+          "event": "window_complete",
+          "release_reason": "command_timeout",
+          "released_input_seconds": 7.08,
+          "result_elapsed_seconds": null,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074533015,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "waiting_after_release": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.41796875,
+                "pid": 2621,
+                "private_dirty_mib": 0.41796875,
+                "pss_mib": 1.0966796875,
+                "role": "parent",
+                "rss_mib": 3.30078125,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 33.25390625,
+                "pid": 2623,
+                "private_dirty_mib": 33.25390625,
+                "pss_mib": 50.50390625,
+                "role": "detector",
+                "rss_mib": 54.9375,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 1,
+              "spawned": 2
+            },
+            "parent_heap": {
+              "free_arena_bytes": 500704,
+              "in_use_bytes": 240672,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 51.6005859375,
+            "rss_mib": 58.23828125
+          },
+          "window": 1,
+          "worker_error": null,
+          "worker_exit_code": null,
+          "worker_exit_signal": 9
+        },
+        {
+          "event": "rearmed",
+          "input_seconds": 7.68
+        },
+        {
+          "buffer_start_seconds": 8.85,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 10.86,
+            "elapsed_seconds": 10.864569949,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 9.09
+          },
+          "window": 2,
+          "worker_pid": 3147
+        },
+        {
+          "buffer_bytes": 123840,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/speech-timeout-then-recover/continuous-2621-2.raw",
+          "buffer_start_seconds": 8.85,
+          "command_ready": {
+            "denoiser": "rust-tract-0.23.9",
+            "event": "ready",
+            "load_seconds": 0.535828172,
+            "memory": {
+              "peak_rss_mib": 236.42578125,
+              "rss_mib": 236.42578125
+            },
+            "whisper": "rust-tract-0.23.9"
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.531640477,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 273.9375,
+              "rss_mib": 253.24609375
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.371049268,
+            "settle_cpu_seconds": 1.0019999998611695e-06,
+            "text": ""
+          },
+          "endpoint_input_seconds": 12.72,
+          "endpoint_reason": "quiet",
+          "event": "window_complete",
+          "release_reason": "result",
+          "released_input_seconds": 13.17,
+          "result_elapsed_seconds": 13.110009246,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 10.86,
+            "elapsed_seconds": 10.864569949,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 9.09
+          },
+          "waiting_after_release": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.5625,
+                "pid": 2621,
+                "private_dirty_mib": 0.5625,
+                "pss_mib": 1.2412109375,
+                "role": "parent",
+                "rss_mib": 3.4453125,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 33.25390625,
+                "pid": 2623,
+                "private_dirty_mib": 33.25390625,
+                "pss_mib": 50.50390625,
+                "role": "detector",
+                "rss_mib": 54.9375,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 2,
+              "spawned": 3
+            },
+            "parent_heap": {
+              "free_arena_bytes": 815568,
+              "in_use_bytes": 265776,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 51.7451171875,
+            "rss_mib": 58.3828125
+          },
+          "window": 2,
+          "worker_error": null,
+          "worker_exit_code": 0,
+          "worker_exit_signal": null
+        },
+        {
+          "event": "rearmed",
+          "input_seconds": 13.77
+        },
+        {
+          "aborted_windows": 1,
+          "all_command_workers_succeeded": false,
+          "continuous": true,
+          "detector_complete": {
+            "audio_seconds": 15.18625,
+            "cpu_seconds": 0.098375,
+            "decoded_samples": 110880,
+            "detections": 2,
+            "elapsed_seconds": 15.186259592,
+            "event": "complete",
+            "memory": {
+              "anonymous_mib": 33.25390625,
+              "heap": {
+                "free_arena_bytes": 1714960,
+                "in_use_bytes": 34882800,
+                "mmap_bytes": 0
+              },
+              "peak_rss_mib": 54.9375,
+              "pss_mib": 50.50390625,
+              "rss_mib": 54.9375,
+              "rust_allocations": null
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/speech-timeout-then-recover/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 132100,
+            "stream_count": 2
+          },
+          "event": "complete",
+          "final_waiting": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.56640625,
+                "pid": 2621,
+                "private_dirty_mib": 0.56640625,
+                "pss_mib": 1.2451171875,
+                "role": "parent",
+                "rss_mib": 3.44921875,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 33.25390625,
+                "pid": 2623,
+                "private_dirty_mib": 33.25390625,
+                "pss_mib": 50.50390625,
+                "role": "detector",
+                "rss_mib": 54.9375,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 2,
+              "spawned": 3
+            },
+            "parent_heap": {
+              "free_arena_bytes": 781232,
+              "in_use_bytes": 300112,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 51.7490234375,
+            "rss_mib": 58.38671875
+          },
+          "ignored_triggers": 0,
+          "memory": {
+            "overlap_peak_pss_mib": 321.9794921875,
+            "overlap_peak_rss_mib": 331.6875,
+            "overlap_samples": 345,
+            "peak_combined_pss_mib": 321.9794921875,
+            "peak_combined_rss_mib": 331.6875,
+            "sample_interval_ms": 20,
+            "samples": 783,
+            "sum_process_hwm_upper_bound_mib": 332.31640625
+          },
+          "production_defaults_changed": false,
+          "reports": [
+            {
+              "buffer_bytes": 224640,
+              "buffer_capacity_bytes": 320000,
+              "buffer_path": null,
+              "buffer_start_seconds": 0.06,
+              "command_ready": {
+                "denoiser": "rust-tract-0.23.9",
+                "event": "ready",
+                "load_seconds": 0.527814186,
+                "memory": {
+                  "peak_rss_mib": 237.0546875,
+                  "rss_mib": 237.0546875
+                },
+                "whisper": "rust-tract-0.23.9"
+              },
+              "command_result": null,
+              "endpoint_input_seconds": 7.08,
+              "endpoint_reason": "command_timeout",
+              "event": "window_complete",
+              "release_reason": "command_timeout",
+              "released_input_seconds": 7.08,
+              "result_elapsed_seconds": null,
+              "ring_capacity_bytes": 73920,
+              "trigger": {
+                "audio_seconds": 2.07,
+                "elapsed_seconds": 2.074533015,
+                "event": "keyword",
+                "result": {
+                  "keyword": "GO_FORWARD",
+                  "start_time": 0.0,
+                  "timestamps": [
+                    1.0,
+                    1.28,
+                    1.4
+                  ],
+                  "tokens": [
+                    " GO",
+                    " FOR",
+                    "WARD"
+                  ]
+                },
+                "stream_origin_seconds": 0.3
+              },
+              "waiting_after_release": {
+                "by_process": [
+                  {
+                    "anonymous_mib": 0.41796875,
+                    "pid": 2621,
+                    "private_dirty_mib": 0.41796875,
+                    "pss_mib": 1.0966796875,
+                    "role": "parent",
+                    "rss_mib": 3.30078125,
+                    "threads": 3
+                  },
+                  {
+                    "anonymous_mib": 33.25390625,
+                    "pid": 2623,
+                    "private_dirty_mib": 33.25390625,
+                    "pss_mib": 50.50390625,
+                    "role": "detector",
+                    "rss_mib": 54.9375,
+                    "threads": 1
+                  }
+                ],
+                "child_readers": {
+                  "active": 1,
+                  "joined": 1,
+                  "spawned": 2
+                },
+                "parent_heap": {
+                  "free_arena_bytes": 500704,
+                  "in_use_bytes": 240672,
+                  "mmap_bytes": 0
+                },
+                "parent_rust_allocations": null,
+                "processes": 2,
+                "pss_mib": 51.6005859375,
+                "rss_mib": 58.23828125
+              },
+              "window": 1,
+              "worker_error": null,
+              "worker_exit_code": null,
+              "worker_exit_signal": 9
+            },
+            {
+              "buffer_bytes": 123840,
+              "buffer_capacity_bytes": 320000,
+              "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/speech-timeout-then-recover/continuous-2621-2.raw",
+              "buffer_start_seconds": 8.85,
+              "command_ready": {
+                "denoiser": "rust-tract-0.23.9",
+                "event": "ready",
+                "load_seconds": 0.535828172,
+                "memory": {
+                  "peak_rss_mib": 236.42578125,
+                  "rss_mib": 236.42578125
+                },
+                "whisper": "rust-tract-0.23.9"
+              },
+              "command_result": {
+                "decode_cpu_seconds": 0.531640477,
+                "event": "result",
+                "events": [
+                  {
+                    "closest_match": false,
+                    "confidence": null,
+                    "heard": null,
+                    "kind": "wake",
+                    "min_word_posterior": null,
+                    "text": "go forward"
+                  },
+                  {
+                    "closest_match": false,
+                    "confidence": 1.0,
+                    "heard": null,
+                    "kind": "command",
+                    "min_word_posterior": 1.0,
+                    "text": "ten meters"
+                  }
+                ],
+                "memory": {
+                  "peak_rss_mib": 273.9375,
+                  "rss_mib": 253.24609375
+                },
+                "recognition_stats": {
+                  "fast_commands": 0,
+                  "vosk_fast_path": false,
+                  "vosk_finalize_utterances": false,
+                  "whisper_loads": 1,
+                  "whisper_transcriptions": 1
+                },
+                "seconds": 0.371049268,
+                "settle_cpu_seconds": 1.0019999998611695e-06,
+                "text": ""
+              },
+              "endpoint_input_seconds": 12.72,
+              "endpoint_reason": "quiet",
+              "event": "window_complete",
+              "release_reason": "result",
+              "released_input_seconds": 13.17,
+              "result_elapsed_seconds": 13.110009246,
+              "ring_capacity_bytes": 73920,
+              "trigger": {
+                "audio_seconds": 10.86,
+                "elapsed_seconds": 10.864569949,
+                "event": "keyword",
+                "result": {
+                  "keyword": "GO_FORWARD",
+                  "start_time": 0.0,
+                  "timestamps": [
+                    1.0,
+                    1.28,
+                    1.4
+                  ],
+                  "tokens": [
+                    " GO",
+                    " FOR",
+                    "WARD"
+                  ]
+                },
+                "stream_origin_seconds": 9.09
+              },
+              "waiting_after_release": {
+                "by_process": [
+                  {
+                    "anonymous_mib": 0.5625,
+                    "pid": 2621,
+                    "private_dirty_mib": 0.5625,
+                    "pss_mib": 1.2412109375,
+                    "role": "parent",
+                    "rss_mib": 3.4453125,
+                    "threads": 3
+                  },
+                  {
+                    "anonymous_mib": 33.25390625,
+                    "pid": 2623,
+                    "private_dirty_mib": 33.25390625,
+                    "pss_mib": 50.50390625,
+                    "role": "detector",
+                    "rss_mib": 54.9375,
+                    "threads": 1
+                  }
+                ],
+                "child_readers": {
+                  "active": 1,
+                  "joined": 2,
+                  "spawned": 3
+                },
+                "parent_heap": {
+                  "free_arena_bytes": 815568,
+                  "in_use_bytes": 265776,
+                  "mmap_bytes": 0
+                },
+                "parent_rust_allocations": null,
+                "processes": 2,
+                "pss_mib": 51.7451171875,
+                "rss_mib": 58.3828125
+              },
+              "window": 2,
+              "worker_error": null,
+              "worker_exit_code": 0,
+              "worker_exit_signal": null
+            }
+          ],
+          "retain_reports": true,
+          "successful_workers": 1,
+          "whole_application_acceptance": false,
+          "windows": 2,
+          "worker_failures": 0
+        }
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "expected_commands": [
+        [],
+        [
+          "ten meters"
+        ]
+      ],
+      "actual_commands": [
+        [],
+        [
+          "ten meters"
+        ]
+      ],
+      "expected_release_reasons": [
+        "command_timeout",
+        "result"
+      ],
+      "actual_release_reasons": [
+        "command_timeout",
+        "result"
+      ],
+      "expected_ignored_triggers": 0,
+      "slices": [
+        {
+          "window": 2,
+          "identical": true,
+          "sha256": "524426357555e4c17fd9914cd82e64e87bcfad51e5fc35666ba8160deed073bd",
+          "start_byte": 283200,
+          "end_byte": 407040
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "worker-timeout-then-recover",
+      "configuration": {
+        "detector_binary": "/home/silver/Projects/jarvis/native/kws-probe/target/release/jarvis-kws-probe",
+        "detector_config": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/detector.json",
+        "voice_binary": "/home/silver/Projects/jarvis/native/voice-worker/target/release/jarvis-voice",
+        "voice_payload": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/voice.json",
+        "work_dir": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/worker-timeout-then-recover",
+        "cycles": 1,
+        "settle_ms": 1000,
+        "quiet_endpoint": {
+          "rms": 0.001,
+          "min_speech_ms": 240,
+          "quiet_ms": 600,
+          "timeout_ms": 5000
+        },
+        "continuous": {
+          "max_windows": 8,
+          "worker_timeout_ms": 1000,
+          "recovery_quiet_ms": 600
+        },
+        "payload_delay_ms": 3000
+      },
+      "input_sha256": "453d27881a3fb4fbf6cc617afbd42212233cc959bac7d94ab6172c9c379affe9",
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.330064988,
+            "memory": {
+              "anonymous_mib": 27.73046875,
+              "heap": {
+                "free_arena_bytes": 3657280,
+                "in_use_bytes": 24998336,
+                "mmap_bytes": 0
+              },
+              "peak_rss_mib": 47.8359375,
+              "pss_mib": 43.7958984375,
+              "rss_mib": 47.8359375,
+              "rust_allocations": null
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 44.8046875,
+            "peak_combined_rss_mib": 50.92578125,
+            "sample_interval_ms": 20,
+            "samples": 18,
+            "sum_process_hwm_upper_bound_mib": 50.92578125
+          },
+          "waiting": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.28515625,
+                "pid": 3669,
+                "private_dirty_mib": 0.28515625,
+                "pss_mib": 1.0009765625,
+                "role": "parent",
+                "rss_mib": 3.08203125,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 27.73046875,
+                "pid": 3671,
+                "private_dirty_mib": 27.73046875,
+                "pss_mib": 43.7958984375,
+                "role": "detector",
+                "rss_mib": 47.8359375,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 0,
+              "spawned": 1
+            },
+            "parent_heap": {
+              "free_arena_bytes": 275888,
+              "in_use_bytes": 129616,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 44.796875,
+            "rss_mib": 50.91796875
+          }
+        },
+        {
+          "buffer_start_seconds": 0.06,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074700664,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "window": 1,
+          "worker_pid": 3673
+        },
+        {
+          "buffer_bytes": 97920,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": null,
+          "buffer_start_seconds": 0.06,
+          "command_ready": null,
+          "command_result": null,
+          "endpoint_input_seconds": null,
+          "endpoint_reason": null,
+          "event": "window_complete",
+          "release_reason": "worker_timeout",
+          "released_input_seconds": 3.12,
+          "result_elapsed_seconds": null,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074700664,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "waiting_after_release": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.4140625,
+                "pid": 3669,
+                "private_dirty_mib": 0.4140625,
+                "pss_mib": 1.1318359375,
+                "role": "parent",
+                "rss_mib": 3.3359375,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 33.0234375,
+                "pid": 3671,
+                "private_dirty_mib": 33.0234375,
+                "pss_mib": 50.283203125,
+                "role": "detector",
+                "rss_mib": 54.6953125,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 1,
+              "spawned": 2
+            },
+            "parent_heap": {
+              "free_arena_bytes": 502352,
+              "in_use_bytes": 239024,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 51.4150390625,
+            "rss_mib": 58.03125
+          },
+          "window": 1,
+          "worker_error": null,
+          "worker_exit_code": null,
+          "worker_exit_signal": 9
+        },
+        {
+          "event": "rearmed",
+          "input_seconds": 3.93
+        },
+        {
+          "buffer_start_seconds": 6.45,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 8.46,
+            "elapsed_seconds": 8.464662218,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 6.69
+          },
+          "window": 2,
+          "worker_pid": 3675
+        },
+        {
+          "buffer_bytes": 97920,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": null,
+          "buffer_start_seconds": 6.45,
+          "command_ready": null,
+          "command_result": null,
+          "endpoint_input_seconds": null,
+          "endpoint_reason": null,
+          "event": "window_complete",
+          "release_reason": "worker_timeout",
+          "released_input_seconds": 9.51,
+          "result_elapsed_seconds": null,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 8.46,
+            "elapsed_seconds": 8.464662218,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 6.69
+          },
+          "waiting_after_release": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.52734375,
+                "pid": 3669,
+                "private_dirty_mib": 0.52734375,
+                "pss_mib": 1.2451171875,
+                "role": "parent",
+                "rss_mib": 3.44921875,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 33.0234375,
+                "pid": 3671,
+                "private_dirty_mib": 33.0234375,
+                "pss_mib": 50.283203125,
+                "role": "detector",
+                "rss_mib": 54.6953125,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 2,
+              "spawned": 3
+            },
+            "parent_heap": {
+              "free_arena_bytes": 822048,
+              "in_use_bytes": 255200,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 51.5283203125,
+            "rss_mib": 58.14453125
+          },
+          "window": 2,
+          "worker_error": null,
+          "worker_exit_code": null,
+          "worker_exit_signal": 9
+        },
+        {
+          "event": "rearmed",
+          "input_seconds": 10.32
+        },
+        {
+          "aborted_windows": 2,
+          "all_command_workers_succeeded": false,
+          "continuous": true,
+          "detector_complete": {
+            "audio_seconds": 12.7725,
+            "cpu_seconds": 0.119832,
+            "decoded_samples": 135360,
+            "detections": 2,
+            "elapsed_seconds": 12.772506814,
+            "event": "complete",
+            "memory": {
+              "anonymous_mib": 33.0234375,
+              "heap": {
+                "free_arena_bytes": 1703104,
+                "in_use_bytes": 34890560,
+                "mmap_bytes": 0
+              },
+              "peak_rss_mib": 54.6953125,
+              "pss_mib": 50.283203125,
+              "rss_mib": 54.6953125,
+              "rust_allocations": null
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/worker-timeout-then-recover/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 69000,
+            "stream_count": 2
+          },
+          "event": "complete",
+          "final_waiting": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.53125,
+                "pid": 3669,
+                "private_dirty_mib": 0.53125,
+                "pss_mib": 1.2490234375,
+                "role": "parent",
+                "rss_mib": 3.453125,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 33.0234375,
+                "pid": 3671,
+                "private_dirty_mib": 33.0234375,
+                "pss_mib": 50.283203125,
+                "role": "detector",
+                "rss_mib": 54.6953125,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 2,
+              "spawned": 3
+            },
+            "parent_heap": {
+              "free_arena_bytes": 792288,
+              "in_use_bytes": 284960,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 51.5322265625,
+            "rss_mib": 58.1484375
+          },
+          "ignored_triggers": 0,
+          "memory": {
+            "overlap_peak_pss_mib": 59.421875,
+            "overlap_peak_rss_mib": 68.2578125,
+            "overlap_samples": 102,
+            "peak_combined_pss_mib": 59.421875,
+            "peak_combined_rss_mib": 68.2578125,
+            "sample_interval_ms": 20,
+            "samples": 677,
+            "sum_process_hwm_upper_bound_mib": 68.2578125
+          },
+          "production_defaults_changed": false,
+          "reports": [
+            {
+              "buffer_bytes": 97920,
+              "buffer_capacity_bytes": 320000,
+              "buffer_path": null,
+              "buffer_start_seconds": 0.06,
+              "command_ready": null,
+              "command_result": null,
+              "endpoint_input_seconds": null,
+              "endpoint_reason": null,
+              "event": "window_complete",
+              "release_reason": "worker_timeout",
+              "released_input_seconds": 3.12,
+              "result_elapsed_seconds": null,
+              "ring_capacity_bytes": 73920,
+              "trigger": {
+                "audio_seconds": 2.07,
+                "elapsed_seconds": 2.074700664,
+                "event": "keyword",
+                "result": {
+                  "keyword": "GO_FORWARD",
+                  "start_time": 0.0,
+                  "timestamps": [
+                    1.0,
+                    1.28,
+                    1.4
+                  ],
+                  "tokens": [
+                    " GO",
+                    " FOR",
+                    "WARD"
+                  ]
+                },
+                "stream_origin_seconds": 0.3
+              },
+              "waiting_after_release": {
+                "by_process": [
+                  {
+                    "anonymous_mib": 0.4140625,
+                    "pid": 3669,
+                    "private_dirty_mib": 0.4140625,
+                    "pss_mib": 1.1318359375,
+                    "role": "parent",
+                    "rss_mib": 3.3359375,
+                    "threads": 3
+                  },
+                  {
+                    "anonymous_mib": 33.0234375,
+                    "pid": 3671,
+                    "private_dirty_mib": 33.0234375,
+                    "pss_mib": 50.283203125,
+                    "role": "detector",
+                    "rss_mib": 54.6953125,
+                    "threads": 1
+                  }
+                ],
+                "child_readers": {
+                  "active": 1,
+                  "joined": 1,
+                  "spawned": 2
+                },
+                "parent_heap": {
+                  "free_arena_bytes": 502352,
+                  "in_use_bytes": 239024,
+                  "mmap_bytes": 0
+                },
+                "parent_rust_allocations": null,
+                "processes": 2,
+                "pss_mib": 51.4150390625,
+                "rss_mib": 58.03125
+              },
+              "window": 1,
+              "worker_error": null,
+              "worker_exit_code": null,
+              "worker_exit_signal": 9
+            },
+            {
+              "buffer_bytes": 97920,
+              "buffer_capacity_bytes": 320000,
+              "buffer_path": null,
+              "buffer_start_seconds": 6.45,
+              "command_ready": null,
+              "command_result": null,
+              "endpoint_input_seconds": null,
+              "endpoint_reason": null,
+              "event": "window_complete",
+              "release_reason": "worker_timeout",
+              "released_input_seconds": 9.51,
+              "result_elapsed_seconds": null,
+              "ring_capacity_bytes": 73920,
+              "trigger": {
+                "audio_seconds": 8.46,
+                "elapsed_seconds": 8.464662218,
+                "event": "keyword",
+                "result": {
+                  "keyword": "GO_FORWARD",
+                  "start_time": 0.0,
+                  "timestamps": [
+                    1.0,
+                    1.28,
+                    1.4
+                  ],
+                  "tokens": [
+                    " GO",
+                    " FOR",
+                    "WARD"
+                  ]
+                },
+                "stream_origin_seconds": 6.69
+              },
+              "waiting_after_release": {
+                "by_process": [
+                  {
+                    "anonymous_mib": 0.52734375,
+                    "pid": 3669,
+                    "private_dirty_mib": 0.52734375,
+                    "pss_mib": 1.2451171875,
+                    "role": "parent",
+                    "rss_mib": 3.44921875,
+                    "threads": 3
+                  },
+                  {
+                    "anonymous_mib": 33.0234375,
+                    "pid": 3671,
+                    "private_dirty_mib": 33.0234375,
+                    "pss_mib": 50.283203125,
+                    "role": "detector",
+                    "rss_mib": 54.6953125,
+                    "threads": 1
+                  }
+                ],
+                "child_readers": {
+                  "active": 1,
+                  "joined": 2,
+                  "spawned": 3
+                },
+                "parent_heap": {
+                  "free_arena_bytes": 822048,
+                  "in_use_bytes": 255200,
+                  "mmap_bytes": 0
+                },
+                "parent_rust_allocations": null,
+                "processes": 2,
+                "pss_mib": 51.5283203125,
+                "rss_mib": 58.14453125
+              },
+              "window": 2,
+              "worker_error": null,
+              "worker_exit_code": null,
+              "worker_exit_signal": 9
+            }
+          ],
+          "retain_reports": true,
+          "successful_workers": 0,
+          "whole_application_acceptance": false,
+          "windows": 2,
+          "worker_failures": 0
+        }
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "expected_commands": [
+        [],
+        []
+      ],
+      "actual_commands": [
+        [],
+        []
+      ],
+      "expected_release_reasons": [
+        "worker_timeout",
+        "worker_timeout"
+      ],
+      "actual_release_reasons": [
+        "worker_timeout",
+        "worker_timeout"
+      ],
+      "expected_ignored_triggers": 0,
+      "slices": [],
+      "passed": true
+    },
+    {
+      "name": "window-limit",
+      "configuration": {
+        "detector_binary": "/home/silver/Projects/jarvis/native/kws-probe/target/release/jarvis-kws-probe",
+        "detector_config": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/detector.json",
+        "voice_binary": "/home/silver/Projects/jarvis/native/voice-worker/target/release/jarvis-voice",
+        "voice_payload": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/voice.json",
+        "work_dir": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/window-limit",
+        "cycles": 1,
+        "settle_ms": 1000,
+        "quiet_endpoint": {
+          "rms": 0.001,
+          "min_speech_ms": 240,
+          "quiet_ms": 600,
+          "timeout_ms": 5000
+        },
+        "continuous": {
+          "max_windows": 1,
+          "worker_timeout_ms": 12000,
+          "recovery_quiet_ms": 600
+        }
+      },
+      "input_sha256": "c515d0344c1467770af39c0733d6404fae7c4dfcba547cbd2c6762bdcbacc5b5",
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.331992295,
+            "memory": {
+              "anonymous_mib": 28.63671875,
+              "heap": {
+                "free_arena_bytes": 4606512,
+                "in_use_bytes": 25003472,
+                "mmap_bytes": 0
+              },
+              "peak_rss_mib": 48.7578125,
+              "pss_mib": 44.7177734375,
+              "rss_mib": 48.7578125,
+              "rust_allocations": null
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.6875,
+            "peak_combined_rss_mib": 51.80859375,
+            "sample_interval_ms": 20,
+            "samples": 18,
+            "sum_process_hwm_upper_bound_mib": 51.80859375
+          },
+          "waiting": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.28515625,
+                "pid": 3677,
+                "private_dirty_mib": 0.28515625,
+                "pss_mib": 0.9619140625,
+                "role": "parent",
+                "rss_mib": 3.04296875,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 28.63671875,
+                "pid": 3679,
+                "private_dirty_mib": 28.63671875,
+                "pss_mib": 44.7177734375,
+                "role": "detector",
+                "rss_mib": 48.7578125,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 0,
+              "spawned": 1
+            },
+            "parent_heap": {
+              "free_arena_bytes": 275936,
+              "in_use_bytes": 129568,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 45.6796875,
+            "rss_mib": 51.80078125
+          }
+        },
+        {
+          "buffer_start_seconds": 0.06,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074420236,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "window": 1,
+          "worker_pid": 3681
+        },
+        {
+          "buffer_bytes": 123840,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/window-limit/continuous-3677-1.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "denoiser": "rust-tract-0.23.9",
+            "event": "ready",
+            "load_seconds": 0.526925354,
+            "memory": {
+              "peak_rss_mib": 238.4140625,
+              "rss_mib": 238.4140625
+            },
+            "whisper": "rust-tract-0.23.9"
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.537053395,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 274.6640625,
+              "rss_mib": 254.69140625
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.353287104,
+            "settle_cpu_seconds": 9.619999998822235e-07,
+            "text": ""
+          },
+          "endpoint_input_seconds": 3.93,
+          "endpoint_reason": "quiet",
+          "event": "window_complete",
+          "release_reason": "result",
+          "released_input_seconds": 4.35,
+          "result_elapsed_seconds": 4.290012059,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074420236,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "waiting_after_release": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.421875,
+                "pid": 3677,
+                "private_dirty_mib": 0.421875,
+                "pss_mib": 1.1005859375,
+                "role": "parent",
+                "rss_mib": 3.3046875,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 32.03125,
+                "pid": 3679,
+                "private_dirty_mib": 32.03125,
+                "pss_mib": 49.306640625,
+                "role": "detector",
+                "rss_mib": 53.71875,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 1,
+              "spawned": 2
+            },
+            "parent_heap": {
+              "free_arena_bytes": 494704,
+              "in_use_bytes": 246672,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 50.4072265625,
+            "rss_mib": 57.0234375
+          },
+          "window": 1,
+          "worker_error": null,
+          "worker_exit_code": 0,
+          "worker_exit_signal": null
+        },
+        {
+          "event": "rearmed",
+          "input_seconds": 4.95
+        },
+        {
+          "event": "trigger_ignored",
+          "reason": "window_limit",
+          "trigger": {
+            "audio_seconds": 8.46,
+            "elapsed_seconds": 8.464270563,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 6.69
+          }
+        },
+        {
+          "event": "trigger_ignored",
+          "reason": "window_limit",
+          "trigger": {
+            "audio_seconds": 14.85,
+            "elapsed_seconds": 14.854746437,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 13.08
+          }
+        },
+        {
+          "aborted_windows": 0,
+          "all_command_workers_succeeded": true,
+          "continuous": true,
+          "detector_complete": {
+            "audio_seconds": 19.15875,
+            "cpu_seconds": 0.173443,
+            "decoded_samples": 203040,
+            "detections": 3,
+            "elapsed_seconds": 19.158761199,
+            "event": "complete",
+            "memory": {
+              "anonymous_mib": 32.03125,
+              "heap": {
+                "free_arena_bytes": 1904960,
+                "in_use_bytes": 34897600,
+                "mmap_bytes": 0
+              },
+              "peak_rss_mib": 53.71875,
+              "pss_mib": 49.306640625,
+              "rss_mib": 53.71875,
+              "rust_allocations": null
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/window-limit/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 103500,
+            "stream_count": 3
+          },
+          "event": "complete",
+          "final_waiting": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.44140625,
+                "pid": 3677,
+                "private_dirty_mib": 0.44140625,
+                "pss_mib": 1.1201171875,
+                "role": "parent",
+                "rss_mib": 3.32421875,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 32.03125,
+                "pid": 3679,
+                "private_dirty_mib": 32.03125,
+                "pss_mib": 49.306640625,
+                "role": "detector",
+                "rss_mib": 53.71875,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 1,
+              "spawned": 2
+            },
+            "parent_heap": {
+              "free_arena_bytes": 468976,
+              "in_use_bytes": 272400,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 50.4267578125,
+            "rss_mib": 57.04296875
+          },
+          "ignored_triggers": 2,
+          "memory": {
+            "overlap_peak_pss_mib": 314.8818359375,
+            "overlap_peak_rss_mib": 325.90234375,
+            "overlap_samples": 105,
+            "peak_combined_pss_mib": 314.8818359375,
+            "peak_combined_rss_mib": 325.90234375,
+            "sample_interval_ms": 20,
+            "samples": 983,
+            "sum_process_hwm_upper_bound_mib": 331.6796875
+          },
+          "production_defaults_changed": false,
+          "reports": [
+            {
+              "buffer_bytes": 123840,
+              "buffer_capacity_bytes": 320000,
+              "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/window-limit/continuous-3677-1.raw",
+              "buffer_start_seconds": 0.06,
+              "command_ready": {
+                "denoiser": "rust-tract-0.23.9",
+                "event": "ready",
+                "load_seconds": 0.526925354,
+                "memory": {
+                  "peak_rss_mib": 238.4140625,
+                  "rss_mib": 238.4140625
+                },
+                "whisper": "rust-tract-0.23.9"
+              },
+              "command_result": {
+                "decode_cpu_seconds": 0.537053395,
+                "event": "result",
+                "events": [
+                  {
+                    "closest_match": false,
+                    "confidence": null,
+                    "heard": null,
+                    "kind": "wake",
+                    "min_word_posterior": null,
+                    "text": "go forward"
+                  },
+                  {
+                    "closest_match": false,
+                    "confidence": 1.0,
+                    "heard": null,
+                    "kind": "command",
+                    "min_word_posterior": 1.0,
+                    "text": "ten meters"
+                  }
+                ],
+                "memory": {
+                  "peak_rss_mib": 274.6640625,
+                  "rss_mib": 254.69140625
+                },
+                "recognition_stats": {
+                  "fast_commands": 0,
+                  "vosk_fast_path": false,
+                  "vosk_finalize_utterances": false,
+                  "whisper_loads": 1,
+                  "whisper_transcriptions": 1
+                },
+                "seconds": 0.353287104,
+                "settle_cpu_seconds": 9.619999998822235e-07,
+                "text": ""
+              },
+              "endpoint_input_seconds": 3.93,
+              "endpoint_reason": "quiet",
+              "event": "window_complete",
+              "release_reason": "result",
+              "released_input_seconds": 4.35,
+              "result_elapsed_seconds": 4.290012059,
+              "ring_capacity_bytes": 73920,
+              "trigger": {
+                "audio_seconds": 2.07,
+                "elapsed_seconds": 2.074420236,
+                "event": "keyword",
+                "result": {
+                  "keyword": "GO_FORWARD",
+                  "start_time": 0.0,
+                  "timestamps": [
+                    1.0,
+                    1.28,
+                    1.4
+                  ],
+                  "tokens": [
+                    " GO",
+                    " FOR",
+                    "WARD"
+                  ]
+                },
+                "stream_origin_seconds": 0.3
+              },
+              "waiting_after_release": {
+                "by_process": [
+                  {
+                    "anonymous_mib": 0.421875,
+                    "pid": 3677,
+                    "private_dirty_mib": 0.421875,
+                    "pss_mib": 1.1005859375,
+                    "role": "parent",
+                    "rss_mib": 3.3046875,
+                    "threads": 3
+                  },
+                  {
+                    "anonymous_mib": 32.03125,
+                    "pid": 3679,
+                    "private_dirty_mib": 32.03125,
+                    "pss_mib": 49.306640625,
+                    "role": "detector",
+                    "rss_mib": 53.71875,
+                    "threads": 1
+                  }
+                ],
+                "child_readers": {
+                  "active": 1,
+                  "joined": 1,
+                  "spawned": 2
+                },
+                "parent_heap": {
+                  "free_arena_bytes": 494704,
+                  "in_use_bytes": 246672,
+                  "mmap_bytes": 0
+                },
+                "parent_rust_allocations": null,
+                "processes": 2,
+                "pss_mib": 50.4072265625,
+                "rss_mib": 57.0234375
+              },
+              "window": 1,
+              "worker_error": null,
+              "worker_exit_code": 0,
+              "worker_exit_signal": null
+            }
+          ],
+          "retain_reports": true,
+          "successful_workers": 1,
+          "whole_application_acceptance": false,
+          "windows": 1,
+          "worker_failures": 0
+        }
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "expected_commands": [
+        [
+          "ten meters"
+        ]
+      ],
+      "actual_commands": [
+        [
+          "ten meters"
+        ]
+      ],
+      "expected_release_reasons": [
+        "result"
+      ],
+      "actual_release_reasons": [
+        "result"
+      ],
+      "expected_ignored_triggers": 2,
+      "slices": [
+        {
+          "window": 1,
+          "identical": true,
+          "sha256": "63bf26aac4903c84c7db01f5afdf18ed112467d25eb5c456a861e0b4d0d7b9e0",
+          "start_byte": 1920,
+          "end_byte": 125760
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "end-before-quiet",
+      "configuration": {
+        "detector_binary": "/home/silver/Projects/jarvis/native/kws-probe/target/release/jarvis-kws-probe",
+        "detector_config": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/detector.json",
+        "voice_binary": "/home/silver/Projects/jarvis/native/voice-worker/target/release/jarvis-voice",
+        "voice_payload": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/voice.json",
+        "work_dir": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/end-before-quiet",
+        "cycles": 1,
+        "settle_ms": 1000,
+        "quiet_endpoint": {
+          "rms": 0.001,
+          "min_speech_ms": 240,
+          "quiet_ms": 600,
+          "timeout_ms": 5000
+        },
+        "continuous": {
+          "max_windows": 8,
+          "worker_timeout_ms": 12000,
+          "recovery_quiet_ms": 600
+        }
+      },
+      "input_sha256": "5963e53f27d5762f45097a0d5de67dc325aaad20c6727a517351c9cd1bb0924b",
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.301165508,
+            "memory": {
+              "anonymous_mib": 28.6328125,
+              "heap": {
+                "free_arena_bytes": 4618080,
+                "in_use_bytes": 24991904,
+                "mmap_bytes": 0
+              },
+              "peak_rss_mib": 48.73828125,
+              "pss_mib": 44.7138671875,
+              "rss_mib": 48.73828125,
+              "rust_allocations": null
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.68359375,
+            "peak_combined_rss_mib": 51.7890625,
+            "sample_interval_ms": 20,
+            "samples": 16,
+            "sum_process_hwm_upper_bound_mib": 51.7890625
+          },
+          "waiting": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.2890625,
+                "pid": 4203,
+                "private_dirty_mib": 0.2890625,
+                "pss_mib": 0.9619140625,
+                "role": "parent",
+                "rss_mib": 3.04296875,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 28.6328125,
+                "pid": 4205,
+                "private_dirty_mib": 28.6328125,
+                "pss_mib": 44.7138671875,
+                "role": "detector",
+                "rss_mib": 48.73828125,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 0,
+              "spawned": 1
+            },
+            "parent_heap": {
+              "free_arena_bytes": 275936,
+              "in_use_bytes": 129568,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 45.67578125,
+            "rss_mib": 51.78125
+          }
+        },
+        {
+          "buffer_start_seconds": 0.06,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074717941,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "window": 1,
+          "worker_pid": 4207
+        },
+        {
+          "buffer_bytes": 106440,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": null,
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "denoiser": "rust-tract-0.23.9",
+            "event": "ready",
+            "load_seconds": 0.515358055,
+            "memory": {
+              "peak_rss_mib": 240.79296875,
+              "rss_mib": 240.79296875
+            },
+            "whisper": "rust-tract-0.23.9"
+          },
+          "command_result": null,
+          "endpoint_input_seconds": 3.38625,
+          "endpoint_reason": "input_ended_before_endpoint",
+          "event": "window_complete",
+          "release_reason": "input_ended_before_endpoint",
+          "released_input_seconds": 3.38625,
+          "result_elapsed_seconds": null,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074717941,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "waiting_after_release": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.42578125,
+                "pid": 4203,
+                "private_dirty_mib": 0.42578125,
+                "pss_mib": 1.1005859375,
+                "role": "parent",
+                "rss_mib": 3.3046875,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 32.30859375,
+                "pid": 4205,
+                "private_dirty_mib": 32.30859375,
+                "pss_mib": 49.5849609375,
+                "role": "detector",
+                "rss_mib": 53.99609375,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 1,
+              "spawned": 2
+            },
+            "parent_heap": {
+              "free_arena_bytes": 495136,
+              "in_use_bytes": 246240,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 50.685546875,
+            "rss_mib": 57.30078125
+          },
+          "window": 1,
+          "worker_error": null,
+          "worker_exit_code": null,
+          "worker_exit_signal": 9
+        },
+        {
+          "aborted_windows": 1,
+          "all_command_workers_succeeded": false,
+          "continuous": true,
+          "detector_complete": {
+            "audio_seconds": 3.38625,
+            "cpu_seconds": 0.04731000000000002,
+            "decoded_samples": 49380,
+            "detections": 1,
+            "elapsed_seconds": 3.386345438,
+            "event": "complete",
+            "memory": {
+              "anonymous_mib": 32.30859375,
+              "heap": {
+                "free_arena_bytes": 1709776,
+                "in_use_bytes": 34883888,
+                "mmap_bytes": 0
+              },
+              "peak_rss_mib": 53.99609375,
+              "pss_mib": 49.5791015625,
+              "rss_mib": 53.99609375,
+              "rust_allocations": null
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/end-before-quiet/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 4800,
+            "stream_count": 1
+          },
+          "event": "complete",
+          "final_waiting": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.4375,
+                "pid": 4203,
+                "private_dirty_mib": 0.4375,
+                "pss_mib": 1.1123046875,
+                "role": "parent",
+                "rss_mib": 3.31640625,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 32.30859375,
+                "pid": 4205,
+                "private_dirty_mib": 32.30859375,
+                "pss_mib": 49.5849609375,
+                "role": "detector",
+                "rss_mib": 53.99609375,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 1,
+              "spawned": 2
+            },
+            "parent_heap": {
+              "free_arena_bytes": 477424,
+              "in_use_bytes": 263952,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 50.697265625,
+            "rss_mib": 57.3125
+          },
+          "ignored_triggers": 0,
+          "memory": {
+            "overlap_peak_pss_mib": 287.056640625,
+            "overlap_peak_rss_mib": 298.0625,
+            "overlap_samples": 58,
+            "peak_combined_pss_mib": 287.056640625,
+            "peak_combined_rss_mib": 298.0625,
+            "sample_interval_ms": 20,
+            "samples": 210,
+            "sum_process_hwm_upper_bound_mib": 298.0625
+          },
+          "production_defaults_changed": false,
+          "reports": [
+            {
+              "buffer_bytes": 106440,
+              "buffer_capacity_bytes": 320000,
+              "buffer_path": null,
+              "buffer_start_seconds": 0.06,
+              "command_ready": {
+                "denoiser": "rust-tract-0.23.9",
+                "event": "ready",
+                "load_seconds": 0.515358055,
+                "memory": {
+                  "peak_rss_mib": 240.79296875,
+                  "rss_mib": 240.79296875
+                },
+                "whisper": "rust-tract-0.23.9"
+              },
+              "command_result": null,
+              "endpoint_input_seconds": 3.38625,
+              "endpoint_reason": "input_ended_before_endpoint",
+              "event": "window_complete",
+              "release_reason": "input_ended_before_endpoint",
+              "released_input_seconds": 3.38625,
+              "result_elapsed_seconds": null,
+              "ring_capacity_bytes": 73920,
+              "trigger": {
+                "audio_seconds": 2.07,
+                "elapsed_seconds": 2.074717941,
+                "event": "keyword",
+                "result": {
+                  "keyword": "GO_FORWARD",
+                  "start_time": 0.0,
+                  "timestamps": [
+                    1.0,
+                    1.28,
+                    1.4
+                  ],
+                  "tokens": [
+                    " GO",
+                    " FOR",
+                    "WARD"
+                  ]
+                },
+                "stream_origin_seconds": 0.3
+              },
+              "waiting_after_release": {
+                "by_process": [
+                  {
+                    "anonymous_mib": 0.42578125,
+                    "pid": 4203,
+                    "private_dirty_mib": 0.42578125,
+                    "pss_mib": 1.1005859375,
+                    "role": "parent",
+                    "rss_mib": 3.3046875,
+                    "threads": 3
+                  },
+                  {
+                    "anonymous_mib": 32.30859375,
+                    "pid": 4205,
+                    "private_dirty_mib": 32.30859375,
+                    "pss_mib": 49.5849609375,
+                    "role": "detector",
+                    "rss_mib": 53.99609375,
+                    "threads": 1
+                  }
+                ],
+                "child_readers": {
+                  "active": 1,
+                  "joined": 1,
+                  "spawned": 2
+                },
+                "parent_heap": {
+                  "free_arena_bytes": 495136,
+                  "in_use_bytes": 246240,
+                  "mmap_bytes": 0
+                },
+                "parent_rust_allocations": null,
+                "processes": 2,
+                "pss_mib": 50.685546875,
+                "rss_mib": 57.30078125
+              },
+              "window": 1,
+              "worker_error": null,
+              "worker_exit_code": null,
+              "worker_exit_signal": 9
+            }
+          ],
+          "retain_reports": true,
+          "successful_workers": 0,
+          "whole_application_acceptance": false,
+          "windows": 1,
+          "worker_failures": 0
+        }
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "expected_commands": [
+        []
+      ],
+      "actual_commands": [
+        []
+      ],
+      "expected_release_reasons": [
+        "input_ended_before_endpoint"
+      ],
+      "actual_release_reasons": [
+        "input_ended_before_endpoint"
+      ],
+      "expected_ignored_triggers": 0,
+      "slices": [],
+      "passed": true
+    },
+    {
+      "name": "command-without-wake",
+      "configuration": {
+        "detector_binary": "/home/silver/Projects/jarvis/native/kws-probe/target/release/jarvis-kws-probe",
+        "detector_config": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/detector.json",
+        "voice_binary": "/home/silver/Projects/jarvis/native/voice-worker/target/release/jarvis-voice",
+        "voice_payload": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/voice.json",
+        "work_dir": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/command-without-wake",
+        "cycles": 1,
+        "settle_ms": 1000,
+        "quiet_endpoint": {
+          "rms": 0.001,
+          "min_speech_ms": 240,
+          "quiet_ms": 600,
+          "timeout_ms": 5000
+        },
+        "continuous": {
+          "max_windows": 8,
+          "worker_timeout_ms": 12000,
+          "recovery_quiet_ms": 600
+        }
+      },
+      "input_sha256": "2de3b4074e3f97b7297a4e2c59963fb13bb8d49da8ab38b2ed1a78da3ed37756",
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.303789413,
+            "memory": {
+              "anonymous_mib": 28.63671875,
+              "heap": {
+                "free_arena_bytes": 4607568,
+                "in_use_bytes": 25002416,
+                "mmap_bytes": 0
+              },
+              "peak_rss_mib": 48.71875,
+              "pss_mib": 44.6943359375,
+              "rss_mib": 48.71875,
+              "rust_allocations": null
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.65234375,
+            "peak_combined_rss_mib": 51.75390625,
+            "sample_interval_ms": 20,
+            "samples": 16,
+            "sum_process_hwm_upper_bound_mib": 51.75390625
+          },
+          "waiting": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.28515625,
+                "pid": 4729,
+                "private_dirty_mib": 0.28515625,
+                "pss_mib": 0.9501953125,
+                "role": "parent",
+                "rss_mib": 3.03125,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 28.63671875,
+                "pid": 4731,
+                "private_dirty_mib": 28.63671875,
+                "pss_mib": 44.6943359375,
+                "role": "detector",
+                "rss_mib": 48.71875,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 0,
+              "spawned": 1
+            },
+            "parent_heap": {
+              "free_arena_bytes": 277616,
+              "in_use_bytes": 127888,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 45.64453125,
+            "rss_mib": 51.75
+          }
+        },
+        {
+          "aborted_windows": 0,
+          "all_command_workers_succeeded": true,
+          "continuous": true,
+          "detector_complete": {
+            "audio_seconds": 10.3725,
+            "cpu_seconds": 0.08990899999999996,
+            "decoded_samples": 96960,
+            "detections": 0,
+            "elapsed_seconds": 10.372509854,
+            "event": "complete",
+            "memory": {
+              "anonymous_mib": 32.0078125,
+              "heap": {
+                "free_arena_bytes": 1910224,
+                "in_use_bytes": 34892336,
+                "mmap_bytes": 0
+              },
+              "peak_rss_mib": 53.671875,
+              "pss_mib": 49.2607421875,
+              "rss_mib": 53.671875,
+              "rust_allocations": null
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/command-without-wake/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 69000,
+            "stream_count": 2
+          },
+          "event": "complete",
+          "final_waiting": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.3828125,
+                "pid": 4729,
+                "private_dirty_mib": 0.3828125,
+                "pss_mib": 1.0478515625,
+                "role": "parent",
+                "rss_mib": 3.125,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 32.0078125,
+                "pid": 4731,
+                "private_dirty_mib": 32.0078125,
+                "pss_mib": 49.2607421875,
+                "role": "detector",
+                "rss_mib": 53.671875,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 0,
+              "spawned": 1
+            },
+            "parent_heap": {
+              "free_arena_bytes": 374704,
+              "in_use_bytes": 231504,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 50.30859375,
+            "rss_mib": 56.796875
+          },
+          "ignored_triggers": 0,
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 50.31640625,
+            "peak_combined_rss_mib": 56.8046875,
+            "sample_interval_ms": 20,
+            "samples": 559,
+            "sum_process_hwm_upper_bound_mib": 56.8046875
+          },
+          "production_defaults_changed": false,
+          "reports": [],
+          "retain_reports": true,
+          "successful_workers": 0,
+          "whole_application_acceptance": false,
+          "windows": 0,
+          "worker_failures": 0
+        }
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "expected_commands": [],
+      "actual_commands": [],
+      "expected_release_reasons": [],
+      "actual_release_reasons": [],
+      "expected_ignored_triggers": 0,
+      "slices": [],
+      "passed": true
+    },
+    {
+      "name": "buffer-overflow",
+      "configuration": {
+        "detector_binary": "/home/silver/Projects/jarvis/native/kws-probe/target/release/jarvis-kws-probe",
+        "detector_config": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/detector.json",
+        "voice_binary": "/home/silver/Projects/jarvis/native/voice-worker/target/release/jarvis-voice",
+        "voice_payload": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/voice.json",
+        "work_dir": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-continuous/buffer-overflow",
+        "cycles": 1,
+        "settle_ms": 1000,
+        "quiet_endpoint": {
+          "rms": 0.001,
+          "min_speech_ms": 240,
+          "quiet_ms": 600,
+          "timeout_ms": 5000
+        },
+        "max_buffer_ms": 2500,
+        "continuous": {
+          "max_windows": 2,
+          "worker_timeout_ms": 12000,
+          "recovery_quiet_ms": 600
+        }
+      },
+      "input_sha256": "6ed91375286e561c7030f3fda645d397ebb70f0c807adfd3bd7b24a542bf19c9",
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.330804608,
+            "memory": {
+              "anonymous_mib": 28.734375,
+              "heap": {
+                "free_arena_bytes": 4719296,
+                "in_use_bytes": 24993088,
+                "mmap_bytes": 0
+              },
+              "peak_rss_mib": 48.8359375,
+              "pss_mib": 44.8193359375,
+              "rss_mib": 48.8359375,
+              "rust_allocations": null
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.80078125,
+            "peak_combined_rss_mib": 51.8984375,
+            "sample_interval_ms": 20,
+            "samples": 18,
+            "sum_process_hwm_upper_bound_mib": 51.8984375
+          },
+          "waiting": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.28515625,
+                "pid": 4733,
+                "private_dirty_mib": 0.28515625,
+                "pss_mib": 0.9736328125,
+                "role": "parent",
+                "rss_mib": 3.0546875,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 28.734375,
+                "pid": 4735,
+                "private_dirty_mib": 28.734375,
+                "pss_mib": 44.8193359375,
+                "role": "detector",
+                "rss_mib": 48.8359375,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 0,
+              "spawned": 1
+            },
+            "parent_heap": {
+              "free_arena_bytes": 275936,
+              "in_use_bytes": 129568,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 45.79296875,
+            "rss_mib": 51.890625
+          }
+        },
+        {
+          "buffer_start_seconds": 0.06,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074101215,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "window": 1,
+          "worker_pid": 4737
+        }
+      ],
+      "exit_code": 1,
+      "stderr": "jarvis-kws-handoff-probe: Command audio buffer overflow; no truncated replay\n",
+      "expected_failure": true,
+      "passed": true
+    }
+  ],
+  "complete": true,
+  "production_defaults_changed": false,
+  "full_acoustic_acceptance": false,
+  "whole_application_acceptance": false,
+  "windows_acceptance": false,
+  "full_duration_soak_acceptance": false,
+  "enable_by_default": false,
+  "all_lifecycle_controls_pass": true
+}

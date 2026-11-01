@@ -1,0 +1,33 @@
+{
+  "switched_to": "ram",
+  "replay_state": "on",
+  "controller_pid": 1802640,
+  "replay_settings": {
+    "seconds": 120,
+    "autostart": true,
+    "game_audio": true,
+    "microphone": true,
+    "sound": true,
+    "storage": "ram",
+    "max_mb": 2048,
+    "buffer_dir": ""
+  },
+  "recording_settings_preserved": true,
+  "recognition_settings_preserved": true,
+  "only_configuration_change": "replay.storage: disk -> ram",
+  "capture_processes": [
+    {
+      "pid": 2654104,
+      "storage": "ram",
+      "seconds": 120,
+      "codec": "hevc_hdr",
+      "audio": "default_output|default_input"
+    }
+  ],
+  "disk_sessions_after_stop": 0,
+  "unsaved_history_restarted": true,
+  "clip_saved": false,
+  "date": "2026-10-27",
+  "scope": "Authorized local configuration restoration; not a memory, acoustic or release acceptance benchmark.",
+  "verified_after_restart": true
+}

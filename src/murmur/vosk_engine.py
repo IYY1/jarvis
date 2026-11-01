@@ -101,13 +101,13 @@ class VoskEngine:
         self.unsupported_phrases = [p for p in self.unsupported_phrases
                                     if p.removeprefix("open ") not in self._sounds_like.values()]
         # The matcher checks text after _canonical(), so it knows the real names.
-        self._matcher = GrammarMatcher(known, (spoken_apps + list(self._sounds_like.values())) if verbs else (), verbs)
-        from .phrases import Rules, brightness_like
-        self._rules = Rules(grammar.get("launches"), grammar.get("brightness_names"))
+        self._matcher = GrammarMatcher(self.phrases, (spoken_apps + list(self._sounds_like.values())) if verbs else (), verbs)
+        from .phrases import Rules
+        self._rules = Rules(grammar.get("launches"))
         blocked = set(grammar.get("blocked_apps", []))
         self._verbs = sorted(verbs, key=len, reverse=True)
         full = list(known) + [f"{verb}{article} {app}" for verb in verbs for app in spoken_apps
-                              if self._sounds_like.get(app, app) not in blocked or verb in ("focus", "switch to")
+                              if self._sounds_like.get(app, app) not in blocked or verb in ("focus", "switch to", "close")
                               for article in ("", " the")]
         for p, alias in self._rules.launches.items():
             article = p[:-len(alias)] + "the " + alias
@@ -118,8 +118,8 @@ class VoskEngine:
                     full.extend((p[:-len(alias)] + spoken, p[:-len(alias)] + "the " + spoken))
         # Polite forms only for the shorter built-in phrases, to keep the
         # strict grammar small; app commands get them via closest-match.
-        full += [f"{prefix} {phrase}" for prefix in prefixes for phrase in known if not brightness_like(phrase)]
-        self._command_phrases = sorted(set(full))
+        full += [f"{prefix} {phrase}" for prefix in prefixes for phrase in known]
+        command_phrases = sorted(set(full))
 
         # Closest-match may also pick apps whose names the model can't spell
         # (e.g. "stremio" heard as "stream io"), which the strict grammar can't.
@@ -144,12 +144,12 @@ class VoskEngine:
         # The wake grammar also knows the command words, so "hey jarvis open
         # firefox" in one breath is decoded as words rather than forced into
         # [unk] (which made the wake words themselves less likely to match).
-        wake_grammar = self._wake_forms + [f"{' '.join(name)} {c}" for name in self._wake_names for c in self._command_phrases]
+        wake_grammar = self._wake_forms + [f"{' '.join(name)} {c}" for name in self._wake_names for c in command_phrases]
         self._wake = KaldiRecognizer(self._model, SAMPLE_RATE, json.dumps(wake_grammar + ["[unk]"]))
         self._wake.SetWords(True)
-        self._command = KaldiRecognizer(self._model, SAMPLE_RATE, json.dumps(self._command_phrases + ["[unk]"]))
+        self._command = KaldiRecognizer(self._model, SAMPLE_RATE, json.dumps(command_phrases + ["[unk]"]))
         self._command.SetWords(True)
-        self._open = KaldiRecognizer(self._model, SAMPLE_RATE) if fuzzy or self._rules.monitors else None
+        self._open = KaldiRecognizer(self._model, SAMPLE_RATE) if fuzzy else None
         self._mode: str | None = None
         self._preroll: deque[bytes] = deque(maxlen=PREROLL_FRAMES)
         self._hangover = 0
@@ -289,6 +289,11 @@ class VoskEngine:
             result = self._decode(frame)
             if result is not None:
                 return result
+        if quiet and self._hangover == 0 and self._mode == "wake":
+            # Once quiet frames stop reaching Vosk, discard any unfinished
+            # background utterance so the next wake starts fresh. Do not force
+            # a final hypothesis into a wake; command sessions keep their tail.
+            self._reset()
         if self._mode == "command" and self._transcriber is not None:
             # Our own end-of-command check: Vosk may keep waiting when a TV or
             # game voice continues in the background after you stop talking.
@@ -421,16 +426,14 @@ class VoskEngine:
             accurate_match = closest_match(accurate, self._candidates, exact_only=not self._fuzzy) if accurate and self._candidates else None
             if accurate_match or not heard_match:
                 heard, heard_match = accurate or heard, accurate_match
-        from .phrases import brightness_like
-        if brightness_like(text):
-            if heard_match and brightness_like(heard_match[0]):
-                self._mode = None
-                return Recognition("command", heard_match[0], heard_match[1], heard=heard, closest_match=True)
-            self.unmatched = heard
-            return None
         confidence = self._confidence(result)
         if text and "[unk]" not in text and self._matcher.accepts(text):
             strict_intent = self._candidates.get(command_wording(text)) if self._candidates else None
+            if heard and strict_intent and strict_intent.startswith("close_app:") and (
+                not heard_match or self._candidates[heard_match[0]] != strict_intent
+            ):
+                self.unmatched = heard or text
+                return None
             if heard_match and strict_intent and self._candidates[heard_match[0]] != strict_intent:
                 if heard_match[1] < CROSS_CHECK_OVERRIDE:
                     self.unmatched = heard or text

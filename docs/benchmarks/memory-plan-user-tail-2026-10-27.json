@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-27",
+  "scope": "User-selected final five seconds only; local offline engine and paced fake-capture tests; no desktop actions, microphone, audio upload or full-corpus acceptance.",
+  "privacy": "Original media, PCM, transcripts and full events retained only under ignored build/memory-plan-corpus.",
+  "pcm_sha256": "a0f956dbda4c0e736497322918ae9adaf611275209efe2a264fe413c820dd020",
+  "pcm_seconds": 4.9866875,
+  "source_duration_seconds": 120.933334,
+  "tail_start_seconds": 115.933334,
+  "labels": {
+    "source_selected_by_user": true,
+    "exact_wording_reference_is_asr_draft": true,
+    "independent_human_transcript": false,
+    "old_group_recordings_remain_unlabeled": true,
+    "held_out_recordings_decoded": false
+  },
+  "reference_recognition_agrees_with_command": true,
+  "kws": {
+    "threshold": 0.25,
+    "keyword_file_sha256": "1512ca29cb37ce950c51005c8a9c6d8b3bccfe42730c51e2efaebf591a4de32c",
+    "binary_sha256": "3f0030314b153a89bac0c96163e668ef838850b93daf22f322929d96623bbe51",
+    "tail_detection_counts": {
+      "ungated": 0,
+      "legacy": 0,
+      "aligned": 0
+    },
+    "paced_tail_plus_two_seconds_silence_detection_counts": {
+      "ungated": 0,
+      "legacy": 0,
+      "aligned": 0
+    },
+    "acceptance": false
+  },
+  "voice_binary_sha256": "212ff8655e303b55f0a70f902753d0ab6f87031aa3c71cd40306ddf5cf8d9844",
+  "paced_comparisons": [
+    {
+      "profile": "small.en",
+      "provisional_expected_command_matches": true,
+      "actual_wakes": 1,
+      "actual_commands": 1,
+      "error": null,
+      "samples": 68,
+      "all_memory_samples_complete": true,
+      "sampled_peak_rss_mib": 543.44140625,
+      "sampled_peak_pss_mib": 522.5322265625
+    },
+    {
+      "profile": "tiny.en",
+      "provisional_expected_command_matches": true,
+      "actual_wakes": 1,
+      "actual_commands": 1,
+      "error": null,
+      "samples": 68,
+      "all_memory_samples_complete": true,
+      "sampled_peak_rss_mib": 260.6484375,
+      "sampled_peak_pss_mib": 240.865234375
+    }
+  ],
+  "gates": {
+    "single_clip_engine_agreement": true,
+    "full_recognition_acceptance": false,
+    "kws_accepted": false,
+    "tiny_accepted": false,
+    "whole_application_memory_acceptance": false,
+    "windows_acceptance": false,
+    "full_duration_soak": false
+  },
+  "limitations": [
+    "One recording and one speaker; repeated controls do not add corpus coverage.",
+    "Expected wording is provisional ASR evidence; do not relabel the older group recordings as positives or negatives.",
+    "Paced measurements include the voice worker and fake capture only; controller, real replay, settings and Windows are excluded.",
+    "No command latency nonregression established; memory peaks are sampled.",
+    "Two earlier paced harness attempts stopped before decoding because fake-input consent was missing; they are preserved privately. A presentation-only summary key error also remains preserved. Corrected runs do not replace these failed attempts."
+  ],
+  "private_evidence_sha256": {
+    "new-clip-results.json": "23ae22eba1bd24a5a74d301936780c995589fb93a4166ee6ee4d55f4516af14f",
+    "new-clip-controls.json": "3c4d282468d271746ec13ec5dfe009572d5e8965be8db8eb125b7b231da5062a",
+    "new-clip-paced.json": "3b3d0ad76ea3703cbb38ce1581eaccd3fc5c898e1577990c2d726f225d9b7932"
+  }
+}

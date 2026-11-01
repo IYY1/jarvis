@@ -1,0 +1,1601 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-26T20:34:46.254860+00:00",
+  "scope": "File-only KWS worker recovery under a private transient user cgroup limit.\n\nOnly this harness's newly created unit is limited. No host pressure generator,\ncapture, installed-service restart, automatic command retry, or global limits.\nExpected OOM windows remain failed recognition windows with raw nonzero exits.\n",
+  "binary_sha256": "2f1843d9a6c0224219354c0b39364b9b08b553b33aabd972fad51f5fe3fa4791",
+  "detector_sha256": "df6d5df9c716c5f93ae2c02367546616b2d1d093f108965fc5be51a9aee331c2",
+  "voice_sha256": "212ff8655e303b55f0a70f902753d0ab6f87031aa3c71cd40306ddf5cf8d9844",
+  "fixture_sha256": "e1e4e81f8c48060017cccc329b6b6f4e6c3df01489d5b6a61cc003cd5a7c4349",
+  "runs": [
+    {
+      "name": "bounded-success",
+      "unit": "jarvis-kws-pressure-580b9e1736b8.service",
+      "configuration": {
+        "detector_binary": "/home/silver/Projects/jarvis/native/kws-probe/target/release/jarvis-kws-probe",
+        "detector_config": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/detector.json",
+        "voice_binary": "/home/silver/Projects/jarvis/native/voice-worker/target/release/jarvis-voice",
+        "voice_payload": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/voice.json",
+        "work_dir": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-pressure/bounded-success",
+        "cycles": 1,
+        "settle_ms": 1000,
+        "quiet_endpoint": {
+          "rms": 0.001,
+          "min_speech_ms": 240,
+          "quiet_ms": 600,
+          "timeout_ms": 5000
+        },
+        "retain_reports": false,
+        "continuous": {
+          "max_windows": 2,
+          "worker_timeout_ms": 12000,
+          "recovery_quiet_ms": 600,
+          "command_oom_score_adj": 1000
+        }
+      },
+      "command": [
+        "systemd-run",
+        "--user",
+        "--quiet",
+        "--pipe",
+        "--wait",
+        "--collect",
+        "--unit=jarvis-kws-pressure-580b9e1736b8",
+        "--property=MemoryAccounting=yes",
+        "--property=MemoryMax=402653184",
+        "--property=MemorySwapMax=0",
+        "--property=OOMPolicy=continue",
+        "--property=RuntimeMaxSec=60",
+        "--working-directory=/home/silver/Projects/jarvis",
+        "/home/silver/Projects/jarvis/native/kws-probe/target/release/jarvis-kws-handoff-probe",
+        "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-pressure/bounded-success/config.json",
+        "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-pressure/bounded-success/input.raw"
+      ],
+      "input_sha256": "61233b313ca1cdea4c339b8dc9b0d45597a9b16a6f2d872f298256701b4d223c",
+      "unit_collected": true,
+      "initial_limit_mib": 384,
+      "limit_released": false,
+      "expected_commands": [
+        [
+          "ten meters"
+        ],
+        [
+          "ten meters"
+        ]
+      ],
+      "actual_commands": [
+        [
+          "ten meters"
+        ],
+        [
+          "ten meters"
+        ]
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.325681505,
+            "memory": {
+              "anonymous_mib": 28.69921875,
+              "heap": {
+                "free_arena_bytes": 4678256,
+                "in_use_bytes": 25001360,
+                "mmap_bytes": 0
+              },
+              "peak_rss_mib": 48.78515625,
+              "pss_mib": 44.765625,
+              "rss_mib": 48.78515625,
+              "rust_allocations": null
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.7587890625,
+            "peak_combined_rss_mib": 51.859375,
+            "sample_interval_ms": 20,
+            "samples": 17,
+            "sum_process_hwm_upper_bound_mib": 51.859375
+          },
+          "waiting": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.2734375,
+                "pid": 1412377,
+                "private_dirty_mib": 0.2734375,
+                "pss_mib": 0.9853515625,
+                "role": "parent",
+                "rss_mib": 3.06640625,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 28.69921875,
+                "pid": 1412379,
+                "private_dirty_mib": 28.69921875,
+                "pss_mib": 44.765625,
+                "role": "detector",
+                "rss_mib": 48.78515625,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 0,
+              "spawned": 1
+            },
+            "parent_heap": {
+              "free_arena_bytes": 283888,
+              "in_use_bytes": 121616,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 45.7509765625,
+            "rss_mib": 51.8515625
+          }
+        },
+        {
+          "buffer_start_seconds": 0.06,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074488067,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "window": 1,
+          "worker_pid": 1412900
+        },
+        {
+          "buffer_bytes": 123840,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-pressure/bounded-success/continuous-1412377-1.raw",
+          "buffer_start_seconds": 0.06,
+          "command_ready": {
+            "denoiser": "rust-tract-0.23.9",
+            "event": "ready",
+            "load_seconds": 0.540292214,
+            "memory": {
+              "peak_rss_mib": 240.90234375,
+              "rss_mib": 240.90234375
+            },
+            "whisper": "rust-tract-0.23.9"
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.5212857969999999,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 277.33984375,
+              "rss_mib": 257.2890625
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.35891678,
+            "settle_cpu_seconds": 9.119999999640528e-07,
+            "text": ""
+          },
+          "endpoint_input_seconds": 3.93,
+          "endpoint_reason": "quiet",
+          "event": "window_complete",
+          "release_reason": "result",
+          "released_input_seconds": 4.32,
+          "result_elapsed_seconds": 4.2900667,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074488067,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "waiting_after_release": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.40625,
+                "pid": 1412377,
+                "private_dirty_mib": 0.40625,
+                "pss_mib": 1.1201171875,
+                "role": "parent",
+                "rss_mib": 3.32421875,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 32.23046875,
+                "pid": 1412379,
+                "private_dirty_mib": 32.23046875,
+                "pss_mib": 49.4912109375,
+                "role": "detector",
+                "rss_mib": 53.90234375,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 1,
+              "spawned": 2
+            },
+            "parent_heap": {
+              "free_arena_bytes": 490960,
+              "in_use_bytes": 238128,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 50.611328125,
+            "rss_mib": 57.2265625
+          },
+          "window": 1,
+          "worker_error": null,
+          "worker_exit_code": 0,
+          "worker_exit_signal": null
+        },
+        {
+          "event": "rearmed",
+          "input_seconds": 4.92
+        },
+        {
+          "buffer_start_seconds": 7.95,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 9.96,
+            "elapsed_seconds": 9.964560164,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 8.19
+          },
+          "window": 2,
+          "worker_pid": 1415313
+        },
+        {
+          "buffer_bytes": 123840,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-pressure/bounded-success/continuous-1412377-2.raw",
+          "buffer_start_seconds": 7.95,
+          "command_ready": {
+            "denoiser": "rust-tract-0.23.9",
+            "event": "ready",
+            "load_seconds": 0.510891765,
+            "memory": {
+              "peak_rss_mib": 236.265625,
+              "rss_mib": 236.265625
+            },
+            "whisper": "rust-tract-0.23.9"
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.544744858,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 272.1796875,
+              "rss_mib": 252.1015625
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.364316068,
+            "settle_cpu_seconds": 8.620000000458816e-07,
+            "text": ""
+          },
+          "endpoint_input_seconds": 11.82,
+          "endpoint_reason": "quiet",
+          "event": "window_complete",
+          "release_reason": "result",
+          "released_input_seconds": 12.27,
+          "result_elapsed_seconds": 12.210060253,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 9.96,
+            "elapsed_seconds": 9.964560164,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 8.19
+          },
+          "waiting_after_release": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.546875,
+                "pid": 1412377,
+                "private_dirty_mib": 0.546875,
+                "pss_mib": 1.2607421875,
+                "role": "parent",
+                "rss_mib": 3.46484375,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 32.23046875,
+                "pid": 1412379,
+                "private_dirty_mib": 32.23046875,
+                "pss_mib": 49.4912109375,
+                "role": "detector",
+                "rss_mib": 53.90234375,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 2,
+              "spawned": 3
+            },
+            "parent_heap": {
+              "free_arena_bytes": 830240,
+              "in_use_bytes": 247008,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 50.751953125,
+            "rss_mib": 57.3671875
+          },
+          "window": 2,
+          "worker_error": null,
+          "worker_exit_code": 0,
+          "worker_exit_signal": null
+        },
+        {
+          "event": "rearmed",
+          "input_seconds": 12.87
+        },
+        {
+          "aborted_windows": 0,
+          "all_command_workers_succeeded": true,
+          "continuous": true,
+          "detector_complete": {
+            "audio_seconds": 13.7725,
+            "cpu_seconds": 0.118541,
+            "decoded_samples": 135360,
+            "detections": 2,
+            "elapsed_seconds": 13.772556173,
+            "event": "complete",
+            "memory": {
+              "anonymous_mib": 32.23046875,
+              "heap": {
+                "free_arena_bytes": 1711632,
+                "in_use_bytes": 34894320,
+                "mmap_bytes": 0
+              },
+              "peak_rss_mib": 53.90234375,
+              "pss_mib": 49.4912109375,
+              "rss_mib": 53.90234375,
+              "rust_allocations": null
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-pressure/bounded-success/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 85000,
+            "stream_count": 2
+          },
+          "event": "complete",
+          "final_waiting": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.546875,
+                "pid": 1412377,
+                "private_dirty_mib": 0.546875,
+                "pss_mib": 1.2607421875,
+                "role": "parent",
+                "rss_mib": 3.46484375,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 32.23046875,
+                "pid": 1412379,
+                "private_dirty_mib": 32.23046875,
+                "pss_mib": 49.4912109375,
+                "role": "detector",
+                "rss_mib": 53.90234375,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 2,
+              "spawned": 3
+            },
+            "parent_heap": {
+              "free_arena_bytes": 831536,
+              "in_use_bytes": 245712,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 50.751953125,
+            "rss_mib": 57.3671875
+          },
+          "ignored_triggers": 0,
+          "memory": {
+            "overlap_peak_pss_mib": 317.6181640625,
+            "overlap_peak_rss_mib": 328.5625,
+            "overlap_samples": 213,
+            "peak_combined_pss_mib": 317.6181640625,
+            "peak_combined_rss_mib": 328.5625,
+            "sample_interval_ms": 20,
+            "samples": 716,
+            "sum_process_hwm_upper_bound_mib": 334.55859375
+          },
+          "production_defaults_changed": false,
+          "reports": [],
+          "retain_reports": false,
+          "successful_workers": 2,
+          "whole_application_acceptance": false,
+          "windows": 2,
+          "worker_failures": 0
+        }
+      ],
+      "cgroup_samples": 735,
+      "cgroup_initial": {
+        "current": 32272384,
+        "peak": 32272384,
+        "maximum": "402653184",
+        "events": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0,
+          "sock_throttled": 0
+        },
+        "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=0\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "cgroup_final": {
+        "current": 36343808,
+        "peak": 292954112,
+        "maximum": "402653184",
+        "events": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0,
+          "sock_throttled": 0
+        },
+        "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=0\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "cgroup_peak_bytes": 292954112,
+      "oom_kills": 0,
+      "signaled_workers": 0,
+      "slices": [
+        {
+          "window": 1,
+          "identical": true
+        },
+        {
+          "window": 2,
+          "identical": true
+        }
+      ],
+      "stderr": "",
+      "lifecycle_control_pass": true,
+      "command_recognition_gate_pass": true
+    },
+    {
+      "name": "oom-then-release",
+      "unit": "jarvis-kws-pressure-12721c9f5120.service",
+      "configuration": {
+        "detector_binary": "/home/silver/Projects/jarvis/native/kws-probe/target/release/jarvis-kws-probe",
+        "detector_config": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/detector.json",
+        "voice_binary": "/home/silver/Projects/jarvis/native/voice-worker/target/release/jarvis-voice",
+        "voice_payload": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/voice.json",
+        "work_dir": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-pressure/oom-then-release",
+        "cycles": 1,
+        "settle_ms": 1000,
+        "quiet_endpoint": {
+          "rms": 0.001,
+          "min_speech_ms": 240,
+          "quiet_ms": 600,
+          "timeout_ms": 5000
+        },
+        "retain_reports": false,
+        "continuous": {
+          "max_windows": 2,
+          "worker_timeout_ms": 12000,
+          "recovery_quiet_ms": 600,
+          "command_oom_score_adj": 1000
+        }
+      },
+      "command": [
+        "systemd-run",
+        "--user",
+        "--quiet",
+        "--pipe",
+        "--wait",
+        "--collect",
+        "--unit=jarvis-kws-pressure-12721c9f5120",
+        "--property=MemoryAccounting=yes",
+        "--property=MemoryMax=201326592",
+        "--property=MemorySwapMax=0",
+        "--property=OOMPolicy=continue",
+        "--property=RuntimeMaxSec=60",
+        "--working-directory=/home/silver/Projects/jarvis",
+        "/home/silver/Projects/jarvis/native/kws-probe/target/release/jarvis-kws-handoff-probe",
+        "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-pressure/oom-then-release/config.json",
+        "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-pressure/oom-then-release/input.raw"
+      ],
+      "input_sha256": "61233b313ca1cdea4c339b8dc9b0d45597a9b16a6f2d872f298256701b4d223c",
+      "unit_collected": true,
+      "initial_limit_mib": 192,
+      "limit_released": true,
+      "expected_commands": [
+        [],
+        [
+          "ten meters"
+        ]
+      ],
+      "actual_commands": [
+        [],
+        [
+          "ten meters"
+        ]
+      ],
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.331137881,
+            "memory": {
+              "anonymous_mib": 28.73046875,
+              "heap": {
+                "free_arena_bytes": 4719616,
+                "in_use_bytes": 24992768,
+                "mmap_bytes": 0
+              },
+              "peak_rss_mib": 48.86328125,
+              "pss_mib": 44.8193359375,
+              "rss_mib": 48.86328125,
+              "rust_allocations": null
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.81640625,
+            "peak_combined_rss_mib": 51.94140625,
+            "sample_interval_ms": 20,
+            "samples": 18,
+            "sum_process_hwm_upper_bound_mib": 51.94140625
+          },
+          "waiting": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.26953125,
+                "pid": 1416866,
+                "private_dirty_mib": 0.26953125,
+                "pss_mib": 0.9892578125,
+                "role": "parent",
+                "rss_mib": 3.0703125,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 28.73046875,
+                "pid": 1416869,
+                "private_dirty_mib": 28.73046875,
+                "pss_mib": 44.8193359375,
+                "role": "detector",
+                "rss_mib": 48.86328125,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 0,
+              "spawned": 1
+            },
+            "parent_heap": {
+              "free_arena_bytes": 283888,
+              "in_use_bytes": 121616,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 45.80859375,
+            "rss_mib": 51.93359375
+          }
+        },
+        {
+          "buffer_start_seconds": 0.06,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074564432,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "window": 1,
+          "worker_pid": 1417382
+        },
+        {
+          "buffer_bytes": 80640,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": null,
+          "buffer_start_seconds": 0.06,
+          "command_ready": null,
+          "command_result": null,
+          "endpoint_input_seconds": null,
+          "endpoint_reason": null,
+          "event": "window_complete",
+          "release_reason": "worker_exit",
+          "released_input_seconds": 2.58,
+          "result_elapsed_seconds": null,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074564432,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "waiting_after_release": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.39453125,
+                "pid": 1416866,
+                "private_dirty_mib": 0.39453125,
+                "pss_mib": 1.1162109375,
+                "role": "parent",
+                "rss_mib": 3.3203125,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 32.01171875,
+                "pid": 1416869,
+                "private_dirty_mib": 32.01171875,
+                "pss_mib": 49.294921875,
+                "role": "detector",
+                "rss_mib": 53.70703125,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 1,
+              "spawned": 2
+            },
+            "parent_heap": {
+              "free_arena_bytes": 499520,
+              "in_use_bytes": 229568,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 50.4111328125,
+            "rss_mib": 57.02734375
+          },
+          "window": 1,
+          "worker_error": {
+            "kind": "exit",
+            "status": "signal: 9 (SIGKILL)"
+          },
+          "worker_exit_code": null,
+          "worker_exit_signal": 9
+        },
+        {
+          "event": "rearmed",
+          "input_seconds": 3.93
+        },
+        {
+          "buffer_start_seconds": 7.95,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 9.96,
+            "elapsed_seconds": 9.964754226,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 8.19
+          },
+          "window": 2,
+          "worker_pid": 1419834
+        },
+        {
+          "buffer_bytes": 123840,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-pressure/oom-then-release/continuous-1416866-2.raw",
+          "buffer_start_seconds": 7.95,
+          "command_ready": {
+            "denoiser": "rust-tract-0.23.9",
+            "event": "ready",
+            "load_seconds": 0.512646456,
+            "memory": {
+              "peak_rss_mib": 239.0234375,
+              "rss_mib": 239.0234375
+            },
+            "whisper": "rust-tract-0.23.9"
+          },
+          "command_result": {
+            "decode_cpu_seconds": 0.509871434,
+            "event": "result",
+            "events": [
+              {
+                "closest_match": false,
+                "confidence": null,
+                "heard": null,
+                "kind": "wake",
+                "min_word_posterior": null,
+                "text": "go forward"
+              },
+              {
+                "closest_match": false,
+                "confidence": 1.0,
+                "heard": null,
+                "kind": "command",
+                "min_word_posterior": 1.0,
+                "text": "ten meters"
+              }
+            ],
+            "memory": {
+              "peak_rss_mib": 275.46875,
+              "rss_mib": 255.6171875
+            },
+            "recognition_stats": {
+              "fast_commands": 0,
+              "vosk_fast_path": false,
+              "vosk_finalize_utterances": false,
+              "whisper_loads": 1,
+              "whisper_transcriptions": 1
+            },
+            "seconds": 0.342010377,
+            "settle_cpu_seconds": 1.3219999999147802e-06,
+            "text": ""
+          },
+          "endpoint_input_seconds": 11.82,
+          "endpoint_reason": "quiet",
+          "event": "window_complete",
+          "release_reason": "result",
+          "released_input_seconds": 12.24,
+          "result_elapsed_seconds": 12.180068281,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 9.96,
+            "elapsed_seconds": 9.964754226,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 8.19
+          },
+          "waiting_after_release": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.53515625,
+                "pid": 1416866,
+                "private_dirty_mib": 0.53515625,
+                "pss_mib": 1.2568359375,
+                "role": "parent",
+                "rss_mib": 3.4609375,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 32.01171875,
+                "pid": 1416869,
+                "private_dirty_mib": 32.01171875,
+                "pss_mib": 49.294921875,
+                "role": "detector",
+                "rss_mib": 53.70703125,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 2,
+              "spawned": 3
+            },
+            "parent_heap": {
+              "free_arena_bytes": 822288,
+              "in_use_bytes": 246768,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 50.5517578125,
+            "rss_mib": 57.16796875
+          },
+          "window": 2,
+          "worker_error": null,
+          "worker_exit_code": 0,
+          "worker_exit_signal": null
+        },
+        {
+          "event": "rearmed",
+          "input_seconds": 12.84
+        },
+        {
+          "aborted_windows": 0,
+          "all_command_workers_succeeded": false,
+          "continuous": true,
+          "detector_complete": {
+            "audio_seconds": 13.7725,
+            "cpu_seconds": 0.121201,
+            "decoded_samples": 135360,
+            "detections": 2,
+            "elapsed_seconds": 13.77255626,
+            "event": "complete",
+            "memory": {
+              "anonymous_mib": 32.01171875,
+              "heap": {
+                "free_arena_bytes": 1905392,
+                "in_use_bytes": 34884880,
+                "mmap_bytes": 0
+              },
+              "peak_rss_mib": 53.70703125,
+              "pss_mib": 49.294921875,
+              "rss_mib": 53.70703125,
+              "rust_allocations": null
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-pressure/oom-then-release/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 85000,
+            "stream_count": 2
+          },
+          "event": "complete",
+          "final_waiting": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.53515625,
+                "pid": 1416866,
+                "private_dirty_mib": 0.53515625,
+                "pss_mib": 1.2568359375,
+                "role": "parent",
+                "rss_mib": 3.4609375,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 32.01171875,
+                "pid": 1416869,
+                "private_dirty_mib": 32.01171875,
+                "pss_mib": 49.294921875,
+                "role": "detector",
+                "rss_mib": 53.70703125,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 2,
+              "spawned": 3
+            },
+            "parent_heap": {
+              "free_arena_bytes": 823360,
+              "in_use_bytes": 245696,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 50.5517578125,
+            "rss_mib": 57.16796875
+          },
+          "ignored_triggers": 0,
+          "memory": {
+            "overlap_peak_pss_mib": 315.443359375,
+            "overlap_peak_rss_mib": 326.51171875,
+            "overlap_samples": 129,
+            "peak_combined_pss_mib": 315.443359375,
+            "peak_combined_rss_mib": 326.51171875,
+            "sample_interval_ms": 20,
+            "samples": 718,
+            "sum_process_hwm_upper_bound_mib": 332.63671875
+          },
+          "production_defaults_changed": false,
+          "reports": [],
+          "retain_reports": false,
+          "successful_workers": 1,
+          "whole_application_acceptance": false,
+          "windows": 2,
+          "worker_failures": 1
+        }
+      ],
+      "cgroup_samples": 736,
+      "cgroup_initial": {
+        "current": 32735232,
+        "peak": 32735232,
+        "maximum": "201326592",
+        "events": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0,
+          "sock_throttled": 0
+        },
+        "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=0\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "cgroup_final": {
+        "current": 36167680,
+        "peak": 293171200,
+        "maximum": "402653184",
+        "events": {
+          "low": 0,
+          "high": 0,
+          "max": 37,
+          "oom": 1,
+          "oom_kill": 1,
+          "oom_group_kill": 0,
+          "sock_throttled": 0
+        },
+        "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=2508\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=2508\n"
+      },
+      "cgroup_peak_bytes": 293171200,
+      "oom_kills": 1,
+      "signaled_workers": 1,
+      "slices": [
+        {
+          "window": 2,
+          "identical": true
+        }
+      ],
+      "stderr": "jarvis-kws-handoff-probe: 1 command window(s) failed; later wakes were handled without retrying failed audio\n",
+      "lifecycle_control_pass": true,
+      "command_recognition_gate_pass": false
+    },
+    {
+      "name": "sustained-oom",
+      "unit": "jarvis-kws-pressure-a83f24f9cf9a.service",
+      "configuration": {
+        "detector_binary": "/home/silver/Projects/jarvis/native/kws-probe/target/release/jarvis-kws-probe",
+        "detector_config": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/detector.json",
+        "voice_binary": "/home/silver/Projects/jarvis/native/voice-worker/target/release/jarvis-voice",
+        "voice_payload": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/voice.json",
+        "work_dir": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-pressure/sustained-oom",
+        "cycles": 1,
+        "settle_ms": 1000,
+        "quiet_endpoint": {
+          "rms": 0.001,
+          "min_speech_ms": 240,
+          "quiet_ms": 600,
+          "timeout_ms": 5000
+        },
+        "retain_reports": false,
+        "continuous": {
+          "max_windows": 2,
+          "worker_timeout_ms": 12000,
+          "recovery_quiet_ms": 600,
+          "command_oom_score_adj": 1000
+        }
+      },
+      "command": [
+        "systemd-run",
+        "--user",
+        "--quiet",
+        "--pipe",
+        "--wait",
+        "--collect",
+        "--unit=jarvis-kws-pressure-a83f24f9cf9a",
+        "--property=MemoryAccounting=yes",
+        "--property=MemoryMax=201326592",
+        "--property=MemorySwapMax=0",
+        "--property=OOMPolicy=continue",
+        "--property=RuntimeMaxSec=60",
+        "--working-directory=/home/silver/Projects/jarvis",
+        "/home/silver/Projects/jarvis/native/kws-probe/target/release/jarvis-kws-handoff-probe",
+        "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-pressure/sustained-oom/config.json",
+        "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-pressure/sustained-oom/input.raw"
+      ],
+      "input_sha256": "61233b313ca1cdea4c339b8dc9b0d45597a9b16a6f2d872f298256701b4d223c",
+      "unit_collected": true,
+      "initial_limit_mib": 192,
+      "limit_released": false,
+      "expected_commands": [
+        [],
+        []
+      ],
+      "actual_commands": [
+        [],
+        []
+      ],
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "events": [
+        {
+          "detector": {
+            "backend": "sherpa-onnx-1.13.8-c-api",
+            "event": "ready",
+            "load_seconds": 0.336484429,
+            "memory": {
+              "anonymous_mib": 28.69921875,
+              "heap": {
+                "free_arena_bytes": 4677680,
+                "in_use_bytes": 25001936,
+                "mmap_bytes": 0
+              },
+              "peak_rss_mib": 48.78515625,
+              "pss_mib": 44.7451171875,
+              "rss_mib": 48.78515625,
+              "rust_allocations": null
+            },
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "score": 1.0,
+            "threads": 1,
+            "threshold": 0.25
+          },
+          "event": "ready",
+          "memory": {
+            "overlap_peak_pss_mib": 0.0,
+            "overlap_peak_rss_mib": 0.0,
+            "overlap_samples": 0,
+            "peak_combined_pss_mib": 45.71875,
+            "peak_combined_rss_mib": 51.83984375,
+            "sample_interval_ms": 20,
+            "samples": 18,
+            "sum_process_hwm_upper_bound_mib": 51.83984375
+          },
+          "waiting": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.2734375,
+                "pid": 1421302,
+                "private_dirty_mib": 0.2734375,
+                "pss_mib": 0.9658203125,
+                "role": "parent",
+                "rss_mib": 3.046875,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 28.69921875,
+                "pid": 1421305,
+                "private_dirty_mib": 28.69921875,
+                "pss_mib": 44.7451171875,
+                "role": "detector",
+                "rss_mib": 48.78515625,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 0,
+              "spawned": 1
+            },
+            "parent_heap": {
+              "free_arena_bytes": 283888,
+              "in_use_bytes": 121616,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 45.7109375,
+            "rss_mib": 51.83203125
+          }
+        },
+        {
+          "buffer_start_seconds": 0.06,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074759172,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "window": 1,
+          "worker_pid": 1421886
+        },
+        {
+          "buffer_bytes": 80640,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": null,
+          "buffer_start_seconds": 0.06,
+          "command_ready": null,
+          "command_result": null,
+          "endpoint_input_seconds": null,
+          "endpoint_reason": null,
+          "event": "window_complete",
+          "release_reason": "worker_exit",
+          "released_input_seconds": 2.58,
+          "result_elapsed_seconds": null,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 2.07,
+            "elapsed_seconds": 2.074759172,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 0.3
+          },
+          "waiting_after_release": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.3984375,
+                "pid": 1421302,
+                "private_dirty_mib": 0.3984375,
+                "pss_mib": 1.0927734375,
+                "role": "parent",
+                "rss_mib": 3.296875,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 32.46484375,
+                "pid": 1421305,
+                "private_dirty_mib": 32.46484375,
+                "pss_mib": 49.705078125,
+                "role": "detector",
+                "rss_mib": 54.1171875,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 1,
+              "spawned": 2
+            },
+            "parent_heap": {
+              "free_arena_bytes": 499520,
+              "in_use_bytes": 229568,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 50.7978515625,
+            "rss_mib": 57.4140625
+          },
+          "window": 1,
+          "worker_error": {
+            "kind": "exit",
+            "status": "signal: 9 (SIGKILL)"
+          },
+          "worker_exit_code": null,
+          "worker_exit_signal": 9
+        },
+        {
+          "event": "rearmed",
+          "input_seconds": 3.93
+        },
+        {
+          "buffer_start_seconds": 7.95,
+          "event": "handoff_started",
+          "trigger": {
+            "audio_seconds": 9.96,
+            "elapsed_seconds": 9.965074989,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 8.19
+          },
+          "window": 2,
+          "worker_pid": 1424364
+        },
+        {
+          "buffer_bytes": 80640,
+          "buffer_capacity_bytes": 320000,
+          "buffer_path": null,
+          "buffer_start_seconds": 7.95,
+          "command_ready": null,
+          "command_result": null,
+          "endpoint_input_seconds": null,
+          "endpoint_reason": null,
+          "event": "window_complete",
+          "release_reason": "worker_exit",
+          "released_input_seconds": 10.47,
+          "result_elapsed_seconds": null,
+          "ring_capacity_bytes": 73920,
+          "trigger": {
+            "audio_seconds": 9.96,
+            "elapsed_seconds": 9.965074989,
+            "event": "keyword",
+            "result": {
+              "keyword": "GO_FORWARD",
+              "start_time": 0.0,
+              "timestamps": [
+                1.0,
+                1.28,
+                1.4
+              ],
+              "tokens": [
+                " GO",
+                " FOR",
+                "WARD"
+              ]
+            },
+            "stream_origin_seconds": 8.19
+          },
+          "waiting_after_release": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.48828125,
+                "pid": 1421302,
+                "private_dirty_mib": 0.48828125,
+                "pss_mib": 1.1826171875,
+                "role": "parent",
+                "rss_mib": 3.38671875,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 32.46484375,
+                "pid": 1421305,
+                "private_dirty_mib": 32.46484375,
+                "pss_mib": 49.705078125,
+                "role": "detector",
+                "rss_mib": 54.1171875,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 2,
+              "spawned": 3
+            },
+            "parent_heap": {
+              "free_arena_bytes": 829520,
+              "in_use_bytes": 239536,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 50.8876953125,
+            "rss_mib": 57.50390625
+          },
+          "window": 2,
+          "worker_error": {
+            "kind": "exit",
+            "status": "signal: 9 (SIGKILL)"
+          },
+          "worker_exit_code": null,
+          "worker_exit_signal": 9
+        },
+        {
+          "event": "rearmed",
+          "input_seconds": 11.82
+        },
+        {
+          "aborted_windows": 0,
+          "all_command_workers_succeeded": false,
+          "continuous": true,
+          "detector_complete": {
+            "audio_seconds": 13.7725,
+            "cpu_seconds": 0.11945299999999998,
+            "decoded_samples": 135360,
+            "detections": 2,
+            "elapsed_seconds": 13.772558321,
+            "event": "complete",
+            "memory": {
+              "anonymous_mib": 32.46484375,
+              "heap": {
+                "free_arena_bytes": 1710592,
+                "in_use_bytes": 34895360,
+                "mmap_bytes": 0
+              },
+              "peak_rss_mib": 54.1171875,
+              "pss_mib": 49.705078125,
+              "rss_mib": 54.1171875,
+              "rust_allocations": null
+            },
+            "paced": true,
+            "path": "/home/silver/Projects/jarvis/build/memory-plan-kws/reader-pressure/sustained-oom/input.raw",
+            "quiet_gate": {
+              "hangover_ms": 1200,
+              "preroll_ms": 300,
+              "rms": 0.001
+            },
+            "skipped_samples": 85000,
+            "stream_count": 2
+          },
+          "event": "complete",
+          "final_waiting": {
+            "by_process": [
+              {
+                "anonymous_mib": 0.48828125,
+                "pid": 1421302,
+                "private_dirty_mib": 0.48828125,
+                "pss_mib": 1.1826171875,
+                "role": "parent",
+                "rss_mib": 3.38671875,
+                "threads": 3
+              },
+              {
+                "anonymous_mib": 32.46484375,
+                "pid": 1421305,
+                "private_dirty_mib": 32.46484375,
+                "pss_mib": 49.705078125,
+                "role": "detector",
+                "rss_mib": 54.1171875,
+                "threads": 1
+              }
+            ],
+            "child_readers": {
+              "active": 1,
+              "joined": 2,
+              "spawned": 3
+            },
+            "parent_heap": {
+              "free_arena_bytes": 823824,
+              "in_use_bytes": 245232,
+              "mmap_bytes": 0
+            },
+            "parent_rust_allocations": null,
+            "processes": 2,
+            "pss_mib": 50.8876953125,
+            "rss_mib": 57.50390625
+          },
+          "ignored_triggers": 0,
+          "memory": {
+            "overlap_peak_pss_mib": 232.8251953125,
+            "overlap_peak_rss_mib": 243.51953125,
+            "overlap_samples": 47,
+            "peak_combined_pss_mib": 232.8251953125,
+            "peak_combined_rss_mib": 243.51953125,
+            "sample_interval_ms": 20,
+            "samples": 723,
+            "sum_process_hwm_upper_bound_mib": 243.51953125
+          },
+          "production_defaults_changed": false,
+          "reports": [],
+          "retain_reports": false,
+          "successful_workers": 0,
+          "whole_application_acceptance": false,
+          "windows": 2,
+          "worker_failures": 2
+        }
+      ],
+      "cgroup_samples": 735,
+      "cgroup_initial": {
+        "current": 32030720,
+        "peak": 32030720,
+        "maximum": "201326592",
+        "events": {
+          "low": 0,
+          "high": 0,
+          "max": 0,
+          "oom": 0,
+          "oom_kill": 0,
+          "oom_group_kill": 0,
+          "sock_throttled": 0
+        },
+        "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=0\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "cgroup_final": {
+        "current": 36028416,
+        "peak": 201326592,
+        "maximum": "201326592",
+        "events": {
+          "low": 0,
+          "high": 0,
+          "max": 74,
+          "oom": 2,
+          "oom_kill": 2,
+          "oom_group_kill": 0,
+          "sock_throttled": 0
+        },
+        "pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=3727\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=3727\n"
+      },
+      "cgroup_peak_bytes": 201326592,
+      "oom_kills": 2,
+      "signaled_workers": 2,
+      "slices": [],
+      "stderr": "jarvis-kws-handoff-probe: 2 command window(s) failed; later wakes were handled without retrying failed audio\n",
+      "lifecycle_control_pass": true,
+      "command_recognition_gate_pass": false
+    }
+  ],
+  "complete": true,
+  "production_defaults_changed": false,
+  "whole_application_acceptance": false,
+  "windows_acceptance": false,
+  "full_acoustic_acceptance": false,
+  "full_duration_soak_acceptance": false,
+  "enable_by_default": false,
+  "all_lifecycle_controls_pass": true,
+  "all_command_recognition_gates_pass": false,
+  "pressure_release_gate_pass": false
+}

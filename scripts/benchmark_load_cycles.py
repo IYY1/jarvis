@@ -48,9 +48,9 @@ def feed(frames):
         os.write(1, frames[start:start + 960])
         time.sleep(.03)
 silence = lambda seconds: bytes(960) * round(seconds / .03)
-# Room noise above the default gate: Vosk hears it as non-speech, so the
-# chatter's utterance ends and the next wake name starts a new one. Without
-# it (--no-room-noise) the worker currently misses wakes after the chatter.
+# Keep the historical room-noise workload for comparable memory measurements.
+# It lets Vosk end the chatter itself; --no-room-noise instead exercises the
+# worker's quiet-boundary reset and must not need this workaround.
 random.seed(1)
 noise = array.array('h', (random.randint(-680, 680) for _ in range(16000 * 3))).tobytes()
 if os.environ['JARVIS_BENCH_NOISE'] != '1':
@@ -72,7 +72,8 @@ while True:
 """
 
 
-def session(binary: Path, fixture: Path, idle: float | None, cycles: int, speech: float, noise: bool) -> dict:
+def session(binary: Path, fixture: Path, idle: float | None, cycles: int, speech: float, noise: bool,
+            fast_path: bool = False, finalize_utterances: bool = False) -> dict:
     config = copy.deepcopy(DEFAULTS)
     config["privacy"]["onboarded"] = True
     config["recognition"].update(accurate=True, noise_suppression=True)
@@ -80,6 +81,8 @@ def session(binary: Path, fixture: Path, idle: float | None, cycles: int, speech
     grammar = Parser({"ten meters": "start recording"}).grammar(["firefox", "steam", "stremio"])
     with patch.dict(os.environ, MURMUR_VOICE_WORKER="rust"):
         _argv, payload, env = prepare(config, "wake_word", grammar)
+    payload["native"]["vosk_fast_path"] = fast_path
+    payload["native"]["vosk_finalize_utterances"] = finalize_utterances
     if payload["native"]["whisper"] is None or payload["native"]["denoiser"] is None:
         raise SystemExit("Install the local Whisper and GTCRN models first")
     if idle is None:
@@ -141,13 +144,17 @@ def session(binary: Path, fixture: Path, idle: float | None, cycles: int, speech
     rows = []
     for (received, text), began, ended in zip(commands, starts, ends, strict=True):
         rows.append({"text": text, "latency_ms": round((received - ended) * 1000, 1),
+                     "wake_elapsed_seconds": round(began - start, 3),
                      "whisper_loaded_at_speech_start": before(began)[2] > 0,
                      "rss_at_wake_mib": round(before(began)[1], 2)})
     floors = [row["rss_at_wake_mib"] for row in rows]
     latencies = [row["latency_ms"] for row in rows]
     return {"binary_sha256": hashlib.sha256(binary.read_bytes()).hexdigest(),
+            "experimental_vosk_fast_path": fast_path,
+            "experimental_vosk_finalize_utterances": finalize_utterances,
             "whisper_idle_seconds": idle, "cycles": cycles, "speech_seconds_per_cycle": speech,
             "room_noise_after_speech": noise,
+            "elapsed_seconds": round(samples[-1][0] - start, 3),
             "commands_identical": {row["text"] for row in rows} == {"ten meters"},
             "rss_at_wake_first_mib": floors[0], "rss_at_wake_last_mib": floors[-1],
             "rss_at_wake_growth_per_cycle_mib": round((floors[-1] - floors[1]) / (len(floors) - 2), 2),
@@ -170,6 +177,8 @@ def main():
     parser.add_argument("--room-noise", action=argparse.BooleanOptionalAction, default=True,
                         help="Quiet noise after the chatter so Vosk ends its utterance (default on)")
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--vosk-fast-path", action="store_true", help="Exercise the experimental Rust fast path (off by default)")
+    parser.add_argument("--finalize-vosk-utterances", action="store_true", help="Exercise experimental decoder finalization (off by default)")
     args = parser.parse_args()
     if not 3 <= args.cycles <= 100:
         parser.error("cycles must be 3–100")
@@ -185,7 +194,8 @@ def main():
     # Sequential, never concurrent: inference workloads would compete for CPU.
     for spec, idle in arms:
         name, _, path = spec.partition("=")
-        runs[name] = session(Path(path), args.fixture, idle, args.cycles, args.speech, args.room_noise)
+        runs[name] = session(Path(path), args.fixture, idle, args.cycles, args.speech, args.room_noise,
+                             args.vosk_fast_path, args.finalize_vosk_utterances)
     result = {"date": time.strftime("%Y-%m-%d", time.gmtime()), "platform": platform.platform(),
               "fixture_sha256": hashlib.sha256(audio).hexdigest(),
               "fixture_trailing_silence_seconds": round(trailing_silence(audio), 3),

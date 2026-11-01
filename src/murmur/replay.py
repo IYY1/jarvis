@@ -1,4 +1,4 @@
-"""Instant replay: gpu-screen-recorder keeps the last seconds of the screen in RAM.
+"""Legacy Python replay: gpu-screen-recorder keeps the last seconds in RAM.
 
 Nothing reaches the disk until a save is requested. The child is owned by the
 service (it stops with SIGINT if the service dies, which discards the buffer)
@@ -73,6 +73,8 @@ class Replay:
                     raise RecorderError("Instant replay needs gpu-screen-recorder. Install it with: sudo pacman -S gpu-screen-recorder")
                 cfg = self.config.get("recording", self.config)
                 replay = self.config.get("replay", {})
+                if replay.get("storage", "ram") == "disk":
+                    raise RecorderError("Disk replay requires the Rust controller on Linux. Build scripts/build_controller.py and select MURMUR_CONTROLLER=rust.")
                 monitor = str(cfg.get("monitor", "")).strip()
                 if not monitor:
                     raise RecorderError("Choose a display in Recorder settings first.")

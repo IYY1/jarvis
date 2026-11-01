@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 
 
 def build(description, targets, completion):
@@ -12,6 +13,8 @@ def build(description, targets, completion):
     parser.add_argument("--test", action="store_true")
     parser.add_argument("--offline", action="store_true", help="Use cached Cargo dependencies")
     args = parser.parse_args()
+    if sys.platform == "win32":
+        targets = [(crate, binary + ".exe") for crate, binary in targets]
     root = Path(__file__).resolve().parents[1]
     # Build every target before publishing any executable into the checkout.
     for crate, _binary in targets:

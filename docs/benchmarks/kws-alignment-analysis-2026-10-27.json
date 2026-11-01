@@ -1,0 +1,184 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-26T21:59:06.830743+00:00",
+  "raw_evidence_sha256": "a82eadb066433567e0bdb79ed2cb9afead2310b269f3df771d947475888f11af",
+  "strict_runner_exit_code": 1,
+  "candidate_accepted": false,
+  "production_defaults_changed": false,
+  "phase": {
+    "baseline": {
+      "cases": 288,
+      "correct": 253,
+      "missed": 35,
+      "extra": 0,
+      "failures": [
+        "go-forward-0.1-840",
+        "go-forward-0.1-870",
+        "go-forward-0.1-900",
+        "go-forward-0.1-930",
+        "go-forward-0.1-960",
+        "go-forward-0.1-990",
+        "go-forward-0.1-1020",
+        "go-forward-0.1-1050",
+        "go-forward-0.1-1080",
+        "go-forward-0.1-1110",
+        "go-forward-0.1-1140",
+        "go-forward-0.1-1170",
+        "go-forward-0.1-1200",
+        "go-forward-0.3-840",
+        "go-forward-0.3-870",
+        "go-forward-0.3-900",
+        "go-forward-0.3-930",
+        "go-forward-0.3-960",
+        "go-forward-0.3-990",
+        "go-forward-0.3-1020",
+        "go-forward-0.3-1050",
+        "go-forward-0.3-1080",
+        "go-forward-0.3-1110",
+        "go-forward-0.3-1140",
+        "go-forward-0.3-1170",
+        "go-forward-1.0-840",
+        "go-forward-1.0-870",
+        "go-forward-1.0-900",
+        "go-forward-1.0-930",
+        "go-forward-1.0-960",
+        "go-forward-1.0-990",
+        "go-forward-1.0-1020",
+        "go-forward-1.0-1050",
+        "go-forward-1.0-1080",
+        "published-0-0.1-840"
+      ]
+    },
+    "legacy": {
+      "cases": 288,
+      "correct": 288,
+      "missed": 0,
+      "extra": 0,
+      "failures": [],
+      "vs_ungated": {
+        "identical_label_cases": 253,
+        "comparable_detected_hits": 253,
+        "earlier": 109,
+        "exact": 22,
+        "later": 122,
+        "delta_range_seconds": [
+          -0.3,
+          0.3
+        ]
+      }
+    },
+    "aligned": {
+      "cases": 288,
+      "correct": 287,
+      "missed": 1,
+      "extra": 0,
+      "failures": [
+        "go-forward-0.1-1110"
+      ],
+      "vs_ungated": {
+        "identical_label_cases": 254,
+        "comparable_detected_hits": 253,
+        "earlier": 1,
+        "exact": 252,
+        "later": 0,
+        "delta_range_seconds": [
+          -0.3,
+          0.0
+        ]
+      }
+    }
+  },
+  "focused": {
+    "baseline": {
+      "cases": 19,
+      "correct": 19,
+      "expected_wakes": 12,
+      "actual_wakes": 12
+    },
+    "legacy": {
+      "cases": 19,
+      "correct": 19,
+      "expected_wakes": 12,
+      "actual_wakes": 12
+    },
+    "current-legacy": {
+      "cases": 19,
+      "correct": 19,
+      "expected_wakes": 12,
+      "actual_wakes": 12
+    },
+    "current-ungated": {
+      "cases": 19,
+      "correct": 19,
+      "expected_wakes": 12,
+      "actual_wakes": 12
+    },
+    "aligned": {
+      "cases": 19,
+      "correct": 19,
+      "expected_wakes": 12,
+      "actual_wakes": 12
+    }
+  },
+  "paced": {
+    "legacy": {
+      "silence_cpu_percent_one_core": [
+        0.017680000000000102,
+        0.014713333333333245,
+        0.015536666666666754
+      ],
+      "ready_rss_mib": [
+        49.35546875,
+        47.9609375,
+        48.81640625
+      ],
+      "peak_rss_mib": [
+        55.04296875,
+        54.6484375,
+        53.98046875
+      ],
+      "final_pss_mib": [
+        50.658203125,
+        50.267578125,
+        49.595703125
+      ],
+      "low_volume_triggers_seconds": [
+        2.25,
+        2.25,
+        2.25
+      ]
+    },
+    "aligned": {
+      "silence_cpu_percent_one_core": [
+        0.014793333333333325,
+        0.016039999999999943,
+        0.016806666666666636
+      ],
+      "ready_rss_mib": [
+        47.80859375,
+        47.9140625,
+        48.796875
+      ],
+      "peak_rss_mib": [
+        54.4765625,
+        53.953125,
+        53.8984375
+      ],
+      "final_pss_mib": [
+        50.091796875,
+        49.572265625,
+        49.57421875
+      ],
+      "low_volume_triggers_seconds": [
+        2.07,
+        2.07,
+        2.07
+      ]
+    }
+  },
+  "input_hashes_reverified": 971,
+  "aligned_accounting_cases_reverified": 313,
+  "full_acoustic_acceptance": false,
+  "whole_application_acceptance": false,
+  "windows_acceptance": false
+}

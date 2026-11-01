@@ -2,14 +2,47 @@
 import unittest
 import io
 import copy
+import gc
+import types
+import weakref
 from unittest.mock import MagicMock, patch
 
 from murmur.voice import _parent_death
-from murmur.voice import run
+from murmur.voice import main, run
 from murmur.config import DEFAULTS
 
 
 class VoiceParentDeathTests(unittest.TestCase):
+    def test_source_grammar_is_released_before_capture_starts(self):
+        class Grammar(dict):
+            pass
+        for key in ("grammar", "phrases"):
+            with self.subTest(key=key):
+                config = copy.deepcopy(DEFAULTS)
+                config["privacy"]["onboarded"] = True
+                references = []
+                def load(_line):
+                    grammar = Grammar(phrases=["open firefox"])
+                    references.append(weakref.ref(grammar))
+                    return {"config": config, "mode": "once", key: grammar}
+                def make_engine(_config, grammar):
+                    self.assertEqual(grammar, {"phrases": ["open firefox"]})
+                    return types.SimpleNamespace(frame_bytes=960, close=lambda: None)
+                def capture(*args, **kwargs):
+                    gc.collect()
+                    self.assertIsNone(references[0]())
+                    raise RuntimeError("fixture finished before capture")
+                with patch("murmur.voice.sys.stdin", types.SimpleNamespace(buffer=io.BytesIO(b"{}\n"))), \
+                        patch("murmur.voice.json.loads", new=load), \
+                        patch("murmur.voice.make_engine", new=make_engine), \
+                        patch("murmur.voice.subprocess.Popen", new=capture), \
+                        patch("murmur.voice._parent_death"), patch("murmur.voice.signal.signal"), \
+                        patch("murmur.voice.selectors.DefaultSelector"), \
+                        patch("murmur.voice.emit") as emit:
+                    main()
+                self.assertTrue(any("fixture finished" in call.kwargs.get("message", "")
+                                    for call in emit.call_args_list))
+
     def test_stalled_microphone_reports_error_and_closes_capture(self):
         config = copy.deepcopy(DEFAULTS)
         config["privacy"]["onboarded"] = True

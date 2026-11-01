@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 from contextlib import contextmanager
-import os
-import threading
 
 _job = None
 
@@ -85,25 +83,6 @@ def own_service_children():
     )
     win32job.AssignProcessToJobObject(job, win32api.GetCurrentProcess())
     _job = job  # non-inheritable handle, deliberately retained until process exit
-
-
-def watch_parent(expected):
-    import win32api
-    import win32con
-    import win32event
-
-    if not expected or expected == os.getpid():
-        raise RuntimeError("Voice worker requires its owning service")
-    parent = win32api.OpenProcess(win32con.SYNCHRONIZE, False, expected)
-
-    def wait():
-        try:
-            win32event.WaitForSingleObject(parent, win32event.INFINITE)
-            os._exit(0)
-        finally:
-            parent.Close()
-
-    threading.Thread(target=wait, name="jarvis-owner", daemon=True).start()
 
 
 class ServiceLock:

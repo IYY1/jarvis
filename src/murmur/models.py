@@ -42,10 +42,12 @@ def valid_model(path: Path) -> bool:
 
 def describe(config: dict) -> dict:
     settings = config.get("recognition", {})
-    accurate = importlib.util.find_spec("sherpa_onnx") is not None and accurate_model_ready()
+    from .native_worker import binary_path, vosk_library
+    rust = binary_path() is not None
+    accurate = (rust or importlib.util.find_spec("sherpa_onnx") is not None) and accurate_model_ready()
     requested = settings.get("backend", "auto")
     path = Path(settings.get("model_path") or default_model_path()).expanduser()
-    ready = importlib.util.find_spec("vosk") is not None and valid_model(path)
+    ready = (vosk_library() is not None if rust else importlib.util.find_spec("vosk") is not None) and valid_model(path)
     selected = "vosk" if requested == "vosk" or (requested == "auto" and ready) else "pocketsphinx"
     return {"backend": selected, "model_path": str(path), "model_ready": ready,
             "accurate_model_ready": accurate, "accurate_model_on": bool(settings.get("accurate", True)),

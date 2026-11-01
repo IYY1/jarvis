@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-27",
+  "pcm_sha256": "a0f956dbda4c0e736497322918ae9adaf611275209efe2a264fe413c820dd020",
+  "pcm_seconds": 4.9866875,
+  "source_selection": "User-created recording; user explicitly selected the final five seconds.",
+  "expected_wake": "jarvis",
+  "expected_command": "clip that",
+  "confirmation": "User explicitly answered Yes to the exact intended phrase Jarvis, clip that in this chat.",
+  "human_confirmed": true,
+  "other_recordings_labeled_by_this_reply": false,
+  "scope": "One positive utterance; does not establish speaker/accent coverage or a false-alarm rate."
+}

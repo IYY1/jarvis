@@ -1,0 +1,225 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-26T20:12:00.920011+00:00",
+  "scope": "File-only KWS worker recovery under a private transient user cgroup limit.\n\nOnly this harness's newly created unit is limited. No host pressure generator,\ncapture, installed-service restart, automatic command retry, or global limits.\nExpected OOM windows remain failed recognition windows with raw nonzero exits.\n",
+  "binary_sha256": "8691d2bef0fad8d59e5a8772f6e0ba01721ea0afffa9e3d777350c876c802ecf",
+  "detector_sha256": "df6d5df9c716c5f93ae2c02367546616b2d1d093f108965fc5be51a9aee331c2",
+  "voice_sha256": "212ff8655e303b55f0a70f902753d0ab6f87031aa3c71cd40306ddf5cf8d9844",
+  "fixture_sha256": "e1e4e81f8c48060017cccc329b6b6f4e6c3df01489d5b6a61cc003cd5a7c4349",
+  "runs": [
+    {
+      "name": "bounded-success",
+      "unit": "jarvis-kws-pressure-e095ba7016b7.service",
+      "configuration": {
+        "detector_binary": "/home/silver/Projects/jarvis/native/kws-probe/target/release/jarvis-kws-probe",
+        "detector_config": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/detector.json",
+        "voice_binary": "/home/silver/Projects/jarvis/native/voice-worker/target/release/jarvis-voice",
+        "voice_payload": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/voice.json",
+        "work_dir": "/home/silver/Projects/jarvis/build/memory-plan-kws/pressure-recovery/bounded-success",
+        "cycles": 1,
+        "settle_ms": 1000,
+        "quiet_endpoint": {
+          "rms": 0.001,
+          "min_speech_ms": 240,
+          "quiet_ms": 600,
+          "timeout_ms": 5000
+        },
+        "retain_reports": false,
+        "continuous": {
+          "max_windows": 2,
+          "worker_timeout_ms": 12000,
+          "recovery_quiet_ms": 600,
+          "command_oom_score_adj": 1000
+        }
+      },
+      "command": [
+        "systemd-run",
+        "--user",
+        "--quiet",
+        "--pipe",
+        "--wait",
+        "--collect",
+        "--unit=jarvis-kws-pressure-e095ba7016b7",
+        "--property=MemoryAccounting=yes",
+        "--property=MemoryMax=402653184",
+        "--property=MemorySwapMax=0",
+        "--property=OOMPolicy=continue",
+        "--property=MemoryOOMGroup=no",
+        "--property=RuntimeMaxSec=60",
+        "--working-directory=/home/silver/Projects/jarvis",
+        "/home/silver/Projects/jarvis/native/kws-probe/target/release/jarvis-kws-handoff-probe",
+        "/home/silver/Projects/jarvis/build/memory-plan-kws/pressure-recovery/bounded-success/config.json",
+        "/home/silver/Projects/jarvis/build/memory-plan-kws/pressure-recovery/bounded-success/input.raw"
+      ],
+      "input_sha256": "61233b313ca1cdea4c339b8dc9b0d45597a9b16a6f2d872f298256701b4d223c",
+      "initial_limit_mib": 384,
+      "limit_released": false,
+      "expected_commands": [
+        [
+          "ten meters"
+        ],
+        [
+          "ten meters"
+        ]
+      ],
+      "actual_commands": [],
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "events": [],
+      "cgroup_samples": 0,
+      "cgroup_initial": null,
+      "cgroup_final": null,
+      "cgroup_peak_bytes": 0,
+      "oom_kills": 0,
+      "signaled_workers": 0,
+      "slices": [],
+      "stderr": "Unknown assignment: MemoryOOMGroup=no\n",
+      "lifecycle_control_pass": false,
+      "command_recognition_gate_pass": false
+    },
+    {
+      "name": "oom-then-release",
+      "unit": "jarvis-kws-pressure-b13f54adecea.service",
+      "configuration": {
+        "detector_binary": "/home/silver/Projects/jarvis/native/kws-probe/target/release/jarvis-kws-probe",
+        "detector_config": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/detector.json",
+        "voice_binary": "/home/silver/Projects/jarvis/native/voice-worker/target/release/jarvis-voice",
+        "voice_payload": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/voice.json",
+        "work_dir": "/home/silver/Projects/jarvis/build/memory-plan-kws/pressure-recovery/oom-then-release",
+        "cycles": 1,
+        "settle_ms": 1000,
+        "quiet_endpoint": {
+          "rms": 0.001,
+          "min_speech_ms": 240,
+          "quiet_ms": 600,
+          "timeout_ms": 5000
+        },
+        "retain_reports": false,
+        "continuous": {
+          "max_windows": 2,
+          "worker_timeout_ms": 12000,
+          "recovery_quiet_ms": 600,
+          "command_oom_score_adj": 1000
+        }
+      },
+      "command": [
+        "systemd-run",
+        "--user",
+        "--quiet",
+        "--pipe",
+        "--wait",
+        "--collect",
+        "--unit=jarvis-kws-pressure-b13f54adecea",
+        "--property=MemoryAccounting=yes",
+        "--property=MemoryMax=201326592",
+        "--property=MemorySwapMax=0",
+        "--property=OOMPolicy=continue",
+        "--property=MemoryOOMGroup=no",
+        "--property=RuntimeMaxSec=60",
+        "--working-directory=/home/silver/Projects/jarvis",
+        "/home/silver/Projects/jarvis/native/kws-probe/target/release/jarvis-kws-handoff-probe",
+        "/home/silver/Projects/jarvis/build/memory-plan-kws/pressure-recovery/oom-then-release/config.json",
+        "/home/silver/Projects/jarvis/build/memory-plan-kws/pressure-recovery/oom-then-release/input.raw"
+      ],
+      "input_sha256": "61233b313ca1cdea4c339b8dc9b0d45597a9b16a6f2d872f298256701b4d223c",
+      "initial_limit_mib": 192,
+      "limit_released": false,
+      "expected_commands": [
+        [],
+        [
+          "ten meters"
+        ]
+      ],
+      "actual_commands": [],
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "events": [],
+      "cgroup_samples": 0,
+      "cgroup_initial": null,
+      "cgroup_final": null,
+      "cgroup_peak_bytes": 0,
+      "oom_kills": 0,
+      "signaled_workers": 0,
+      "slices": [],
+      "stderr": "Unknown assignment: MemoryOOMGroup=no\n",
+      "lifecycle_control_pass": false,
+      "command_recognition_gate_pass": false
+    },
+    {
+      "name": "sustained-oom",
+      "unit": "jarvis-kws-pressure-f4f7013d5cd7.service",
+      "configuration": {
+        "detector_binary": "/home/silver/Projects/jarvis/native/kws-probe/target/release/jarvis-kws-probe",
+        "detector_config": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/detector.json",
+        "voice_binary": "/home/silver/Projects/jarvis/native/voice-worker/target/release/jarvis-voice",
+        "voice_payload": "/home/silver/Projects/jarvis/build/memory-plan-kws/cycles/tiny.en-gated-natural/voice.json",
+        "work_dir": "/home/silver/Projects/jarvis/build/memory-plan-kws/pressure-recovery/sustained-oom",
+        "cycles": 1,
+        "settle_ms": 1000,
+        "quiet_endpoint": {
+          "rms": 0.001,
+          "min_speech_ms": 240,
+          "quiet_ms": 600,
+          "timeout_ms": 5000
+        },
+        "retain_reports": false,
+        "continuous": {
+          "max_windows": 2,
+          "worker_timeout_ms": 12000,
+          "recovery_quiet_ms": 600,
+          "command_oom_score_adj": 1000
+        }
+      },
+      "command": [
+        "systemd-run",
+        "--user",
+        "--quiet",
+        "--pipe",
+        "--wait",
+        "--collect",
+        "--unit=jarvis-kws-pressure-f4f7013d5cd7",
+        "--property=MemoryAccounting=yes",
+        "--property=MemoryMax=201326592",
+        "--property=MemorySwapMax=0",
+        "--property=OOMPolicy=continue",
+        "--property=MemoryOOMGroup=no",
+        "--property=RuntimeMaxSec=60",
+        "--working-directory=/home/silver/Projects/jarvis",
+        "/home/silver/Projects/jarvis/native/kws-probe/target/release/jarvis-kws-handoff-probe",
+        "/home/silver/Projects/jarvis/build/memory-plan-kws/pressure-recovery/sustained-oom/config.json",
+        "/home/silver/Projects/jarvis/build/memory-plan-kws/pressure-recovery/sustained-oom/input.raw"
+      ],
+      "input_sha256": "61233b313ca1cdea4c339b8dc9b0d45597a9b16a6f2d872f298256701b4d223c",
+      "initial_limit_mib": 192,
+      "limit_released": false,
+      "expected_commands": [
+        [],
+        []
+      ],
+      "actual_commands": [],
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "events": [],
+      "cgroup_samples": 0,
+      "cgroup_initial": null,
+      "cgroup_final": null,
+      "cgroup_peak_bytes": 0,
+      "oom_kills": 0,
+      "signaled_workers": 0,
+      "slices": [],
+      "stderr": "Unknown assignment: MemoryOOMGroup=no\n",
+      "lifecycle_control_pass": false,
+      "command_recognition_gate_pass": false
+    }
+  ],
+  "complete": true,
+  "production_defaults_changed": false,
+  "whole_application_acceptance": false,
+  "windows_acceptance": false,
+  "full_acoustic_acceptance": false,
+  "full_duration_soak_acceptance": false,
+  "enable_by_default": false,
+  "all_lifecycle_controls_pass": false,
+  "all_command_recognition_gates_pass": false,
+  "pressure_release_gate_pass": false
+}

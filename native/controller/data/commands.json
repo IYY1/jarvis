@@ -84,7 +84,8 @@
     "launch": "open_app",
     "start": "open_app",
     "focus": "focus_app",
-    "switch to": "focus_app"
+    "switch to": "focus_app",
+    "close": "close_app"
   },
   "TYPED_ONLY_VERBS": [
     "open up"
@@ -99,6 +100,15 @@
         "could you launch Firefox",
         "focus Firefox",
         "switch to Firefox"
+      ]
+    },
+    {
+      "category": "Applications",
+      "title": "Close an app",
+      "examples": [
+        "close Firefox",
+        "close Dolphin",
+        "please close Firefox"
       ]
     },
     {

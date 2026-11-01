@@ -16,7 +16,7 @@ def main():
     args = parser.parse_args()
     bundle = args.bundle.resolve()
     sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-    from murmur import config
+    from murmur import __version__, config
     from murmur.client import request
     import win32con
     import win32gui
@@ -47,13 +47,14 @@ def main():
                 raise AssertionError(result.stdout + result.stderr)
             return result.stdout
 
-        assert "0.2.0" in run("--version")
+        assert __version__ in run("--version")
         diagnostics = json.loads(run("doctor"))
         assert diagnostics["frozen"]
         assert diagnostics["voice_engine"]["model_ready"]
         assert diagnostics["voice_engine"]["accurate_model_ready"]
         assert all(item["ok"] for item in diagnostics["tools"].values())
         assert all(diagnostics["dependencies"].values())
+        assert diagnostics["vosk_library"]
         print(
             "Frozen version, offline models, tools and dependency discovery passed",
             flush=True,

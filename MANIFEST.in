@@ -22,3 +22,7 @@ global-exclude *.py[cod] __pycache__
 
 recursive-include native/command-phrases *.rs Cargo.toml Cargo.lock
 prune native/command-phrases/target
+recursive-include native/replay-store *.rs Cargo.toml Cargo.lock
+prune native/replay-store/target
+recursive-include native/kws-probe *.rs *.c *.h *.md LICENSE Cargo.toml Cargo.lock
+prune native/kws-probe/target

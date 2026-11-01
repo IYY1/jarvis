@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-26T09:04:25.392459+00:00",
+  "scope": "Linux experimental Rust tiny.en/base.en/small.en profiles; local verified models, public fixture perturbations and fake capture only",
+  "default_model": "whisper-small",
+  "default_model_changed": false,
+  "installed_service_restarted": false,
+  "full_recognition_acceptance": false,
+  "whole_application_budget_acceptance": false,
+  "native_windows_acceptance": false,
+  "checks": {
+    "offline_unittest": {
+      "total": 355,
+      "passed": 320,
+      "skipped": 35,
+      "failed": 0
+    },
+    "selected_voice_and_model_tests": {
+      "total": 60,
+      "passed": 60,
+      "skipped": 0,
+      "failed": 0
+    },
+    "rust_unit_tests": {
+      "denoiser": 2,
+      "whisper": 19,
+      "voice_worker": 13,
+      "failed": 0
+    },
+    "clippy_all_targets_deny_warnings": true,
+    "cargo_fmt_check": true,
+    "diff_check": true,
+    "small_en_before_after_tensor_pairs_identical": 55
+  },
+  "matrix": {
+    "artifact": "whisper-models-2026-10-26.json",
+    "complete": true,
+    "expected_exit_code": 1,
+    "actual_exit_code": 1,
+    "interpretation": "Completed comparison rejects base.en strict transcript parity; this is a recorded failed benchmark gate, not a passing acceptance result.",
+    "reference_identical_counts": {
+      "small.en": {
+        "identical": 63,
+        "total": 63
+      },
+      "base.en": {
+        "identical": 45,
+        "total": 63
+      },
+      "tiny.en": {
+        "identical": 63,
+        "total": 63
+      }
+    },
+    "gates": {
+      "small.en": {
+        "reference_transcripts_match": true,
+        "fixture_commands_match": true,
+        "median_latency_nonregression": true,
+        "p95_latency_nonregression": true,
+        "whole_application_budget_acceptance": false,
+        "full_recognition_acceptance": false,
+        "enable_by_default": false
+      },
+      "base.en": {
+        "reference_transcripts_match": false,
+        "fixture_commands_match": true,
+        "median_latency_nonregression": true,
+        "p95_latency_nonregression": true,
+        "whole_application_budget_acceptance": false,
+        "full_recognition_acceptance": false,
+        "enable_by_default": false
+      },
+      "tiny.en": {
+        "reference_transcripts_match": true,
+        "fixture_commands_match": true,
+        "median_latency_nonregression": true,
+        "p95_latency_nonregression": true,
+        "whole_application_budget_acceptance": false,
+        "full_recognition_acceptance": false,
+        "enable_by_default": false
+      }
+    }
+  },
+  "base_diagnostic": {
+    "artifact": "whisper-base-numerical-diagnostic-2026-10-26.json",
+    "decoder_argmax_identical_given_rust_cross_and_forced_token_history": true,
+    "numerical_equivalence": false,
+    "encoder_discrepancy_unresolved": true
+  },
+  "recognition_controls": {
+    "small.en": {
+      "artifact": "whisper-small.en-controls-2026-10-26.json",
+      "focused_controls_passed": true,
+      "false_actions": 0,
+      "extra_wakes": 0,
+      "full_gate_passed": false,
+      "missing_categories": [
+        "confusable",
+        "game_audio",
+        "music",
+        "recorded_command"
+      ],
+      "expected_runner_exit_code": 1
+    },
+    "base.en": {
+      "artifact": "whisper-base.en-controls-2026-10-26.json",
+      "focused_controls_passed": true,
+      "false_actions": 0,
+      "extra_wakes": 0,
+      "full_gate_passed": false,
+      "missing_categories": [
+        "confusable",
+        "game_audio",
+        "music",
+        "recorded_command"
+      ],
+      "expected_runner_exit_code": 1
+    },
+    "tiny.en": {
+      "artifact": "whisper-tiny.en-controls-2026-10-26.json",
+      "focused_controls_passed": true,
+      "false_actions": 0,
+      "extra_wakes": 0,
+      "full_gate_passed": false,
+      "missing_categories": [
+        "confusable",
+        "game_audio",
+        "music",
+        "recorded_command"
+      ],
+      "expected_runner_exit_code": 1
+    }
+  },
+  "measured_binary_hashes_match_rebuilt": true,
+  "voice_binary_sha256": "212ff8655e303b55f0a70f902753d0ab6f87031aa3c71cd40306ddf5cf8d9844",
+  "whisper_binary_sha256": "8915a1cfb58d7faec35f4409dd7cb1da17b55191f38f511129caf53e06c087b1"
+}

@@ -1,0 +1,1177 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-27",
+  "scope": "Fixed combined PocketSphinx/microWakeWord wake-only screening, with paired stock native Vosk controls; no installed configuration, real capture, microphone, actions, audio upload or private held-out decoding.",
+  "protocol": {
+    "declared_at": "2026-10-27T13:45:03.743206+00:00",
+    "selection": "selection.json",
+    "selection_count": 52,
+    "settings": {
+      "pocketsphinx_sensitivity": 0.5,
+      "pocketsphinx_threshold": 1e-20,
+      "rms": 0.001,
+      "preroll_ms": 300,
+      "hangover_ms": 1200,
+      "utterance_cap_frames": 333,
+      "micro_cutoff": 0.97,
+      "micro_sliding_window": 5,
+      "micro_feature_step_ms": 10,
+      "micro_enabled_for": "Jarvis wake variants only; custom names still need independent acceptance."
+    },
+    "shared_policy": "At each 30 ms input packet feed continuous native micro features/model and energy-gated PocketSphinx. First detector result arms no commands and disarms both outputs. After 1200 ms quiet expires, reset both model searches and micro feature state, then re-arm. Keep a bounded 300 ms PocketSphinx pre-roll. Never emit a discarded final hypothesis.",
+    "tests": "52 fixed new public recordings, one fresh combined worker and one fresh native Vosk-only --engine worker per recording, in the same input order. Eighteen known controls (four known positive recordings at gains 1/0.5/0.1, four known negatives, two repeated-wake reset sequences) each in three fresh combined workers. No tuning after outcomes.",
+    "audio": "Original public files verified by Git blob hash; ffmpeg converts all public clips to 16 kHz mono s16le; add two seconds trailing silence in each engine equally; preserve full input, reject inputs longer than 10 seconds in Vosk control.",
+    "repeat_policy": "Initial fresh-recording screen once per input; original known controls repeated three times. If any fresh intended count fails, retain failures and do not port/integrate.",
+    "quality_gate": "Exact intended wake counts, no extra wakes; paired Vosk regression count also reported without replacing intended labels.",
+    "scope": "Isolated experiment; no microphone, desktop actions, source/audio upload, installed configuration change or private held-out decoding. Pretrained training-data overlap is unknown. Speaker identities per file are unknown.",
+    "later_checks": "Only if focused quality passes: fresh paced silence/timing and command-handoff tests before production changes.",
+    "reset_controls_declared_before_inference": [
+      "two copies of selected user tail with two seconds separating quiet: expected 2",
+      "three different public Hey Jarvis recordings with two seconds separating quiet: expected 3"
+    ]
+  },
+  "complete": true,
+  "observed_exit_code": 1,
+  "voice_binary_sha256": "212ff8655e303b55f0a70f902753d0ab6f87031aa3c71cd40306ddf5cf8d9844",
+  "fresh_summary": {
+    "cases": 52,
+    "positive_cases": 32,
+    "negative_cases": 20,
+    "combined_correct_positives": 24,
+    "vosk_correct_positives": 31,
+    "combined_false_wakes": 0,
+    "vosk_false_wakes": 0,
+    "paired_regressions": 8,
+    "paired_gains": 1,
+    "winner_counts": {
+      "pocketsphinx": 23,
+      "micro": 1
+    }
+  },
+  "known_summary": {
+    "case_repetitions": 54,
+    "passed_repetitions": 54,
+    "expected_wakes": 51,
+    "actual_wakes": 51,
+    "reset_sequences": [
+      {
+        "case": "two-user-wakes",
+        "repeat": 1,
+        "expected_wakes": 2,
+        "actual_wakes": 2,
+        "resets": 2
+      },
+      {
+        "case": "two-user-wakes",
+        "repeat": 2,
+        "expected_wakes": 2,
+        "actual_wakes": 2,
+        "resets": 2
+      },
+      {
+        "case": "two-user-wakes",
+        "repeat": 3,
+        "expected_wakes": 2,
+        "actual_wakes": 2,
+        "resets": 2
+      },
+      {
+        "case": "three-public-wakes",
+        "repeat": 1,
+        "expected_wakes": 3,
+        "actual_wakes": 3,
+        "resets": 3
+      },
+      {
+        "case": "three-public-wakes",
+        "repeat": 2,
+        "expected_wakes": 3,
+        "actual_wakes": 3,
+        "resets": 3
+      },
+      {
+        "case": "three-public-wakes",
+        "repeat": 3,
+        "expected_wakes": 3,
+        "actual_wakes": 3,
+        "resets": 3
+      }
+    ]
+  },
+  "isolated_combined_peak_rss_mib": 71.85546875,
+  "fresh_cases": [
+    {
+      "id": "picovoice-jarvis-43dd2cf1-52cd-44c9-8a60-caf7b8d38444",
+      "source_path": "audio/jarvis/43dd2cf1-52cd-44c9-8a60-caf7b8d38444.wav",
+      "source_sha256": "38ae71840ba1851b7c9da611e66d377ea0c5e333eb42938b8d33c3c71e021451",
+      "git_blob_sha1": "000d022dd7c43f6565c4f840a223e0a760b996a8",
+      "pcm_sha256": "032050d5205475a28bbe732831feb198207c4bff577aedf8add66b7dfa0213ad",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 2.16,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-59f9207f-cb26-4dd2-812c-872be98da235",
+      "source_path": "audio/jarvis/59f9207f-cb26-4dd2-812c-872be98da235.wav",
+      "source_sha256": "e90989b20e0f532e56b05eccd1f40ca5c3da67a82775c7a29bf34e7bcda2e57d",
+      "git_blob_sha1": "005975d05a397e9237e3584059e4500ad36ca958",
+      "pcm_sha256": "21ebb215aed49e8adf0d4ae461231ce0ff35ed0c42d5af4afe4c1b9f6a62b22a",
+      "expected_wakes": 1,
+      "combined_wakes": 0,
+      "vosk_wakes": 1,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-jarvis-84ca490d-a3e2-4c0f-8490-674231f9140e",
+      "source_path": "audio/jarvis/84ca490d-a3e2-4c0f-8490-674231f9140e.wav",
+      "source_sha256": "3beabd6a570a280f770c01532d50aa4a151c28aa867a546185560ebd91a34c40",
+      "git_blob_sha1": "00db5c26b4083bb2b15323214d6f78de480473a6",
+      "pcm_sha256": "18997f6dd37ad084dfb5110346d75b3eea0df151d0ca6be453e2f1cf958631f6",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 0,
+      "combined_hits": [
+        {
+          "input_seconds": 1.95,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-e457f8f7-0ac6-47bf-bf73-baf9144ea904",
+      "source_path": "audio/jarvis/e457f8f7-0ac6-47bf-bf73-baf9144ea904.wav",
+      "source_sha256": "124abc4a009b0f2af84bce2c78c01625ffd44ed6756bbd6e7a7ea35bc4b1e5e4",
+      "git_blob_sha1": "016c15fc754e708ebe45833c9170a1f384a7db56",
+      "pcm_sha256": "45a666876539d61c0deda2a9853f0f77de6995eb2c07249ae190ba54c2563d6b",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 1.92,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-00c476c2-9e01-40df-96c8-a5153db5b157",
+      "source_path": "audio/jarvis/00c476c2-9e01-40df-96c8-a5153db5b157.wav",
+      "source_sha256": "910534aa9143eca3e27f84fae934a08037928078d42cf71baf54f24d0bce2192",
+      "git_blob_sha1": "0254cfb8321a9cd908e1beacd24d2cab3590ecd0",
+      "pcm_sha256": "6de4b8109e0fc006362b96d25d6b23dcae0baa1fe49e8a30dfc1d5e51375d4a9",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 2.13,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-843959b4-9a0b-4963-9ddc-9263c3eeca83",
+      "source_path": "audio/jarvis/843959b4-9a0b-4963-9ddc-9263c3eeca83.wav",
+      "source_sha256": "781430bf55b1bf729b78488e00f24b62c455c476807503de66d074ca85d6aa8a",
+      "git_blob_sha1": "03037c8b8a7828de4a5453a921cc6ed066b4e1a5",
+      "pcm_sha256": "647b7d04f1c9cac3c41f4c240bb648c1b37929634413cad24a633ec662fab19e",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 2.16,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-f9ad8c83-7192-4808-91d3-4576f19bac2b",
+      "source_path": "audio/jarvis/f9ad8c83-7192-4808-91d3-4576f19bac2b.wav",
+      "source_sha256": "2b7093c0af3dcdbbf61b97409840c278a718a67994a695f0a0486788f7c4a747",
+      "git_blob_sha1": "03b7c9670c4d6b0ba6618b3b6488fb7caab57db2",
+      "pcm_sha256": "c6b903b560aa50578507cb0692d73b43a64e11dc13a4483bcd11869a6506e4c2",
+      "expected_wakes": 1,
+      "combined_wakes": 0,
+      "vosk_wakes": 1,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-jarvis-ae71e9a3-1aef-40e6-85dc-4a090e5dd6a6",
+      "source_path": "audio/jarvis/ae71e9a3-1aef-40e6-85dc-4a090e5dd6a6.wav",
+      "source_sha256": "757bb56632ada9e71e176cf74470754e72b780874f3ba8d75528ce674691f6cb",
+      "git_blob_sha1": "03e6617d9ee5965eb3cacaee87d0e2ab858b237d",
+      "pcm_sha256": "6c0267223e4480c36046f8a55e1a3708afb25e8753ec92bbd503cec1bd02375e",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 2.13,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-7cd7a4a7-5d09-4463-b46f-c37dca0eac42",
+      "source_path": "audio/jarvis/7cd7a4a7-5d09-4463-b46f-c37dca0eac42.wav",
+      "source_sha256": "0a2abdabf0822ea55548d1ea133e79c44a4ff709d1789e7f285750ff809e299e",
+      "git_blob_sha1": "03f4ff3f913f416567f1a2e4792a8ec9fc507bdb",
+      "pcm_sha256": "efe242dd910b1f3b0b5fa94b36f104f67348bf845222b4721a5f80c8fe15a5a7",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 2.13,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-a6646431-9807-4c34-9874-72b2f789082b",
+      "source_path": "audio/jarvis/a6646431-9807-4c34-9874-72b2f789082b.wav",
+      "source_sha256": "3af4b733ac6b1b3f87195b8cdc7337b36e3a64049e5ba034402096a950d47a6a",
+      "git_blob_sha1": "04f27aae6ba2510c52f59099329bbb24fb6c4d59",
+      "pcm_sha256": "7f150428487eef896b2ea4b5e0c0ba0158542b86d6caf2a5a0ab99f4c1b32148",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 2.07,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-65232fc3-de23-40e1-81cf-fc9deb6c9354",
+      "source_path": "audio/jarvis/65232fc3-de23-40e1-81cf-fc9deb6c9354.wav",
+      "source_sha256": "dbb51f21437f35d7d8e0018b9fbbad86e8e2556ca02e1cc1c0f49b3577bcb669",
+      "git_blob_sha1": "05d7e575d42e9e0a95c7e7ec38ee5b28e6101c08",
+      "pcm_sha256": "12f91095aa3a75255d9bac2b690abaa3122c6d0d0cf172a9c4f3230a799b130c",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 2.04,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-41ff962d-7c3f-408b-9831-414571f3ee1d",
+      "source_path": "audio/jarvis/41ff962d-7c3f-408b-9831-414571f3ee1d.wav",
+      "source_sha256": "7b80297c10d700b5dd55ea1011a5566edbcc328c98c5d2d69c7eb695cee29cf9",
+      "git_blob_sha1": "0629cfcf4e83489f4b1a8ff79dbd3674f9c8ac05",
+      "pcm_sha256": "18bced846e8c7708dafdfed327e7fe590eb8edd2f7ebb0c5b16cdce945b3d708",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 2.28,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-bd5617e9-ea6c-44e2-8b5b-274328cf78eb",
+      "source_path": "audio/jarvis/bd5617e9-ea6c-44e2-8b5b-274328cf78eb.wav",
+      "source_sha256": "7ec1a76c32d7b4824dd54ba5cc9523be18041720df5b63f79bb20bfc7f0d95ff",
+      "git_blob_sha1": "0644a2ad4c26b767de033d801d6319dcb4863ca0",
+      "pcm_sha256": "20085f169c7580511a2c975a5a08813c760bf936df73ad456dc0c204c25ae23f",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 1.89,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-0f597704-ff80-4c39-9ef4-275d70461617",
+      "source_path": "audio/jarvis/0f597704-ff80-4c39-9ef4-275d70461617.wav",
+      "source_sha256": "b91847988748692ea1a5689c2a04d94e1e7f287ebd926c8dfea767f2a55e240b",
+      "git_blob_sha1": "06532110b7f1e34b04383a5d97fdade7a3024d7c",
+      "pcm_sha256": "548b4ce0d7da47208210a37c412d893e279373fb3bf116296169b60aa38a10a0",
+      "expected_wakes": 1,
+      "combined_wakes": 0,
+      "vosk_wakes": 1,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-jarvis-efad1334-a27d-4b96-b810-b65d801162d2",
+      "source_path": "audio/jarvis/efad1334-a27d-4b96-b810-b65d801162d2.wav",
+      "source_sha256": "94b2fe71e746caea66403815a5d7f05911accaab019535a6a6caf8e43f809fe6",
+      "git_blob_sha1": "06a40b600979f3810ed7e82705f2eeddca25db70",
+      "pcm_sha256": "eb7057bdf23ac8dd12681dd0fb7c5b17de8fb6a391b03a5a3ffb11725e6c2668",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 2.04,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-2a713afc-d208-4eab-9dc1-fcdd862d8db6",
+      "source_path": "audio/jarvis/2a713afc-d208-4eab-9dc1-fcdd862d8db6.wav",
+      "source_sha256": "a996d1ebc335d57003f7d03d302b7d4b01794bc10561a36e014472a69aaf764c",
+      "git_blob_sha1": "078f920d722d109104dd8551c45bc8df411f2ed2",
+      "pcm_sha256": "9a3e273ee26c83b1e4b73272d281d1aa42340a19be46ec046c7170a3c72e2fa7",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 2.25,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-49c9897b-862f-465b-8ed4-ad9520086254",
+      "source_path": "audio/jarvis/49c9897b-862f-465b-8ed4-ad9520086254.wav",
+      "source_sha256": "bca729fd5f63cd134ca217c73e7ab03c31717a89afc40f64c88b5cfb44205f70",
+      "git_blob_sha1": "086d5dc88d12b71e38b527b9c0d6ffcf335edc52",
+      "pcm_sha256": "cca3031dae0b0554789609fde0f7fc4bfd4f96e6f91c6fb8c416db9bbe6296ff",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 1.5899999999999999,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-24b24ac6-23b3-46ab-96e4-ff1dea6fc455",
+      "source_path": "audio/jarvis/24b24ac6-23b3-46ab-96e4-ff1dea6fc455.wav",
+      "source_sha256": "c139b417401cb25727dd0359b6647e9b17881d55f17dc00afe2a5ae29a8f1cd6",
+      "git_blob_sha1": "088988ebbc256c65981ecc879210e6a33e586b43",
+      "pcm_sha256": "50d15cc04b8d2ae469358a2b04508f87e29d3b645bd2a0a344ea4bec2ec1fec4",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 2.13,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-5f68b9f5-c528-45d5-985a-ef99bf2c8a71",
+      "source_path": "audio/jarvis/5f68b9f5-c528-45d5-985a-ef99bf2c8a71.wav",
+      "source_sha256": "2ad15762046695ef6d8f50e719e6c3adfdc86ef447a40603f200e6eb434d6bdd",
+      "git_blob_sha1": "08eb8509ce05a89e6d134be148ff4cd8ff2dcec7",
+      "pcm_sha256": "de53cba8ccf567bb2e9c10b9bbcdc483cfbcb3b4977fbdacd8108df52ec7bf83",
+      "expected_wakes": 1,
+      "combined_wakes": 0,
+      "vosk_wakes": 1,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-jarvis-850f34ba-43eb-417a-87f9-b5b8ee2d0257",
+      "source_path": "audio/jarvis/850f34ba-43eb-417a-87f9-b5b8ee2d0257.wav",
+      "source_sha256": "2acdec17cb7eabc380a8169a5bcff7ee5fae12b9b028814f5543d4d2066cfd28",
+      "git_blob_sha1": "090c193ee490afb176a9bd186bd721273a2cbdec",
+      "pcm_sha256": "aa8403156fef79345f5b6c818db937fff19e441ab70004a5cc00bc6934131c95",
+      "expected_wakes": 1,
+      "combined_wakes": 0,
+      "vosk_wakes": 1,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-jarvis-b4a040d8-a24e-474b-975c-ecca924aab76",
+      "source_path": "audio/jarvis/b4a040d8-a24e-474b-975c-ecca924aab76.wav",
+      "source_sha256": "afdd74f39a385d7cadaf261cdd51ac6ae17ac6ef03d04b100f6e90854bec3289",
+      "git_blob_sha1": "09a3ec23ed9404d86fb46e597b35b71ae69dd565",
+      "pcm_sha256": "3d850053caf22ee89daadd69cf247822eb9011b0b9adf47a86057be4272da04e",
+      "expected_wakes": 1,
+      "combined_wakes": 0,
+      "vosk_wakes": 1,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-jarvis-0eb17b69-7f9f-4db5-b68b-2c365cbdd660",
+      "source_path": "audio/jarvis/0eb17b69-7f9f-4db5-b68b-2c365cbdd660.wav",
+      "source_sha256": "6fd6fd20c1e53d9f08ad121607195be82f492489685ebe1fcdb023b0651a2d41",
+      "git_blob_sha1": "09e0fef7e272fe3d31b2c0fa7acef8e1d6a66daa",
+      "pcm_sha256": "dc521d3288f7401c96b4d38f28b64a428f3f98023a3877434db07bddf243fddf",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 2.19,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-be053510-7b5e-4f7b-b08a-83ae53d7a3d7",
+      "source_path": "audio/jarvis/be053510-7b5e-4f7b-b08a-83ae53d7a3d7.wav",
+      "source_sha256": "036b817ab67afd7642063f0cf31bf2b4a15a35192940242f05c308789dd141cf",
+      "git_blob_sha1": "0a7c299546b3c1ef9800a72094f38ec77d6b3570",
+      "pcm_sha256": "c5072bba942a50e24d8449e141a402ced7eb445e7b360d1b0d65900ea631ee50",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 2.04,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-e854d83d-6b3e-4fe8-b48c-32523d96993f",
+      "source_path": "audio/jarvis/e854d83d-6b3e-4fe8-b48c-32523d96993f.wav",
+      "source_sha256": "f2147d2b9186ae9bcc25cffd577126703ac4eca8ef2d9959c8d254c582a1ab42",
+      "git_blob_sha1": "0be2eb67765d6ae46bee2a514b4c81c6be8ad973",
+      "pcm_sha256": "47735c8eeb7116fb237f8434c1864d4d9fa24b03333a35320224f2bea0d85a87",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 2.04,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-00aba123-ae3a-4e0a-8603-9f7277b7d41f",
+      "source_path": "audio/jarvis/00aba123-ae3a-4e0a-8603-9f7277b7d41f.wav",
+      "source_sha256": "1a499c2589fb7bf1123eb6fb5c8ac8215aa3f0b11b97a651ce386d9fdd622345",
+      "git_blob_sha1": "0c3a6ff101087fd3034d5032680050aa387e70ae",
+      "pcm_sha256": "c14bef5cfb893d8739e2240af79056204bd01d6033d46e54b26e2f154c414212",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 1.92,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-2bbca6ab-6b8c-4b13-936e-35eafc69f9a0",
+      "source_path": "audio/jarvis/2bbca6ab-6b8c-4b13-936e-35eafc69f9a0.wav",
+      "source_sha256": "45e4fbb846c66a462399c3047972277d8b02529e1594ea9d3f8d5c417e322af7",
+      "git_blob_sha1": "0c5761f924e890384fd29beb0b5072d2acb37c7b",
+      "pcm_sha256": "288e1cad79d63faaed1cab7ebe44b6fe799b6e922148b514a80b663744af10fa",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 2.28,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-35bd060d-c07c-40cf-bbbc-dbce3febe4e6",
+      "source_path": "audio/jarvis/35bd060d-c07c-40cf-bbbc-dbce3febe4e6.wav",
+      "source_sha256": "774de35240b2c81b1ff310b88d98ca57ba35fa134dfe0d003d59d11cfdd4c22a",
+      "git_blob_sha1": "0c619c7059239efaaaea5d1b271fd37abfa78ab6",
+      "pcm_sha256": "2924acd8effb10ad5c43eda9a7c7c458ee1cd66634a6004df37b87ab092fcaf3",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 2.1,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-0e165e17-134f-4cee-9ec6-b43d1412d7d7",
+      "source_path": "audio/jarvis/0e165e17-134f-4cee-9ec6-b43d1412d7d7.wav",
+      "source_sha256": "df9cb7d32ed31430f98c8cd4a883704a4ec082de2ba9657019a6aa86f0cba3e2",
+      "git_blob_sha1": "0d4c4c26dcfd01c06169a3886909f973c1f1943a",
+      "pcm_sha256": "60b5d7afcb59727632a5065bf5d9396cd2f12ab8dd109430bb5fd84efa961017",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 2.2199999999999998,
+          "detector": "micro"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-b6871fee-d44b-49ab-82bc-138068bdefb2",
+      "source_path": "audio/jarvis/b6871fee-d44b-49ab-82bc-138068bdefb2.wav",
+      "source_sha256": "d6ac34997a833af1d080878f2e289d0bea2bac601cb6ea055eb004ec1f382d64",
+      "git_blob_sha1": "0e107032415289f8ea987a4af7fa3b7fbab17d9d",
+      "pcm_sha256": "5ff6dd21390035fb720c53bea20b3fd0ee02e61239122328dfd419b08a35e259",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 2.13,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-1998bdb7-706e-4bee-8085-e3a3a1162ce5",
+      "source_path": "audio/jarvis/1998bdb7-706e-4bee-8085-e3a3a1162ce5.wav",
+      "source_sha256": "11da6c2ba11960036ab49f2ffd46b2e7a319e66f5851a768784321be5836e7a3",
+      "git_blob_sha1": "0e27cd2065b3cdf31661c2603c7cb2f2a598109e",
+      "pcm_sha256": "7b64e3df5069cf3fb3a6e4d7c5e422fb1f935cafe8a1af7067b29c5d14659d2e",
+      "expected_wakes": 1,
+      "combined_wakes": 0,
+      "vosk_wakes": 1,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-jarvis-bfb24cbf-6073-4e3e-a3e1-ace1dfe0b27a",
+      "source_path": "audio/jarvis/bfb24cbf-6073-4e3e-a3e1-ace1dfe0b27a.wav",
+      "source_sha256": "7bafcbd6637bf91d2032f912663c368efa7a4cc102c7fb90d352f13e10a5b33a",
+      "git_blob_sha1": "0e400fcaae79bad99f75b57265faf04b619d7afe",
+      "pcm_sha256": "52450b96214e4ba7060c26d6c60e29cbe12e62dfef0aee6ca0a2aaee89e85e33",
+      "expected_wakes": 1,
+      "combined_wakes": 1,
+      "vosk_wakes": 1,
+      "combined_hits": [
+        {
+          "input_seconds": 1.92,
+          "detector": "pocketsphinx"
+        }
+      ]
+    },
+    {
+      "id": "picovoice-jarvis-4cd887a4-37c1-4d45-a361-587b23135894",
+      "source_path": "audio/jarvis/4cd887a4-37c1-4d45-a361-587b23135894.wav",
+      "source_sha256": "bd5ab24da60c0a5574345961a7ec852c5ea236497ab05e6e199a8684144247a1",
+      "git_blob_sha1": "0e6e0e1b58ba8e6f85a52674f56b116654f7e041",
+      "pcm_sha256": "bb41dcb63a5be86604ce19a09c7f66d2c05aa93cb08f1b2471f034c25ef0073d",
+      "expected_wakes": 1,
+      "combined_wakes": 0,
+      "vosk_wakes": 1,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-computer-85f29be8-b834-4aa5-9682-db294bd49dd9",
+      "source_path": "audio/computer/85f29be8-b834-4aa5-9682-db294bd49dd9.wav",
+      "source_sha256": "3577813abd6b4dd26fc86934000cfafeb07b49bddd927c79598a8cd0ae5057a7",
+      "git_blob_sha1": "007f32ab88aa5c1cc5666f4395d1a8a4c90db3fa",
+      "pcm_sha256": "9603f9ff98ae7999c31cb7eeca01a6fa9a1eca2eefd26936b1cd7c003e70f351",
+      "expected_wakes": 0,
+      "combined_wakes": 0,
+      "vosk_wakes": 0,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-computer-2a2d0bf3-dd08-450c-9d59-005526330d82",
+      "source_path": "audio/computer/2a2d0bf3-dd08-450c-9d59-005526330d82.wav",
+      "source_sha256": "deae5ec5b0e710651d0477c78785b1a3cf4006efb02bcfbc7961e50ec01a6dfc",
+      "git_blob_sha1": "00d2d85790135e8f3eb6f4ea4dde7760b88dde0c",
+      "pcm_sha256": "84308a26928b580364e8348ef6bf2c8c54e1697f9e3ce4022fa5822d48c2d58d",
+      "expected_wakes": 0,
+      "combined_wakes": 0,
+      "vosk_wakes": 0,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-computer-cdeb2ff5-4f25-48b5-8993-e930fd46625e",
+      "source_path": "audio/computer/cdeb2ff5-4f25-48b5-8993-e930fd46625e.wav",
+      "source_sha256": "b4e21d404ea88a34754bbbbcf818fec7dcd754729af302857ef64b25ddccf611",
+      "git_blob_sha1": "01daf5f6d7fa864b265f2460cb83bb0a7fcfc9b9",
+      "pcm_sha256": "1091b672d0709928d28f06302eb91a89b182c1bc11e417b42e200984c5cc206c",
+      "expected_wakes": 0,
+      "combined_wakes": 0,
+      "vosk_wakes": 0,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-computer-139e849f-e371-486b-ba16-bc0c1713689d",
+      "source_path": "audio/computer/139e849f-e371-486b-ba16-bc0c1713689d.wav",
+      "source_sha256": "438d6d1d83356b5c8d421af11067d042f38790e126ad3686c60bedec918161cd",
+      "git_blob_sha1": "02c0418f028e99acdc1979986f61d91ff6818cec",
+      "pcm_sha256": "4c5f040582b7dc5362def97d52e30baef28e83a75b42bf6db5f209e6f4b1b1b7",
+      "expected_wakes": 0,
+      "combined_wakes": 0,
+      "vosk_wakes": 0,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-smart-mirror-6691a120-c61a-4b74-8952-204ea90caff4",
+      "source_path": "audio/smart mirror/6691a120-c61a-4b74-8952-204ea90caff4.wav",
+      "source_sha256": "3ae778fb8026f47da334d88c89507989e62b0b53f1887bef066e1f546aac7c44",
+      "git_blob_sha1": "00171141706ab773dd7cc0c646b32ac6b7d18a54",
+      "pcm_sha256": "4f57f94759a9f3d55143024ff154c075a619edd8e2f944731f8898d6dd530418",
+      "expected_wakes": 0,
+      "combined_wakes": 0,
+      "vosk_wakes": 0,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-smart-mirror-a73dc4cc-0507-470f-bef6-382f6830cd49",
+      "source_path": "audio/smart mirror/a73dc4cc-0507-470f-bef6-382f6830cd49.wav",
+      "source_sha256": "5c848a679059c01b1efe28946ed497364654c50abedee8f1f905a32cfc36eda3",
+      "git_blob_sha1": "001ab9ffb02814fffaa463381d6eda69918cf192",
+      "pcm_sha256": "8b044c707a5db8c640bbb40fc93ec02a60f89c6437ce446256a29886110be253",
+      "expected_wakes": 0,
+      "combined_wakes": 0,
+      "vosk_wakes": 0,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-smart-mirror-0562ef94-cfa2-49c1-a30d-0d0b96e56f63",
+      "source_path": "audio/smart mirror/0562ef94-cfa2-49c1-a30d-0d0b96e56f63.wav",
+      "source_sha256": "5dfbdfe805b71160bb4a9c4ee19839560fa55a3146ae4fdf51b0d60cf22f66cb",
+      "git_blob_sha1": "01346a9cbd36b7fe488a5d344b33780fc9c0d2c9",
+      "pcm_sha256": "31abf53b2d24453f1585bc0257bbba0e5f734f2668a8fc42884e105c8e35173d",
+      "expected_wakes": 0,
+      "combined_wakes": 0,
+      "vosk_wakes": 0,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-smart-mirror-21823d64-5c3f-4d69-8328-03d211ad7bd7",
+      "source_path": "audio/smart mirror/21823d64-5c3f-4d69-8328-03d211ad7bd7.wav",
+      "source_sha256": "f06a8cc7bc7afeae4e984a01bbd3b487f04e53173e3af121a94fb5cdc9a255fb",
+      "git_blob_sha1": "02fa8b869d0f50b11532215655f22aab42eee8d8",
+      "pcm_sha256": "1149278aeff8f9716f68e17aab4c37537ab724445f5dc350769541fdd95c5534",
+      "expected_wakes": 0,
+      "combined_wakes": 0,
+      "vosk_wakes": 0,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-snowboy-48799c8d-b922-4408-8236-5e1fc8334bc3",
+      "source_path": "audio/snowboy/48799c8d-b922-4408-8236-5e1fc8334bc3.wav",
+      "source_sha256": "acb2589e16bb459a8d74fccfa33958d6dc5d359d34d5d0c71fb1d66220644bd6",
+      "git_blob_sha1": "0072ffcc3c719b50affac683122cf59e4144d4eb",
+      "pcm_sha256": "de64840f383e3ca24977e7ad5d9d5a47ef005d2fae3051c949b22eac3d8e3a68",
+      "expected_wakes": 0,
+      "combined_wakes": 0,
+      "vosk_wakes": 0,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-snowboy-3117be6d-be36-4808-960a-861aaa587132",
+      "source_path": "audio/snowboy/3117be6d-be36-4808-960a-861aaa587132.wav",
+      "source_sha256": "dac47a303e3ba339884ad02e93be4d77fbec4085375dddd442f192a65a7b7672",
+      "git_blob_sha1": "00b32ba948ea95349041214a34b6986b8b6f4d71",
+      "pcm_sha256": "dacaa7eeac0afebe5a12e340f1973331644d173561ed545e11ef77a1d310dbe5",
+      "expected_wakes": 0,
+      "combined_wakes": 0,
+      "vosk_wakes": 0,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-snowboy-71799098-16e3-441d-92e6-825a0ada1c5d",
+      "source_path": "audio/snowboy/71799098-16e3-441d-92e6-825a0ada1c5d.wav",
+      "source_sha256": "832f9b0846ecea1cd66634b9632acd5b0b79b4ba903c3dd0006b984ed02ec371",
+      "git_blob_sha1": "00d34f5f58835680a1dd19b4228ca33ab47837f9",
+      "pcm_sha256": "861e47b14c6ea9f56a54f8dcc59e9e0a8bebaca713726e7426cc7b22941f058c",
+      "expected_wakes": 0,
+      "combined_wakes": 0,
+      "vosk_wakes": 0,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-snowboy-4fe4ff1b-7123-465c-a0e4-d80ef8d0f3bd",
+      "source_path": "audio/snowboy/4fe4ff1b-7123-465c-a0e4-d80ef8d0f3bd.wav",
+      "source_sha256": "f2a8ae85dd84d10d8c519f4acd96d6315b868caf48703b0ef1bb7a23ea2b77f5",
+      "git_blob_sha1": "013f050e9deeb35aeaf99c21f9b3c29326dd537a",
+      "pcm_sha256": "5784d2202a8481ddd637622d139ebb91df4dc4e528ccc000dec1b91367bc565d",
+      "expected_wakes": 0,
+      "combined_wakes": 0,
+      "vosk_wakes": 0,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-view-glass-a8c28c7d-51e6-4d84-b048-1df7d6244f62",
+      "source_path": "audio/view glass/a8c28c7d-51e6-4d84-b048-1df7d6244f62.wav",
+      "source_sha256": "277851231aada8e7f9cde7c70a2de07f43849c43b9ff99a16646aa23734d6aaa",
+      "git_blob_sha1": "050bf45372c2bcd5347e1761a871d73577f09e34",
+      "pcm_sha256": "b7070ec8aa0d92105e5cc9557dc189aaa83ad5616af865226df8666d80cc3ad0",
+      "expected_wakes": 0,
+      "combined_wakes": 0,
+      "vosk_wakes": 0,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-view-glass-32ea1be1-6a04-47d4-b5aa-e455b83c6bc7",
+      "source_path": "audio/view glass/32ea1be1-6a04-47d4-b5aa-e455b83c6bc7.wav",
+      "source_sha256": "1e7d4d7dda8b7a645058e1e68d935251a47022646824dabcbd1f6ee98860acb3",
+      "git_blob_sha1": "08f5987793c38b4febe7eabcfe0a1ef1087745ef",
+      "pcm_sha256": "ad1a0260344c532a503e58c9d24812c54f69b4f9e4b5465c38be9215f2d7e9fb",
+      "expected_wakes": 0,
+      "combined_wakes": 0,
+      "vosk_wakes": 0,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-view-glass-372ff2cd-87eb-429b-9a2d-c817b1811794",
+      "source_path": "audio/view glass/372ff2cd-87eb-429b-9a2d-c817b1811794.wav",
+      "source_sha256": "649282adff4de2a9542a01032aa72fd57150d9032ea985823185874240b1cb7e",
+      "git_blob_sha1": "0c6904d3e21b6e95f2b9ce287a44a8184b2e0dfd",
+      "pcm_sha256": "789abce03008a3fe8f44279a619f0b96e982e8c7c21a4a0f102d07404aafa1bc",
+      "expected_wakes": 0,
+      "combined_wakes": 0,
+      "vosk_wakes": 0,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-view-glass-95cac816-0376-4b02-8c51-d988f035c8fd",
+      "source_path": "audio/view glass/95cac816-0376-4b02-8c51-d988f035c8fd.wav",
+      "source_sha256": "2e42192fb56358a1d30995d06c0a5f9d6dd38756b39930de90606a431edcc210",
+      "git_blob_sha1": "0c830cfe10916bef274c0335c4e877c9eecc696a",
+      "pcm_sha256": "753a5b3da826f42801ef2c62bd3cce848891611299d72c39cf2ffa6637ea9a6c",
+      "expected_wakes": 0,
+      "combined_wakes": 0,
+      "vosk_wakes": 0,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-alexa-318",
+      "source_path": "audio/alexa/318.flac",
+      "source_sha256": "4f58eddad12b31ce6723925989f5944b66af47c1e342bf17f3a4501de8fad771",
+      "git_blob_sha1": "0021b9bee84d44f105269e5b07facb61b66782a6",
+      "pcm_sha256": "1e167e2a6ed49849c0603e298a24df385fce2ffbe695f162d396278cd70b8a1c",
+      "expected_wakes": 0,
+      "combined_wakes": 0,
+      "vosk_wakes": 0,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-alexa-199",
+      "source_path": "audio/alexa/199.flac",
+      "source_sha256": "424d71946f89a8e95d95d18af39242395231cf5d0e036973be8beabec32bc203",
+      "git_blob_sha1": "01085f07ca1ff0eda1a142c0ce9a7948219e9b2e",
+      "pcm_sha256": "e8eebccc699bdc907845b708f0807f0b7ecf67c092ba7e18f3cc07983b87715a",
+      "expected_wakes": 0,
+      "combined_wakes": 0,
+      "vosk_wakes": 0,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-alexa-141",
+      "source_path": "audio/alexa/141.flac",
+      "source_sha256": "224e05818d728a9fbfdfbdef3f43b95d2833d7ae1d7fa612bf7a05086b30eb26",
+      "git_blob_sha1": "01fe3c6441128e53141670e8402cfadae66394c3",
+      "pcm_sha256": "5531b982ce9994c081b3432f0e6b285c75863e6441a7659460a50f33f05d899a",
+      "expected_wakes": 0,
+      "combined_wakes": 0,
+      "vosk_wakes": 0,
+      "combined_hits": []
+    },
+    {
+      "id": "picovoice-alexa-29",
+      "source_path": "audio/alexa/29.flac",
+      "source_sha256": "2838fb6318f7f0732bf49874c247cc836ea9e0b9741a0b45df00cc854a5afb8e",
+      "git_blob_sha1": "021b90433dc45bf80919417a6d04c8345cb076a7",
+      "pcm_sha256": "ba537c184adcf6eede45d429fa9c53edf207fa264d3cbab838d5cb055b21a8a3",
+      "expected_wakes": 0,
+      "combined_wakes": 0,
+      "vosk_wakes": 0,
+      "combined_hits": []
+    }
+  ],
+  "known_cases": [
+    {
+      "case": "user-tail-gain-1",
+      "expected_wakes_per_repetition": 1,
+      "actual_wakes": [
+        1,
+        1,
+        1
+      ],
+      "input_trigger_seconds": [
+        [
+          3.3899999999999997
+        ],
+        [
+          3.3899999999999997
+        ],
+        [
+          3.3899999999999997
+        ]
+      ]
+    },
+    {
+      "case": "user-tail-gain-0.5",
+      "expected_wakes_per_repetition": 1,
+      "actual_wakes": [
+        1,
+        1,
+        1
+      ],
+      "input_trigger_seconds": [
+        [
+          3.3899999999999997
+        ],
+        [
+          3.3899999999999997
+        ],
+        [
+          3.3899999999999997
+        ]
+      ]
+    },
+    {
+      "case": "user-tail-gain-0.1",
+      "expected_wakes_per_repetition": 1,
+      "actual_wakes": [
+        1,
+        1,
+        1
+      ],
+      "input_trigger_seconds": [
+        [
+          3.4499999999999997
+        ],
+        [
+          3.4499999999999997
+        ],
+        [
+          3.4499999999999997
+        ]
+      ]
+    },
+    {
+      "case": "public-hey-jarvis-1-gain-1",
+      "expected_wakes_per_repetition": 1,
+      "actual_wakes": [
+        1,
+        1,
+        1
+      ],
+      "input_trigger_seconds": [
+        [
+          1.41
+        ],
+        [
+          1.41
+        ],
+        [
+          1.41
+        ]
+      ]
+    },
+    {
+      "case": "public-hey-jarvis-1-gain-0.5",
+      "expected_wakes_per_repetition": 1,
+      "actual_wakes": [
+        1,
+        1,
+        1
+      ],
+      "input_trigger_seconds": [
+        [
+          1.41
+        ],
+        [
+          1.41
+        ],
+        [
+          1.41
+        ]
+      ]
+    },
+    {
+      "case": "public-hey-jarvis-1-gain-0.1",
+      "expected_wakes_per_repetition": 1,
+      "actual_wakes": [
+        1,
+        1,
+        1
+      ],
+      "input_trigger_seconds": [
+        [
+          1.44
+        ],
+        [
+          1.44
+        ],
+        [
+          1.44
+        ]
+      ]
+    },
+    {
+      "case": "public-hey-jarvis-2-gain-1",
+      "expected_wakes_per_repetition": 1,
+      "actual_wakes": [
+        1,
+        1,
+        1
+      ],
+      "input_trigger_seconds": [
+        [
+          1.53
+        ],
+        [
+          1.53
+        ],
+        [
+          1.53
+        ]
+      ]
+    },
+    {
+      "case": "public-hey-jarvis-2-gain-0.5",
+      "expected_wakes_per_repetition": 1,
+      "actual_wakes": [
+        1,
+        1,
+        1
+      ],
+      "input_trigger_seconds": [
+        [
+          1.56
+        ],
+        [
+          1.56
+        ],
+        [
+          1.56
+        ]
+      ]
+    },
+    {
+      "case": "public-hey-jarvis-2-gain-0.1",
+      "expected_wakes_per_repetition": 1,
+      "actual_wakes": [
+        1,
+        1,
+        1
+      ],
+      "input_trigger_seconds": [
+        [
+          1.56
+        ],
+        [
+          1.56
+        ],
+        [
+          1.56
+        ]
+      ]
+    },
+    {
+      "case": "public-hey-jarvis-3-gain-1",
+      "expected_wakes_per_repetition": 1,
+      "actual_wakes": [
+        1,
+        1,
+        1
+      ],
+      "input_trigger_seconds": [
+        [
+          0.9299999999999999
+        ],
+        [
+          0.9299999999999999
+        ],
+        [
+          0.9299999999999999
+        ]
+      ]
+    },
+    {
+      "case": "public-hey-jarvis-3-gain-0.5",
+      "expected_wakes_per_repetition": 1,
+      "actual_wakes": [
+        1,
+        1,
+        1
+      ],
+      "input_trigger_seconds": [
+        [
+          0.9299999999999999
+        ],
+        [
+          0.9299999999999999
+        ],
+        [
+          0.9299999999999999
+        ]
+      ]
+    },
+    {
+      "case": "public-hey-jarvis-3-gain-0.1",
+      "expected_wakes_per_repetition": 1,
+      "actual_wakes": [
+        1,
+        1,
+        1
+      ],
+      "input_trigger_seconds": [
+        [
+          0.9299999999999999
+        ],
+        [
+          0.9299999999999999
+        ],
+        [
+          0.9299999999999999
+        ]
+      ]
+    },
+    {
+      "case": "known-negative-0",
+      "expected_wakes_per_repetition": 0,
+      "actual_wakes": [
+        0,
+        0,
+        0
+      ],
+      "input_trigger_seconds": [
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "case": "known-negative-1",
+      "expected_wakes_per_repetition": 0,
+      "actual_wakes": [
+        0,
+        0,
+        0
+      ],
+      "input_trigger_seconds": [
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "case": "known-negative-2",
+      "expected_wakes_per_repetition": 0,
+      "actual_wakes": [
+        0,
+        0,
+        0
+      ],
+      "input_trigger_seconds": [
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "case": "known-negative-3",
+      "expected_wakes_per_repetition": 0,
+      "actual_wakes": [
+        0,
+        0,
+        0
+      ],
+      "input_trigger_seconds": [
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "case": "two-user-wakes",
+      "expected_wakes_per_repetition": 2,
+      "actual_wakes": [
+        2,
+        2,
+        2
+      ],
+      "input_trigger_seconds": [
+        [
+          3.3899999999999997,
+          10.379999999999999
+        ],
+        [
+          3.3899999999999997,
+          10.379999999999999
+        ],
+        [
+          3.3899999999999997,
+          10.379999999999999
+        ]
+      ]
+    },
+    {
+      "case": "three-public-wakes",
+      "expected_wakes_per_repetition": 3,
+      "actual_wakes": [
+        3,
+        3,
+        3
+      ],
+      "input_trigger_seconds": [
+        [
+          1.41,
+          5.46,
+          8.94
+        ],
+        [
+          1.41,
+          5.46,
+          8.94
+        ],
+        [
+          1.41,
+          5.46,
+          8.94
+        ]
+      ]
+    }
+  ],
+  "source": {
+    "repository": "https://github.com/Picovoice/wake-word-benchmark",
+    "commit": "84919190fb1891bf0936dcb577d9268e467f876f",
+    "selection_rule": "Before decoding, sort each keyword directory by pinned Git blob SHA1; select first 32 Jarvis positives and first 4 each of Alexa/computer/smart mirror/snowboy/view glass as Jarvis negatives, including FLAC. No new audio inspected or selected by recognition outcome.",
+    "unused_jarvis_recordings": 352,
+    "source_audio_seconds": 156.84,
+    "conversion": "ffmpeg to mono 16 kHz s16le, full source duration preserved; no trimming/gain/denoising.",
+    "ffmpeg_version": "ffmpeg version n9.0.2 Copyright (c) 2000-2026 the FFmpeg developers",
+    "sample_speaker_ids_known": false,
+    "pretrained_training_overlap_known": false
+  },
+  "private_evidence_sha256": {
+    "run.py": "dfe731759a5bb889803de22aa3e44254cb4ed750eb599794a8bed7980ebbd8e7",
+    "worker.py": "5bd83ef0e38ed428a33c2b2e3123dd10b374b56e01ff2c4f7b6fe712941e9a13",
+    "acquired.json": "f7f2888f59f6cf586d478e117d15dd516241554d28c3331ba4d0fedc893ff9ff",
+    "alexa-selection.json": "a834c5d203dc02a472f1f6bd6bb0cba94fe8d11e4bb12fe3ffea59f00c8d7fe3",
+    "protocol-before-reset-controls.json": "7d031b499efb67388e9c7c9ca2d11d0f1caa69167ccd5242bbbd224795c06fff",
+    "protocol.json": "713212774a104fcfef451f0fc815f38477d235b0b6c548b466ede25daf9f8338",
+    "results.json": "fccaea29702fdac814f3415c5e55de9c28b299e912e93c036cb8223914f15681",
+    "selection-initial-wav-only.json": "58ac9ff8e670fb24b2d2a398086c19cb69bc64e4f8a38d4f43f478766e2de4aa",
+    "selection.json": "8546845017233dde47c4d37c530624fb9bed4a5d497a2209de85816937648610"
+  },
+  "gates": {
+    "focused_known_controls": true,
+    "fresh_recognition": false,
+    "paired_recognition_nonregression": false,
+    "full_recognition": false,
+    "latency_nonregression": false,
+    "standby_cpu": false,
+    "combined_application_memory": false,
+    "full_soak": false,
+    "candidate_adopted": false
+  },
+  "decision": "Reject this combined candidate: eight paired wake regressions despite passing all familiar controls. Do not port, integrate or tune these settings to the observed failed recordings. Keep Vosk and the existing numerical targets pending any explicit user revision."
+}

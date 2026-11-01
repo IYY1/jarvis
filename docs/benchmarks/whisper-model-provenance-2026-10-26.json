@@ -1,0 +1,93 @@
+{
+  "source_documentation": "https://k2-fsa.github.io/sherpa/onnx/pretrained_models/whisper/export-onnx.html",
+  "models": {
+    "tiny.en": {
+      "repository": "csukuangfj/sherpa-onnx-whisper-tiny.en",
+      "revision": "d026532c022fa99fd789d6b32446a1df7b6bfc43",
+      "metadata_url": "https://huggingface.co/api/models/csukuangfj/sherpa-onnx-whisper-tiny.en?blobs=true",
+      "files": [
+        {
+          "file": "tiny.en-encoder.int8.onnx",
+          "bytes": 12937772,
+          "sha256": "0ce578b827c94a961aacb8fa14b02f096504b337e5c94be37c36238cbe3e8bc6",
+          "lfs_sha256_verified": true,
+          "url": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-tiny.en/resolve/d026532c022fa99fd789d6b32446a1df7b6bfc43/tiny.en-encoder.int8.onnx"
+        },
+        {
+          "file": "tiny.en-decoder.int8.onnx",
+          "bytes": 89853865,
+          "sha256": "06c0e6ff6348d427e51839219d1c886c18cfdf411e629e33f5e1679bff9c1527",
+          "lfs_sha256_verified": true,
+          "url": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-tiny.en/resolve/d026532c022fa99fd789d6b32446a1df7b6bfc43/tiny.en-decoder.int8.onnx"
+        },
+        {
+          "file": "tiny.en-tokens.txt",
+          "bytes": 835554,
+          "sha256": "306cd27f03c1a714eca7108e03d66b7dc042abe8c258b44c199a7ed9838dd930",
+          "lfs_sha256_verified": false,
+          "url": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-tiny.en/resolve/d026532c022fa99fd789d6b32446a1df7b6bfc43/tiny.en-tokens.txt"
+        }
+      ],
+      "encoder_metadata": {
+        "model_type": "whisper-tiny.en",
+        "version": "1",
+        "n_audio_state": "384",
+        "n_audio_head": "6",
+        "n_audio_layer": "4",
+        "n_text_state": "384",
+        "n_text_head": "6",
+        "n_text_layer": "4",
+        "n_mels": "80",
+        "n_vocab": "51864"
+      },
+      "wiring_signatures": {
+        "encoder": "0x7edb33ccb0a469c7",
+        "decoder": "0x64bf822aaa18d652"
+      }
+    },
+    "base.en": {
+      "repository": "csukuangfj/sherpa-onnx-whisper-base.en",
+      "revision": "59eea950fc76df2453efb57e6c0fd334548e8ffe",
+      "metadata_url": "https://huggingface.co/api/models/csukuangfj/sherpa-onnx-whisper-base.en?blobs=true",
+      "files": [
+        {
+          "file": "base.en-encoder.int8.onnx",
+          "bytes": 29120534,
+          "sha256": "ef6b936f4c9b1d90a3b68634b60c4ed8576b26172b33c2535ec0e933c9edb823",
+          "lfs_sha256_verified": true,
+          "url": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-base.en/resolve/59eea950fc76df2453efb57e6c0fd334548e8ffe/base.en-encoder.int8.onnx"
+        },
+        {
+          "file": "base.en-decoder.int8.onnx",
+          "bytes": 130669978,
+          "sha256": "f7162ad6db2dbef16cfaeaa7f945b9d7dd9c1b8d472f6aca82f2273d185e4d41",
+          "lfs_sha256_verified": true,
+          "url": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-base.en/resolve/59eea950fc76df2453efb57e6c0fd334548e8ffe/base.en-decoder.int8.onnx"
+        },
+        {
+          "file": "base.en-tokens.txt",
+          "bytes": 835554,
+          "sha256": "306cd27f03c1a714eca7108e03d66b7dc042abe8c258b44c199a7ed9838dd930",
+          "lfs_sha256_verified": false,
+          "url": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-base.en/resolve/59eea950fc76df2453efb57e6c0fd334548e8ffe/base.en-tokens.txt"
+        }
+      ],
+      "encoder_metadata": {
+        "model_type": "whisper-base.en",
+        "version": "1",
+        "n_audio_state": "512",
+        "n_audio_head": "8",
+        "n_audio_layer": "6",
+        "n_text_state": "512",
+        "n_text_head": "8",
+        "n_text_layer": "6",
+        "n_mels": "80",
+        "n_vocab": "51864"
+      },
+      "wiring_signatures": {
+        "encoder": "0xc58c688c93a6a591",
+        "decoder": "0x032a7dabc126532c"
+      }
+    }
+  }
+}

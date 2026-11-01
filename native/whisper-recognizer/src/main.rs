@@ -49,7 +49,7 @@ fn run() -> TractResult<()> {
         println!(concat!(
             "jarvis-whisper ",
             env!("CARGO_PKG_VERSION"),
-            "; Rust Whisper small.en / tract 0.23.9"
+            "; Rust Whisper tiny.en/base.en/small.en / tract 0.23.9"
         ));
         return Ok(());
     }
@@ -61,24 +61,43 @@ fn run() -> TractResult<()> {
     } else {
         8
     };
+    let model_name = if let Some(i) = args.iter().position(|a| a == "--model-name") {
+        ensure!(
+            i + 1 < args.len(),
+            "--model-name requires tiny.en, base.en or small.en"
+        );
+        let name = args.remove(i + 1);
+        args.remove(i);
+        name
+    } else {
+        "small.en".into()
+    };
+    ensure!(
+        ["tiny.en", "base.en", "small.en"].contains(&model_name.as_str()),
+        "Unsupported model name; use tiny.en, base.en or small.en"
+    );
     let batch = args.first().is_some_and(|a| a == "--batch");
     let diagnose = args.first().is_some_and(|a| a == "--diagnose");
     if batch || diagnose {
         args.remove(0);
     }
-    ensure!(if batch {args.len()==1} else if diagnose {args.len()==3} else {args.len()==2},"Use jarvis-whisper [--threads N] MODEL_DIR INPUT.s16le; --batch MODEL_DIR; or --diagnose MODEL_DIR INPUT.s16le NEW_TRACE_DIR");
+    ensure!(if batch {args.len()==1} else if diagnose {args.len()==3} else {args.len()==2},"Use jarvis-whisper [--threads N] [--model-name tiny.en|base.en|small.en] MODEL_DIR INPUT.s16le; --batch MODEL_DIR; or --diagnose MODEL_DIR INPUT.s16le NEW_TRACE_DIR");
     let root = Path::new(&args[0]);
     let start = Instant::now();
     let model = Recognizer::load(
-        root.join("small.en-encoder.int8.onnx"),
-        root.join("small.en-decoder.int8.onnx"),
-        root.join("small.en-tokens.txt"),
+        root.join(format!("{model_name}-encoder.int8.onnx")),
+        root.join(format!("{model_name}-decoder.int8.onnx")),
+        root.join(format!("{model_name}-tokens.txt")),
         threads,
     )?;
+    ensure!(
+        model.model_name() == model_name,
+        "Requested model name does not match its metadata"
+    );
     trim();
     println!(
         "{}",
-        json!({"event":"ready","implementation":"rust-tract-0.23.9","load_seconds":start.elapsed().as_secs_f64(),"memory":memory(),"embedding":{"storage":model.embedding_storage(),"bytes":model.embedding_bytes()}})
+        json!({"event":"ready","implementation":"rust-tract-0.23.9","model":model.model_name(),"load_seconds":start.elapsed().as_secs_f64(),"memory":memory(),"embedding":{"storage":model.embedding_storage(),"bytes":model.embedding_bytes()}})
     );
     let infer = |path: &str, trace: Option<&str>| -> TractResult<()> {
         let samples = pcm(path)?;

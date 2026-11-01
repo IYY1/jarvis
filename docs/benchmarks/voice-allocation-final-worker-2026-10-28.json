@@ -1,0 +1,48 @@
+{
+  "scope": "final close-enabled command grammar supplied identically to old/new voice workers; real Vosk/Whisper/GTCRN, fake paced microphone, no desktop actions; excludes controller/replay/UI",
+  "before": {
+    "worker": "rust",
+    "denoise": true,
+    "commands": [
+      "ten meters",
+      "ten meters",
+      "ten meters"
+    ],
+    "load_seconds": 0.20455511500040302,
+    "binary_sha256": "68bf94e93f9d6940ee572573f7731cace6492c2db100980c9b53d895f630d556",
+    "loaded_rss_mib": 153.109375,
+    "load_peak_rss_mib": 153.109375,
+    "final_rss_mib": 478.88671875,
+    "peak_rss_mib": 540.75390625,
+    "command_rss_mib": [
+      478.1953125,
+      478.640625,
+      478.88671875
+    ],
+    "cpu_seconds": 6.17,
+    "elapsed_seconds": 15.398949569000251
+  },
+  "after": {
+    "worker": "rust",
+    "denoise": true,
+    "commands": [
+      "ten meters",
+      "ten meters",
+      "ten meters"
+    ],
+    "load_seconds": 0.20511057399926358,
+    "binary_sha256": "3e3fef6b4565b727b66a05eb1221f75e38ddb7a49c62cf93b0dcccb1dc027476",
+    "loaded_rss_mib": 151.53515625,
+    "load_peak_rss_mib": 151.53515625,
+    "final_rss_mib": 474.54296875,
+    "peak_rss_mib": 538.3046875,
+    "command_rss_mib": [
+      473.95703125,
+      474.36328125,
+      474.54296875
+    ],
+    "cpu_seconds": 6.04,
+    "elapsed_seconds": 15.419546936002007
+  },
+  "commands_identical": true
+}

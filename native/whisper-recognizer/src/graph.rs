@@ -1,6 +1,7 @@
 //! Lower one decoder block into ordinary ONNX primitives for tract's Rust
 //! kernels. Cache ownership is in Rust; exported ScatterND/index-building
 //! subgraphs are replaced by bounded append-only per-command KV tensors.
+use crate::profile::Profile;
 use std::collections::HashMap;
 use tract_onnx::tract_core::internal::{ensure, format_err, DimLike};
 use tract_onnx::{pb, prelude::*};
@@ -11,6 +12,7 @@ pub struct Builder<'a> {
     directory: &'a str,
     weights: HashMap<&'a str, &'a pb::TensorProto>,
     count: usize,
+    profile: Profile,
 }
 fn value(name: &str) -> pb::ValueInfoProto {
     pb::ValueInfoProto {
@@ -42,7 +44,7 @@ fn attr_is(name: &str, ints: &[i64]) -> pb::AttributeProto {
     }
 }
 impl<'a> Builder<'a> {
-    pub fn new(source: &'a pb::GraphProto, directory: &'a str) -> Self {
+    pub fn new(source: &'a pb::GraphProto, directory: &'a str, profile: Profile) -> Self {
         Self {
             graph: Default::default(),
             source,
@@ -53,6 +55,7 @@ impl<'a> Builder<'a> {
                 .map(|t| (t.name.as_str(), t))
                 .collect(),
             count: 0,
+            profile,
         }
     }
     fn weight(&mut self, name: &str) -> TractResult<String> {
@@ -166,7 +169,7 @@ impl<'a> Builder<'a> {
         }
     }
     fn attention(&mut self, q: &str, k: &str, v: &str, mask: Option<&str>) -> String {
-        let shape = self.shape(&[1, -1, 12, 64]);
+        let shape = self.shape(&[1, -1, self.profile.heads as i64, 64]);
         let scale = self.constant_f32(64_f32.powf(-0.25));
         let q = self.op("Reshape", &[q, &shape], vec![]);
         let q = self.op("Transpose", &[&q], vec![attr_is("perm", &[0, 2, 1, 3])]);
@@ -189,7 +192,7 @@ impl<'a> Builder<'a> {
             &[&context],
             vec![attr_is("perm", &[0, 2, 1, 3])],
         );
-        let shape = self.shape(&[1, -1, 768]);
+        let shape = self.shape(&[1, -1, self.profile.state as i64]);
         self.op("Reshape", &[&context, &shape], vec![])
     }
     fn finish(
@@ -222,6 +225,7 @@ impl<'a> Builder<'a> {
         model.into_optimized()
     }
     pub fn block(mut self, index: usize) -> TractResult<TypedModel> {
+        let state = self.profile.state;
         let suffix = |i: usize| {
             if i == 0 {
                 String::new()
@@ -262,11 +266,17 @@ impl<'a> Builder<'a> {
         let t = scope.sym("T").to_dim();
         self.finish(
             &[
-                ("x", f32::fact([1.to_dim(), n.clone(), 768.to_dim()])),
-                ("old_k", f32::fact([1.to_dim(), p.clone(), 768.to_dim()])),
-                ("old_v", f32::fact([1.to_dim(), p.clone(), 768.to_dim()])),
-                ("cross_k", f32::fact([1.to_dim(), t.clone(), 768.to_dim()])),
-                ("cross_v", f32::fact([1.to_dim(), t.clone(), 768.to_dim()])),
+                ("x", f32::fact([1.to_dim(), n.clone(), state.to_dim()])),
+                ("old_k", f32::fact([1.to_dim(), p.clone(), state.to_dim()])),
+                ("old_v", f32::fact([1.to_dim(), p.clone(), state.to_dim()])),
+                (
+                    "cross_k",
+                    f32::fact([1.to_dim(), t.clone(), state.to_dim()]),
+                ),
+                (
+                    "cross_v",
+                    f32::fact([1.to_dim(), t.clone(), state.to_dim()]),
+                ),
                 (
                     "mask",
                     f32::fact([1.to_dim(), 1.to_dim(), n.clone(), p + n]),
@@ -277,9 +287,10 @@ impl<'a> Builder<'a> {
         )
     }
     pub fn final_norm(mut self) -> TractResult<TypedModel> {
+        let state = self.profile.state;
         let y = self.norm("x", "textDecoder.ln")?;
         self.finish(
-            &[("x", f32::fact([1, 1, 768]))],
+            &[("x", f32::fact([1, 1, state]))],
             &[y],
             SymbolScope::default(),
         )
@@ -305,15 +316,19 @@ pub fn clear_shapes(proto: &mut pb::ModelProto) -> TractResult<()> {
 }
 
 /// Return each layer's cross-attention cache directly. The exported graph
-/// concatenates all twelve layers only for its public interface; the decoder
+/// concatenates the decoder layers only for its public interface; the decoder
 /// immediately split/copied them again. Selecting the existing inputs avoids
 /// both operations, retaining the same tensor bytes and arithmetic.
-pub fn split_encoder_outputs(proto: &mut pb::ModelProto) -> TractResult<()> {
+pub fn split_encoder_outputs(proto: &mut pb::ModelProto, layers: usize) -> TractResult<()> {
     let graph = proto
         .graph
         .as_mut()
         .ok_or_else(|| format_err!("Missing graph"))?;
-    let mut outputs = Vec::with_capacity(24);
+    ensure!(
+        [4, 6, 12].contains(&layers),
+        "Unsupported Whisper layer count"
+    );
+    let mut outputs = Vec::with_capacity(layers * 2);
     for name in ["n_layer_cross_k", "n_layer_cross_v"] {
         let node = graph
             .node
@@ -322,7 +337,7 @@ pub fn split_encoder_outputs(proto: &mut pb::ModelProto) -> TractResult<()> {
             .ok_or_else(|| format_err!("Missing cross-cache output"))?;
         ensure!(
             node.op_type == "Concat"
-                && node.input.len() == 12
+                && node.input.len() == layers
                 && node.attribute.len() == 1
                 && node.attribute[0].name == "axis"
                 && node.attribute[0].r#type == 2
@@ -335,7 +350,7 @@ pub fn split_encoder_outputs(proto: &mut pb::ModelProto) -> TractResult<()> {
     Ok(())
 }
 
-/// Compatibility signature for the supported sherpa small.en export's wiring.
+/// Compatibility signature for a supported sherpa English int8 export's wiring.
 /// This is not a cryptographic integrity check and does not hash trained data.
 pub fn check_export(graph: &pb::GraphProto, expected: u64) -> TractResult<()> {
     let mut hash = 14_695_981_039_346_656_037_u64;
@@ -354,7 +369,7 @@ pub fn check_export(graph: &pb::GraphProto, expected: u64) -> TractResult<()> {
     }
     ensure!(
         hash == expected,
-        "Unsupported Whisper ONNX export wiring; expected the installed small.en int8 export"
+        "Unsupported Whisper ONNX export wiring for the selected English int8 profile"
     );
     Ok(())
 }
@@ -365,7 +380,11 @@ pub fn check_export(graph: &pb::GraphProto, expected: u64) -> TractResult<()> {
 /// expanded temporary immediately. This removes repeated conversions and the
 /// otherwise-retained duplicate un-packed MLP weights without changing math.
 pub fn fold_weight_sums(mut model: TypedModel) -> TractResult<TypedModel> {
-    use tract_onnx::tract_core::ops::{cast::Cast, konst::Const, nn::Reduce};
+    use tract_onnx::tract_core::ops::{
+        cast::Cast,
+        konst::Const,
+        nn::{Reduce, Reducer},
+    };
     let mut replacements = Vec::new();
     for node in model.nodes() {
         let Some(reduce) = node.op_as::<Reduce>() else {
@@ -395,8 +414,33 @@ pub fn fold_weight_sums(mut model: TypedModel) -> TractResult<TypedModel> {
         {
             continue;
         }
-        let expanded = weight.cast_to_dt(DatumType::I32)?;
-        let sum = reduce.reducer.reduce(&reduce.axes, &expanded)?;
+        let sum = if reduce.reducer == Reducer::Sum
+            && reduce.axes.as_slice() == [0]
+            && weight.rank() == 2
+            && weight.shape()[0] <= i32::MAX as usize / 128
+            && weight.shape()[1] != 0
+        {
+            // Compute quantization compensation directly from int8 rows.
+            // Expanding a 3072x768 matrix first needlessly allocates 9 MiB
+            // just to produce a 3 KiB column-sum tensor.
+            let columns = weight.shape()[1];
+            let mut sum = Tensor::zero::<i32>(&[1, columns])?;
+            let mut plain = sum.try_as_plain_ram_mut()?;
+            let sums = plain.as_slice_mut::<i32>()?;
+            for row in weight
+                .try_as_plain_ram()?
+                .as_slice::<i8>()?
+                .chunks_exact(columns)
+            {
+                for (sum, value) in sums.iter_mut().zip(row) {
+                    *sum += i32::from(*value);
+                }
+            }
+            sum
+        } else {
+            let expanded = weight.cast_to_dt(DatumType::I32)?;
+            reduce.reducer.reduce(&reduce.axes, &expanded)?
+        };
         replacements.push((node.id, sum));
     }
     for (id, value) in replacements {
@@ -416,63 +460,65 @@ mod tests {
     use super::*;
     #[test]
     fn separate_cross_caches_preserve_concatenated_bytes() -> TractResult<()> {
-        let mut graph = pb::GraphProto::default();
-        for (index, output) in ["n_layer_cross_k", "n_layer_cross_v"].iter().enumerate() {
-            let inputs: Vec<_> = (0..12)
-                .map(|layer| format!("cache_{index}_{layer}"))
-                .collect();
-            for (layer, name) in inputs.iter().enumerate() {
-                graph.initializer.push(pb::TensorProto {
-                    name: name.clone(),
-                    data_type: 1,
-                    dims: vec![1, 1, 3, 8],
-                    float_data: (0..24)
-                        .map(|i| (index * 288 + layer * 24 + i) as f32)
-                        .collect(),
+        for layers in [4, 6, 12] {
+            let mut graph = pb::GraphProto::default();
+            for (index, output) in ["n_layer_cross_k", "n_layer_cross_v"].iter().enumerate() {
+                let inputs: Vec<_> = (0..layers)
+                    .map(|layer| format!("cache_{index}_{layer}"))
+                    .collect();
+                for (layer, name) in inputs.iter().enumerate() {
+                    graph.initializer.push(pb::TensorProto {
+                        name: name.clone(),
+                        data_type: 1,
+                        dims: vec![1, 1, 3, 8],
+                        float_data: (0..24)
+                            .map(|i| (index * 288 + layer * 24 + i) as f32)
+                            .collect(),
+                        ..Default::default()
+                    });
+                }
+                graph.node.push(pb::NodeProto {
+                    name: output.to_string(),
+                    op_type: "Concat".into(),
+                    input: inputs,
+                    output: vec![output.to_string()],
+                    attribute: vec![attr_i("axis", 0)],
                     ..Default::default()
                 });
+                graph.output.push(value(output));
             }
-            graph.node.push(pb::NodeProto {
-                name: output.to_string(),
-                op_type: "Concat".into(),
-                input: inputs,
-                output: vec![output.to_string()],
-                attribute: vec![attr_i("axis", 0)],
+            let mut proto = pb::ModelProto {
+                ir_version: 8,
+                graph: Some(graph),
+                opset_import: vec![pb::OperatorSetIdProto {
+                    domain: String::new(),
+                    version: 13,
+                }],
                 ..Default::default()
-            });
-            graph.output.push(value(output));
+            };
+            let loader = tract_onnx::onnx();
+            let expected = loader
+                .model_for_proto_model(&proto)?
+                .into_optimized()?
+                .into_runnable()?
+                .run(tvec!())?;
+            split_encoder_outputs(&mut proto, layers)?;
+            let actual = loader
+                .model_for_proto_model(&proto)?
+                .into_optimized()?
+                .into_runnable()?
+                .run(tvec!())?;
+            assert_eq!(actual.len(), layers * 2);
+            for i in 0..2 {
+                let bytes: Vec<_> = actual[i * layers..(i + 1) * layers]
+                    .iter()
+                    .flat_map(|t| t.as_bytes().iter().copied())
+                    .collect();
+                assert_eq!(bytes, expected[i].as_bytes());
+            }
+            proto.graph.as_mut().unwrap().node[0].attribute[0].i = 1;
+            assert!(split_encoder_outputs(&mut proto, layers).is_err());
         }
-        let mut proto = pb::ModelProto {
-            ir_version: 8,
-            graph: Some(graph),
-            opset_import: vec![pb::OperatorSetIdProto {
-                domain: String::new(),
-                version: 13,
-            }],
-            ..Default::default()
-        };
-        let loader = tract_onnx::onnx();
-        let expected = loader
-            .model_for_proto_model(&proto)?
-            .into_optimized()?
-            .into_runnable()?
-            .run(tvec!())?;
-        split_encoder_outputs(&mut proto)?;
-        let actual = loader
-            .model_for_proto_model(&proto)?
-            .into_optimized()?
-            .into_runnable()?
-            .run(tvec!())?;
-        assert_eq!(actual.len(), 24);
-        for i in 0..2 {
-            let bytes: Vec<_> = actual[i * 12..(i + 1) * 12]
-                .iter()
-                .flat_map(|t| t.as_bytes().iter().copied())
-                .collect();
-            assert_eq!(bytes, expected[i].as_bytes());
-        }
-        proto.graph.as_mut().unwrap().node[0].attribute[0].i = 1;
-        assert!(split_encoder_outputs(&mut proto).is_err());
         Ok(())
     }
     #[test]

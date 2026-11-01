@@ -1,0 +1,431 @@
+{
+  "recorded_at": "2026-10-26T04:23:50.105515+00:00",
+  "scope": "paced real Rust worker with Whisper and GTCRN, fake capture, no microphone/actions; one before and three fresh after workers, three commands each; process memory samples omitted because this is a wake regression check",
+  "manifest": {
+    "config": {
+      "activation": {
+        "wake_phrase": "go forward"
+      },
+      "recognition": {
+        "accurate": true,
+        "noise_suppression": true
+      }
+    },
+    "custom_phrases": {
+      "ten meters": "start recording"
+    },
+    "cases": [
+      {
+        "name": "repeated-background-quiet-wake-without-noise",
+        "category": "background_wake",
+        "repeat": 3,
+        "segments": [
+          {
+            "pcm": "/home/silver/Projects/jarvis/build/refactor-review/goforward.raw"
+          },
+          {
+            "silence": 1.5
+          },
+          {
+            "pcm": "/home/silver/Projects/jarvis/build/refactor-review/goforward.raw",
+            "reverse": true
+          },
+          {
+            "silence": 3.5
+          }
+        ],
+        "expected_commands": [
+          "ten meters",
+          "ten meters",
+          "ten meters"
+        ],
+        "expected_wakes": 3
+      }
+    ]
+  },
+  "before": {
+    "binary_sha256": "efb0ea722974f58dee34e75611071174fb741c7f7337eab9a7fd1ad28c63a230",
+    "recorded_at": "2026-10-26T04:14:28.252987+00:00",
+    "missing_categories": [
+      "command",
+      "confusable",
+      "game_audio",
+      "music",
+      "recorded_command",
+      "unrelated_speech"
+    ],
+    "full_acceptance_passed": false,
+    "cases": [
+      {
+        "name": "repeated-background-quiet-wake-without-noise",
+        "category": "background_wake",
+        "clips": [
+          {
+            "sha256": "f15c60ec54059d8b66e410d0064945a0b0a04ea56e1ddca1958e493c0cf70e71",
+            "seconds": 2.78625,
+            "reversed": false
+          },
+          {
+            "sha256": "f15c60ec54059d8b66e410d0064945a0b0a04ea56e1ddca1958e493c0cf70e71",
+            "seconds": 2.78625,
+            "reversed": true
+          }
+        ],
+        "expected_commands": [
+          "ten meters",
+          "ten meters",
+          "ten meters"
+        ],
+        "actual_commands": [
+          "ten meters",
+          "ten meters"
+        ],
+        "expected_wakes": 3,
+        "actual_wakes": 2,
+        "false_actions": 0,
+        "extra_wakes": 0,
+        "passed": false,
+        "events": [
+          {
+            "event": "ready",
+            "listening": false,
+            "deadline": null,
+            "unsupported": [],
+            "engine": "vosk+whisper-small",
+            "worker": "rust"
+          },
+          {
+            "event": "wake",
+            "deadline": 46111.799780609
+          },
+          {
+            "kind": "command",
+            "text": "ten meters",
+            "confidence": 1.0,
+            "min_word_posterior": 1.0,
+            "heard": null,
+            "closest_match": false,
+            "event": "command",
+            "captured_at": 46103.799788134
+          },
+          {
+            "event": "wake",
+            "deadline": 46122.172600742
+          },
+          {
+            "kind": "command",
+            "text": "ten meters",
+            "confidence": 1.0,
+            "min_word_posterior": 1.0,
+            "heard": null,
+            "closest_match": false,
+            "event": "command",
+            "captured_at": 46114.172608216
+          }
+        ],
+        "error": null
+      }
+    ]
+  },
+  "after": [
+    {
+      "binary_sha256": "9fc6b9615d2a2aab17d78e296c05c8fa696a14d7eb6f500f986a760035d5d75a",
+      "recorded_at": "2026-10-26T04:18:13.125858+00:00",
+      "missing_categories": [
+        "command",
+        "confusable",
+        "game_audio",
+        "music",
+        "recorded_command",
+        "unrelated_speech"
+      ],
+      "full_acceptance_passed": false,
+      "cases": [
+        {
+          "name": "repeated-background-quiet-wake-without-noise",
+          "category": "background_wake",
+          "clips": [
+            {
+              "sha256": "f15c60ec54059d8b66e410d0064945a0b0a04ea56e1ddca1958e493c0cf70e71",
+              "seconds": 2.78625,
+              "reversed": false
+            },
+            {
+              "sha256": "f15c60ec54059d8b66e410d0064945a0b0a04ea56e1ddca1958e493c0cf70e71",
+              "seconds": 2.78625,
+              "reversed": true
+            }
+          ],
+          "expected_commands": [
+            "ten meters",
+            "ten meters",
+            "ten meters"
+          ],
+          "actual_commands": [
+            "ten meters",
+            "ten meters",
+            "ten meters"
+          ],
+          "expected_wakes": 3,
+          "actual_wakes": 3,
+          "false_actions": 0,
+          "extra_wakes": 0,
+          "passed": true,
+          "events": [
+            {
+              "event": "ready",
+              "listening": false,
+              "deadline": null,
+              "unsupported": [],
+              "engine": "vosk+whisper-small",
+              "worker": "rust"
+            },
+            {
+              "event": "wake",
+              "deadline": 46336.634654048
+            },
+            {
+              "kind": "command",
+              "text": "ten meters",
+              "confidence": 1.0,
+              "min_word_posterior": 1.0,
+              "heard": null,
+              "closest_match": false,
+              "event": "command",
+              "captured_at": 46328.634661181
+            },
+            {
+              "event": "wake",
+              "deadline": 46346.983419506
+            },
+            {
+              "kind": "command",
+              "text": "ten meters",
+              "confidence": 1.0,
+              "min_word_posterior": 1.0,
+              "heard": null,
+              "closest_match": false,
+              "event": "command",
+              "captured_at": 46338.983428413
+            },
+            {
+              "event": "wake",
+              "deadline": 46357.568301753
+            },
+            {
+              "kind": "command",
+              "text": "ten meters",
+              "confidence": 1.0,
+              "min_word_posterior": 1.0,
+              "heard": null,
+              "closest_match": false,
+              "event": "command",
+              "captured_at": 46349.568309417
+            }
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "binary_sha256": "9fc6b9615d2a2aab17d78e296c05c8fa696a14d7eb6f500f986a760035d5d75a",
+      "recorded_at": "2026-10-26T04:20:06.767247+00:00",
+      "missing_categories": [
+        "command",
+        "confusable",
+        "game_audio",
+        "music",
+        "recorded_command",
+        "unrelated_speech"
+      ],
+      "full_acceptance_passed": false,
+      "cases": [
+        {
+          "name": "repeated-background-quiet-wake-without-noise",
+          "category": "background_wake",
+          "clips": [
+            {
+              "sha256": "f15c60ec54059d8b66e410d0064945a0b0a04ea56e1ddca1958e493c0cf70e71",
+              "seconds": 2.78625,
+              "reversed": false
+            },
+            {
+              "sha256": "f15c60ec54059d8b66e410d0064945a0b0a04ea56e1ddca1958e493c0cf70e71",
+              "seconds": 2.78625,
+              "reversed": true
+            }
+          ],
+          "expected_commands": [
+            "ten meters",
+            "ten meters",
+            "ten meters"
+          ],
+          "actual_commands": [
+            "ten meters",
+            "ten meters",
+            "ten meters"
+          ],
+          "expected_wakes": 3,
+          "actual_wakes": 3,
+          "false_actions": 0,
+          "extra_wakes": 0,
+          "passed": true,
+          "events": [
+            {
+              "event": "ready",
+              "listening": false,
+              "deadline": null,
+              "unsupported": [],
+              "engine": "vosk+whisper-small",
+              "worker": "rust"
+            },
+            {
+              "event": "wake",
+              "deadline": 46450.310360327
+            },
+            {
+              "kind": "command",
+              "text": "ten meters",
+              "confidence": 1.0,
+              "min_word_posterior": 1.0,
+              "heard": null,
+              "closest_match": false,
+              "event": "command",
+              "captured_at": 46442.31036711
+            },
+            {
+              "event": "wake",
+              "deadline": 46460.652901839
+            },
+            {
+              "kind": "command",
+              "text": "ten meters",
+              "confidence": 1.0,
+              "min_word_posterior": 1.0,
+              "heard": null,
+              "closest_match": false,
+              "event": "command",
+              "captured_at": 46452.652909173
+            },
+            {
+              "event": "wake",
+              "deadline": 46471.234414478
+            },
+            {
+              "kind": "command",
+              "text": "ten meters",
+              "confidence": 1.0,
+              "min_word_posterior": 1.0,
+              "heard": null,
+              "closest_match": false,
+              "event": "command",
+              "captured_at": 46463.234422493
+            }
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "binary_sha256": "9fc6b9615d2a2aab17d78e296c05c8fa696a14d7eb6f500f986a760035d5d75a",
+      "recorded_at": "2026-10-26T04:20:50.789556+00:00",
+      "missing_categories": [
+        "command",
+        "confusable",
+        "game_audio",
+        "music",
+        "recorded_command",
+        "unrelated_speech"
+      ],
+      "full_acceptance_passed": false,
+      "cases": [
+        {
+          "name": "repeated-background-quiet-wake-without-noise",
+          "category": "background_wake",
+          "clips": [
+            {
+              "sha256": "f15c60ec54059d8b66e410d0064945a0b0a04ea56e1ddca1958e493c0cf70e71",
+              "seconds": 2.78625,
+              "reversed": false
+            },
+            {
+              "sha256": "f15c60ec54059d8b66e410d0064945a0b0a04ea56e1ddca1958e493c0cf70e71",
+              "seconds": 2.78625,
+              "reversed": true
+            }
+          ],
+          "expected_commands": [
+            "ten meters",
+            "ten meters",
+            "ten meters"
+          ],
+          "actual_commands": [
+            "ten meters",
+            "ten meters",
+            "ten meters"
+          ],
+          "expected_wakes": 3,
+          "actual_wakes": 3,
+          "false_actions": 0,
+          "extra_wakes": 0,
+          "passed": true,
+          "events": [
+            {
+              "event": "ready",
+              "listening": false,
+              "deadline": null,
+              "unsupported": [],
+              "engine": "vosk+whisper-small",
+              "worker": "rust"
+            },
+            {
+              "event": "wake",
+              "deadline": 46494.322926253
+            },
+            {
+              "kind": "command",
+              "text": "ten meters",
+              "confidence": 1.0,
+              "min_word_posterior": 1.0,
+              "heard": null,
+              "closest_match": false,
+              "event": "command",
+              "captured_at": 46486.322933396
+            },
+            {
+              "event": "wake",
+              "deadline": 46504.678461153
+            },
+            {
+              "kind": "command",
+              "text": "ten meters",
+              "confidence": 1.0,
+              "min_word_posterior": 1.0,
+              "heard": null,
+              "closest_match": false,
+              "event": "command",
+              "captured_at": 46496.678468136
+            },
+            {
+              "event": "wake",
+              "deadline": 46515.269370866
+            },
+            {
+              "kind": "command",
+              "text": "ten meters",
+              "confidence": 1.0,
+              "min_word_posterior": 1.0,
+              "heard": null,
+              "closest_match": false,
+              "event": "command",
+              "captured_at": 46507.269377569
+            }
+          ],
+          "error": null
+        }
+      ]
+    }
+  ],
+  "focused_regression_passed": true,
+  "full_acceptance_passed": false
+}

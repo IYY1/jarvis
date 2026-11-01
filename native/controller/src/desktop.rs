@@ -50,7 +50,7 @@ pub fn dispatch_args(action: &str, target: &Value) -> Result<(Vec<String>, Vec<S
                 ),
             )
         }
-        "focus_address" => {
+        "focus_address" | "close_address" => {
             let address = target.as_str().ok_or("Invalid window address")?;
             if !address
                 .strip_prefix("0x")
@@ -58,10 +58,17 @@ pub fn dispatch_args(action: &str, target: &Value) -> Result<(Vec<String>, Vec<S
             {
                 return err("Invalid window address");
             }
-            (
-                vec!["focuswindow".into(), format!("address:{address}")],
-                format!("hl.dsp.focus({{ window = \"address:{address}\" }})"),
-            )
+            if action == "close_address" {
+                (
+                    vec!["closewindow".into(), format!("address:{address}")],
+                    format!("hl.dsp.window.close({{ window = \"address:{address}\" }})"),
+                )
+            } else {
+                (
+                    vec!["focuswindow".into(), format!("address:{address}")],
+                    format!("hl.dsp.focus({{ window = \"address:{address}\" }})"),
+                )
+            }
         }
         _ => return err("Unsupported desktop action"),
     };

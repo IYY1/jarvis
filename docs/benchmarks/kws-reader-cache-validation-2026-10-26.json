@@ -1,0 +1,190 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-26T20:37:06.005332+00:00",
+  "scope": "Owned/cancellable child readers and allocator cache attribution in isolated probe",
+  "checks": {
+    "rust_default": {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "--manifest-path",
+        "native/kws-probe/Cargo.toml"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/reader-cache-validation/rust_default.log"
+    },
+    "rust_diagnostic": {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "--all-features",
+        "--manifest-path",
+        "native/kws-probe/Cargo.toml"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/reader-cache-validation/rust_diagnostic.log"
+    },
+    "format": {
+      "command": [
+        "cargo",
+        "fmt",
+        "--check",
+        "--manifest-path",
+        "native/kws-probe/Cargo.toml"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/reader-cache-validation/format.log"
+    },
+    "clippy": {
+      "command": [
+        "cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "--all-targets",
+        "--all-features",
+        "--manifest-path",
+        "native/kws-probe/Cargo.toml",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/reader-cache-validation/clippy.log"
+    },
+    "python_tests": {
+      "command": [
+        ".venv/bin/python",
+        "-m",
+        "unittest",
+        "tests.test_kws_probe",
+        "-v"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/reader-cache-validation/python_tests.log"
+    },
+    "python_compile": {
+      "command": [
+        ".venv/bin/python",
+        "-m",
+        "py_compile",
+        "scripts/benchmark_kws_reader_caches.py",
+        "scripts/benchmark_kws_continuous.py",
+        "scripts/benchmark_kws_pressure.py",
+        "tests/test_kws_probe.py"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/reader-cache-validation/python_compile.log"
+    },
+    "diff": {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/reader-cache-validation/diff.log"
+    },
+    "sdist": {
+      "command": [
+        ".venv/bin/python",
+        "-c",
+        "import setuptools.build_meta; setuptools.build_meta.build_sdist('build/memory-plan-kws/reader-cache-validation')"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/reader-cache-validation/sdist.log"
+    }
+  },
+  "complete": true,
+  "production_defaults_changed": false,
+  "real_capture_started": false,
+  "installed_service_restarted": false,
+  "full_python_suite_rerun": false,
+  "full_acoustic_acceptance": false,
+  "whole_application_acceptance": false,
+  "windows_acceptance": false,
+  "pressure_release_acceptance": false,
+  "full_duration_soak_acceptance": false,
+  "allocator_policy_adopted": false,
+  "enable_by_default": false,
+  "official_reference_urls": [
+    "https://sourceware.org/glibc/manual/latest/html_node/Memory-Allocation-Tunables.html",
+    "https://sourceware.org/glibc/manual/latest/html_node/POSIX-Thread-Tunables.html"
+  ],
+  "documentation_retrieval": "Official web fallback; connected Firecrawl returned insufficient credits",
+  "package_inclusion_and_target_exclusion": true,
+  "candidate_snapshot_verified": true,
+  "binary_sha256": {
+    "normal-jarvis-kws-probe": "df6d5df9c716c5f93ae2c02367546616b2d1d093f108965fc5be51a9aee331c2",
+    "normal-jarvis-kws-handoff-probe": "2f1843d9a6c0224219354c0b39364b9b08b553b33aabd972fad51f5fe3fa4791",
+    "allocation-jarvis-kws-probe": "3422f23742f3328637dc6cb2ee76041e143c8b06e57a77ee481fc4e9c90b659f",
+    "allocation-jarvis-kws-handoff-probe": "132fb2b719b9cf1ccb38121a2b1d91c5df0f9baeb72b1a8ca68b89baa497e884"
+  },
+  "source_sha256": {
+    "native/kws-probe/Cargo.toml": "fa942fdfd34edc52c9fd09da0c911ef7845a67456a26bf09a410288ccf6bf8ee",
+    "native/kws-probe/build.rs": "e7b498f427aebefa2431e913e8d4f6775b71f1b070d3b9c7cc2ddc6dcbf69f7d",
+    "native/kws-probe/shim.c": "3a9436845091f770cd77c61cf3aea920e641212337151da36c5bb57375e91b48",
+    "native/kws-probe/Cargo.lock": "15acd1ee12bebc87b023d18a74b426d56a4195cbd214345de75612c1146491da",
+    "native/kws-probe/src/main.rs": "b5df1eaca51310c8ae3fd9927209d1e95b813e85283fc33b83d96014e41caad5",
+    "native/kws-probe/src/gate.rs": "6b0669babfe1ea62346200d33e46413787fdfb2a07f574c627ca07a1c7989000",
+    "native/kws-probe/src/allocation.rs": "5c2dc32f08db730f90b8fe19e47079bc465ca2c8a1c766f9537a7c40d18e6283",
+    "native/kws-probe/vendor/c-api.h": "2a1b95084be8fd1deb3228fcad2fd3f7f0258b64582f7402281ec174c7b7f4ce",
+    "native/kws-probe/vendor/LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "native/kws-probe/vendor/README.md": "e9b5e996cbb2170769cf0eb96c400ad0cc7e4082e065bcb9c8ef4cf6b3c881ee",
+    "native/kws-probe/src/bin/jarvis-kws-handoff-probe.rs": "c45bb2ff9d2f4ed17f0b7175a03d65c02c112ade97d065a4ffbae68ca70312f5",
+    "native/kws-probe/src/bin/handoff/continuous.rs": "5df5ca48769736e98a0f4853f473f8c4ea11315245151bb3271f51a226b3fb6c",
+    "native/kws-probe/src/bin/handoff/reader.rs": "61e687a6e6c7a9014d74f7b276e1016cb085c6352e70d9998f80172cd91e93b2",
+    "scripts/benchmark_kws_reader_caches.py": "e1ac0dfd4fa0edcd89ea3118ade2c7cfd17ae94e01e6c44dce887839ff03efa7",
+    "scripts/benchmark_kws_continuous.py": "85c675b98b4a9e70e7b167cfccd0dc9719e86c8132a4da39330f29ecfb0224fa",
+    "scripts/benchmark_kws_pressure.py": "d7c9e11c08afefc60fa00a11771b85e76d97b09be0aecfe8de92845c4559f544",
+    "tests/test_kws_probe.py": "692f3e7ab15ae45e920a6f494040ab373c595bbbb5023279a9f2848f05bc1c5a"
+  },
+  "evidence_sha256": {
+    "kws-reader-caches-2026-10-26.json": "ae14094c18905c739be253183cbeaf353f69c6e4f2634322a84a08f517bb8686",
+    "kws-reader-continuous-2026-10-26.json": "5b80a4d94df35c023257c8f4304c7b129df219dec2c5587bde4322b59ef4107f",
+    "kws-reader-pressure-2026-10-26.json": "6e15e843f39512f26cd2b16c919cdd455284dc615c1b5418f00afa6147f2a13d"
+  },
+  "rust_default_unit_tests_passed": 15,
+  "rust_diagnostic_unit_tests_passed": 15,
+  "python_tests_passed": 9,
+  "python_tests_skipped": 0,
+  "new_reader_resource_tests": 3,
+  "detector_requests_per_arm": 128,
+  "detector_arms": 3,
+  "parent_cycles_per_arm": 8,
+  "parent_arms": 4,
+  "cache_control_exit_code": 0,
+  "continuous_controls_passed": 8,
+  "continuous_exit_code": 0,
+  "pressure_controls_passed": 3,
+  "pressure_harness_exit_code": 0,
+  "pressure_raw_probe_exit_codes": [
+    0,
+    1,
+    1
+  ],
+  "pressure_oom_kills": [
+    0,
+    1,
+    2
+  ],
+  "all_saved_buffers_reverified": 42,
+  "all_transient_units_collected": true,
+  "all_experiment_processes_exited": true,
+  "prior_timing_gate_pass": false,
+  "prior_rms_0_005_endpoint_gate_pass": false,
+  "prior_small_en_memory_gate_pass": false,
+  "native_allocation_leak_freedom_established": false,
+  "full_duration_plateau_established": false,
+  "documentation_sha256": {
+    "docs/kws-reader-caches.md": "6350ef6ed4c31f83528828ba16e83490a334d544e2b2ca37717d729e5be52872",
+    "docs/memory-plan-handoff.md": "6b8c0359f69f1014504de89abe0e6e301e49639996f872c84b223597c17d713f",
+    "docs/memory-plan.md": "b35bf19dfa1d76ceb78b2128065c5590e16adc9e2f21563ec25a54146a9e70b6",
+    "docs/kws-pressure-allocations.md": "f9400d13ef136b1cc10742c6da8c98650a2ce5629e17178d71968013d683a1a2",
+    "docs/README.md": "0fae6de7c947bac834d365fc8445ec2db6390cbfde90297bee11a3d76068512f"
+  }
+}

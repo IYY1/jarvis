@@ -95,12 +95,14 @@ class AppRegistry:
         self.apps: dict[str, App] = {}
         self.index: dict[str, list[App]] = {}
         self._scan()
+        self._register_fallbacks()
 
     def rescan(self) -> bool:
         """Re-read desktop entries (e.g. after installing an app). True if names changed."""
-        before = set(self.index)
+        before = (set(self.index), set(self.apps))
         self._scan()
-        return set(self.index) != before
+        self._register_fallbacks()
+        return (set(self.index), set(self.apps)) != before
 
     def _scan(self) -> None:
         apps: dict[str, App] = {}
@@ -148,8 +150,66 @@ class AppRegistry:
                 index[normalize(name)] = [apps[target]]
         self.apps, self.index = apps, index
 
+    def _register_fallbacks(self):
+        # Reserve unambiguous common-word names without adding unused names to
+        # the speech grammar. Only apps needing a fallback use it in commands.
+        from .commands import NUMBER_WORDS
+        used = set(self.index) | {normalize(name) for name in self.aliases}
+        self._fallbacks = {}
+        counter = 1
+        for identity in sorted(self.apps):
+            while True:
+                name = 'application ' + ' '.join(NUMBER_WORDS[int(d)] for d in str(counter))
+                counter += 1
+                if name not in used:
+                    break
+            used.add(name)
+            self._fallbacks[name] = identity
+
+    def voice_commands(self, parser):
+        names_by_app = None
+
+        def candidates(app):
+            nonlocal names_by_app
+            # Most apps resolve by display name. Build the reverse index only
+            # when an ambiguous or reserved name needs an alternative.
+            yield self._display(app)
+            if names_by_app is None:
+                names_by_app = {}
+                for name in sorted(self.index):
+                    for identity in {entry.id for entry in self.index[name]}:
+                        names_by_app.setdefault(identity, []).append(name)
+                for name, identity in self._fallbacks.items():
+                    names_by_app.setdefault(identity, []).append(name)
+            yield from names_by_app.pop(app.id, ())
+
+        result = []
+        for app in sorted(self.apps.values(), key=lambda a: (a.name.casefold(), a.id)):
+            seen = set()
+            for name in candidates(app):
+                if not name or name in seen:
+                    continue
+                seen.add(name)
+                try:
+                    intents = [parser.parse(f'{verb} {name}') for verb in ('open', 'close')]
+                    if any(intent.action != action or self.resolve(intent.target).id != app.id
+                           for intent, action in zip(intents, ('open_app', 'close_app'))):
+                        continue
+                except (ValueError, KeyError):
+                    continue
+                result.append({'category': 'Applications', 'title': app.name, 'app_id': app.id,
+                               'voice_name': name, 'examples': [f'open {name}', f'close {name}']})
+                break
+            else:
+                raise CommandError(f'Cannot assign open/close commands to {app.name}')
+            if names_by_app is not None:
+                names_by_app.pop(app.id, None)
+        return result
+
     def resolve(self, phrase: str) -> App:
         name = normalize(phrase)
+        if name in getattr(self, '_fallbacks', {}):
+            return self.apps[self._fallbacks[name]]
         for alias, target in self.aliases.items():
             if normalize(alias) == name:
                 if target not in self.apps:

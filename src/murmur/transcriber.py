@@ -16,7 +16,7 @@ from pathlib import Path
 from .models import ACCURATE_MODELS, DEFAULT_ACCURATE_MODEL, accurate_model_dir, accurate_model_ready, denoiser_path
 
 SAMPLE_RATE = 16000
-PADDING = [0.0] * (SAMPLE_RATE // 4)     # 250 ms of silence around the command
+PADDING = array.array("f", [0.0]) * (SAMPLE_RATE // 4)  # 250 ms around the command
 
 
 def default_threads() -> int:
@@ -81,14 +81,22 @@ class Transcriber:
         """16 kHz mono signed 16-bit PCM in, plain text out ("" if nothing)."""
         if len(pcm) < SAMPLE_RATE // 5 * 2:    # under 0.2 s
             return ""
-        samples = [value / 32768 for value in array.array("h", pcm[: len(pcm) - len(pcm) % 2])]
+        # Scaling signed 16-bit PCM by this power of two is exact in float32.
+        # Keep compact samples instead of allocating one Python float per sample.
+        raw = memoryview(pcm)[:len(pcm) - len(pcm) % 2].cast("h")
+        samples = array.array("f", (value / 32768 for value in raw))
+        del raw
         if self._denoiser is not None:
-            samples = list(self._denoiser(samples, SAMPLE_RATE).samples)
+            samples = array.array("f", self._denoiser(samples, SAMPLE_RATE).samples)
+        # Pad the owned buffer in place and release it before inference.
+        samples[:0] = PADDING
+        samples.extend(PADDING)
         stream = self._recognizer.create_stream()
-        stream.accept_waveform(SAMPLE_RATE, [*PADDING, *samples, *PADDING])
+        stream.accept_waveform(SAMPLE_RATE, samples)
+        del samples
         self._recognizer.decode_stream(stream)
         text = stream.result.text.strip()
-        del stream, samples
+        del stream
         if self._memory_efficient:
             release_unused_memory()
         return text

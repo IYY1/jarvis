@@ -24,16 +24,16 @@ DEFAULTS = {
                     "accurate": True, "noise_suppression": False},
     "privacy": {"onboarded": False},
     "aliases": {}, "commands": {}, "app_prefixes": {}, "startup": False,
-    "brightness": {"monitors": {}, "default": "", "step": 10},
     "recording": {"output_dir": "~/Videos/Murmur", "monitor": "", "system_audio": False,
                   "microphone": False, "audio_device": "", "fps": 30,
                   "codec": "libx264", "quality": 23, "rate_control": "quality",
                   "bitrate_mbps": 8, "quality_preset": "very_high", "encoder": "auto", "configured": False, "color_mode": "auto",
                   "combined_audio_source": False, "sound_feedback": False,
                   "vaapi_device": "/dev/dri/renderD128"},
-    # Instant replay keeps the last `seconds` in RAM (gpu-screen-recorder); off until started.
+    # Disk storage is an explicit privacy choice. RAM remains the default.
     # game_audio/microphone mix the default output and input into one track; sound chirps on save.
-    "replay": {"seconds": 120, "autostart": False, "game_audio": True, "microphone": True, "sound": True},
+    "replay": {"seconds": 120, "autostart": False, "game_audio": True, "microphone": True, "sound": True,
+               "storage": "ram", "max_mb": 256, "buffer_dir": ""},
 }
 # Sections that existed in earlier versions and are now ignored.
 LEGACY_SECTIONS: tuple[str, ...] = ()
@@ -165,6 +165,13 @@ def validate(data: dict) -> dict:
             raise ValueError(f"Invalid recording {key}")
     if type(c["replay"]["seconds"]) is not int or not 10 <= c["replay"]["seconds"] <= 600:
         raise ValueError("Replay length must be 10–600 seconds")
+    if c["replay"]["storage"] not in ("ram", "disk"):
+        raise ValueError("Replay storage must be ram or disk")
+    if type(c["replay"]["max_mb"]) is not int or not 64 <= c["replay"]["max_mb"] <= 16384:
+        raise ValueError("Replay budget must be 64–16384 MiB")
+    path = c["replay"]["buffer_dir"]
+    if not isinstance(path, str) or len(path) > 4096 or "\0" in path:
+        raise ValueError("Invalid replay buffer directory")
     if not all(isinstance(c["replay"][key], bool) for key in ("autostart", "game_audio", "microphone", "sound")):
         raise ValueError("Replay switches must be true or false")
     from .host import is_windows

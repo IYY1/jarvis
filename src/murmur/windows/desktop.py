@@ -84,6 +84,14 @@ class Desktop:
         import win32con
         import win32gui
 
+        if action == "close_address":
+            if type(target) is not int or target <= 0 or not win32gui.IsWindow(target):
+                raise CommandError("The application window is no longer available")
+            try:
+                win32gui.PostMessage(target, win32con.WM_CLOSE, 0, 0)
+            except OSError as exc:
+                raise CommandError("Windows refused to close this window") from exc
+            return
         if action == "focus_address":
             hwnd = target
             if not win32gui.IsWindow(hwnd):

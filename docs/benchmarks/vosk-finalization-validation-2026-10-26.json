@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-26T08:09:59.157096+00:00",
+  "scope": "Linux Rust Engine utterance-finalization experiment; explicit public PCM, local Vosk 0.3.45/Whisper small.en/GTCRN and fake capture only",
+  "binary_sha256": "e5694217bf66effc26b6c4c6500c9fa36b0ea3e934fe56c501262ff88d03b3be",
+  "measured_binary_matches_rebuilt_binary": true,
+  "production_default_enabled": false,
+  "production_fast_path_enabled": false,
+  "full_recognition_acceptance": false,
+  "whole_application_budget_acceptance": false,
+  "native_windows_acceptance": false,
+  "soak_acceptance": false,
+  "installed_service_restarted": false,
+  "checks": {
+    "offline_unittest": {
+      "total": 353,
+      "passed": 320,
+      "skipped": 33,
+      "failed": 0
+    },
+    "selected_voice_model_tests": {
+      "total": 53,
+      "passed": 53,
+      "skipped": 0,
+      "failed": 0
+    },
+    "rust_unit_tests": {
+      "voice_worker": 13,
+      "whisper": 18,
+      "denoiser": 2,
+      "failed": 0
+    },
+    "clippy_all_targets_deny_warnings": true,
+    "cargo_fmt_check": true,
+    "diff_check": true,
+    "mismatched_resume_rejected_without_changing_completed_artifact": true,
+    "probe_repetition_bounds_tested": true,
+    "normal_python_controller_omits_experimental_flags_tested": true
+  },
+  "performance_artifact": "vosk-finalization-2026-10-26.json",
+  "performance_gates": {
+    "fixture_commands_match": true,
+    "median_latency_nonregression": true,
+    "p95_latency_nonregression": true,
+    "full_recognition_acceptance": false,
+    "enable_by_default": false
+  },
+  "recognition_controls": {
+    "default": {
+      "artifact": "vosk-finalization-controls-default-2026-10-26.json",
+      "focused_controls_passed": true,
+      "cases": 5,
+      "false_actions": 0,
+      "extra_wakes": 0,
+      "missing_categories": [
+        "confusable",
+        "game_audio",
+        "music",
+        "recorded_command"
+      ],
+      "full_gate_passed": false,
+      "expected_runner_exit_code": 1
+    },
+    "finalize": {
+      "artifact": "vosk-finalization-controls-finalize-2026-10-26.json",
+      "focused_controls_passed": true,
+      "cases": 5,
+      "false_actions": 0,
+      "extra_wakes": 0,
+      "missing_categories": [
+        "confusable",
+        "game_audio",
+        "music",
+        "recorded_command"
+      ],
+      "full_gate_passed": false,
+      "expected_runner_exit_code": 1
+    }
+  }
+}

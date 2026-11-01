@@ -1,0 +1,177 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-26T19:59:00.516853+00:00",
+  "scope": "Isolated file-only Rust KWS continuation; full suite not rerun",
+  "checks": {
+    "rust_tests": {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "--manifest-path",
+        "native/kws-probe/Cargo.toml"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/continuous-validation/rust_tests.log"
+    },
+    "format": {
+      "command": [
+        "cargo",
+        "fmt",
+        "--check",
+        "--manifest-path",
+        "native/kws-probe/Cargo.toml"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/continuous-validation/format.log"
+    },
+    "clippy": {
+      "command": [
+        "cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "--all-targets",
+        "--manifest-path",
+        "native/kws-probe/Cargo.toml",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/continuous-validation/clippy.log"
+    },
+    "release": {
+      "command": [
+        "cargo",
+        "build",
+        "--release",
+        "--offline",
+        "--locked",
+        "--manifest-path",
+        "native/kws-probe/Cargo.toml"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/continuous-validation/release.log"
+    },
+    "python_tests": {
+      "command": [
+        ".venv/bin/python",
+        "-m",
+        "unittest",
+        "tests.test_kws_probe",
+        "-v"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/continuous-validation/python_tests.log"
+    },
+    "python_compile": {
+      "command": [
+        ".venv/bin/python",
+        "-m",
+        "py_compile",
+        "scripts/benchmark_kws_continuous.py",
+        "scripts/benchmark_kws_timing_diagnostic.py",
+        "scripts/benchmark_kws_floor_attribution.py",
+        "tests/test_kws_probe.py"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/continuous-validation/python_compile.log"
+    },
+    "diff": {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/continuous-validation/diff.log"
+    },
+    "sdist": {
+      "command": [
+        ".venv/bin/python",
+        "-c",
+        "import setuptools.build_meta; setuptools.build_meta.build_sdist('build/memory-plan-kws/continuous-validation')"
+      ],
+      "exit_code": 0,
+      "log": "build/memory-plan-kws/continuous-validation/sdist.log"
+    }
+  },
+  "full_python_suite_rerun": false,
+  "production_defaults_changed": false,
+  "real_capture_started": false,
+  "installed_service_restarted": false,
+  "whole_application_acceptance": false,
+  "full_acoustic_acceptance": false,
+  "windows_acceptance": false,
+  "full_duration_soak_acceptance": false,
+  "enable_by_default": false,
+  "source_package_inclusion_and_target_exclusion": true,
+  "candidate_snapshot_verified": true,
+  "binaries_sha256": {
+    "jarvis-kws-probe": "a233211113d7a5465b04589746f95f5673e6f7bf1343168bf750d40369ffd7de",
+    "jarvis-kws-handoff-probe": "9b2e4402b6ebb95b9e403127da98ff39d61e9b0355af4e5e6e3ad183177b74d2"
+  },
+  "source_sha256": {
+    "native/kws-probe/Cargo.toml": "0edf22bce37f6f63f6ab8a202faf9cb5c910e84d31302033c5096cae5b337ca4",
+    "native/kws-probe/build.rs": "e7b498f427aebefa2431e913e8d4f6775b71f1b070d3b9c7cc2ddc6dcbf69f7d",
+    "native/kws-probe/shim.c": "3a9436845091f770cd77c61cf3aea920e641212337151da36c5bb57375e91b48",
+    "native/kws-probe/Cargo.lock": "15acd1ee12bebc87b023d18a74b426d56a4195cbd214345de75612c1146491da",
+    "native/kws-probe/src/main.rs": "eab45020b65ed4ce3dd45d1374d37118c6bcf336b656aeb110e34b843a8e855d",
+    "native/kws-probe/src/gate.rs": "6b0669babfe1ea62346200d33e46413787fdfb2a07f574c627ca07a1c7989000",
+    "native/kws-probe/vendor/c-api.h": "2a1b95084be8fd1deb3228fcad2fd3f7f0258b64582f7402281ec174c7b7f4ce",
+    "native/kws-probe/vendor/LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "native/kws-probe/vendor/README.md": "e9b5e996cbb2170769cf0eb96c400ad0cc7e4082e065bcb9c8ef4cf6b3c881ee",
+    "native/kws-probe/src/bin/jarvis-kws-handoff-probe.rs": "a3e801892bb468a66978ca34d6fb3ec66ecb0a6fd68bf7f62a7e9cd36e6f2e57",
+    "native/kws-probe/src/bin/handoff/continuous.rs": "3d6da468c1f50a96205627db261a18fd94068460e28cab4f3c90e602f5e5735c",
+    "scripts/benchmark_kws_continuous.py": "bd6d4d8c4bfc33a5924d884ca7dddc7e8a928340ac35d42505743387db8d91ba",
+    "scripts/benchmark_kws_timing_diagnostic.py": "338721bf1c211e77983ebf6f23dbfe3e3d29c5014233758128cc67d6458630a5",
+    "scripts/benchmark_kws_floor_attribution.py": "cf582e4c395690f5231744fbebcbc0f9922ae166c61f504915c7ae52df2ac2a4",
+    "tests/test_kws_probe.py": "437d426340abb74cdf372bfc913b2e5ff65508ab67d3c33380338f58d5287d1b"
+  },
+  "evidence_sha256": {
+    "kws-continuous-2026-10-26.json": "355101577871fee60216caaf88da79e4dda45a72f70b8dcf9b9eab855db01856",
+    "kws-continuous-final-2026-10-26.json": "7d0b22c6eef97b3161684885f4a4a12c87dc65cac6dc8eb8cfa87d5a5580fea1",
+    "kws-timing-diagnostic-2026-10-26.json": "edf780870a12fec0ef8e7e73c1cd3622bf3dde3fa0c919d189f7fe2bce3c2ea4",
+    "kws-floor-attribution-2026-10-26.json": "6fad8c24d6838ed5c6dddadd4cb5ed83a8cf1f4b5406a44a30d6f9ba6c1c622c"
+  },
+  "rust_unit_tests_passed": 12,
+  "python_tests_passed": 8,
+  "python_tests_skipped": 0,
+  "continuous_controls_passed": 8,
+  "continuous_exit_code": 0,
+  "timing_diagnostic_exit_code": 1,
+  "timing_exit_reason": "Acoustic trigger timing regression in 18 fixed variants; expected failed gate",
+  "timing_summary": {
+    "variants": 36,
+    "source_recordings": 3,
+    "all_labels_identical": true,
+    "baseline_misses": 0,
+    "gated_misses": 0,
+    "later_variants": 18,
+    "trigger_delta_range_seconds": [
+      -0.27,
+      0.27
+    ],
+    "cropped_controls": 36,
+    "cropped_controls_reproduced": 36,
+    "timing_nonregression": false
+  },
+  "floor_attribution_exit_code": 0,
+  "floor_handoff_commands": 16,
+  "floor_detector_only_requests": 8,
+  "prior_rms_0_005_endpoint_gate_pass": false,
+  "prior_small_command_memory_gate_pass": false,
+  "floor_is_demonstrated_plateau": false,
+  "continuous_byte_identical_buffers_reverified": 7,
+  "all_experiment_processes_exited": true,
+  "complete": true,
+  "documentation_sha256": {
+    "docs/kws-continuous-diagnostics.md": "c7cae90a8044ea8b162c973a20e8ea9a4248c4673f7e8544a4be4695f498ed38",
+    "docs/memory-plan-handoff.md": "85c051656ef2b9d5906b0db67533fd17c1008f3beadb18148f5391af8098f2f2",
+    "docs/memory-plan.md": "07fbfd252ea8f54c298b214ef1924ce194917c6f8ca979d398cda8bd4f5fb461",
+    "docs/kws-handoff-cycles.md": "6f2eb0f7cac43d4da0d19a882a0555b0a982b6edd3b2c82033d78f209098dc00",
+    "docs/README.md": "e6af1e3bd11b4d738d9a99a4a9a738f0d1b54a89e0f9d388d493132948f12206"
+  }
+}

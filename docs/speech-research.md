@@ -18,6 +18,11 @@ ONNX allocation and thread-pool tuning reduce idle memory and CPU work
 without replacing the recognizer. See [performance](performance.md) and
 [memory/background verification](memory-background.md) for measured limits.
 
+The [smaller-model experiments](whisper-model-experiments.md) add explicit
+Rust file-based tiny.en/base.en profiles for measurement. The installed model
+catalog still selects small.en. Tiny matched the available fixture comparison;
+base has an open reference discrepancy, and neither is a default-model change.
+
 ## Reproducible public fixture
 
 The fixture used for allocator/thread comparisons is the upstream PocketSphinx
@@ -36,3 +41,7 @@ perturbations test resource use and transcript equivalence; they do not prove
 accuracy across speakers, accents or background dialogue. The earlier synthetic
 voice comparison is retained in [development history](history/development-notes.md#accurate-recognition-upgrade-october-2026).
 Initial backend research is in [the historical record](history/speech-research-2026-10-20.md).
+
+The [configurable keyword-spotter experiment](kws-experiment.md) measures an
+isolated Rust probe backed by native sherpa-onnx/ONNX Runtime. It has not
+changed the default wake path or established acoustic quality for Jarvis.

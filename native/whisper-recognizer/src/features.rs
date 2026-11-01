@@ -68,12 +68,14 @@ impl Features {
             "Expected 256–160000 audio samples"
         );
         ensure!(samples.iter().all(|x| x.is_finite()), "Non-finite audio");
-        let mut padded = vec![0.0; 4000];
-        padded.extend_from_slice(samples);
-        padded.resize(padded.len() + 4000, 0.0);
-        let frames = (padded.len() + HOP / 2) / HOP;
+        // Read the reference's silence padding virtually, and write directly
+        // into the inference tensor instead of keeping two full mel buffers.
+        let padded_len = samples.len() + 8000;
+        let frames = (padded_len + HOP / 2) / HOP;
         let total = frames + 1000;
-        let mut mel = vec![0.0_f32; MELS * total];
+        let mut tensor = Tensor::zero::<f32>(&[1, MELS, total])?;
+        let mut plain = tensor.try_as_plain_ram_mut()?;
+        let mel = plain.as_slice_mut::<f32>()?;
         let mut window = vec![Complex32::default(); FFT];
         let mut scratch = vec![Complex32::default(); self.fft.get_inplace_scratch_len()];
         let mut power = [0.0; FFT / 2 + 1];
@@ -85,10 +87,15 @@ impl Features {
                 if index < 0 {
                     index = -index - 1;
                 }
-                if index >= padded.len() as isize {
-                    index = 2 * padded.len() as isize - 1 - index;
+                if index >= padded_len as isize {
+                    index = 2 * padded_len as isize - 1 - index;
                 }
-                *sample = Complex32::new(padded[index as usize] * self.window[i], 0.0);
+                let value = (index as usize)
+                    .checked_sub(4000)
+                    .and_then(|i| samples.get(i))
+                    .copied()
+                    .unwrap_or(0.0);
+                *sample = Complex32::new(value * self.window[i], 0.0);
             }
             self.fft.process_with_scratch(&mut window, &mut scratch);
             for (p, c) in power.iter_mut().zip(&window) {
@@ -106,7 +113,7 @@ impl Features {
                 *value = (value.max(maximum - 8.0) + 4.0) / 4.0;
             }
         }
-        Ok((Tensor::from_shape(&[1, MELS, total], &mel)?, frames))
+        Ok((tensor, frames))
     }
 }
 

@@ -1,0 +1,1584 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-26T02:51:09.065837+00:00",
+  "platform": "linux",
+  "scenario": "waiting-replay-off",
+  "settings": "closed",
+  "complete": true,
+  "scope": "isolated real Rust controller, Vosk/Whisper/GTCRN worker in wake mode, Python fake capture playing silence; fake desktop backend; replay off; settings closed; not a live PipeWire or 8 GB hardware baseline",
+  "controller_sha256": "7cc9286e6195bbb855c9667971dd4b7c34fb5fc40eece8b3bd972a2671ef251a",
+  "worker_sha256": "efb0ea722974f58dee34e75611071174fb741c7f7337eab9a7fd1ad28c63a230",
+  "summary_bytes": {
+    "rss_bytes": {
+      "peak": 185430016,
+      "median": 185430016
+    },
+    "pss_bytes": {
+      "peak": 162053120,
+      "median": 162053120
+    }
+  },
+  "status_memory": {
+    "schema_version": 1,
+    "platform": "linux",
+    "roots": [
+      1401052
+    ],
+    "scope": "explicit roots and descendants; add separately launched settings as a root",
+    "processes": [
+      {
+        "pid": 1401052,
+        "ppid": 1401050,
+        "name": "jarvis-controll",
+        "rss_bytes": 6995968,
+        "pss_bytes": 4584448
+      },
+      {
+        "pid": 1401053,
+        "ppid": 1401052,
+        "name": "jarvis-voice",
+        "rss_bytes": 165982208,
+        "pss_bytes": 151395328
+      },
+      {
+        "pid": 1401603,
+        "ppid": 1401053,
+        "name": "pw-record",
+        "rss_bytes": 12447744,
+        "pss_bytes": 6069248
+      }
+    ],
+    "totals": {
+      "rss_bytes": 185425920,
+      "pss_bytes": 162049024
+    },
+    "complete": true
+  },
+  "samples": [
+    {
+      "elapsed_seconds": 0.0,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 0.264,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 0.527,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 0.79,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 1.053,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 1.315,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 1.578,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 1.84,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 2.104,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 2.367,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 2.63,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 2.893,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 3.157,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 3.421,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 3.684,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 3.948,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 4.212,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 4.476,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 4.739,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 5.002,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 5.265,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 5.528,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 5.79,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 6.053,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 6.317,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 6.581,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 6.844,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 7.107,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 7.37,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 7.633,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165986304,
+            "pss_bytes": 151399424
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185430016,
+          "pss_bytes": 162053120
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 7.896,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165982208,
+            "pss_bytes": 151395328
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185425920,
+          "pss_bytes": 162049024
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 8.16,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165982208,
+            "pss_bytes": 151395328
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185425920,
+          "pss_bytes": 162049024
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 8.422,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165982208,
+            "pss_bytes": 151395328
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185425920,
+          "pss_bytes": 162049024
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 8.686,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165982208,
+            "pss_bytes": 151395328
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185425920,
+          "pss_bytes": 162049024
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 8.95,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165982208,
+            "pss_bytes": 151395328
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185425920,
+          "pss_bytes": 162049024
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 9.215,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165982208,
+            "pss_bytes": 151395328
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185425920,
+          "pss_bytes": 162049024
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 9.48,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165982208,
+            "pss_bytes": 151395328
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185425920,
+          "pss_bytes": 162049024
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 9.743,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165982208,
+            "pss_bytes": 151395328
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185425920,
+          "pss_bytes": 162049024
+        },
+        "complete": true
+      }
+    },
+    {
+      "elapsed_seconds": 10.0,
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          1401052
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 1401052,
+            "ppid": 1401050,
+            "name": "jarvis-controll",
+            "rss_bytes": 6995968,
+            "pss_bytes": 4584448
+          },
+          {
+            "pid": 1401053,
+            "ppid": 1401052,
+            "name": "jarvis-voice",
+            "rss_bytes": 165982208,
+            "pss_bytes": 151395328
+          },
+          {
+            "pid": 1401603,
+            "ppid": 1401053,
+            "name": "pw-record",
+            "rss_bytes": 12447744,
+            "pss_bytes": 6069248
+          }
+        ],
+        "totals": {
+          "rss_bytes": 185425920,
+          "pss_bytes": 162049024
+        },
+        "complete": true
+      }
+    }
+  ],
+  "budget": {
+    "rss_limit_mib": 150,
+    "within_target": false
+  }
+}

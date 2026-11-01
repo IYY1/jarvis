@@ -7,6 +7,84 @@ phrase, versus 469 MiB with Whisper kept loaded; see
 [on-demand Whisper](whisper-on-demand.md). The dated comparisons below
 retain their original scope and baselines.
 
+## Catalog and temporary-buffer refactor (2026-10-30)
+
+Application command catalogs now try each display name before looking up its
+alternatives. If needed, a temporary reverse index replaces repeated scans of
+every alias and fallback. Candidate priority and open/close resolution stay
+unchanged; no additional cache survives the call.
+
+Python transcription now stores PCM and denoiser output in compact float32
+arrays, pads the owned buffer in place, and releases it before decoding. PCM
+scaling is exact for every signed 16-bit value; native denoiser float32 values
+also round-trip unchanged. The worker releases source JSON and grammar
+scaffolding after constructing its decoders, and shares immutable phrase sets.
+Python fuzzy matching filters candidates while iterating instead of copying
+the full dictionary twice. Rust matching reuses a temporary row and work stack.
+
+Fresh sequential Python processes compared `a8a0a8a5` with this refactor, using
+three process pairs for each synthetic workload. The table reports medians;
+allocation peaks exclude fixture setup and do not measure native model memory.
+
+| Workload | Before | After |
+| --- | ---: | ---: |
+| 100-app catalog, wall time | 6.23 ms | 1.70 ms |
+| 1,000-app catalog, wall time | 383.43 ms | 16.83 ms |
+
+Output digests matched in every pair. Audio preparation uses a fake Whisper
+stream; grammar retention uses fake Vosk decoders that retain only grammar
+hashes. Allocation counters exclude native model memory and fixture setup.
+
+| Python RAM workload | Before | After |
+| --- | ---: | ---: |
+| One-second audio staging, peak Python bytes | 712,984 | 102,484 |
+| Ten-second audio staging, peak Python bytes | 6,635,544 | 714,484 |
+| Fuzzy command matching, peak Python bytes | 17,028 | 5,426 |
+| 128-app grammar scaffolding, retained Python bytes | 760,870 | 475,806 |
+| 2,048-app grammar scaffolding, retained Python bytes | 4,594,682 | 2,581,816 |
+
+The larger grammar includes 256 custom launch words and eight monitor names;
+its compiled decoder grammar hashes and 12,747 matching candidates are unchanged.
+Audio waveform hashes matched for one- and ten-second inputs with GTCRN off/on,
+and installed Whisper produced the same synthetic-input transcripts. A separate
+real-GTCRN comparison against the preceding in-place-list pass reduced ten-second
+staging peaks from 11,523,728 to 6,424,040 Python bytes. Compact buffers trade
+some preparation speed for RAM: ten-second staging rose from 5.56 to 8.02 ms
+without denoising. The GTCRN sample measured 296.45 to 315.90 ms. These small
+samples exclude Whisper decoding and do not establish complete command latency.
+
+The isolated Rust matching recurrence allocated far less temporary storage
+across repeated comparisons (51.36 MB to 0.27 MB cumulatively). Its temporary
+peak increased from 344 to 592 bytes because it reuses capacity within a pass.
+Complete `--match` timing and RSS measurements did **not** establish an
+improvement; JSON parsing and candidate construction are included there.
+Neither benchmark establishes a reduction in whole-app RSS or speech latency.
+[Raw measurements and scope](benchmarks/code-refactor-2026-10-30.json).
+
+A separate native cast-buffer experiment was rejected: although its tensors
+matched, denoising peak RSS rose from 405.26 to 419.16 MiB and the full worker
+from 538.27 to 551.43 MiB. That implementation is absent from this change.
+
+Regression coverage checks all 65,536 signed PCM values, denoiser float32
+preservation, release before decoding, grammar ownership, command resolution,
+and Python/Rust policy parity. The Rust recurrence matched an independent
+reference for 16,384 input pairs, including repeated characters and Unicode.
+The final model-backed suite passed 384 Python tests with 14 optional/platform
+skips and no failures, selecting the rebuilt Rust worker. All 16 Rust worker
+tests and Clippy with warnings denied also passed.
+
+Reproduce catalog and one-second preparation measurements with the current
+benchmark script, supplying either checkout's Python source directory:
+
+```sh
+.venv/bin/python scripts/benchmark_refactor.py --source /path/to/checkout/src --case app_catalog_1000
+.venv/bin/python scripts/benchmark_refactor.py --source /path/to/checkout/src --case transcribe_input
+.venv/bin/python scripts/benchmark_refactor.py --source /path/to/checkout/src --case transcribe_input_10s
+.venv/bin/python scripts/benchmark_refactor.py --source /path/to/checkout/src --case match_fuzzy
+```
+
+## Completed code review
+
 Measured locally on 2026-10-21, AMD Ryzen 7 7800X3D, 16 logical CPUs,
 Python 3.14.8. Voice recognition uses Vosk plus int8 Whisper small.en,
 eight inference threads and CPU execution. The GTK client is separate.
@@ -14,8 +92,6 @@ eight inference threads and CPU execution. The GTK client is separate.
 CPU percentages below use **one logical CPU = 100%**. Divide by 16 for this
 machine's total CPU capacity. RSS sums can count shared pages more than once;
 PSS apportions shared pages. Short samples are engineering observations.
-
-## Completed code review
 
 Claude's final review compared the original `f6713aa` tree with `0b19217` on
 2026-10-21. A fake microphone replayed the public `goforward.raw` recording and

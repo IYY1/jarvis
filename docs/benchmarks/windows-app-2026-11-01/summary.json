@@ -1,0 +1,260 @@
+{
+  "groups": {
+    "baseline": 3,
+    "release": 3
+  },
+  "metrics": {
+    "Cold start to service ready (s)": {
+      "baseline": {
+        "median": 0.496,
+        "runs": [
+          0.3644080700000103,
+          0.6007605299998886,
+          0.49622983000017484
+        ]
+      },
+      "release": {
+        "median": 0.641,
+        "runs": [
+          0.6673247999999603,
+          0.6406330899999375,
+          0.4060160200001519
+        ]
+      }
+    },
+    "Cold start to listening (s)": {
+      "baseline": {
+        "median": 2.353,
+        "runs": [
+          2.3149249899999944,
+          2.7110885800000233,
+          2.3533427700003813
+        ]
+      },
+      "release": {
+        "median": 1.224,
+        "runs": [
+          1.2403463099999499,
+          1.223888160000115,
+          0.9018047900003694
+        ]
+      }
+    },
+    "Settled idle, private working set (MiB)": {
+      "baseline": {
+        "median": 599.02,
+        "runs": [
+          598.67,
+          599.02,
+          599.56
+        ]
+      },
+      "release": {
+        "median": 165.21,
+        "runs": [
+          165.41,
+          165.21,
+          165.11
+        ]
+      }
+    },
+    "Settled idle, private commit (MiB)": {
+      "baseline": {
+        "median": 1003.63,
+        "runs": [
+          1003.63,
+          875.73,
+          1004.51
+        ]
+      },
+      "release": {
+        "median": 565.5,
+        "runs": [
+          565.5,
+          565.29,
+          693.21
+        ]
+      }
+    },
+    "During commands, median private WS (MiB)": {
+      "baseline": {
+        "median": 619.3,
+        "runs": [
+          618.86,
+          619.3,
+          619.87
+        ]
+      },
+      "release": {
+        "median": 487.27,
+        "runs": [
+          487.27,
+          487.79,
+          486.87
+        ]
+      }
+    },
+    "Peak private working set (MiB)": {
+      "baseline": {
+        "median": 776.5,
+        "runs": [
+          776.5,
+          779.18,
+          772.22
+        ]
+      },
+      "release": {
+        "median": 532.81,
+        "runs": [
+          532.74,
+          533.08,
+          532.81
+        ]
+      }
+    },
+    "Peak private commit (MiB)": {
+      "baseline": {
+        "median": 1188.55,
+        "runs": [
+          1188.55,
+          1058.23,
+          1188.91
+        ]
+      },
+      "release": {
+        "median": 935.01,
+        "runs": [
+          935.01,
+          934.53,
+          1062.12
+        ]
+      }
+    },
+    "First 60 s idle after commands, private WS (MiB)": {
+      "baseline": {
+        "median": 620.64,
+        "runs": [
+          594.26,
+          620.64,
+          621.12
+        ]
+      },
+      "release": {
+        "median": 487.97,
+        "runs": [
+          487.97,
+          489.68,
+          466.28
+        ]
+      }
+    },
+    "After 5 min idle, private working set (MiB)": {
+      "baseline": {
+        "median": 620.63,
+        "runs": [
+          602.04,
+          620.63,
+          621.11
+        ]
+      },
+      "release": {
+        "median": 175.72,
+        "runs": [
+          189.83,
+          172.98,
+          175.72
+        ]
+      }
+    },
+    "After 5 min idle, private commit (MiB)": {
+      "baseline": {
+        "median": 1025.36,
+        "runs": [
+          1025.36,
+          898.57,
+          1026.36
+        ]
+      },
+      "release": {
+        "median": 592.57,
+        "runs": [
+          592.57,
+          590.52,
+          718.17
+        ]
+      }
+    },
+    "Settings window, private working set (MiB)": {
+      "baseline": {
+        "median": 19.08,
+        "runs": [
+          19.08,
+          19.13,
+          19.04
+        ]
+      },
+      "release": {
+        "median": 18.93,
+        "runs": [
+          18.93,
+          18.75,
+          19.04
+        ]
+      }
+    },
+    "Command latency, median (s)": {
+      "baseline": {
+        "median": 0.532,
+        "runs": [
+          0.5035000000000001,
+          0.5714999999999999,
+          0.5325
+        ]
+      },
+      "release": {
+        "median": 0.862,
+        "runs": [
+          0.862,
+          0.8585,
+          0.8815
+        ]
+      }
+    },
+    "Command latency, max (s)": {
+      "baseline": {
+        "median": 1.165,
+        "runs": [
+          1.165,
+          1.245,
+          1.132
+        ]
+      },
+      "release": {
+        "median": 1.515,
+        "runs": [
+          1.482,
+          1.525,
+          1.515
+        ]
+      }
+    },
+    "Commands dispatched": {
+      "baseline": {
+        "median": 10,
+        "runs": [
+          10,
+          10,
+          10
+        ]
+      },
+      "release": {
+        "median": 10,
+        "runs": [
+          10,
+          10,
+          10
+        ]
+      }
+    }
+  }
+}

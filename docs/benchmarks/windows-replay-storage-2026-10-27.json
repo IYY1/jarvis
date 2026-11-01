@@ -1,0 +1,4061 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-27T12:26:48.738141+00:00",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "scope": "Compare fresh RAM/disk segment stores using one supplied one-second video.\n\nNo capture, voice models or desktop service. Segments have distinct byte objects\nin RAM, as they do after pipe delivery. This measures the Windows buffer classes\non the host OS, including the Rust helper; it is not a Windows/gameplay result.\n",
+  "history_seconds": 120,
+  "segments_appended": 180,
+  "max_mib": 256,
+  "fixture_sha256": "866953a2cd62fd0b78b4fea1491eec09d1a819a645e11fd9a6618bd874b7ea68",
+  "helper_sha256": "f6eafaedb66cad8c946ae16f1b97b182f0c25d9bfee1a125777d103f517f142e",
+  "runs": [
+    {
+      "mode": "ram",
+      "append_seconds": 0.2889,
+      "segment_bytes": 2057107,
+      "written_payload_bytes": 0,
+      "retained_payload_bytes": 246852840,
+      "samples": [
+        {
+          "phase": "empty",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              8088
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 8088,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 10575872,
+                "commit_bytes": 12120064
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 10575872,
+              "commit_bytes": 12120064
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 10,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              8088
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 8088,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 33292288,
+                "commit_bytes": 34942976
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 33292288,
+              "commit_bytes": 34942976
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 20,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              8088
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 8088,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 53964800,
+                "commit_bytes": 55701504
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 53964800,
+              "commit_bytes": 55701504
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 30,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              8088
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 8088,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 74637312,
+                "commit_bytes": 77393920
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 74637312,
+              "commit_bytes": 77393920
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 40,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              8088
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 8088,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 95346688,
+                "commit_bytes": 98250752
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 95346688,
+              "commit_bytes": 98250752
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 50,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              8088
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 8088,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 115982336,
+                "commit_bytes": 118472704
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 115982336,
+              "commit_bytes": 118472704
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 60,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              8088
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 8088,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 136654848,
+                "commit_bytes": 139120640
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136654848,
+              "commit_bytes": 139120640
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 70,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              8088
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 8088,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 157323264,
+                "commit_bytes": 159764480
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 157323264,
+              "commit_bytes": 159764480
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 80,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              8088
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 8088,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 177999872,
+                "commit_bytes": 180408320
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 177999872,
+              "commit_bytes": 180408320
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 90,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              8088
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 8088,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 198668288,
+                "commit_bytes": 201056256
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 198668288,
+              "commit_bytes": 201056256
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 100,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              8088
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 8088,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 219340800,
+                "commit_bytes": 221708288
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 219340800,
+              "commit_bytes": 221708288
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 110,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              8088
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 8088,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 240078848,
+                "commit_bytes": 243159040
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 240078848,
+              "commit_bytes": 243159040
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 120,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              8088
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 8088,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260788224,
+                "commit_bytes": 263061504
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260788224,
+              "commit_bytes": 263061504
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 130,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              8088
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 8088,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260792320,
+                "commit_bytes": 263106560
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260792320,
+              "commit_bytes": 263106560
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 140,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              8088
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 8088,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260792320,
+                "commit_bytes": 263098368
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260792320,
+              "commit_bytes": 263098368
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 150,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              8088
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 8088,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260792320,
+                "commit_bytes": 263098368
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260792320,
+              "commit_bytes": 263098368
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 160,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              8088
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 8088,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260792320,
+                "commit_bytes": 263102464
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260792320,
+              "commit_bytes": 263102464
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 170,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              8088
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 8088,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260792320,
+                "commit_bytes": 263102464
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260792320,
+              "commit_bytes": 263102464
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 180,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              8088
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 8088,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260796416,
+                "commit_bytes": 263110656
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260796416,
+              "commit_bytes": 263110656
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "retained",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              8088
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 8088,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260804608,
+                "commit_bytes": 263110656
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260804608,
+              "commit_bytes": 263110656
+            },
+            "complete": true
+          }
+        }
+      ],
+      "sampled_peak_bytes": {
+        "private_working_set_bytes": 260804608,
+        "commit_bytes": 263110656
+      },
+      "repeat": 1
+    },
+    {
+      "mode": "disk",
+      "append_seconds": 2.1565,
+      "segment_bytes": 2057107,
+      "written_payload_bytes": 370279260,
+      "retained_payload_bytes": 246852840,
+      "samples": [
+        {
+          "phase": "empty",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2840
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2840,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 12599296,
+                "commit_bytes": 14561280
+              },
+              {
+                "pid": 4532,
+                "ppid": 2840,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 458752,
+                "commit_bytes": 778240
+              },
+              {
+                "pid": 5408,
+                "ppid": 4532,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 19025920,
+              "commit_bytes": 21905408
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 10,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2840
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2840,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14696448,
+                "commit_bytes": 16625664
+              },
+              {
+                "pid": 4532,
+                "ppid": 2840,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 503808,
+                "commit_bytes": 839680
+              },
+              {
+                "pid": 5408,
+                "ppid": 4532,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21168128,
+              "commit_bytes": 24031232
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 20,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2840
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2840,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14733312,
+                "commit_bytes": 16625664
+              },
+              {
+                "pid": 4532,
+                "ppid": 2840,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 507904,
+                "commit_bytes": 839680
+              },
+              {
+                "pid": 5408,
+                "ppid": 4532,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21209088,
+              "commit_bytes": 24031232
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 30,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2840
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2840,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14766080,
+                "commit_bytes": 16625664
+              },
+              {
+                "pid": 4532,
+                "ppid": 2840,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 507904,
+                "commit_bytes": 839680
+              },
+              {
+                "pid": 5408,
+                "ppid": 4532,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21241856,
+              "commit_bytes": 24031232
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 40,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2840
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2840,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14811136,
+                "commit_bytes": 16625664
+              },
+              {
+                "pid": 4532,
+                "ppid": 2840,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 516096,
+                "commit_bytes": 847872
+              },
+              {
+                "pid": 5408,
+                "ppid": 4532,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21295104,
+              "commit_bytes": 24039424
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 50,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2840
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2840,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14843904,
+                "commit_bytes": 16625664
+              },
+              {
+                "pid": 4532,
+                "ppid": 2840,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 606208,
+                "commit_bytes": 929792
+              },
+              {
+                "pid": 5408,
+                "ppid": 4532,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21417984,
+              "commit_bytes": 24121344
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 60,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2840
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2840,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14848000,
+                "commit_bytes": 16625664
+              },
+              {
+                "pid": 4532,
+                "ppid": 2840,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 610304,
+                "commit_bytes": 929792
+              },
+              {
+                "pid": 5408,
+                "ppid": 4532,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21426176,
+              "commit_bytes": 24121344
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 70,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2840
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2840,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14848000,
+                "commit_bytes": 16625664
+              },
+              {
+                "pid": 4532,
+                "ppid": 2840,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 610304,
+                "commit_bytes": 929792
+              },
+              {
+                "pid": 5408,
+                "ppid": 4532,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21426176,
+              "commit_bytes": 24121344
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 80,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2840
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2840,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14848000,
+                "commit_bytes": 16625664
+              },
+              {
+                "pid": 4532,
+                "ppid": 2840,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 610304,
+                "commit_bytes": 929792
+              },
+              {
+                "pid": 5408,
+                "ppid": 4532,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21426176,
+              "commit_bytes": 24121344
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 90,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2840
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2840,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14856192,
+                "commit_bytes": 16625664
+              },
+              {
+                "pid": 4532,
+                "ppid": 2840,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 622592,
+                "commit_bytes": 942080
+              },
+              {
+                "pid": 5408,
+                "ppid": 4532,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21446656,
+              "commit_bytes": 24133632
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 100,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2840
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2840,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14868480,
+                "commit_bytes": 16625664
+              },
+              {
+                "pid": 4532,
+                "ppid": 2840,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 622592,
+                "commit_bytes": 942080
+              },
+              {
+                "pid": 5408,
+                "ppid": 4532,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21458944,
+              "commit_bytes": 24133632
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 110,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2840
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2840,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14893056,
+                "commit_bytes": 16625664
+              },
+              {
+                "pid": 4532,
+                "ppid": 2840,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 622592,
+                "commit_bytes": 942080
+              },
+              {
+                "pid": 5408,
+                "ppid": 4532,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21483520,
+              "commit_bytes": 24133632
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 120,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2840
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2840,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14925824,
+                "commit_bytes": 16625664
+              },
+              {
+                "pid": 4532,
+                "ppid": 2840,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 622592,
+                "commit_bytes": 942080
+              },
+              {
+                "pid": 5408,
+                "ppid": 4532,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21516288,
+              "commit_bytes": 24133632
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 130,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2840
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2840,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14958592,
+                "commit_bytes": 17678336
+              },
+              {
+                "pid": 4532,
+                "ppid": 2840,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 638976,
+                "commit_bytes": 962560
+              },
+              {
+                "pid": 5408,
+                "ppid": 4532,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21565440,
+              "commit_bytes": 25206784
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 140,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2840
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2840,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14999552,
+                "commit_bytes": 17678336
+              },
+              {
+                "pid": 4532,
+                "ppid": 2840,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 638976,
+                "commit_bytes": 962560
+              },
+              {
+                "pid": 5408,
+                "ppid": 4532,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21606400,
+              "commit_bytes": 25206784
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 150,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2840
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2840,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 15015936,
+                "commit_bytes": 17678336
+              },
+              {
+                "pid": 4532,
+                "ppid": 2840,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 638976,
+                "commit_bytes": 962560
+              },
+              {
+                "pid": 5408,
+                "ppid": 4532,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21622784,
+              "commit_bytes": 25206784
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 160,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2840
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2840,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 15015936,
+                "commit_bytes": 17678336
+              },
+              {
+                "pid": 4532,
+                "ppid": 2840,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 638976,
+                "commit_bytes": 962560
+              },
+              {
+                "pid": 5408,
+                "ppid": 4532,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21622784,
+              "commit_bytes": 25206784
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 170,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2840
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2840,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 15015936,
+                "commit_bytes": 17678336
+              },
+              {
+                "pid": 4532,
+                "ppid": 2840,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 638976,
+                "commit_bytes": 962560
+              },
+              {
+                "pid": 5408,
+                "ppid": 4532,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21622784,
+              "commit_bytes": 25206784
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 180,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2840
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2840,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 15020032,
+                "commit_bytes": 17678336
+              },
+              {
+                "pid": 4532,
+                "ppid": 2840,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 638976,
+                "commit_bytes": 962560
+              },
+              {
+                "pid": 5408,
+                "ppid": 4532,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21626880,
+              "commit_bytes": 25206784
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "retained",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2840
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2840,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 15020032,
+                "commit_bytes": 17678336
+              },
+              {
+                "pid": 4532,
+                "ppid": 2840,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 638976,
+                "commit_bytes": 962560
+              },
+              {
+                "pid": 5408,
+                "ppid": 4532,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21626880,
+              "commit_bytes": 25206784
+            },
+            "complete": true
+          }
+        }
+      ],
+      "sampled_peak_bytes": {
+        "private_working_set_bytes": 21626880,
+        "commit_bytes": 25206784
+      },
+      "repeat": 1
+    },
+    {
+      "mode": "ram",
+      "append_seconds": 0.2783,
+      "segment_bytes": 2057107,
+      "written_payload_bytes": 0,
+      "retained_payload_bytes": 246852840,
+      "samples": [
+        {
+          "phase": "empty",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1212
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1212,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 10629120,
+                "commit_bytes": 12201984
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 10629120,
+              "commit_bytes": 12201984
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 10,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1212
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1212,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 33349632,
+                "commit_bytes": 35020800
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 33349632,
+              "commit_bytes": 35020800
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 20,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1212
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1212,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 54026240,
+                "commit_bytes": 55775232
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 54026240,
+              "commit_bytes": 55775232
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 30,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1212
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1212,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 74690560,
+                "commit_bytes": 77471744
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 74690560,
+              "commit_bytes": 77471744
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 40,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1212
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1212,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 95404032,
+                "commit_bytes": 98123776
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 95404032,
+              "commit_bytes": 98123776
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 50,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1212
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1212,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 116080640,
+                "commit_bytes": 119025664
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 116080640,
+              "commit_bytes": 119025664
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 60,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1212
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1212,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 136753152,
+                "commit_bytes": 139202560
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136753152,
+              "commit_bytes": 139202560
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 70,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1212
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1212,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 157421568,
+                "commit_bytes": 159850496
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 157421568,
+              "commit_bytes": 159850496
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 80,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1212
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1212,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 178094080,
+                "commit_bytes": 180494336
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 178094080,
+              "commit_bytes": 180494336
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 90,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1212
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1212,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 198766592,
+                "commit_bytes": 201138176
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 198766592,
+              "commit_bytes": 201138176
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 100,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1212
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1212,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 219435008,
+                "commit_bytes": 221782016
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 219435008,
+              "commit_bytes": 221782016
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 110,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1212
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1212,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 240177152,
+                "commit_bytes": 243355648
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 240177152,
+              "commit_bytes": 243355648
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 120,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1212
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1212,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260882432,
+                "commit_bytes": 263135232
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260882432,
+              "commit_bytes": 263135232
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 130,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1212
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1212,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260886528,
+                "commit_bytes": 263172096
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260886528,
+              "commit_bytes": 263172096
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 140,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1212
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1212,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260886528,
+                "commit_bytes": 263172096
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260886528,
+              "commit_bytes": 263172096
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 150,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1212
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1212,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260886528,
+                "commit_bytes": 263172096
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260886528,
+              "commit_bytes": 263172096
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 160,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1212
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1212,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260886528,
+                "commit_bytes": 263176192
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260886528,
+              "commit_bytes": 263176192
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 170,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1212
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1212,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260886528,
+                "commit_bytes": 263176192
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260886528,
+              "commit_bytes": 263176192
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 180,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1212
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1212,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260890624,
+                "commit_bytes": 263172096
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260890624,
+              "commit_bytes": 263172096
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "retained",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1212
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1212,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260898816,
+                "commit_bytes": 263172096
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260898816,
+              "commit_bytes": 263172096
+            },
+            "complete": true
+          }
+        }
+      ],
+      "sampled_peak_bytes": {
+        "private_working_set_bytes": 260898816,
+        "commit_bytes": 263176192
+      },
+      "repeat": 2
+    },
+    {
+      "mode": "disk",
+      "append_seconds": 2.0464,
+      "segment_bytes": 2057107,
+      "written_payload_bytes": 370279260,
+      "retained_payload_bytes": 246852840,
+      "samples": [
+        {
+          "phase": "empty",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2304
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 136,
+                "ppid": 7200,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6561792
+              },
+              {
+                "pid": 2304,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 12582912,
+                "commit_bytes": 14508032
+              },
+              {
+                "pid": 7200,
+                "ppid": 2304,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 475136,
+                "commit_bytes": 880640
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 19025920,
+              "commit_bytes": 21950464
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 10,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2304
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 136,
+                "ppid": 7200,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6561792
+              },
+              {
+                "pid": 2304,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14680064,
+                "commit_bytes": 16642048
+              },
+              {
+                "pid": 7200,
+                "ppid": 2304,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 495616,
+                "commit_bytes": 819200
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21143552,
+              "commit_bytes": 24023040
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 20,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2304
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 136,
+                "ppid": 7200,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6561792
+              },
+              {
+                "pid": 2304,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14708736,
+                "commit_bytes": 16642048
+              },
+              {
+                "pid": 7200,
+                "ppid": 2304,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 507904,
+                "commit_bytes": 847872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21184512,
+              "commit_bytes": 24051712
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 30,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2304
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 136,
+                "ppid": 7200,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6561792
+              },
+              {
+                "pid": 2304,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14749696,
+                "commit_bytes": 16642048
+              },
+              {
+                "pid": 7200,
+                "ppid": 2304,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 507904,
+                "commit_bytes": 847872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21225472,
+              "commit_bytes": 24051712
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 40,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2304
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 136,
+                "ppid": 7200,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6561792
+              },
+              {
+                "pid": 2304,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14790656,
+                "commit_bytes": 16642048
+              },
+              {
+                "pid": 7200,
+                "ppid": 2304,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 598016,
+                "commit_bytes": 921600
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21356544,
+              "commit_bytes": 24125440
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 50,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2304
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 136,
+                "ppid": 7200,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6561792
+              },
+              {
+                "pid": 2304,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14852096,
+                "commit_bytes": 16642048
+              },
+              {
+                "pid": 7200,
+                "ppid": 2304,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 598016,
+                "commit_bytes": 921600
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21417984,
+              "commit_bytes": 24125440
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 60,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2304
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 136,
+                "ppid": 7200,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6561792
+              },
+              {
+                "pid": 2304,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14852096,
+                "commit_bytes": 16642048
+              },
+              {
+                "pid": 7200,
+                "ppid": 2304,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 598016,
+                "commit_bytes": 921600
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21417984,
+              "commit_bytes": 24125440
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 70,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2304
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 136,
+                "ppid": 7200,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6561792
+              },
+              {
+                "pid": 2304,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14852096,
+                "commit_bytes": 16642048
+              },
+              {
+                "pid": 7200,
+                "ppid": 2304,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 618496,
+                "commit_bytes": 942080
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21438464,
+              "commit_bytes": 24145920
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 80,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2304
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 136,
+                "ppid": 7200,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6561792
+              },
+              {
+                "pid": 2304,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14852096,
+                "commit_bytes": 16642048
+              },
+              {
+                "pid": 7200,
+                "ppid": 2304,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 618496,
+                "commit_bytes": 942080
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21438464,
+              "commit_bytes": 24145920
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 90,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2304
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 136,
+                "ppid": 7200,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6561792
+              },
+              {
+                "pid": 2304,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14856192,
+                "commit_bytes": 16642048
+              },
+              {
+                "pid": 7200,
+                "ppid": 2304,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 618496,
+                "commit_bytes": 942080
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21442560,
+              "commit_bytes": 24145920
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 100,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2304
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 136,
+                "ppid": 7200,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6561792
+              },
+              {
+                "pid": 2304,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14872576,
+                "commit_bytes": 16642048
+              },
+              {
+                "pid": 7200,
+                "ppid": 2304,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 618496,
+                "commit_bytes": 942080
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21458944,
+              "commit_bytes": 24145920
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 110,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2304
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 136,
+                "ppid": 7200,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6561792
+              },
+              {
+                "pid": 2304,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14905344,
+                "commit_bytes": 16642048
+              },
+              {
+                "pid": 7200,
+                "ppid": 2304,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 618496,
+                "commit_bytes": 942080
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21491712,
+              "commit_bytes": 24145920
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 120,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2304
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 136,
+                "ppid": 7200,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6561792
+              },
+              {
+                "pid": 2304,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14938112,
+                "commit_bytes": 16642048
+              },
+              {
+                "pid": 7200,
+                "ppid": 2304,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 618496,
+                "commit_bytes": 942080
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21524480,
+              "commit_bytes": 24145920
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 130,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2304
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 136,
+                "ppid": 7200,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6561792
+              },
+              {
+                "pid": 2304,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14974976,
+                "commit_bytes": 17690624
+              },
+              {
+                "pid": 7200,
+                "ppid": 2304,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 626688,
+                "commit_bytes": 962560
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21569536,
+              "commit_bytes": 25214976
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 140,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2304
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 136,
+                "ppid": 7200,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6561792
+              },
+              {
+                "pid": 2304,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 15011840,
+                "commit_bytes": 17690624
+              },
+              {
+                "pid": 7200,
+                "ppid": 2304,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 626688,
+                "commit_bytes": 962560
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21606400,
+              "commit_bytes": 25214976
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 150,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2304
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 136,
+                "ppid": 7200,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6561792
+              },
+              {
+                "pid": 2304,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 15024128,
+                "commit_bytes": 17690624
+              },
+              {
+                "pid": 7200,
+                "ppid": 2304,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 626688,
+                "commit_bytes": 962560
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21618688,
+              "commit_bytes": 25214976
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 160,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2304
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 136,
+                "ppid": 7200,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6561792
+              },
+              {
+                "pid": 2304,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 15024128,
+                "commit_bytes": 17690624
+              },
+              {
+                "pid": 7200,
+                "ppid": 2304,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 626688,
+                "commit_bytes": 962560
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21618688,
+              "commit_bytes": 25214976
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 170,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2304
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 136,
+                "ppid": 7200,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6561792
+              },
+              {
+                "pid": 2304,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 15024128,
+                "commit_bytes": 17690624
+              },
+              {
+                "pid": 7200,
+                "ppid": 2304,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 626688,
+                "commit_bytes": 962560
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21618688,
+              "commit_bytes": 25214976
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 180,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2304
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 136,
+                "ppid": 7200,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6561792
+              },
+              {
+                "pid": 2304,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 15028224,
+                "commit_bytes": 17690624
+              },
+              {
+                "pid": 7200,
+                "ppid": 2304,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 626688,
+                "commit_bytes": 962560
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21622784,
+              "commit_bytes": 25214976
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "retained",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2304
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 136,
+                "ppid": 7200,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5967872,
+                "commit_bytes": 6561792
+              },
+              {
+                "pid": 2304,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 15028224,
+                "commit_bytes": 17690624
+              },
+              {
+                "pid": 7200,
+                "ppid": 2304,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 626688,
+                "commit_bytes": 962560
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21622784,
+              "commit_bytes": 25214976
+            },
+            "complete": true
+          }
+        }
+      ],
+      "sampled_peak_bytes": {
+        "private_working_set_bytes": 21622784,
+        "commit_bytes": 25214976
+      },
+      "repeat": 2
+    },
+    {
+      "mode": "ram",
+      "append_seconds": 0.261,
+      "segment_bytes": 2057107,
+      "written_payload_bytes": 0,
+      "retained_payload_bytes": 246852840,
+      "samples": [
+        {
+          "phase": "empty",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1944,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 10477568,
+                "commit_bytes": 12029952
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 10477568,
+              "commit_bytes": 12029952
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 10,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1944,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 33198080,
+                "commit_bytes": 34852864
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 33198080,
+              "commit_bytes": 34852864
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 20,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1944,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 53870592,
+                "commit_bytes": 55607296
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 53870592,
+              "commit_bytes": 55607296
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 30,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1944,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 74543104,
+                "commit_bytes": 77299712
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 74543104,
+              "commit_bytes": 77299712
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 40,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1944,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 95219712,
+                "commit_bytes": 98160640
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 95219712,
+              "commit_bytes": 98160640
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 50,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1944,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 115875840,
+                "commit_bytes": 118349824
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 115875840,
+              "commit_bytes": 118349824
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 60,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1944,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 136548352,
+                "commit_bytes": 138993664
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136548352,
+              "commit_bytes": 138993664
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 70,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1944,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 157220864,
+                "commit_bytes": 159637504
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 157220864,
+              "commit_bytes": 159637504
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 80,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1944,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 177909760,
+                "commit_bytes": 181125120
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 177909760,
+              "commit_bytes": 181125120
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 90,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1944,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 198578176,
+                "commit_bytes": 200941568
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 198578176,
+              "commit_bytes": 200941568
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 100,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1944,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 219254784,
+                "commit_bytes": 221585408
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 219254784,
+              "commit_bytes": 221585408
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 110,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1944,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 239992832,
+                "commit_bytes": 243056640
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 239992832,
+              "commit_bytes": 243056640
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 120,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1944,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260665344,
+                "commit_bytes": 262938624
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260665344,
+              "commit_bytes": 262938624
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 130,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1944,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260669440,
+                "commit_bytes": 262950912
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260669440,
+              "commit_bytes": 262950912
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 140,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1944,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260657152,
+                "commit_bytes": 262934528
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260657152,
+              "commit_bytes": 262934528
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 150,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1944,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260657152,
+                "commit_bytes": 262934528
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260657152,
+              "commit_bytes": 262934528
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 160,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1944,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260657152,
+                "commit_bytes": 262934528
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260657152,
+              "commit_bytes": 262934528
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 170,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1944,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260657152,
+                "commit_bytes": 262934528
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260657152,
+              "commit_bytes": 262934528
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 180,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1944,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260665344,
+                "commit_bytes": 262934528
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260665344,
+              "commit_bytes": 262934528
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "retained",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              1944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 1944,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 260673536,
+                "commit_bytes": 262934528
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 260673536,
+              "commit_bytes": 262934528
+            },
+            "complete": true
+          }
+        }
+      ],
+      "sampled_peak_bytes": {
+        "private_working_set_bytes": 260673536,
+        "commit_bytes": 262950912
+      },
+      "repeat": 3
+    },
+    {
+      "mode": "disk",
+      "append_seconds": 1.9387,
+      "segment_bytes": 2057107,
+      "written_payload_bytes": 370279260,
+      "retained_payload_bytes": 246852840,
+      "samples": [
+        {
+          "phase": "empty",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2752
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2752,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 12480512,
+                "commit_bytes": 14401536
+              },
+              {
+                "pid": 3388,
+                "ppid": 2752,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 471040,
+                "commit_bytes": 876544
+              },
+              {
+                "pid": 6196,
+                "ppid": 3388,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5971968,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 18923520,
+              "commit_bytes": 21843968
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 10,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2752
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2752,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14577664,
+                "commit_bytes": 16465920
+              },
+              {
+                "pid": 3388,
+                "ppid": 2752,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 569344,
+                "commit_bytes": 892928
+              },
+              {
+                "pid": 6196,
+                "ppid": 3388,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5971968,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21118976,
+              "commit_bytes": 23924736
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 20,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2752
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2752,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14614528,
+                "commit_bytes": 16465920
+              },
+              {
+                "pid": 3388,
+                "ppid": 2752,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 499712,
+                "commit_bytes": 839680
+              },
+              {
+                "pid": 6196,
+                "ppid": 3388,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5971968,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21086208,
+              "commit_bytes": 23871488
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 30,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2752
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2752,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14647296,
+                "commit_bytes": 16465920
+              },
+              {
+                "pid": 3388,
+                "ppid": 2752,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 499712,
+                "commit_bytes": 839680
+              },
+              {
+                "pid": 6196,
+                "ppid": 3388,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5971968,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21118976,
+              "commit_bytes": 23871488
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 40,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2752
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2752,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14692352,
+                "commit_bytes": 16465920
+              },
+              {
+                "pid": 3388,
+                "ppid": 2752,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 589824,
+                "commit_bytes": 913408
+              },
+              {
+                "pid": 6196,
+                "ppid": 3388,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5971968,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21254144,
+              "commit_bytes": 23945216
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 50,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2752
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2752,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14725120,
+                "commit_bytes": 16465920
+              },
+              {
+                "pid": 3388,
+                "ppid": 2752,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 589824,
+                "commit_bytes": 913408
+              },
+              {
+                "pid": 6196,
+                "ppid": 3388,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5971968,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21286912,
+              "commit_bytes": 23945216
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 60,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2752
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2752,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14725120,
+                "commit_bytes": 16465920
+              },
+              {
+                "pid": 3388,
+                "ppid": 2752,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 589824,
+                "commit_bytes": 913408
+              },
+              {
+                "pid": 6196,
+                "ppid": 3388,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5971968,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21286912,
+              "commit_bytes": 23945216
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 70,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2752
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2752,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14725120,
+                "commit_bytes": 16465920
+              },
+              {
+                "pid": 3388,
+                "ppid": 2752,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 516096,
+                "commit_bytes": 839680
+              },
+              {
+                "pid": 6196,
+                "ppid": 3388,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5971968,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21213184,
+              "commit_bytes": 23871488
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 80,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2752
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2752,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14725120,
+                "commit_bytes": 16465920
+              },
+              {
+                "pid": 3388,
+                "ppid": 2752,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 516096,
+                "commit_bytes": 839680
+              },
+              {
+                "pid": 6196,
+                "ppid": 3388,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5971968,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21213184,
+              "commit_bytes": 23871488
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 90,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2752
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2752,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14725120,
+                "commit_bytes": 16465920
+              },
+              {
+                "pid": 3388,
+                "ppid": 2752,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 520192,
+                "commit_bytes": 843776
+              },
+              {
+                "pid": 6196,
+                "ppid": 3388,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5971968,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21217280,
+              "commit_bytes": 23875584
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 100,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2752
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2752,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14741504,
+                "commit_bytes": 16465920
+              },
+              {
+                "pid": 3388,
+                "ppid": 2752,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 606208,
+                "commit_bytes": 933888
+              },
+              {
+                "pid": 6196,
+                "ppid": 3388,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5971968,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21319680,
+              "commit_bytes": 23965696
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 110,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2752
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2752,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14774272,
+                "commit_bytes": 16465920
+              },
+              {
+                "pid": 3388,
+                "ppid": 2752,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 606208,
+                "commit_bytes": 933888
+              },
+              {
+                "pid": 6196,
+                "ppid": 3388,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5971968,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21352448,
+              "commit_bytes": 23965696
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 120,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2752
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2752,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14807040,
+                "commit_bytes": 16465920
+              },
+              {
+                "pid": 3388,
+                "ppid": 2752,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 610304,
+                "commit_bytes": 933888
+              },
+              {
+                "pid": 6196,
+                "ppid": 3388,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5971968,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21389312,
+              "commit_bytes": 23965696
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 130,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2752
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2752,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14835712,
+                "commit_bytes": 17518592
+              },
+              {
+                "pid": 3388,
+                "ppid": 2752,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 626688,
+                "commit_bytes": 954368
+              },
+              {
+                "pid": 6196,
+                "ppid": 3388,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5971968,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21434368,
+              "commit_bytes": 25038848
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 140,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2752
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2752,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14876672,
+                "commit_bytes": 17518592
+              },
+              {
+                "pid": 3388,
+                "ppid": 2752,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 626688,
+                "commit_bytes": 954368
+              },
+              {
+                "pid": 6196,
+                "ppid": 3388,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5971968,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21475328,
+              "commit_bytes": 25038848
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 150,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2752
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2752,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14893056,
+                "commit_bytes": 17518592
+              },
+              {
+                "pid": 3388,
+                "ppid": 2752,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 626688,
+                "commit_bytes": 954368
+              },
+              {
+                "pid": 6196,
+                "ppid": 3388,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5971968,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21491712,
+              "commit_bytes": 25038848
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 160,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2752
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2752,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14893056,
+                "commit_bytes": 17518592
+              },
+              {
+                "pid": 3388,
+                "ppid": 2752,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 626688,
+                "commit_bytes": 954368
+              },
+              {
+                "pid": 6196,
+                "ppid": 3388,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5971968,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21491712,
+              "commit_bytes": 25038848
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 170,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2752
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2752,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14893056,
+                "commit_bytes": 17518592
+              },
+              {
+                "pid": 3388,
+                "ppid": 2752,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 626688,
+                "commit_bytes": 954368
+              },
+              {
+                "pid": 6196,
+                "ppid": 3388,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5971968,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21491712,
+              "commit_bytes": 25038848
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "fill",
+          "segment": 180,
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2752
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2752,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14897152,
+                "commit_bytes": 17518592
+              },
+              {
+                "pid": 3388,
+                "ppid": 2752,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 626688,
+                "commit_bytes": 954368
+              },
+              {
+                "pid": 6196,
+                "ppid": 3388,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5971968,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21495808,
+              "commit_bytes": 25038848
+            },
+            "complete": true
+          }
+        },
+        {
+          "phase": "retained",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              2752
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 2752,
+                "ppid": 5328,
+                "name": "python.exe",
+                "private_working_set_bytes": 14897152,
+                "commit_bytes": 17518592
+              },
+              {
+                "pid": 3388,
+                "ppid": 2752,
+                "name": "jarvis-replay-store.exe",
+                "private_working_set_bytes": 626688,
+                "commit_bytes": 954368
+              },
+              {
+                "pid": 6196,
+                "ppid": 3388,
+                "name": "conhost.exe",
+                "private_working_set_bytes": 5971968,
+                "commit_bytes": 6565888
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 21495808,
+              "commit_bytes": 25038848
+            },
+            "complete": true
+          }
+        }
+      ],
+      "sampled_peak_bytes": {
+        "private_working_set_bytes": 21495808,
+        "commit_bytes": 25038848
+      },
+      "repeat": 3
+    }
+  ],
+  "full_application_acceptance": false,
+  "limitations": [
+    "Store-only Linux-host comparison; excludes encoder, named-pipe readers, voice, controller and settings.",
+    "Accelerated fill/rollover; no sustained disk-throughput or SSD-wear measurement.",
+    "Samples every ten appends; brief peaks can be missed. File cache is outside process RSS/PSS and is reclaimable.",
+    "No native Windows hardware, memory-pressure or live GSR disk-buffer result."
+  ],
+  "native_windows_context": {
+    "os_build": "10.0.19045.2006",
+    "qemu_ram_mib": 8192,
+    "observed_ram_bytes": 8589389824,
+    "cpus": 4,
+    "python": "3.13.17",
+    "counter": "Private working set from bounded QueryWorkingSet fallback; private commit from GetProcessMemoryInfo",
+    "scope_correction": "Original script wording assumes a Linux host. These runs executed natively in Windows 10 KVM, as platform records. Hardware capture, physical GPU, all-app budgets, pressure and soak remain excluded."
+  }
+}

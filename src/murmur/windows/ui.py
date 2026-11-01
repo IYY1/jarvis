@@ -58,7 +58,6 @@ class Window:
             ("commands", "Commands"),
             ("recording", "Recording"),
             ("replay", "Replay"),
-            ("displays", "Displays"),
             ("privacy", "Privacy"),
             ("diagnostics", "Diagnostics"),
         ):
@@ -438,6 +437,7 @@ class Window:
         for app in result["apps"]:
             self.apps_tree.insert("", "end", values=(app["name"], app["id"]))
         self.refresh_aliases()
+        self.call("commands", self.show_app_commands)
 
     def assign_alias(self):
         selected = self.apps_tree.selection()
@@ -472,6 +472,17 @@ class Window:
         self.commands_text = tk.Text(p, height=7)
         self.commands_text.grid(row=2, column=0, columnspan=3, sticky="ew")
         self.commands_text.insert("1.0", json.dumps(self.config["commands"], indent=2))
+        self.note(p, "Open and close every installed app", 3)
+        self.application_commands = tk.Text(p, height=12, wrap="word", state="disabled")
+        self.application_commands.grid(row=4, column=0, columnspan=3, sticky="nsew")
+
+    def show_app_commands(self, result):
+        self.application_commands.configure(state="normal")
+        self.application_commands.delete("1.0", "end")
+        text = "\n\n".join(row["title"] + "\n" + " · ".join(row["examples"])
+                            for row in result.get("applications", []))
+        self.application_commands.insert("1.0", text)
+        self.application_commands.configure(state="disabled")
 
     def build_recording(self, p):
         self.record_state = tk.StringVar(value="Recorder ready")
@@ -623,7 +634,7 @@ class Window:
         )
         self.note(
             p,
-            "Instant replay uses the recording display, format, frame rate and size controls. Compressed video stays in RAM until you save. The retained video budget is 256 MiB; high bitrates shorten the available history.",
+            "Replay uses the recording display and encoding controls. RAM writes video only when you save. Choosing Disk writes unsaved screen and sound continuously, roughly 1–10 GB/hour depending on bitrate. Deleted files are not securely erased; crash leftovers are cleaned on next start.",
             1,
         )
         self.field(p, "History (10–600 seconds)", "replay", "seconds", 2)
@@ -631,6 +642,9 @@ class Window:
         self.check(p, "Include microphone", "replay", "microphone", 4)
         self.check(p, "Play a sound when a replay is saved", "replay", "sound", 5)
         self.check(p, "Start replay with the service", "replay", "autostart", 6)
+        self.field(p, "Storage", "replay", "storage", 7, choices={"RAM": "ram", "Disk (continuous writes)": "disk"})
+        self.field(p, "Encoded-history budget (64–16384 MiB)", "replay", "max_mb", 8)
+        self.field(p, "Private disk-buffer directory (blank: app data)", "replay", "buffer_dir", 9)
         self.buttons(
             p,
             [
@@ -638,115 +652,13 @@ class Window:
                 ("Save clip", lambda: self.call("replay_save")),
                 ("Stop replay", lambda: self.call("replay_stop")),
             ],
-            7,
+            10,
         )
         self.note(
             p,
-            "Save finalizes the current second, so a clip can include up to one extra second after your request. Save and review settings before starting replay.",
-            8,
+            "Save finalizes the current second, so a clip can include up to one extra second. Disk mode needs the Rust helper and a local NTFS/ReFS disk. Pending segments and files pinned by a save share its size cap; a save can shorten history or stop replay if that cap is exhausted. RAM has additional in-flight and saved-snapshot memory. Save settings before starting replay.",
+            11,
         )
-
-    def build_displays(self, p):
-        self.brightness = copy.deepcopy(self.config["brightness"])
-        self.note(
-            p,
-            "Brightness uses laptop controls or DDC/CI on external monitors. Refresh, select a display and give it a short spoken name. Enable DDC/CI in the monitor's own menu if brightness is unavailable.",
-            0,
-        )
-        self.brightness_tree = ttk.Treeview(
-            p,
-            columns=("name", "percent", "id"),
-            displaycolumns=("name", "percent"),
-            show="headings",
-            height=8,
-        )
-        self.brightness_tree.heading("name", text="Connected display")
-        self.brightness_tree.heading("percent", text="Brightness / availability")
-        self.brightness_tree.grid(row=1, column=0, columnspan=3, sticky="ew")
-        self.display_name = tk.StringVar()
-        ttk.Label(p, text="Spoken name").grid(row=2, column=0, sticky="w")
-        ttk.Entry(p, textvariable=self.display_name).grid(
-            row=2, column=1, sticky="ew", pady=10
-        )
-        self.buttons(
-            p,
-            [
-                (
-                    "Refresh displays",
-                    lambda: self.call("brightness_monitors", self.show_brightness),
-                ),
-                ("Assign name", self.assign_display),
-            ],
-            3,
-        )
-        self.named_displays = ttk.Treeview(
-            p, columns=("name", "default"), show="headings", height=6
-        )
-        self.named_displays.heading("name", text="Spoken display name")
-        self.named_displays.heading("default", text="Default")
-        self.named_displays.grid(row=4, column=0, columnspan=3, sticky="ew")
-        self.buttons(
-            p,
-            [
-                ("Use as default", self.default_display),
-                ("Remove name", self.remove_display),
-            ],
-            5,
-        )
-        self.note(
-            p,
-            "Try “set left screen brightness to fifty percent”. “Main” refers to the default display. Recheck names after reconnecting displays without a unique hardware identity. Save settings to apply.",
-            6,
-        )
-        self.refresh_named_displays()
-
-    def show_brightness(self, result):
-        self.brightness_tree.delete(*self.brightness_tree.get_children())
-        for monitor in result["monitors"]:
-            if not monitor.get("ambiguous"):
-                availability = monitor.get(
-                    "error", str(monitor.get("percent", "?")) + "%"
-                )
-                self.brightness_tree.insert(
-                    "", "end", values=(monitor["label"], availability, monitor["id"])
-                )
-
-    def refresh_named_displays(self):
-        self.named_displays.delete(*self.named_displays.get_children())
-        for identity, monitor in self.brightness["monitors"].items():
-            self.named_displays.insert(
-                "",
-                "end",
-                iid=identity,
-                values=(
-                    monitor["name"],
-                    "Default" if identity == self.brightness["default"] else "",
-                ),
-            )
-
-    def assign_display(self):
-        selection = self.brightness_tree.selection()
-        name = self.display_name.get().strip()
-        if not selection or not name:
-            return
-        identity = self.brightness_tree.item(selection[0], "values")[2]
-        self.brightness["monitors"][identity] = {"name": name, "aliases": []}
-        if not self.brightness["default"]:
-            self.brightness["default"] = identity
-        self.refresh_named_displays()
-
-    def default_display(self):
-        selection = self.named_displays.selection()
-        if selection:
-            self.brightness["default"] = selection[0]
-            self.refresh_named_displays()
-
-    def remove_display(self):
-        for identity in self.named_displays.selection():
-            self.brightness["monitors"].pop(identity, None)
-            if self.brightness["default"] == identity:
-                self.brightness["default"] = ""
-        self.refresh_named_displays()
 
     def build_privacy(self, p):
         self.note(
@@ -810,7 +722,6 @@ class Window:
         value["aliases"] = dict(self.aliases)
         value["app_prefixes"] = dict(self.prefixes)
         value["commands"] = json.loads(self.commands_text.get("1.0", "end"))
-        value["brightness"] = copy.deepcopy(self.brightness)
         return config.validate(value)
 
     def save(self):

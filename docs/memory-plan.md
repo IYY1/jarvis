@@ -12,6 +12,53 @@ Two rules apply throughout:
 - **Recognition quality is a hard constraint.** A smaller worker that misses
   commands, or acts on speech it should have ignored, is a regression.
 
+## Current position — 2026-10-27
+
+The implementation foundations and isolated experiments span all six steps;
+**the plan is still in validation and architecture selection, with no release
+sign-off**. An implementation count would give a misleading completion
+percentage. The combined targets remain ≤150 MiB waiting with replay off,
+≤300 MiB with replay on and ≤400 MiB during commands, without recognition or
+latency regressions.
+
+| Step | Available now | Work still required |
+| --- | --- | --- |
+| 1. Measure and gate | Process accounting, application sampler, recognition runner and soak runner | Full real acoustic corpus, whole-app workloads and Windows measurements |
+| 2. Missed wake | Quiet-boundary reset and repeated fixture recovery | Broader acoustic and Windows acceptance |
+| 3. Optional replay (deferred) | Opt-in disk storage, RAM cap, cleanup and synthetic buffer measurements | Strict Linux recorder byte cap; real Linux/Windows capture, quota and failure evidence |
+| 4. Retained memory | Vosk history attribution, disabled finalization trial, isolated child ownership and pressure/cache diagnostics | Full live-floor attribution where needed, broader pressure and long-run acceptance |
+| 5. Fast path | Disabled exact-agreement experiment with measured savings | Resolve cold-fallback latency regression and pass the full corpus |
+| 6. Models and wake | Rust Whisper profiles and isolated KWS/buffered command probes | Resolve detector timing/recognition tradeoff, validate chosen smaller recognizer, then select and integrate the architecture |
+
+The user has set Windows work aside and deferred further optional replay
+storage optimization because of continuous SSD writes. The local installation
+is back on RAM replay with its existing 120-second HDR/audio settings. Disk
+mode remains opt-in. Strict Linux disk quotas remain unpassed and outside the
+current critical path; see [local settings](local-memory-activation.md).
+
+The next work focuses on the everyday voice path: waiting memory, command
+peaks, wake reliability and latency. Model-derived KWS chunk alignment is
+already tested and remains unaccepted; see [the alignment report](kws-alignment.md).
+The selected real Jarvis command is also missed by all KWS arms. The subsequent
+[fixed PocketSphinx screen](pocketsphinx-wake-screen.md) detects the original
+Jarvis tail but fails expanded quiet/interrupted recognition controls. Neither
+wake candidate is accepted for integration. [Subsequent screening](wake-candidate-screening.md)
+recovers the original PocketSphinx VAD failures, but new public positives still
+fail. Standalone tiny wake recognition and the stock dedicated Hey Jarvis
+model also fail. The [fixed combined detector](dual-wake-screen.md) is now
+rejected: 24/32 fresh Jarvis positives versus Vosk 31/32, with eight paired
+regressions. All 54 familiar controls passed. No target changes without an
+explicit user answer to the pending 150-versus-200 MiB waiting-budget question. Small.en's command-memory
+failure and base.en's reference discrepancy remain open; tiny.en needs broader
+acoustic evidence. No production model or allocator change is adopted.
+
+After candidate selection, the remaining work includes integration, GTCRN and
+capture interaction, combined budgets, Windows/8 GB pressure, and **three
+sequential 24-hour soaks: at least 72 hours of final soak time alone**, plus
+preparation, investigation and any reruns. There is no defensible overall ETA
+while acoustic/platform evidence and candidate regressions remain unresolved.
+Use [the handoff](memory-plan-handoff.md) for exact assets and the next action.
+
 ## Where the memory goes today
 
 Linux, Rust controller and worker, measured live and in the benchmarks under
@@ -29,8 +76,10 @@ Linux, Rust controller and worker, measured live and in the benchmarks under
 Windows runs the Python service with Vosk and sherpa-onnx Whisper small.en,
 and keeps up to 256 MiB of encoded replay in RAM. An earlier review of the
 Python worker on Linux measured about 590 MiB PSS idle and 863–945 MiB peak
-during commands ([performance](performance.md)). **Windows itself has not been
-measured, and Linux numbers cannot establish Windows requirements.**
+during commands ([performance](performance.md)). Native Windows buffer
+components have now been measured in an 8 GB VM
+([validation](memory-plan-windows-validation.md)). Complete Windows application
+workloads remain unmeasured, and Linux numbers cannot establish their requirements.
 
 ## What went wrong
 
@@ -117,6 +166,13 @@ Steps depend on each other; the order matters.
 
 ### Step 1 — baselines and recognition tests
 
+Implementation started 2026-10-26: on-request process memory in status/doctor,
+application JSON sampler, an audio acceptance runner with coverage and false
+action gates, and a three-run 24-hour soak tool. See
+[measurement instructions and remaining evidence](memory-measurement.md).
+Step 1 remains open until the full corpus and platform measurements exist;
+the isolated Linux baseline is not Windows or live-desktop evidence.
+
 - Whole-application measurement on Linux and Windows, in the units above,
   stored as benchmark JSON. Report per-process memory in `jarvis status` and
   `doctor`, so users and tests can see it.
@@ -127,8 +183,14 @@ Steps depend on each other; the order matters.
 
 ### Step 2 — fix the missed wake
 
-- Reproduce: `scripts/benchmark_load_cycles.py --no-room-noise` (currently
-  fails after the first cycle) plus a dedicated test with repeated background
+The quiet-boundary reset is implemented in the Rust engine, with a matching
+small fix in the Python fallback. Three fresh paced Rust workers recovered
+9/9 fixture commands; the saved worker recovered 2/3. See
+[candidate comparison and validation scope](memory-measurement.md#wake-recovery-step-2).
+This is not a full recognition-suite or Windows sign-off.
+
+- Baseline reproduction: `scripts/benchmark_load_cycles.py --no-room-noise`
+  failed after the first cycle; also test repeated background
   speech → quiet → wake. The default benchmark adds room noise specifically to
   help Vosk end the utterance, which hides the bug; it is a memory benchmark,
   not evidence that wakes work.
@@ -137,10 +199,28 @@ Steps depend on each other; the order matters.
 - Done when the no-noise test passes repeatedly and the unrelated-speech
   tests show no new false wakes.
 
-### Step 3 — replay on disk
+### Step 3 — optional replay on disk (further optimization deferred)
 
-Clearest expected saving (160–450 MiB while replay runs) with no recognition
-risk. Requirements:
+Implementation added 2026-10-26: explicit RAM/Disk controls, a shared Rust
+private-session/segment store, native Linux GSR disk integration and a thin
+Windows adapter. Three generated-video buffer comparisons on Linux reduced
+retained process-tree RSS from about 266 MiB to 27.5 MiB; this excludes capture,
+voice and settings and does not establish Windows savings. Crash cleanup,
+rollover/save and failure checks are implemented. Strict Linux byte-quota
+acceptance and real Windows/Linux capture measurements remain open: Linux
+currently supervises a stop threshold every 250 ms. Linux disk budgets must be
+at least 512 MiB (GSR writes 256 MiB files), and Linux RAM mode is bounded by
+replay length only, as before this step. See
+[measurement details](memory-measurement.md#replay-storage-step-3) and
+[privacy/limits](recording.md#replay-storage-and-privacy).
+
+This trades retained RAM for continuous encoded writes. Users who do not use
+replay receive no saving; the write cost depends on bitrate and time enabled.
+At a constant encoded bitrate of B Mbit/s, logical buffer writes are about
+0.45 × B GB/hour, excluding filesystem overhead and save copies. This is a
+rate calculation, not an SSD lifetime prediction. RAM remains the default.
+Further storage optimization is deferred by the user. Requirements for any
+future disk-storage acceptance remain:
 
 - bounded disk usage (time and size caps); cleanup of stale buffer files after
   a crash, at the next start; clear errors and a safe stop when the disk is
@@ -155,7 +235,8 @@ risk. Requirements:
   mode;
 - Linux: gpu-screen-recorder's `-replay-storage disk`. Windows: write the
   one-second segments to the buffer directory instead of RAM.
-- SSD writes equal the bitrate (~1 GB/h desktop, ~10 GB/h games); state it.
+- Document measured write rates for the tested workload and time enabled; do
+  not infer device endurance or typical-user costs from one desktop capture.
 
 ### Step 4 — find the per-command growth, then decide allocator or process
 
@@ -169,17 +250,44 @@ risk. Requirements:
   every ~14 cycles (~600 s of decoded speech): a sawtooth that matches Vosk
   rebuilding a decoder's feature history after 20,000 decoded frames
   ([results](benchmarks/load-cycles-long-2026-10-26.json)). It does not yet
-  explain the full live floor of 366 MiB after three hours; the command and
-  free-form decoders, fed real speech live, have not been measured separately.
-- Next: measure each decoder's contribution, and test recreating or
-  `FinalResult()`-finalizing the decoders between utterances so the history
-  stays per utterance, checking wake and command accuracy while doing so.
+  explain the full live floor of 366 MiB after three hours.
+- **Decoder attribution added 2026-10-26.** A Rust offline probe keeps all
+  three decoders resident and drives one at a time. Three repeats of each
+  reversed-fixture arm show maximum post-trim floor rises of 36.23–36.26 MiB
+  for wake, 36.22–36.30 MiB for command and 39.24–41.29 MiB for free decoding,
+  with periodic drops. Direct `FinalResult()` at boundaries reduces those
+  rises to 0.11–0.17 MiB for the grammar decoders and 3.13–3.55 MiB for free
+  decoding. A forward-fixture free-decoder control agrees. These unpaced
+  measurements attribute bounded history, not the entire live floor; normal
+  recognition reset behavior is unchanged. See
+  [method, source and raw results](vosk-decoder-history.md).
+- **Engine finalization trial added 2026-10-26, disabled by default.** Three
+  paired 32-cycle probes through the real energy gate and matcher reduced the
+  maximum floor rise from 44.93–45.21 MiB to 2.68–2.72 MiB, with all 384 probe
+  commands correct and no background events. Separate paced workers retained
+  Whisper prefetch: nine commands per policy passed, with median/p95 latency
+  1145.8/1243.3 ms default and 980.0/1168.7 ms experimental. Whisper peaks
+  remained above 500 MiB. See [scope and raw results](vosk-finalization.md).
+- Next: complete the acoustic acceptance suite, real workloads and platform
+  evidence before adopting finalization. Vosk must be finalized before
+  `Result()`/`Reset()` changes its state; a late `FinalResult()` does not
+  reclaim the feature pipeline.
 - Fallback if growth stays unexplained: a recognizer child process, a strong
   reclamation boundary for its own memory. It needs audio buffering while it
   starts, cancellation, and a measured startup latency. Keep it alive briefly
   after commands instead of assuming a restart on every wake is cheap.
 
 ### Step 5 — recognition fast path
+
+Rust experiment added and measured 2026-10-26, **disabled by default**. Exact
+whole-command Vosk/free agreement with all word posteriors ≥0.98 avoided every
+Whisper load on the public fixture: three fresh workers recognized 9/9 commands,
+peaked at 178.73–180.57 MiB RSS versus 548.24–571.79 MiB, and reduced median
+latency from 1041.8 to 704.0 ms. However, a separate forced-fallback pair
+exposed a cold-load cost: p95 rose from 1017.7 to 2695.8 ms without speculative
+prefetch. The full acoustic corpus is also incomplete. This is **not Step 5
+sign-off**; the existing default path remains in place. See
+[experiment and raw results](vosk-fast-path.md).
 
 - Skip the Whisper pass when Vosk's grammar result is exact and confident.
 - Test it **separately** from removing the free-form decoder, which today
@@ -188,6 +296,71 @@ risk. Requirements:
   load count and latency improve measurably.
 
 ### Step 6 — smaller models and a wake detector, as experiments
+
+Rust tiny.en/base.en export profiles added and measured 2026-10-26; small.en
+remains the default. Three fresh paced workers per profile recognized 9/9
+fixture commands each. Peak worker RSS was 278.98–282.04 MiB for tiny.en,
+329.23–330.81 MiB for base.en and 548.31–570.70 MiB for small.en. Tiny and small
+matched all 63 reference transcripts; base matched 45/63, with noisy punctuation
+and truncated-speech differences still unresolved. The prior small.en path's
+55 diagnostic tensors remain byte-identical. These are Linux fixture results,
+not acoustic, Windows or combined-budget acceptance. See
+[method, failed base gate and raw evidence](whisper-model-experiments.md).
+
+An isolated Rust KWS probe using native sherpa-onnx/ONNX Runtime peaked at
+53.30–54.30 MiB RSS in three paced workers, with 15/15 surrogate wakes and no
+extra triggers on selected controls. At the primary threshold 0.25, all 51
+focused paced/unpaced cases pass. Higher thresholds miss intended wakes,
+and ungated silence costs 1.40–1.42% of one core, above the standby target.
+The subsequent opt-in Rust quiet gate reduces silence CPU to 0.013–0.015%
+with 33/33 focused wakes and 53.57–54.59 MiB peak RSS, but delays the low-volume
+wake by 180 ms. A separate buffered Rust handoff passes 18/18 fixture cases
+and retains audio byte for byte through loading. Its combined parent/detector/
+command-worker peaks are 228–231 MiB with Vosk/free decoding, 594–617 MiB with
+default small.en and 320–326 MiB with explicitly experimental tiny.en. Small
+fails the command target even at that reduced scope. A subsequent quiet-endpoint
+experiment passes 18 natural commands across repeated detector/load/release
+cycles, returning to two processes. Its RMS 0.005 endpoint misses a low-volume
+command; a separate RMS 0.001 candidate passes seven focused controls. Ten
+tiny.en cycles leave 57.37–57.79 MiB RSS waiting (0.418 MiB growth after the
+first cycle) and peak at 333.67 MiB. This short file-only result establishes
+neither a stable plateau nor live multi-command handling or soak acceptance.
+The later isolated continuous-file probe adds multiple windows with explicit
+busy discard, timeout and quiet recovery. A fixed 36-variant diagnosis across
+three supplied recordings reproduces every gated trigger chunk by cropping an
+ungated stream to the same origin; timing still regresses in 18 variants by up
+to 270 ms. New eight-cycle report-retention controls place all observed released
+RSS growth in the parent (0.395 MiB retained / 0.207 MiB streamed), with flat
+detector RSS but small continuing in-use heap increases. This is attribution,
+not leak freedom or a timing fix; see [the diagnostics](kws-continuous-diagnostics.md).
+A subsequent separate allocator counter holds detector Rust live bytes/blocks
+constant over 128 requests and parent live blocks constant over 32 streamed
+cycles, while glibc in-use counts still increase. Three isolated cgroup controls
+show two commands at a 384 MiB cap, recovery on a later wake after a worker OOM
+at 192 MiB and limit release, and bounded repeated failures under sustained
+192 MiB. Both OOM runs retain exit 1 and failed recognition gates. These reduced
+file-only controls establish neither native leak freedom nor application or
+Windows pressure acceptance; see [allocation and pressure](kws-pressure-allocations.md).
+The next controlled comparison adds owned/cancellable child-reader joins and
+keeps live thread counts constant. Joining leaves the small glibc trend present;
+disabling only the diagnostic malloc cache removes measured in-use growth over
+128 detector requests and eight parent cycles, while disabling the stack cache
+does not. Parent RSS still warms by 0.121 MiB without the malloc cache. No tunable
+is adopted, and no long-run leak-freedom/plateau gate follows from these short
+controls; see [reader and cache attribution](kws-reader-caches.md).
+A model-derived 320 ms stream-alignment candidate was measured on 2026-10-27
+against 288 fixed timing/gain variants. It detects 287 wakes versus 288 for
+the old gate and 253 for ungated, without extras. All 253 jointly detected
+baseline/aligned wakes are no later and silence CPU remains below target,
+but the one lost old-gate wake fails recognition acceptance. Cropping ungated
+streams at the measured origins reproduces the miss/hit difference in both
+saved and current binaries. No thresholds are tuned or candidate adopted;
+see [the alignment evidence](kws-alignment.md).
+Custom Jarvis-name positives, Windows, full acoustic acceptance and all
+whole-application budget gates remain unverified. Vosk/small.en remain the
+defaults. See [original sweep](kws-experiment.md) and
+[quiet-gate/handoff methods](kws-quiet-gate.md) and
+[cycles, failed endpoint and floor trend](kws-handoff-cycles.md).
 
 - Second pass: compare Moonshine Tiny/Base and Whisper base.en/tiny.en with
   small.en on the acceptance suite (accuracy, false actions, latency, peak

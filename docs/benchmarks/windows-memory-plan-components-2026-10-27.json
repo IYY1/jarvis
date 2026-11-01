@@ -1,0 +1,215 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-27",
+  "scope": "Native Windows 10 8 GB KVM component tests and generated-video store comparison; no host microphone/desktop or user recordings in VM.",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "python": "3.13.17",
+  "ram_bytes": 8589389824,
+  "cpus": 4,
+  "media_verification": {
+    "iso_sha256": "ef7312733a9f5d7d51cfa04ac497671995674ca5e1058d5164d6028f0938d668",
+    "size_bytes": 5550497792,
+    "verified_against_microsoft_published_sha256": true,
+    "source_url": "https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66750/19045.2006.220908-0225.22h2_release_svc_refresh_CLIENTENTERPRISEEVAL_OEMRET_x64FRE_en-us.iso",
+    "checksum_url": "https://download.microsoft.com/download/c/1/1/c11d2ca5-967c-45c0-bc7d-2d9ca3f1fe07/Windows10Enterprise22H2HashValues.pdf",
+    "checksum_page": 3,
+    "edition": "Windows 10 Enterprise 22H2 evaluation x64 EN-US"
+  },
+  "validation": {
+    "linux_python": {
+      "total": 381,
+      "passed": 341,
+      "skipped": 40
+    },
+    "windows_components": {
+      "total": 56,
+      "passed": 51,
+      "skipped": 5,
+      "exit_code": 0
+    },
+    "windows_updated_accounting": {
+      "total": 13,
+      "passed": 12,
+      "skipped": 1,
+      "exit_code": 0
+    },
+    "counts_overlap": true,
+    "coderabbit": {
+      "reviewed_files": [
+        "docs/memory-measurement.md",
+        "docs/memory-plan-progress.md",
+        "src/murmur/windows/process_memory.py",
+        "tests/test_process_memory.py"
+      ],
+      "issues": 0
+    }
+  },
+  "accounting": {
+    "before": {
+      "schema_version": 1,
+      "platform": "win32",
+      "roots": [
+        4032
+      ],
+      "scope": "explicit roots and descendants; add separately launched settings as a root",
+      "processes": [
+        {
+          "pid": 4032,
+          "ppid": 2476,
+          "name": "python.exe",
+          "private_working_set_bytes": null,
+          "commit_bytes": 13492224
+        }
+      ],
+      "totals": {
+        "private_working_set_bytes": null,
+        "commit_bytes": 13492224
+      },
+      "complete": false
+    },
+    "after": {
+      "schema_version": 1,
+      "platform": "win32",
+      "roots": [
+        7276
+      ],
+      "scope": "explicit roots and descendants; add separately launched settings as a root",
+      "processes": [
+        {
+          "pid": 7276,
+          "ppid": 2476,
+          "name": "python.exe",
+          "private_working_set_bytes": 9797632,
+          "commit_bytes": 11575296
+        }
+      ],
+      "totals": {
+        "private_working_set_bytes": 9797632,
+        "commit_bytes": 11575296
+      },
+      "complete": true
+    },
+    "independent_pdh_cross_check": {
+      "query_working_set_before": 26763264,
+      "pdh_private_working_set": 26796032,
+      "query_working_set_after": 26783744,
+      "delta_bytes": 32768
+    }
+  },
+  "replay_storage_summary": [
+    {
+      "mode": "ram",
+      "repeat": 1,
+      "peak": {
+        "private_working_set_bytes": 260804608,
+        "commit_bytes": 263110656
+      },
+      "retained": {
+        "private_working_set_bytes": 260804608,
+        "commit_bytes": 263110656
+      }
+    },
+    {
+      "mode": "disk",
+      "repeat": 1,
+      "peak": {
+        "private_working_set_bytes": 21626880,
+        "commit_bytes": 25206784
+      },
+      "retained": {
+        "private_working_set_bytes": 21626880,
+        "commit_bytes": 25206784
+      }
+    },
+    {
+      "mode": "ram",
+      "repeat": 2,
+      "peak": {
+        "private_working_set_bytes": 260898816,
+        "commit_bytes": 263176192
+      },
+      "retained": {
+        "private_working_set_bytes": 260898816,
+        "commit_bytes": 263172096
+      }
+    },
+    {
+      "mode": "disk",
+      "repeat": 2,
+      "peak": {
+        "private_working_set_bytes": 21622784,
+        "commit_bytes": 25214976
+      },
+      "retained": {
+        "private_working_set_bytes": 21622784,
+        "commit_bytes": 25214976
+      }
+    },
+    {
+      "mode": "ram",
+      "repeat": 3,
+      "peak": {
+        "private_working_set_bytes": 260673536,
+        "commit_bytes": 262950912
+      },
+      "retained": {
+        "private_working_set_bytes": 260673536,
+        "commit_bytes": 262934528
+      }
+    },
+    {
+      "mode": "disk",
+      "repeat": 3,
+      "peak": {
+        "private_working_set_bytes": 21495808,
+        "commit_bytes": 25038848
+      },
+      "retained": {
+        "private_working_set_bytes": 21495808,
+        "commit_bytes": 25038848
+      }
+    }
+  ],
+  "source_sha256": {
+    "src/murmur/windows/process_memory.py": "a47b93aabdd14cdbf96115605ae35877f8a38e4a5349aba5f5b53f78eb3a7e2e",
+    "tests/test_process_memory.py": "3fee63482e87f296765853dac7f9bccc114d53af16dc49cacea5affbe576e615"
+  },
+  "private_evidence_sha256": {
+    "001-component-tests.json": "600c4dfe9e843f05c37c7f3420cb76eaaf354faa8574f4175fd2c759b85a49ea",
+    "002-platform.json": "42d4055a40bff92efcb67de1bdc477c03b899b450ae564e258171961f89fe57a",
+    "003-memory-compatibility.json": "639b93931ffcbe9777798f65d9368ca4df2eeab52780317695b69312db4b3383",
+    "004-updated-platform.json": "861e0ded4bd80d4ed2f89f06d35e1fa98131707836ef9eba5e7c2096b419e4ac",
+    "005-replay-storage-memory.json": "6c61e93cb7a13c737a4de562902c06e1d74b119c2bb6a37a175b24be6b49ba44",
+    "006-evaluation-license.json": "e42013bdcc51313de403dbaa44a49b5eb988fed1b1fd0ef742282bccc15c5c1c",
+    "007-export-store-evidence.json": "49a57a5dbac7e281d5f93f81fbafd7d186e557aa390643db0a683b0d787ff039",
+    "008-pdh-cross-check.json": "56ba99ca8c5c68faec38b0c603dd8c395cdb9079d18d188ae167acf5ad7ea954",
+    "009-activated-evaluation-license.json": "28bb5fb2f805c1df297ac9b86b3ce73ff5474fb40ee6211ecd0dc205fdc07f20"
+  },
+  "gates": {
+    "native_component_tests": true,
+    "old_windows_accounting_available": true,
+    "whole_application_memory": false,
+    "physical_gpu_capture": false,
+    "memory_pressure": false,
+    "full_duration_soak": false,
+    "release_acceptance": false
+  },
+  "limitations": [
+    "Isolated KVM uses four modern host CPU cores; it does not establish laptop CPU latency.",
+    "Generated video and named pipes test storage behavior, not physical Windows screen/audio or GPU drivers.",
+    "Evaluation activated normally for about 90 days; whole-application and long-duration testing remain open.",
+    "Working-set peaks are sampled; reclaimable OS file cache is outside process private working set.",
+    "Test scopes overlap; counts must not be added as unique tests."
+  ],
+  "evaluation_license": {
+    "before": {
+      "status": 5,
+      "grace_minutes": 0
+    },
+    "after": {
+      "status": 1,
+      "grace_minutes": 129594
+    },
+    "method": "Normal Windows online activation; no clock/rearm/license workaround."
+  }
+}

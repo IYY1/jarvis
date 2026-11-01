@@ -93,7 +93,7 @@ The optional SDR hardware preset uses `codec: "h264_vaapi"`, `vaapi_device: "/de
 - **Preserve HDR** (`hdr`): explicitly request HDR, including on older Hyprland versions without the preset field or when fullscreen HDR passthrough is in use. Enable HDR on the display first.
 - **SDR** (`sdr`): use SDR capture. If the monitor reports an HDR preset, starting fails with instructions to select HDR or disable display HDR. Jarvis does not tone map direct monitor capture into SDR.
 
-HDR uses GPU Screen Recorder's `-k av1_hdr` when AV1 is selected, otherwise `-k hevc_hdr`, with limited color range and no CPU fallback. It honors the selected GPU quality preset or bitrate budget (the existing default remains `very_high`). The backend handles pixel conversion and HDR metadata; changing only output color tags would not preserve HDR. Recordings remain Matroska with private staging files, SIGINT finalization and recovery; replays remain MP4 in RAM until saved. The legacy numeric software/VA-API quality and render-device settings apply to SDR recording only. HDR recording still uses the explicitly selected recording audio source; replay uses its own game/microphone switches.
+HDR uses GPU Screen Recorder's `-k av1_hdr` when AV1 is selected, otherwise `-k hevc_hdr`, with limited color range and no CPU fallback. It honors the selected GPU quality preset or bitrate budget (the existing default remains `very_high`). The backend handles pixel conversion and HDR metadata; changing only output color tags would not preserve HDR. Recordings remain Matroska with private staging files, SIGINT finalization and recovery; saved replays remain MP4; RAM is the default and disk buffering is an explicit choice below. The legacy numeric software/VA-API quality and render-device settings apply to SDR recording only. HDR recording still uses the explicitly selected recording audio source; replay uses its own game/microphone switches.
 
 `ffprobe` checks HDR output for a valid 10-bit video stream with PQ (`smpte2084`), BT.2020 primaries and matrix, and limited range before reporting success. An unsupported encoder, missing metadata or silent SDR fallback is an error; recording partials and replay files are retained for inspection. Structural verification does not prove visual color accuracy or permission success.
 
@@ -166,14 +166,78 @@ visual-content, audio-sync or game frame-time guarantee is established.
 
 ## Instant replay
 
-Instant replay keeps the last seconds of the selected display, plus game sound and your microphone, in memory and saves them only when asked. It follows [Kairos](https://github.com/BasilForge/Kairos)'s instant-replay idea on Linux; no Kairos code is used. It needs the optional `gpu-screen-recorder` package (`sudo pacman -S gpu-screen-recorder`); Jarvis runs it as a separate program, so Jarvis's own MIT license is unaffected.
+Instant replay keeps the last seconds of the selected display, plus game sound and your microphone. RAM is the default; disk buffering is an explicit setting explained below. It follows [Kairos](https://github.com/BasilForge/Kairos)'s instant-replay idea on Linux; no Kairos code is used. It needs the optional `gpu-screen-recorder` package (`sudo pacman -S gpu-screen-recorder`); Jarvis runs it as a separate program, so Jarvis's own MIT license is unaffected.
 
 - **Off until you start it:** the Recorder page's **Start replay**, “start replay”, or `jarvis replay start`. **Start with Jarvis** turns it on whenever the service starts. The header shows **Replay on** and Waybar shows ⟲ while the buffer runs.
-- **Save:** “clip that”, “save that”, “save replay”, the **Save replay** button or `jarvis replay save` writes the buffered seconds to the recordings folder as an MP4 and checks it with `ffprobe`. Nothing reaches the disk before that.
+- **Save:** “clip that”, “save that”, “save replay”, the **Save replay** button or `jarvis replay save` writes the buffered seconds to the recordings folder as an MP4 and checks it with `ffprobe`. RAM mode writes no video before Save; disk mode writes unsaved buffers continuously.
 - **Stop:** “stop replay”, the button, `jarvis replay stop`, service shutdown or a service crash (parent-death SIGINT) end the child and discard the buffer.
 - **Sound:** **Game sound** records the default output (everything you hear) and **Microphone** the default input; both are on by default and mixed into one track. They follow your PipeWire default devices.
 - **Clip sound:** a short rising chirp confirms each saved clip and a low tone reports a failed save; **Clip sound** turns it off.
-- **Settings:** replay length is 10–600 seconds (default 120) and uses the Recorder display, color mode and folder. Stop replay before changing capture settings, including Game sound and Microphone; they apply when the buffer starts. Clip sound and Start with Jarvis can change while replay runs.
+- **Settings:** replay length is 10–600 seconds (default 120) and uses the Recorder display, color mode and folder. Stop replay before changing capture settings, storage, buffer directory or budget; they apply when the buffer starts. Clip sound and Start with Jarvis can change while replay runs.
 - **Watch:** the **Clips** page lists saved replays and recordings, newest first, and plays them in the window. Playing MP4 there needs `gst-plugins-good` (`sudo pacman -S gst-plugins-good`); **Open in your player** works without it. The player is created on the first Play and released when you close it or leave the page.
 - **Cost (measured 2026-10-21, gpu-screen-recorder 6.1.4, 2560×1440 at 30 fps, H.264 on the GPU):** the recorder used 48 MiB PSS (115 MiB RSS) and 0.7% of one CPU core while buffering a mostly still desktop; a save took 0.09 s. The buffered video adds to that and grows with motion, resolution and frame rate: the still desktop produced about 0.33 MB/s (≈40 MB per two minutes); fast game footage needs several times more.
 - **Permissions:** monitor capture goes through gpu-screen-recorder's privileged KMS helper (`gsr-kms-server`) installed by the package. Review that before enabling replay.
+
+### Replay storage and privacy
+
+Choose **RAM** or explicitly select **Disk (continuous writes)** in Recording settings.
+RAM remains the default for existing configurations. Disk mode writes unsaved
+screen and selected audio, including microphone audio when enabled, continuously.
+It removes live buffers after Stop; a crash can leave them until the next replay
+start. Deletion is ordinary filesystem deletion, not secure erasure, and backups,
+snapshots and SSD behavior can retain data. A deleted buffer is not a saved clip.
+
+`replay.storage` is `ram` or `disk`; `replay.max_mb` is a 64–16384 MiB budget
+(default 256; Linux disk mode needs at least 512, see below); `replay.buffer_dir`
+is an optional **dedicated private directory**.
+The default Linux path is `$XDG_DATA_HOME/murmur/replay-buffer` or
+`~/.local/share/murmur/replay-buffer`. Linux requires an owned private directory
+and creates files under a `0700` session directory with a private child umask.
+It refuses tmpfs and ramfs, including this development machine's `/tmp`.
+Choose an actual disk; moving video into RAM-backed temporary files saves no RAM.
+An exclusive lock prevents another session from deleting a live buffer. Only
+marked session directories in that root are removed during crash cleanup.
+
+Linux disk mode requires the Rust controller and GSR 6.1.5 or newer. GSR's
+[`replay_buffer_disk.c`](https://git.dec05eba.com/gpu-screen-recorder/tree/src/replay_buffer/replay_buffer_disk.c?h=6.1.5)
+writes one file until it reaches 256 MiB, then starts the next, and removes the
+oldest file only once the next one covers the whole replay length. The buffer
+therefore always reaches at least 256 MiB, plus the replay length at the current
+bitrate, whatever the replay length. Jarvis refuses to start disk replay with a
+budget below **512 MiB**; long or high-bitrate replays need about 256 MiB plus
+`seconds × Mbps ÷ 8` MB. Files needed by an in-progress save are retained.
+Jarvis uses `-replay-storage disk` and a private `-o` buffer directory.
+GSR also writes completed replays there; `-ro` controls regular recording
+during replay, not saved replay clips. Jarvis publishes each completed clip
+into the normal Clips directory before verification or buffer cleanup, without
+overwriting existing clips. Cross-filesystem destinations use a private staged
+copy. If that destination is unavailable, a recovery file is retained outside
+the disposable session and its path is reported. Jarvis explicitly requests
+the configured number of seconds when saving: omitting it asks GSR to save
+the entire buffer, which can contain older footage because of file granularity.
+It never evicts backend-owned files during a save.
+GSR provides a time window but no configurable total-byte cap. Jarvis checks
+buffer size and available space every **250 ms**, stops on a reached budget or
+less than 16 MiB free, and recognizes buffer-write failures from stderr.
+**This is a supervised stop threshold, not a filesystem quota: brief overshoot
+and writes during shutdown are possible.** Strict Linux byte-quota acceptance
+remains open.
+
+Linux RAM mode is bounded by the replay length only; `replay.max_mb` does not
+apply to it. GSR has no RAM byte cap, and its process RSS includes encoder and
+allocator overhead (about 240 MiB measured live for a 120 s HDR desktop replay,
+310–355 MB in games), so a fixed RSS limit would end replay instead of
+shortening it. Use disk mode to reduce recorder RAM. The legacy Python
+controller supports RAM mode and rejects disk mode with setup instructions.
+
+Windows uses the shared Rust segment store with a pre-write encoded-byte cap;
+see [Windows replay limits](windows.md). Encoder, driver and in-flight capture
+memory are additional on both platforms. A higher bitrate can shorten history
+or stop capture at the chosen budget. Disk-full and permission errors stop
+capture with an error rather than restarting in a loop.
+
+Continuous writes equal the encoded bitrate plus overhead: around 1 GB/hour
+for a quiet desktop and around 10 GB/hour for a busy high-quality game are
+illustrative, not fixed rates. At 8 Mbps the video alone is **3.6 GB/hour**.
+This writes to the SSD even if no clip is saved. Saved clips are additional
+disk usage and are not part of the rolling-buffer budget.

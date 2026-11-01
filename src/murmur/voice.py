@@ -1,7 +1,8 @@
-"""Disposable microphone worker. Only this process imports the speech model."""
-from __future__ import annotations
+"""Disposable Linux microphone worker. Only this process imports the speech model.
 
-from .host import is_windows
+Windows uses the Rust worker (native/voice-worker) with WASAPI capture.
+"""
+from __future__ import annotations
 
 from collections import deque
 import ctypes
@@ -24,10 +25,6 @@ def emit(**message):
 
 
 def _parent_death(sig=signal.SIGTERM, expected_parent=None):
-    if is_windows():
-        from .windows.system import watch_parent
-        watch_parent(expected_parent or os.getppid())
-        return
     # Linux: microphone children must die if their owning service/worker dies.
     before = os.getppid()
     if before == 1 or (expected_parent is not None and before != expected_parent):
@@ -111,7 +108,10 @@ def make_engine(config: dict, grammar: dict | list[str]):
 def run(config: dict, mode: str, grammar: dict | list[str]):
     capture = None
     engine = None
-    selector = None if is_windows() else selectors.DefaultSelector()
+    if sys.platform == "win32":
+        emit(event="error", message="Windows uses the bundled Rust voice worker; reinstall Jarvis if it is missing")
+        return
+    selector = selectors.DefaultSelector()
     errors = deque(maxlen=4)
     def shutdown(*_):
         raise SystemExit(0)
@@ -127,24 +127,21 @@ def run(config: dict, mode: str, grammar: dict | list[str]):
             frame_bytes = engine.frame_bytes
         else:
             frame_bytes = 960
-        if is_windows():
-            from .windows.audio import VoiceIO, CommandTranscriber
-            capture = selector = VoiceIO(config)
-            if getattr(engine, "_transcriber", None) is not None:
-                engine._transcriber = CommandTranscriber(engine._transcriber, capture)
-        else:
-            argv = ["pw-record", "--raw", "--rate", "16000", "--channels", "1", "--format", "s16", "--latency", "30ms"]
-            if config["audio"]["device"]:
-                argv += ["--target", config["audio"]["device"]]
-            argv += ["-"]
-            # preexec_fn is only safe because no thread exists yet in this process;
-            # keep this spawn before read_errors() starts.
-            capture = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                       stdin=subprocess.DEVNULL, preexec_fn=functools.partial(_capture_child, os.getpid()))
-            def read_errors():
-                while chunk := capture.stderr.read(512):
-                    errors.append(chunk)
-            threading.Thread(target=read_errors, daemon=True).start()
+        # Native decoders own the compiled grammar; initialization scaffolding
+        # need not stay resident while this worker waits for microphone frames.
+        del grammar
+        argv = ["pw-record", "--raw", "--rate", "16000", "--channels", "1", "--format", "s16", "--latency", "30ms"]
+        if config["audio"]["device"]:
+            argv += ["--target", config["audio"]["device"]]
+        argv += ["-"]
+        # preexec_fn is only safe because no thread exists yet in this process;
+        # keep this spawn before read_errors() starts.
+        capture = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                   stdin=subprocess.DEVNULL, preexec_fn=functools.partial(_capture_child, os.getpid()))
+        def read_errors():
+            while chunk := capture.stderr.read(512):
+                errors.append(chunk)
+        threading.Thread(target=read_errors, daemon=True).start()
         audio = selector.register(capture.stdout, selectors.EVENT_READ)
         # A wake worker keeps stdin open. Only after "ready" does the service
         # write "listen" or "cancel" lines (so main()'s buffered payload read
@@ -203,7 +200,7 @@ def run(config: dict, mode: str, grammar: dict | list[str]):
             # Handle control first regardless of selector order; a continuously
             # readable microphone must not starve listen/cancel acknowledgements.
             if control is not None and any(key is control for key, _mask in events):
-                data = capture.read(0, 4096) if is_windows() else os.read(0, 4096)
+                data = os.read(0, 4096)
                 if not data:   # the service closed the channel; keep waiting for the wake word
                     selector.unregister(0)
                     control = None
@@ -216,7 +213,7 @@ def run(config: dict, mode: str, grammar: dict | list[str]):
                     ready(listening=listening, deadline=deadline)
                 if not any(key is audio for key, _mask in events):
                     continue
-            data = capture.read(audio.fd, frame_bytes - len(pending)) if is_windows() else os.read(audio.fd, frame_bytes - len(pending))
+            data = os.read(audio.fd, frame_bytes - len(pending))
             if not data:
                 capture.wait(timeout=2)
                 detail = b"".join(errors).decode(errors="replace").strip()[-800:]
@@ -289,8 +286,7 @@ def run(config: dict, mode: str, grammar: dict | list[str]):
     except Exception as exc:
         emit(event="error", message=str(exc))
     finally:
-        if selector is not None:
-            selector.close()
+        selector.close()
         if engine:
             engine.close()
         if capture:
@@ -312,7 +308,11 @@ def main():
         if len(line) > 1048576:
             raise ValueError("Voice configuration exceeds 1 MiB")
         payload = json.loads(line)
-        run(payload["config"], payload["mode"], payload.get("grammar", payload.get("phrases")))
+        del line
+        # Transfer arguments out of the payload so the caller does not retain
+        # a second owner of the source grammar throughout the worker loop.
+        run(payload.pop("config"), payload.pop("mode"),
+            payload.pop("grammar", payload.pop("phrases", None)))
     except Exception as exc:
         emit(event="error", message="Voice worker configuration: " + str(exc))
 

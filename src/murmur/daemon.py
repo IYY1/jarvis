@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import asyncio
-import importlib.util
 import json
 import os
 from pathlib import Path
@@ -58,8 +57,8 @@ class Service:
         self.worker_lock = asyncio.Lock()
         self.stopping = asyncio.Event()
         self.tasks: set[asyncio.Task] = set()
-        self.voice_available = (importlib.util.find_spec("pocketsphinx") is not None
-                                or importlib.util.find_spec("vosk") is not None)
+        from .native_worker import python_worker_available, rust_ready
+        self.voice_available = python_worker_available() or rust_ready(self.config)
         self.desktop_executor = None
         if is_windows():
             from concurrent.futures import ThreadPoolExecutor
@@ -101,9 +100,11 @@ class Service:
 
     def voice_grammar(self) -> dict:
         """Command grammar plus which desktop entry each spoken app name opens."""
-        grammar = self.parser.grammar(list(self.apps.index))
+        names = list(self.apps.index)
+        names.extend(row["voice_name"] for row in self.apps.voice_commands(self.parser))
+        grammar = self.parser.grammar(names)
         app_ids = {}
-        for name in self.apps.index:
+        for name in names:
             try:
                 app_ids[name] = self.apps.resolve(name).id
             except CommandError:
@@ -348,7 +349,8 @@ class Service:
             self.stopping.set()
             return {"ok": True, "pid": os.getpid()}
         if op == "status":
-            return {"ok": True, "status": self.status()}
+            from .process_memory import snapshot
+            return {"ok": True, "status": self.status(), "pid": os.getpid(), "memory": snapshot()}
         if op == "config":
             return {"ok": True, "config": self.config}
         if op == "apps":
@@ -365,17 +367,11 @@ class Service:
                     app["speakable"] = any("open " + normalize(n) not in excluded for n in [app["name"], *app["aliases"]] if len(n) <= 256)
             return {"ok": True, "apps": entries}
         if op == "commands":
-            return {"ok": True, "commands": REFERENCE}
+            return {"ok": True, "commands": REFERENCE, "applications": self.apps.voice_commands(self.parser)}
         if op == "devices":
             return {"ok": True, "devices": await asyncio.to_thread(devices)}
         if op == "recording_devices":
             return {"ok": True, "devices": [{"id": d["name"], "name": d["description"], "monitor": d["monitor"]} for d in await asyncio.to_thread(audio_sources)]}
-        if op == "brightness_monitors":
-            if is_windows():
-                from .windows.brightness import inventory
-            else:
-                from .brightness import inventory
-            return {"ok": True, "monitors": await self.desktop_call(inventory)}
         if op == "monitors":
             return {"ok": True, "monitors": await asyncio.to_thread(self.recorder.sources)}
         if op == "mute":
@@ -407,7 +403,7 @@ class Service:
             if self.replay.status()["state"] in ("on", "stopping") and (
                     c["recording"] != self.config["recording"] or any(
                         c["replay"][key] != self.config["replay"][key]
-                        for key in ("seconds", "game_audio", "microphone"))):
+                        for key in ("seconds", "game_audio", "microphone", "storage", "max_mb", "buffer_dir"))):
                 raise CommandError("Stop instant replay before changing capture settings")
             was_onboarded = self.config["privacy"]["onboarded"]
             self.config = await asyncio.to_thread(configuration.save, c)
@@ -511,12 +507,16 @@ async def serve():
                 service.watchers.add(queue)
                 queue.put_nowait({"ok": True, "status": service.status()})
                 # Detect disconnect while status is unchanged, without timer polling.
+                # Subscriptions also end at shutdown: Server.wait_closed() waits
+                # for every connection, so an open Settings window or Waybar
+                # module would otherwise keep the service from exiting.
                 eof = asyncio.create_task(reader.read(1))
+                stop = asyncio.create_task(service.stopping.wait())
                 try:
-                    while not eof.done():
+                    while not eof.done() and not stop.done():
                         event = asyncio.create_task(queue.get())
-                        done, _ = await asyncio.wait([eof, event], return_when=asyncio.FIRST_COMPLETED)
-                        if eof in done:
+                        done, _ = await asyncio.wait([eof, stop, event], return_when=asyncio.FIRST_COMPLETED)
+                        if event not in done:
                             event.cancel()
                             await asyncio.gather(event, return_exceptions=True)
                             break
@@ -524,6 +524,7 @@ async def serve():
                         await asyncio.wait_for(writer.drain(), 2)
                 finally:
                     eof.cancel()
+                    stop.cancel()
             else:
                 result = await service.handle(payload)
                 writer.write((json.dumps(result) + "\n").encode())

@@ -1,0 +1,5365 @@
+{
+  "scope": "Fresh native Windows Python voice engines with the supplied public PCM fixture, paced direct engine feed, no microphone, WASAPI, desktop actions, service, replay or settings.",
+  "fixture_sha256": "f15c60ec54059d8b66e410d0064945a0b0a04ea56e1ddca1958e493c0cf70e71",
+  "runs": [
+    {
+      "profile": "vosk",
+      "events": [
+        {
+          "event": "probe-ready",
+          "engine": "vosk"
+        },
+        {
+          "event": "probe-result",
+          "recognition": [
+            {
+              "kind": "wake",
+              "text": "go forward",
+              "confidence": null,
+              "min_word_posterior": null,
+              "heard": null,
+              "closest_match": false
+            },
+            {
+              "kind": "command",
+              "text": "ten meters",
+              "confidence": 1.0,
+              "min_word_posterior": 1.0,
+              "heard": null,
+              "closest_match": false
+            }
+          ]
+        }
+      ],
+      "samples": [
+        {
+          "elapsed_seconds": 1.6869999853952322e-05,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 5640192,
+                "commit_bytes": 7450624
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 5640192,
+              "commit_bytes": 7450624
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 0.13060026999983165,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 11866112,
+                "commit_bytes": 14147584
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 11866112,
+              "commit_bytes": 14147584
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 0.23473110999975688,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 13832192,
+                "commit_bytes": 15663104
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 13832192,
+              "commit_bytes": 15663104
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 0.33907038999996075,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 33681408,
+                "commit_bytes": 170831872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 33681408,
+              "commit_bytes": 170831872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 0.4446277900001405,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 46043136,
+                "commit_bytes": 1125601280
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 46043136,
+              "commit_bytes": 1125601280
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 0.551636260000123,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 78983168,
+                "commit_bytes": 1157943296
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 78983168,
+              "commit_bytes": 1157943296
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 0.6585511600001155,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 133095424,
+                "commit_bytes": 1204056064
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 133095424,
+              "commit_bytes": 1204056064
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 0.7681677699997636,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 135393280,
+                "commit_bytes": 1225678848
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 135393280,
+              "commit_bytes": 1225678848
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 0.8772337599998536,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 0.9862810999998146,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 1.0959873900001185,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 1.2050381200001539,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 1.3151566400001684,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 1.4247492899999088,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 1.5338418800001818,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 1.6432970900000328,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 1.752283129999796,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 1.861885639999855,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 1.9725790500001494,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 2.0827085900000384,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 2.1918394300000728,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 2.3014535900001647,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 2.4105498899998565,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 2.520248089999768,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 2.629843979999805,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 2.7388702600001125,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 2.848017880000043,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 2.9570226900000307,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 3.066178890000174,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 3.176867719999791,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 3.2864347499998985,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 3.3960014899998896,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 3.505631590000121,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 3.6146852000001672,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 3.724240479999935,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 3.834403360000124,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 3.9439924100001917,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136572928,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136572928,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 4.052942870000152,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136921088,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136921088,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 4.162152139999762,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136921088,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136921088,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 4.272195829999873,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136921088,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136921088,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 4.380926719999934,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136921088,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136921088,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 4.490059719999863,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 136921088,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 136921088,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 4.599867079999967,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 137207808,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 137207808,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 4.709210720000101,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 137207808,
+                "commit_bytes": 1226731520
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 137207808,
+              "commit_bytes": 1226731520
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 4.8185764499999095,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 137302016,
+                "commit_bytes": 1226887168
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 137302016,
+              "commit_bytes": 1226887168
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 4.928406059999816,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 137302016,
+                "commit_bytes": 1226887168
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 137302016,
+              "commit_bytes": 1226887168
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 5.0381934199999705,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 137302016,
+                "commit_bytes": 1226887168
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 137302016,
+              "commit_bytes": 1226887168
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 5.147554610000043,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 137850880,
+                "commit_bytes": 1227386880
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 137850880,
+              "commit_bytes": 1227386880
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 5.256832340000074,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 137850880,
+                "commit_bytes": 1227386880
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 137850880,
+              "commit_bytes": 1227386880
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 5.366757969999981,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 137990144,
+                "commit_bytes": 1227517952
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 137990144,
+              "commit_bytes": 1227517952
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 5.4765549399999145,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 137990144,
+                "commit_bytes": 1227517952
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 137990144,
+              "commit_bytes": 1227517952
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 5.5864383299999645,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 138047488,
+                "commit_bytes": 1227583488
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 138047488,
+              "commit_bytes": 1227583488
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 5.695670669999799,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 138047488,
+                "commit_bytes": 1227583488
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 138047488,
+              "commit_bytes": 1227583488
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 5.804914679999911,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 138055680,
+                "commit_bytes": 1227583488
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 138055680,
+              "commit_bytes": 1227583488
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 5.914261240000087,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 138055680,
+                "commit_bytes": 1227583488
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 138055680,
+              "commit_bytes": 1227583488
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 6.023475800000142,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 138055680,
+                "commit_bytes": 1227583488
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 138055680,
+              "commit_bytes": 1227583488
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 6.132738079999854,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 138055680,
+                "commit_bytes": 1227583488
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 138055680,
+              "commit_bytes": 1227583488
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 6.241440549999879,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 138055680,
+                "commit_bytes": 1227583488
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 138055680,
+              "commit_bytes": 1227583488
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 6.350641930000165,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 138055680,
+                "commit_bytes": 1227583488
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 138055680,
+              "commit_bytes": 1227583488
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 6.459926500000165,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 138055680,
+                "commit_bytes": 1227583488
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 138055680,
+              "commit_bytes": 1227583488
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 6.568884870000147,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 138121216,
+                "commit_bytes": 1227649024
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 138121216,
+              "commit_bytes": 1227649024
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 6.678747169999951,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 138121216,
+                "commit_bytes": 1227649024
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 138121216,
+              "commit_bytes": 1227649024
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 6.788032479999856,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 138121216,
+                "commit_bytes": 1227649024
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 138121216,
+              "commit_bytes": 1227649024
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 6.897895690000041,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 138186752,
+                "commit_bytes": 1227714560
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 138186752,
+              "commit_bytes": 1227714560
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 7.007257929999923,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 138186752,
+                "commit_bytes": 1227714560
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 138186752,
+              "commit_bytes": 1227714560
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 7.116344819999995,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 139141120,
+                "commit_bytes": 1228828672
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 139141120,
+              "commit_bytes": 1228828672
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 7.2258696200001395,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 143536128,
+                "commit_bytes": 1233776640
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 143536128,
+              "commit_bytes": 1233776640
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 7.335215430000062,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 146776064,
+                "commit_bytes": 1236402176
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 146776064,
+              "commit_bytes": 1236402176
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 7.444715730000098,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 151035904,
+                "commit_bytes": 1242513408
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 151035904,
+              "commit_bytes": 1242513408
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 7.554744309999933,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 7.665416469999855,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 7.775582450000002,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 7.885656150000159,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 7.996281039999758,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 8.105854939999972,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 8.217301019999923,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 8.326953799999956,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 8.437564670000029,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 8.548161209999762,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 8.658355219999976,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 8.768432349999784,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 8.878615120000177,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 8.98924956000019,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 9.099905500000204,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 9.210014320000028,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 9.319523380000192,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 9.428899479999927,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 9.538943519999975,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 9.651061550000122,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 9.760608420000153,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 9.870610399999805,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 9.980056540000078,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 10.0894918099998,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 10.199460899999849,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 10.309614090000196,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 10.419200939999882,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 10.529337970000142,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 10.638902929999858,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              5468
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 5468,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 152842240,
+                "commit_bytes": 1243983872
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 152842240,
+              "commit_bytes": 1243983872
+            },
+            "complete": true
+          }
+        }
+      ],
+      "all_memory_samples_complete": true
+    },
+    {
+      "profile": "small.en",
+      "events": [
+        {
+          "event": "loading",
+          "message": "Loading the accurate voice model\u2026"
+        },
+        {
+          "event": "probe-ready",
+          "engine": "vosk+whisper-small"
+        },
+        {
+          "event": "probe-result",
+          "recognition": [
+            {
+              "kind": "wake",
+              "text": "go forward",
+              "confidence": null,
+              "min_word_posterior": null,
+              "heard": null,
+              "closest_match": false
+            },
+            {
+              "kind": "command",
+              "text": "ten meters",
+              "confidence": 1.0,
+              "min_word_posterior": 1.0,
+              "heard": null,
+              "closest_match": false
+            }
+          ]
+        }
+      ],
+      "samples": [
+        {
+          "elapsed_seconds": 1.9950000023527537e-05,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 360448,
+                "commit_bytes": 1765376
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 360448,
+              "commit_bytes": 1765376
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 0.10297738999997819,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 11911168,
+                "commit_bytes": 14016512
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 11911168,
+              "commit_bytes": 14016512
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 0.2069381000001158,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 14807040,
+                "commit_bytes": 18538496
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 14807040,
+              "commit_bytes": 18538496
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 0.3114203400000406,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 31895552,
+                "commit_bytes": 35532800
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 31895552,
+              "commit_bytes": 35532800
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 0.41640507000010984,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 135028736,
+                "commit_bytes": 136519680
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 135028736,
+              "commit_bytes": 136519680
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 0.5266802199998892,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 159100928,
+                "commit_bytes": 163618816
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 159100928,
+              "commit_bytes": 163618816
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 0.6428528299998106,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 165924864,
+                "commit_bytes": 172793856
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 165924864,
+              "commit_bytes": 172793856
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 0.7588404200000696,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 254705664,
+                "commit_bytes": 287162368
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 254705664,
+              "commit_bytes": 287162368
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 0.873436429999856,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 404930560,
+                "commit_bytes": 408080384
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 404930560,
+              "commit_bytes": 408080384
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 0.9967193900001803,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 452407296,
+                "commit_bytes": 458829824
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 452407296,
+              "commit_bytes": 458829824
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 1.1203751500002,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 452550656,
+                "commit_bytes": 458833920
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 452550656,
+              "commit_bytes": 458833920
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 1.240541210000174,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 452632576,
+                "commit_bytes": 458833920
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 452632576,
+              "commit_bytes": 458833920
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 1.3617590799999562,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 452702208,
+                "commit_bytes": 458833920
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 452702208,
+              "commit_bytes": 458833920
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 1.4845133499998155,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 452702208,
+                "commit_bytes": 458833920
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 452702208,
+              "commit_bytes": 458833920
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 1.6051727499998378,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 452702208,
+                "commit_bytes": 458833920
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 452702208,
+              "commit_bytes": 458833920
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 1.7264239300002373,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 453763072,
+                "commit_bytes": 459935744
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 453763072,
+              "commit_bytes": 459935744
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 1.8470635500002572,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 473141248,
+                "commit_bytes": 616480768
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 473141248,
+              "commit_bytes": 616480768
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 1.969278949999989,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 516386816,
+                "commit_bytes": 928387072
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 516386816,
+              "commit_bytes": 928387072
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 2.093527720000111,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 573091840,
+                "commit_bytes": 994471936
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 573091840,
+              "commit_bytes": 994471936
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 2.219788840000092,
+          "phase": "loading",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575569920,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575569920,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 2.3450354000001425,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 2.4697656299999835,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 2.5954982200000813,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 2.722777219999898,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 2.8479772700002286,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 2.9746875999999247,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 3.099947340000199,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 3.2275348799998937,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 3.3532318500001566,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 3.478455639999993,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 3.6047257099999115,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 3.7309752999999546,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 3.8561933999999383,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 3.9834824200002004,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 4.1113019300000815,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 4.236476349999975,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 4.363241730000027,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 4.489588190000177,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 4.6147036900001694,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 4.740271740000026,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 4.865519030000087,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 4.991292059999978,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 5.117498439999963,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 5.241757020000023,
+          "phase": "waiting",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 5.365429779999886,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 5.489956880000136,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 5.615463109999837,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 5.7419305799999165,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 5.86734333000004,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 575963136,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 575963136,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 5.992365220000011,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 576233472,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 576233472,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 6.118977149999864,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 576233472,
+                "commit_bytes": 998162432
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 576233472,
+              "commit_bytes": 998162432
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 6.247034970000186,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 576364544,
+                "commit_bytes": 998318080
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 576364544,
+              "commit_bytes": 998318080
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 6.373556380000082,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 576364544,
+                "commit_bytes": 998318080
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 576364544,
+              "commit_bytes": 998318080
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 6.500163900000189,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 576860160,
+                "commit_bytes": 998817792
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 576860160,
+              "commit_bytes": 998817792
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 6.625793279999925,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 576860160,
+                "commit_bytes": 998817792
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 576860160,
+              "commit_bytes": 998817792
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 6.753158909999911,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 577069056,
+                "commit_bytes": 999014400
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 577069056,
+              "commit_bytes": 999014400
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 6.881296680000105,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 577069056,
+                "commit_bytes": 999014400
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 577069056,
+              "commit_bytes": 999014400
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 7.007673669999804,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 577073152,
+                "commit_bytes": 999014400
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 577073152,
+              "commit_bytes": 999014400
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 7.133332530000189,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 577073152,
+                "commit_bytes": 999014400
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 577073152,
+              "commit_bytes": 999014400
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 7.258825140000226,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 577081344,
+                "commit_bytes": 999014400
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 577081344,
+              "commit_bytes": 999014400
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 7.385925099999895,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 577081344,
+                "commit_bytes": 999014400
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 577081344,
+              "commit_bytes": 999014400
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 7.511479119999876,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 577089536,
+                "commit_bytes": 999014400
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 577089536,
+              "commit_bytes": 999014400
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 7.637536650000129,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 577093632,
+                "commit_bytes": 999014400
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 577093632,
+              "commit_bytes": 999014400
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 7.762982069999907,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 577097728,
+                "commit_bytes": 999014400
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 577097728,
+              "commit_bytes": 999014400
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 7.8885590499999125,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 577101824,
+                "commit_bytes": 999014400
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 577101824,
+              "commit_bytes": 999014400
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 8.013504829999874,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 577101824,
+                "commit_bytes": 999014400
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 577101824,
+              "commit_bytes": 999014400
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 8.139062650000142,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 577101824,
+                "commit_bytes": 999014400
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 577101824,
+              "commit_bytes": 999014400
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 8.264076639999985,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 577167360,
+                "commit_bytes": 999079936
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 577167360,
+              "commit_bytes": 999079936
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 8.389959180000005,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 577167360,
+                "commit_bytes": 999079936
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 577167360,
+              "commit_bytes": 999079936
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 8.514769230000184,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 578924544,
+                "commit_bytes": 1000423424
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 578924544,
+              "commit_bytes": 1000423424
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 8.641076570000223,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 584339456,
+                "commit_bytes": 1006477312
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 584339456,
+              "commit_bytes": 1006477312
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 8.76836005999985,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 588107776,
+                "commit_bytes": 1010413568
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 588107776,
+              "commit_bytes": 1010413568
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 8.896113490000062,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 592977920,
+                "commit_bytes": 1015554048
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 592977920,
+              "commit_bytes": 1015554048
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 9.02385434000007,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 606330880,
+                "commit_bytes": 1029206016
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 606330880,
+              "commit_bytes": 1029206016
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 9.151642599999832,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 602611712,
+                "commit_bytes": 1041723392
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 602611712,
+              "commit_bytes": 1041723392
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 9.279406130000098,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 604667904,
+                "commit_bytes": 1041723392
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 604667904,
+              "commit_bytes": 1041723392
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 9.409724430000097,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 737652736,
+                "commit_bytes": 1175953408
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 737652736,
+              "commit_bytes": 1175953408
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 9.564285540000128,
+          "phase": "command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 738115584,
+                "commit_bytes": 1099751424
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 738115584,
+              "commit_bytes": 1099751424
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 9.699102850000145,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 9.825371339999947,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 9.95217976999993,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 10.080043980000028,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 10.20632377999982,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 10.335611670000162,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 10.463383950000207,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 10.590651689999959,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 10.716887770000085,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 10.843136120000054,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 10.98384335999981,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 11.110018930000024,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 11.23576723999986,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 11.360880409999936,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 11.486530019999918,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 11.611739240000134,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 11.738491500000237,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 11.864749589999974,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 11.99208869999984,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 12.118282859999908,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 12.244491540000126,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 12.37075528000014,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 12.496573609999814,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 12.622823950000111,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        },
+        {
+          "elapsed_seconds": 12.749026750000212,
+          "phase": "after-command",
+          "memory": {
+            "schema_version": 1,
+            "platform": "win32",
+            "roots": [
+              4944
+            ],
+            "scope": "explicit roots and descendants; add separately launched settings as a root",
+            "processes": [
+              {
+                "pid": 4944,
+                "ppid": 7072,
+                "name": "python.exe",
+                "private_working_set_bytes": 595079168,
+                "commit_bytes": 1017917440
+              }
+            ],
+            "totals": {
+              "private_working_set_bytes": 595079168,
+              "commit_bytes": 1017917440
+            },
+            "complete": true
+          }
+        }
+      ],
+      "all_memory_samples_complete": true
+    }
+  ],
+  "full_application_acceptance": false,
+  "complete": true,
+  "recorded_at": "2026-10-27",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "python": "3.13.17",
+  "ram_bytes": 8589389824,
+  "cpus": 4,
+  "driver_sha256": "df14543db5b4b64ae6ef222d30fec9db2d020d98864b8f85dd5d561654f5fe74",
+  "source_zip_sha256": "d92ed75ee1474759aa4ef85de35445e45768adcc4f23d28f7a08e10a2d42ea75",
+  "raw_job_result_sha256": "2582873d1fcff697fdfe050f94f54cff5cd169e79d62395c1b22421a703e5c5b",
+  "summary": [
+    {
+      "profile": "vosk",
+      "fixture_command_matches": true,
+      "phase_peaks_bytes": {
+        "loading": {
+          "private_working_set_bytes": 135393280,
+          "commit_bytes": 1225678848
+        },
+        "waiting": {
+          "private_working_set_bytes": 136572928,
+          "commit_bytes": 1226731520
+        },
+        "command": {
+          "private_working_set_bytes": 151035904,
+          "commit_bytes": 1242513408
+        },
+        "after-command": {
+          "private_working_set_bytes": 152842240,
+          "commit_bytes": 1243983872
+        }
+      }
+    },
+    {
+      "profile": "small.en",
+      "fixture_command_matches": true,
+      "phase_peaks_bytes": {
+        "loading": {
+          "private_working_set_bytes": 575569920,
+          "commit_bytes": 998162432
+        },
+        "waiting": {
+          "private_working_set_bytes": 575963136,
+          "commit_bytes": 998162432
+        },
+        "command": {
+          "private_working_set_bytes": 738115584,
+          "commit_bytes": 1175953408
+        },
+        "after-command": {
+          "private_working_set_bytes": 595079168,
+          "commit_bytes": 1017917440
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "One fresh engine per profile and one public recording; not an accent/negative corpus or latency nonregression.",
+    "Only the measured child engine is included. The external Python meter, service, capture, replay and settings are excluded.",
+    "Approximately 100 ms sampling can miss brief peaks. Waiting is a short three-second observation after ready; no soak or plateau claim.",
+    "The Vosk-only arm explicitly disables accurate recognition and is not a proposed production default.",
+    "Both private working set and private commit are reported; high private commit is not itself evidence of a leak."
+  ]
+}

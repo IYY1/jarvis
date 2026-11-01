@@ -1,5 +1,5 @@
 //! Lossless storage compaction, with f32 lookup and projection arithmetic.
-//! The supported export's f32 embedding values are exactly binary16 values.
+//! The supported exports' f32 embedding values are exactly binary16 values.
 //! Check every value before compacting; keep the original tensor otherwise.
 use rayon::prelude::*;
 use std::io::Read;

@@ -1,0 +1,75 @@
+{
+  "recorded_at": "2026-10-26T04:31:58.480108+00:00",
+  "platform": "Linux-7.3.0-5-cachyos-x86_64-with-glibc2.44",
+  "scope": "fresh sequential real Rust workers with Vosk/Whisper/GTCRN, paced fake capture of the public fixture, idle limit 60 s, three commands each; worker RSS only; no microphone/actions; a small latency sample, not a Windows/whole-application release gate",
+  "runs": {
+    "before": {
+      "binary_sha256": "efb0ea722974f58dee34e75611071174fb741c7f7337eab9a7fd1ad28c63a230",
+      "whisper_idle_seconds": 60,
+      "gap_seconds": 4,
+      "denoise": true,
+      "ready_seconds": 0.223,
+      "waiting_rss_mib": 157.24,
+      "released_rss_mib": null,
+      "max_sampled_rss_mib": 548.59,
+      "peak_rss_mib": 547.37,
+      "cpu_seconds": 6.05,
+      "commands": [
+        {
+          "text": "ten meters",
+          "latency_ms": 1108.4,
+          "whisper_loaded_at_speech_start": false,
+          "rss_at_speech_start_mib": 157.24
+        },
+        {
+          "text": "ten meters",
+          "latency_ms": 985.4,
+          "whisper_loaded_at_speech_start": true,
+          "rss_at_speech_start_mib": 484.66
+        },
+        {
+          "text": "ten meters",
+          "latency_ms": 994.5,
+          "whisper_loaded_at_speech_start": true,
+          "rss_at_speech_start_mib": 485.06
+        }
+      ],
+      "median_latency_ms": 994.5,
+      "p95_latency_ms": 1108.4
+    },
+    "after": {
+      "binary_sha256": "9fc6b9615d2a2aab17d78e296c05c8fa696a14d7eb6f500f986a760035d5d75a",
+      "whisper_idle_seconds": 60,
+      "gap_seconds": 4,
+      "denoise": true,
+      "ready_seconds": 0.206,
+      "waiting_rss_mib": 156.13,
+      "released_rss_mib": null,
+      "max_sampled_rss_mib": 545.57,
+      "peak_rss_mib": 544.18,
+      "cpu_seconds": 6.1,
+      "commands": [
+        {
+          "text": "ten meters",
+          "latency_ms": 1142.8,
+          "whisper_loaded_at_speech_start": false,
+          "rss_at_speech_start_mib": 156.13
+        },
+        {
+          "text": "ten meters",
+          "latency_ms": 975.1,
+          "whisper_loaded_at_speech_start": true,
+          "rss_at_speech_start_mib": 481.17
+        },
+        {
+          "text": "ten meters",
+          "latency_ms": 982.6,
+          "whisper_loaded_at_speech_start": true,
+          "rss_at_speech_start_mib": 481.63
+        }
+      ],
+      "median_latency_ms": 982.6,
+      "p95_latency_ms": 1142.8
+    }
+  }
+}

@@ -202,9 +202,12 @@ class ReplayPhraseTests(unittest.TestCase):
 
     def test_config_defaults_and_bounds(self):
         self.assertEqual(config.validate({})["replay"], {"seconds": 120, "autostart": False, "game_audio": True,
-                                                       "microphone": True, "sound": True})
+                                                       "microphone": True, "sound": True,
+                                                       "storage": "ram", "max_mb": 256, "buffer_dir": ""})
         for bad in ({"seconds": 5}, {"seconds": 601}, {"seconds": "120"}, {"autostart": 1}, {"game_audio": "yes"},
-                    {"microphone": 0}, {"sound": None}):
+                    {"microphone": 0}, {"sound": None}, {"storage": "auto"}, {"storage": None},
+                    {"max_mb": True}, {"max_mb": 63}, {"max_mb": 16385}, {"max_mb": 64.0},
+                    {"buffer_dir": None}, {"buffer_dir": "a\0b"}):
             with self.subTest(bad=bad), self.assertRaises(ValueError):
                 config.validate({"replay": bad})
 
@@ -321,9 +324,10 @@ class ReplayServiceTests(unittest.IsolatedAsyncioTestCase):
             service = Service({})
         service.replay = MagicMock()
         service.replay.status.return_value = {"state": "on"}
-        for key in ("seconds", "game_audio", "microphone"):
+        for key, value in (("seconds", 180), ("game_audio", False), ("microphone", False),
+                           ("storage", "disk"), ("max_mb", 512), ("buffer_dir", "/another/buffer")):
             cfg = copy.deepcopy(service.config)
-            cfg["replay"][key] = 180 if key == "seconds" else not cfg["replay"][key]
+            cfg["replay"][key] = value
             with self.subTest(key=key), patch("murmur.daemon.configuration.save") as save:
                 with self.assertRaisesRegex(ValueError, "Stop instant replay"):
                     await service.handle({"op": "save_config", "config": cfg})

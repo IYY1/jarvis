@@ -1,0 +1,190 @@
+{
+  "scope": "Isolated native-handle residency attribution; no audio or production changes.",
+  "rows": [
+    {
+      "stage": "python-meter-only",
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          2
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 2,
+            "ppid": 1,
+            "name": "python",
+            "rss_bytes": 13754368,
+            "pss_bytes": 6839296
+          }
+        ],
+        "totals": {
+          "rss_bytes": 13754368,
+          "pss_bytes": 6839296
+        },
+        "complete": true
+      }
+    },
+    {
+      "stage": "vosk-library-loaded",
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          2
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 2,
+            "ppid": 1,
+            "name": "python",
+            "rss_bytes": 19542016,
+            "pss_bytes": 9944064
+          }
+        ],
+        "totals": {
+          "rss_bytes": 19542016,
+          "pss_bytes": 9944064
+        },
+        "complete": true
+      }
+    },
+    {
+      "stage": "model-only",
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          2
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 2,
+            "ppid": 1,
+            "name": "python",
+            "rss_bytes": 160632832,
+            "pss_bytes": 149302272
+          }
+        ],
+        "totals": {
+          "rss_bytes": 160632832,
+          "pss_bytes": 149302272
+        },
+        "complete": true
+      }
+    },
+    {
+      "stage": "minimal-wake-decoder",
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          2
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 2,
+            "ppid": 1,
+            "name": "python",
+            "rss_bytes": 161406976,
+            "pss_bytes": 149768192
+          }
+        ],
+        "totals": {
+          "rss_bytes": 161406976,
+          "pss_bytes": 149768192
+        },
+        "complete": true
+      }
+    },
+    {
+      "stage": "minimal-command-decoder",
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          2
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 2,
+            "ppid": 1,
+            "name": "python",
+            "rss_bytes": 161615872,
+            "pss_bytes": 149977088
+          }
+        ],
+        "totals": {
+          "rss_bytes": 161615872,
+          "pss_bytes": 149977088
+        },
+        "complete": true
+      }
+    },
+    {
+      "stage": "free-decoder",
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          2
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 2,
+            "ppid": 1,
+            "name": "python",
+            "rss_bytes": 163987456,
+            "pss_bytes": 152348672
+          }
+        ],
+        "totals": {
+          "rss_bytes": 163987456,
+          "pss_bytes": 152348672
+        },
+        "complete": true
+      }
+    },
+    {
+      "stage": "native-handles-freed-no-trim",
+      "memory": {
+        "schema_version": 1,
+        "platform": "linux",
+        "roots": [
+          2
+        ],
+        "scope": "explicit roots and descendants; add separately launched settings as a root",
+        "processes": [
+          {
+            "pid": 2,
+            "ppid": 1,
+            "name": "python",
+            "rss_bytes": 92823552,
+            "pss_bytes": 81184768
+          }
+        ],
+        "totals": {
+          "rss_bytes": 92823552,
+          "pss_bytes": 81184768
+        },
+        "complete": true
+      }
+    }
+  ],
+  "recognition_acceptance": false,
+  "recorded_at": "2026-10-27",
+  "model_name": "vosk-model-small-en-us-0.15",
+  "limitations": [
+    "Python ctypes and diagnostic meter remain in the process; this is not the shipping Rust worker.",
+    "Minimal wake/command grammars establish component attribution only; no recognition or latency acceptance.",
+    "No allocator trimming; freed-handle RSS can retain allocator pages.",
+    "Decoder creation adds about 3.2 MiB in this minimal control; simply deferring these two small decoder handles cannot explain the tens of MiB needed to clear the waiting target. Actual application grammars can differ."
+  ],
+  "source_sha256": "5fa66c70ad2e89ae0eb430b343b69124593d50c0e7295bd78ac47feb38b8a5dc"
+}

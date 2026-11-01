@@ -1,0 +1,22 @@
+{
+  "recorded_at": "2026-10-26T23:21:10.891966+00:00",
+  "reason": "Live validation found saved clips inside the temporary disk buffer",
+  "session_path": "/home/silver/.local/share/murmur/replay-buffer/session-2b8f0e-18e234b23d4b11b2",
+  "preserved": [
+    {
+      "source": "/home/silver/.local/share/murmur/replay-buffer/session-2b8f0e-18e234b23d4b11b2/Replay_2026-10-27_02-18-08.mp4",
+      "destination": "/home/silver/Videos/Murmur/Replay_2026-10-27_02-18-08.mp4",
+      "bytes": 57866969,
+      "sha256": "ee88155e928adfb7cdb52a6e372ae6fa7da5d30eb571e9298eb8ae3eeaaa17d8"
+    }
+  ],
+  "complete": true,
+  "old_buffer_removed": true,
+  "preserved_clips_verified_after_cleanup": true,
+  "temporary_fallback": "ram",
+  "final_replay": {
+    "state": "on",
+    "message": "Instant replay on \u00b7 HDR \u00b7 keeping the last 120 seconds in memory.",
+    "file": null
+  }
+}

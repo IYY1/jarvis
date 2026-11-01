@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.3.0 — 2026-11-01
+
+### Windows
+
+- **Native voice worker**: speech recognition uses the same Rust worker as
+  Linux, with WASAPI microphone capture. Whisper loads only after the wake word
+  and unloads after 60 seconds idle. Measured on Windows 10, the whole app waits
+  in 165 MiB instead of 599 MiB (−72%), peaks at 533 instead of 777 MiB, and is
+  listening 1.2 s after starting instead of 2.4 s
+  ([measurements](docs/windows-memory.md)). Each command takes about 0.3 s
+  longer to recognize; this regression is under investigation.
+- **One setup file**: choose a desktop shortcut and start at sign-in; upgrades
+  replace the old program files and keep settings and recordings; uninstall can
+  optionally delete settings. `JarvisConsole.exe startup on|off` added.
+- Smaller bundle: ONNX Runtime, sherpa-onnx and PocketSphinx are no longer
+  shipped on Windows.
+- Validated on Windows 10 in a virtual machine (install, upgrade from 0.2.0,
+  voice, reboot with start at sign-in, uninstall); physical hardware and
+  Windows 11 are not yet tested.
+
+### All platforms
+
+- **Fixed**: the service could not stop while a status subscriber (the settings
+  window, the Waybar module) was connected.
+- **Removed**: monitor brightness by voice, which was unreliable (unknown
+  monitor names for the wake model, dropped DDC/CI writes). The Arch installer
+  no longer installs `ddcutil`. Existing settings files still load.
+- Build and test container in `packaging/container/` for the Linux tests and the
+  Windows installer.
+
 ## 0.2.0 — 2026-10-26
 
 ### New

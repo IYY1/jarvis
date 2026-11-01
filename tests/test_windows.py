@@ -10,14 +10,14 @@ import threading
 import time
 import types
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from murmur import config, host
 from murmur.recorder import RecorderError
 from murmur.windows import encoding, transport
-from murmur.windows.audio import PCMStream, VoiceIO, select_device
+from murmur.windows.audio import PCMStream, select_device
 from murmur.windows.apps import WindowsApp
-from murmur.windows.capture import ReplayBuffer
+from murmur.windows.capture import Replay, ReplayBuffer
 
 try:
     import tkinter  # noqa: F401  (the Windows settings window needs Tk)
@@ -30,7 +30,7 @@ except ImportError:
 class WindowRequestTests(unittest.TestCase):
     def test_requests_keep_the_client_per_operation_timeouts(self):
         from murmur.windows.ui import Window
-        expected = {"brightness_monitors": 150, "execute": 45, "record_start": 20, "status": 15,
+        expected = {"execute": 45, "record_start": 20, "status": 15,
                     "record_stop": 60, "save_config": 60}
         for op, timeout in expected.items():
             with self.subTest(op=op):
@@ -192,6 +192,31 @@ class BufferTests(unittest.TestCase):
             buffer.snapshot(after=time.monotonic() + 1, timeout=0.01)
 
 
+class ReplaySaveTests(unittest.TestCase):
+    def test_failed_verification_reports_the_retained_partial_clip(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            segment = root / 'segment-0000.mkv'
+            segment.write_bytes(b'generated segment')
+            capture = Replay(config.validate({}))
+            capture._buffer, capture._folder, capture._process = MagicMock(), root, MagicMock()
+            capture._buffer.files.return_value.__enter__.return_value = (segment,)
+
+            def remux(argv, **kwargs):
+                Path(argv[-1]).write_bytes(b'completed clip retained for inspection')
+                return types.SimpleNamespace(returncode=0)
+
+            with patch('murmur.windows.capture.tool', return_value='fake-ffmpeg'), \
+                    patch('murmur.windows.capture.subprocess.run', side_effect=remux), \
+                    patch('murmur.windows.capture.verify_video', side_effect=RecorderError('invalid HDR metadata')):
+                with self.assertRaisesRegex(RecorderError, 'invalid HDR metadata'):
+                    capture.save()
+            status = capture.status()
+            self.assertIsNotNone(status['file'])
+            self.assertEqual(Path(status['file']).read_bytes(), b'completed clip retained for inspection')
+            self.assertIn('retained', status['message'])
+
+
 class TransportTests(unittest.TestCase):
     def test_auth_is_removed_and_non_string_or_incorrect_secret_is_rejected(self):
         token = transport.new_token()
@@ -303,6 +328,38 @@ class HostTests(unittest.TestCase):
         self.assertNotIn("discord", config.DEFAULTS)
 
 
+class StartupTests(unittest.TestCase):
+    """Setup's start-at-sign-in component uses the same entry and setting as Settings."""
+
+    def test_running_service_applies_the_change_itself(self):
+        from murmur.windows import startup
+        with patch("murmur.client.request", return_value={"ok": True}) as request, \
+                patch.object(startup, "set_startup") as registry:
+            self.assertEqual(startup.configure_startup(True), {"ok": True, "startup": True})
+        request.assert_called_once_with("set_startup", enabled=True, timeout=5)
+        registry.assert_not_called()
+
+    def test_stopped_service_updates_run_entry_and_saved_setting(self):
+        from murmur.windows import startup
+        with tempfile.TemporaryDirectory() as directory, \
+                patch.dict("os.environ", MURMUR_CONFIG=str(Path(directory) / "config.json")), \
+                patch("murmur.client.request", side_effect=ConnectionRefusedError), \
+                patch.object(startup, "set_startup") as registry:
+            startup.configure_startup(True)
+            self.assertTrue(config.load()["startup"])
+            startup.configure_startup(False)
+            self.assertFalse(config.load()["startup"])
+        self.assertEqual([c.args for c in registry.call_args_list], [(True,), (False,)])
+
+    def test_service_refusal_is_reported(self):
+        from murmur.windows import startup
+        with patch("murmur.client.request", return_value={"ok": False, "error": "nope"}), \
+                patch.object(startup, "set_startup") as registry:
+            with self.assertRaisesRegex(RuntimeError, "nope"):
+                startup.configure_startup(False)
+        registry.assert_not_called()
+
+
 class AudioTests(unittest.TestCase):
     def stream(self, source_channels, target_channels):
         # Build the conversion stage directly; no PortAudio instance/device.
@@ -358,19 +415,6 @@ class AudioTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "overflow"):
             stream.read(1)
 
-    def test_voice_control_has_priority_over_buffered_audio(self):
-        voice = object.__new__(VoiceIO)
-        voice.condition = threading.Condition()
-        voice.error = None
-        voice.closed = False
-        voice.controls = __import__("collections").deque([b"cancel\n"])
-        voice.audio = bytearray(b"audio")
-        voice.keys = {0: types.SimpleNamespace(fd=0), 1: types.SimpleNamespace(fd=1)}
-        self.assertEqual([key.fd for key, _ in voice.select(0)], [0, 1])
-        self.assertEqual(voice.read(0, 100), b"cancel\n")
-        self.assertEqual(voice.read(1, 3), b"aud")
-        self.assertEqual(voice.audio, b"io")
-
     def test_duplicate_device_names_are_refused(self):
         class Engine:
             def get_host_api_info_by_type(self, _):
@@ -384,31 +428,6 @@ class AudioTests(unittest.TestCase):
 
         with self.assertRaisesRegex(RuntimeError, "ambiguous"):
             select_device(Engine(), types.SimpleNamespace(paWASAPI=1), "input:Mic")
-
-    def test_decoding_discards_only_new_audio_and_preserves_control_lines(self):
-        from murmur.windows.audio import CommandTranscriber
-        from collections import deque
-
-        voice = object.__new__(VoiceIO)
-        voice.condition = threading.Condition()
-        voice.audio = bytearray(b"old")
-        voice.controls = deque([b"cancel\n"])
-        voice.decoding = False
-
-        class Decoder:
-            def transcribe(self, pcm):
-                self.assertion = voice.decoding and not voice.audio
-                voice.audio.extend(b"while decoding")
-                return "open firefox"
-
-        decoder = Decoder()
-        self.assertEqual(
-            CommandTranscriber(decoder, voice).transcribe(b"fixture"), "open firefox"
-        )
-        self.assertTrue(decoder.assertion)
-        self.assertFalse(voice.decoding)
-        self.assertFalse(voice.audio)
-        self.assertEqual(voice.controls.popleft(), b"cancel\n")
 
     def test_quiet_loopback_adds_timed_silence_but_microphone_never_does(self):
         stream = self.stream(2, 2)

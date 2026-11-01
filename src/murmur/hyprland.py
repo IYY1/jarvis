@@ -49,6 +49,9 @@ class Hyprland:
             state = "set" if action == "fullscreen" else "unset"
             return {"legacy": ["fullscreen", f"0 {state}"],
                     "lua": [f'hl.dsp.window.fullscreen({{ action = "{state}", mode = "fullscreen" }})']}
+        if action == "close_address" and isinstance(target, str) and re.fullmatch(r"0x[0-9a-fA-F]+", target):
+            return {"legacy": ["closewindow", "address:" + target],
+                    "lua": [f'hl.dsp.window.close({{ window = "address:{target}" }})']}
         if action == "focus_address" and isinstance(target, str) and re.fullmatch(r"0x[0-9a-fA-F]+", target):
             return {"legacy": ["focuswindow", "address:" + target],
                     "lua": [f'hl.dsp.focus({{ window = "address:{target}" }})']}

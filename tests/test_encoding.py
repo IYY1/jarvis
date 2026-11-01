@@ -95,8 +95,10 @@ class EncodingTests(unittest.TestCase):
         self.assertNotIn("--file", args)
         self.assertTrue(h.rpc("record_stop")["ok"])
         self.assertTrue(h.rpc("replay_start")["ok"])
-        h.wait(lambda: len(h.events("gpu-screen-recorder")) == 2)
-        replay = h.events("gpu-screen-recorder")[1]["args"]
+        # The backend also logs IPC readiness/requests; these are not launches.
+        h.wait(lambda: any(e.get("event") == "ipc_ready" for e in h.events("gpu-screen-recorder")))
+        replay = next(e["args"] for e in h.events("gpu-screen-recorder")
+                      if "event" not in e and "-ipc" in e["args"])
         for key in ("-k", "-f", "-q", "-bm"):
             self.assertEqual(replay[replay.index(key) + 1], args[args.index(key) + 1])
         self.assertTrue(h.rpc("replay_stop")["ok"])
