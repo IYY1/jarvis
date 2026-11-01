@@ -31,9 +31,27 @@ run, two runs per model, RSS/PSS sampled every 50 ms.
 | Command time after speech ends, median | 0.33 s | 0.16 s |
 | Commands correct | 10/10 | 10/10 |
 
-Waiting memory is unchanged because Whisper is not loaded then. Windows was not
-re-measured; the same model saves the same memory there, so its 533 MiB peak
-should fall by roughly 250 MiB, but that is an expectation, not a measurement.
+Waiting memory is unchanged because Whisper is not loaded then.
+
+## Measured on Windows 10 (0.3.1)
+
+Whole service tree with `scripts/benchmark_windows_app.py` (same VM and
+workload as [Windows memory](windows-memory.md): 10 paced commands, then 5
+minutes idle), two alternating runs per model, private working set.
+Raw results: [benchmarks/windows-light-2026-11-01/](benchmarks/windows-light-2026-11-01/).
+
+| | Small | Light (default) |
+| --- | ---: | ---: |
+| Waiting for the wake word | 165.4 MiB | 165.2 MiB |
+| While giving commands, median | 476.1 MiB | 250.8 MiB |
+| **Peak** | **522.4 MiB** | **264.6 MiB (−49%)** |
+| After 5 min idle | 176.4 MiB | 177.1 MiB |
+| **Command time after speech, median** | **0.82 s** | **0.17 s** |
+| Commands correct | 10/10 | 10/10 |
+
+Light also removes the per-command slowdown of the Windows Rust build of
+small.en (0.3.0's 0.86 s against 0.2.0's 0.53 s): a smaller model needs far
+less of the computation that is slower on Windows.
 
 ## Accuracy evidence and limits
 
