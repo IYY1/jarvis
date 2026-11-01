@@ -51,7 +51,7 @@ def describe(config: dict) -> dict:
     selected = "vosk" if requested == "vosk" or (requested == "auto" and ready) else "pocketsphinx"
     return {"backend": selected, "model_path": str(path), "model_ready": ready,
             "accurate_model_ready": accurate, "accurate_model_on": bool(settings.get("accurate", True)),
-            "speech_model": settings.get("speech_model", "small"),
+            "speech_model": settings.get("speech_model", "light"),
             "note": "Vosk: better with accents; about 200 MB RAM while the microphone is on." if selected == "vosk" else
             "Basic PocketSphinx recognizer. Install the improved Vosk model (40 MB) for better accuracy."}
 
@@ -147,7 +147,17 @@ SPEECH_MODELS = {"small": "whisper-small", "light": "whisper-tiny"}
 
 def selected_model(config: dict) -> str:
     """Catalog name of the Whisper model chosen in settings."""
-    return SPEECH_MODELS[config.get("recognition", {}).get("speech_model", "small")]
+    return SPEECH_MODELS[config.get("recognition", {}).get("speech_model", "light")]
+
+
+def usable_model(config: dict) -> str:
+    """The chosen Whisper model, or the other one if only that is installed
+    (an install updated without downloading the new model)."""
+    chosen = selected_model(config)
+    if accurate_model_ready(chosen):
+        return chosen
+    other = next(name for name in SPEECH_MODELS.values() if name != chosen)
+    return other if accurate_model_ready(other) else chosen
 DENOISER = {"name": "gtcrn_simple.onnx", "section": "speech-enhancement-models", "megabytes": 1,
             "sha256": "e77603ac0c23dac3227dd2d7135b3a585cbee2679048aecfa886657d3ae1b534"}
 

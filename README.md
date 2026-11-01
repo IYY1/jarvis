@@ -12,10 +12,10 @@ Jarvis is early software. Recognition depends on your voice, microphone and room
 
 ## What's new in 0.3.1
 
-- **Light command model**: Settings → Voice → Command model → Light uses Whisper
-  tiny.en, which halves the memory Jarvis needs while you give commands (546 →
-  280 MiB on Linux) and answers faster. Small stays the default
-  ([details](docs/light-model.md)).
+- **Lighter by default**: commands now use Whisper tiny.en, which halves the
+  memory Jarvis needs while you give commands (546 → 280 MiB on Linux) and
+  answers faster. Settings → Voice → Command model → Small switches back to the
+  more accurate model ([details](docs/light-model.md)).
 
 ## What's new in 0.3.0
 

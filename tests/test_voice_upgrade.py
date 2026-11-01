@@ -62,7 +62,7 @@ class WakeWordTests(unittest.TestCase):
         self.assertEqual(defaults["activation"]["wake_phrase"], "hey jarvis")
         self.assertEqual(defaults["recognition"], {"backend": "auto", "model_path": "", "closest_match": True,
                                                    "accurate": True, "noise_suppression": False,
-                                               "speech_model": "small"})
+                                               "speech_model": "light"})
         with self.assertRaises(ValueError):
             config.validate({"recognition": {"backend": "whisper"}})
 

@@ -20,10 +20,10 @@ DEFAULTS = {
     # accurate: use the downloaded Whisper model for commands (better with accents).
     # noise_suppression: clean command audio before transcribing (off: it made
     # synthetic tests slightly worse and doesn't remove background voices).
-    # speech_model: "small" (Whisper small.en) or "light" (tiny.en: about half
-    # the peak RAM, less accurate on unusual words).
+    # speech_model: "light" (Whisper tiny.en, default: about half the peak RAM)
+    # or "small" (small.en: more accurate on unusual words).
     "recognition": {"backend": "auto", "model_path": "", "closest_match": True,
-                    "accurate": True, "noise_suppression": False, "speech_model": "small"},
+                    "accurate": True, "noise_suppression": False, "speech_model": "light"},
     "privacy": {"onboarded": False},
     "aliases": {}, "commands": {}, "app_prefixes": {}, "startup": False,
     "recording": {"output_dir": "~/Videos/Murmur", "monitor": "", "system_audio": False,

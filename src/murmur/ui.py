@@ -593,8 +593,8 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
                   "Turn off to save memory; commands then use the small Vosk model only.")
         self.speech_model = Gtk.DropDown.new_from_strings(["Small (most accurate)", "Light (less memory)"])
         self._row(tuning, "Command model", self.speech_model,
-                  "Light uses Whisper tiny: about 280 MB at most while you give commands instead of about 550 MB, "
-                  "and answers a little faster. It may mishear unusual names more often; test it with your voice.")
+                  "Light (default) uses Whisper tiny: about 280 MB at most while you give commands instead of about "
+                  "550 MB, and answers a little faster. Choose Small if unusual names are misheard.")
         self.noise_suppression = Gtk.Switch()
         self._row(tuning, "Noise suppression", self.noise_suppression,
                   "Cleans steady noise (fans, hum) from command audio. It can't remove other voices, and in tests "
@@ -884,7 +884,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         recognition = self.config.get("recognition", {})
         self.closest_match.set_active(bool(recognition.get("closest_match", True)))
         self.accurate.set_active(bool(recognition.get("accurate", True)))
-        self.speech_model.set_selected(1 if recognition.get("speech_model") == "light" else 0)
+        self.speech_model.set_selected(0 if recognition.get("speech_model") == "small" else 1)
         self.noise_suppression.set_active(bool(recognition.get("noise_suppression", False)))
         self.adaptive_gate.set_active(bool(self.config.get("audio", {}).get("adaptive_gate", True)))
         self.output_dir.set_text(str(recorder.get("output_dir", "~/Videos/Murmur")))

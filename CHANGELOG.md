@@ -2,12 +2,13 @@
 
 ## 0.3.1 — 2026-11-01
 
-- **Light command model**: Settings → Voice → Command model → Light uses
-  Whisper tiny.en instead of small.en. On Linux the voice worker's peak fell
-  from 546 to 280 MiB and commands finished in 0.16 s instead of 0.33 s after
-  speech; small.en stays the default ([details](docs/light-model.md)). Model
-  downloads and the Windows installer now include both models (about 790 MB
-  instead of 680 MB).
+- **Light command model, now the default**: commands use Whisper tiny.en
+  instead of small.en. On Linux the voice worker's peak fell from 546 to
+  280 MiB and commands finished in 0.16 s instead of 0.33 s after speech.
+  Settings → Voice → Command model → Small switches back
+  ([details](docs/light-model.md)). Model downloads and the Windows installer
+  include both models (about 790 MB instead of 680 MB); if only one is
+  installed, Jarvis uses it.
 
 ## 0.3.0 — 2026-11-01
 
