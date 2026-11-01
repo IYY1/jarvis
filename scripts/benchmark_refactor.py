@@ -22,9 +22,7 @@ import time
 import tracemalloc
 
 ROOT = Path(__file__).resolve().parents[1]
-ITERATIONS = {"parse_brightness": 300, "parse_invalid_brightness": 300,
-              "parse_application": 1000, "match_brightness": 100,
-              "match_fuzzy": 50, "candidates": 3, "validate": 100,
+ITERATIONS = {"parse_application": 1000, "match_fuzzy": 50, "candidates": 3, "validate": 100,
               "running_windows": 1000, "merge": 1000, "transcribe_input": 500,
               "transcribe_input_10s": 50,
               "app_catalog_100": 30, "app_catalog_1000": 10}
@@ -78,18 +76,13 @@ def workload(source, case):
         return lambda: engine.transcribe(pcm)
 
     settings = {"aliases": {f"app {n}": f"app-{n}.desktop" for n in range(128)},
-                "app_prefixes": {f"app {n}": "watch" for n in range(128)},
-                "brightness": {"monitors": {
-                    f"edid:fixture:{n}": {"name": f"screen {word}", "aliases": []}
-                    for n, word in enumerate("one two three four five six seven eight".split())},
-                    "default": "edid:fixture:0", "step": 10}}
+                "app_prefixes": {f"app {n}": "watch" for n in range(128)}}
     current = config.validate(settings)
     parser = Parser.from_config(current)
     if case == "validate":
         return lambda: config.validate(settings)
     if case == "merge":
-        return lambda: config.merged(current, {"activation": {"sensitivity": 0.7},
-                                               "brightness": {"step": 20}})
+        return lambda: config.merged(current, {"activation": {"sensitivity": 0.7}})
     if case == "running_windows":
         app = App("game.desktop", "Game", "/fixture/game.desktop", "steam steam://rungameid/42")
         clients = [{"class": "other" if n % 2 else "steam_app_42", "focusHistoryID": n}
@@ -99,22 +92,11 @@ def workload(source, case):
         return lambda: desktop.running(app)
     if case == "parse_application":
         return lambda: dataclasses.asdict(parser.parse("please watch the app 127"))
-    if case == "parse_brightness":
-        return lambda: dataclasses.asdict(parser.parse("set screen eight brightness to 67 percent"))
-    if case == "parse_invalid_brightness":
-        def invalid():
-            try:
-                parser.parse("set unknown brightness to 67 percent")
-            except ValueError:
-                return None
-            raise AssertionError("An unknown monitor was accepted")
-        return invalid
     grammar = parser.grammar(["firefox", "discord", "deadlock", "steam", "stremio"])
     if case == "candidates":
         return lambda: match_candidates(grammar)
     candidates = match_candidates(grammar)
-    text = "set screen eight brightness to 67 percent" if case == "match_brightness" else "open fire fox"
-    return lambda: closest_match(text, candidates)
+    return lambda: closest_match("open fire fox", candidates)
 
 
 def sample(source, case):
