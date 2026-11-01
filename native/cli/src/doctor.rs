@@ -56,6 +56,12 @@ pub async fn report() -> Value {
         .map(util::expand)
         .unwrap_or_else(|| models::root().join(models::VOSK_NAME));
     let ui = voice::ui_argv("dashboard").ok();
+    let (whisper, files) = models::whisper(
+        settings["recognition"]["speech_model"]
+            .as_str()
+            .unwrap_or("small"),
+    );
+    let accurate_ready = models::valid(&models::root().join(whisper), files);
     json!({
         "runtime":"Rust", "version":env!("CARGO_PKG_VERSION"), "interpreter":null,
         "hyprland_session":env::var_os("HYPRLAND_INSTANCE_SIGNATURE").is_some_and(|s|!s.is_empty()),
@@ -63,7 +69,8 @@ pub async fn report() -> Value {
         "voice_engine":{"backend":"vosk", "configured_backend":settings["recognition"]["backend"],
             "worker":voice::binary().ok(),"vosk_library":voice::vosk_library().ok(),
             "model_path":model,"model_ready":models::valid(&model,models::VOSK_FILES),
-            "accurate_model_ready":models::valid(&models::root().join(models::WHISPER_NAME),models::WHISPER_FILES),
+            "accurate_model_ready":accurate_ready,
+            "speech_model":settings["recognition"]["speech_model"],
             "accurate_model_on":settings["recognition"]["accurate"],
             "noise_suppression_on":settings["recognition"]["noise_suppression"],
             "denoiser_model_ready":models::root().join(models::DENOISER_NAME).is_file()},

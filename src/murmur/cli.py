@@ -135,7 +135,7 @@ def main():
     alias.add_argument("name", nargs="?", help="What you will say (\"open <name>\")")
     alias.add_argument("app", nargs="?", help="The app: its name as in your launcher, or its desktop ID")
     alias.add_argument("--remove", action="store_true", help="Remove the voice name instead")
-    install = sub.add_parser("install-model", help="Download and verify the voice models (one time, about 680 MB)")
+    install = sub.add_parser("install-model", help="Download and verify the voice models (one time, about 790 MB)")
     install.add_argument("--archive", help="Use an already downloaded vosk-model-small-en-us-0.15.zip")
     install.add_argument("--basic", action="store_true", help="Only the small Vosk model (40 MB)")
     sub.add_parser("waybar", help="Event-driven JSON lines for a Waybar custom module")
@@ -164,15 +164,17 @@ def main():
                 print(f"Vosk model: {MODEL_URL} (about 40 MB)…", flush=True)
             print(f"  ready at {install(Path(args.archive).expanduser() if args.archive else None)}", flush=True)
             if not args.basic:
-                spec = ACCURATE_MODELS[DEFAULT_ACCURATE_MODEL]
-                print(f"Accurate model: {spec['archive']} (about {spec['megabytes']} MB, checked by SHA-256)…", flush=True)
-                shown = [-1]
-                def progress(fraction):
-                    percent = int(fraction * 100)
-                    if percent // 10 != shown[0]:
-                        shown[0] = percent // 10
-                        print(f"  {percent}%", flush=True)
-                print(f"  ready at {install_accurate(progress=progress)}", flush=True)
+                # Both command models, so Settings can switch between them offline.
+                for name in (DEFAULT_ACCURATE_MODEL, "whisper-tiny"):
+                    spec = ACCURATE_MODELS[name]
+                    print(f"Command model: {spec['archive']} (about {spec['megabytes']} MB, checked by SHA-256)…", flush=True)
+                    shown = [-1]
+                    def progress(fraction):
+                        percent = int(fraction * 100)
+                        if percent // 10 != shown[0]:
+                            shown[0] = percent // 10
+                            print(f"  {percent}%", flush=True)
+                    print(f"  ready at {install_accurate(name, progress=progress)}", flush=True)
                 print(f"Noise suppression model: ready at {install_denoiser()}", flush=True)
             print("Done. Restart Jarvis to use the new models.")
             return 0

@@ -20,8 +20,10 @@ DEFAULTS = {
     # accurate: use the downloaded Whisper model for commands (better with accents).
     # noise_suppression: clean command audio before transcribing (off: it made
     # synthetic tests slightly worse and doesn't remove background voices).
+    # speech_model: "small" (Whisper small.en) or "light" (tiny.en: about half
+    # the peak RAM, less accurate on unusual words).
     "recognition": {"backend": "auto", "model_path": "", "closest_match": True,
-                    "accurate": True, "noise_suppression": False},
+                    "accurate": True, "noise_suppression": False, "speech_model": "small"},
     "privacy": {"onboarded": False},
     "aliases": {}, "commands": {}, "app_prefixes": {}, "startup": False,
     "recording": {"output_dir": "~/Videos/Murmur", "monitor": "", "system_audio": False,
@@ -103,6 +105,8 @@ def validate(data: dict) -> dict:
         raise ValueError("Recognition backend must be auto, pocketsphinx or vosk")
     if not isinstance(recognition["model_path"], str) or len(recognition["model_path"]) > 4096 or "\0" in recognition["model_path"]:
         raise ValueError("Invalid voice model path")
+    if recognition["speech_model"] not in ("small", "light"):
+        raise ValueError("Speech model must be small or light")
     for flag in (recognition["closest_match"], recognition["accurate"], recognition["noise_suppression"],
                  c["audio"]["adaptive_gate"]):
         if not isinstance(flag, bool):

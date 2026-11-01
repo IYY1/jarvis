@@ -113,6 +113,11 @@ pub fn validate(data: &Value) -> Result<Value> {
         "Recognition backend must be auto, pocketsphinx or vosk",
     )?;
     text(&n["model_path"], 4096, "voice model path")?;
+    choices(
+        &n["speech_model"],
+        &["small", "light"],
+        "Speech model must be small or light",
+    )?;
     for value in [
         &n["closest_match"],
         &n["accurate"],

@@ -55,8 +55,10 @@ def main():
         Path(MODEL_NAME) / p
         for p in ("am/final.mdl", "conf/model.conf", "graph/Gr.fst", "graph/HCLr.fst")
     ]
-    spec = ACCURATE_MODELS[DEFAULT_ACCURATE_MODEL]
-    required += [Path(spec["archive"]) / p for p in spec["files"].values()]
+    # Both command models, so Settings can switch to Light without a download.
+    whisper_models = [ACCURATE_MODELS[name] for name in (DEFAULT_ACCURATE_MODEL, "whisper-tiny")]
+    for spec in whisper_models:
+        required += [Path(spec["archive"]) / p for p in spec["files"].values()]
     # The release bundles the optional denoising model as well.
     required.append(Path("gtcrn_simple.onnx"))
     for path in required:
@@ -102,10 +104,12 @@ def main():
     shutil.copytree(
         args.models / MODEL_NAME, bundle / "models" / MODEL_NAME, dirs_exist_ok=True
     )
-    model_dir = "sherpa-onnx-whisper-small.en"
-    shutil.copytree(
-        args.models / model_dir, bundle / "models" / model_dir, dirs_exist_ok=True
-    )
+    for spec in whisper_models:
+        # Only the int8 files the worker loads, not fp32 copies from the archive.
+        target = bundle / "models" / spec["archive"]
+        target.mkdir(parents=True, exist_ok=True)
+        for name in spec["files"].values():
+            shutil.copy2(args.models / spec["archive"] / name, target / name)
     shutil.copy2(args.models / "gtcrn_simple.onnx", bundle / "models/gtcrn_simple.onnx")
     shutil.copy2(args.ffmpeg_source, bundle / "FFmpeg-Corresponding-Source.tar.xz")
     shutil.copy2(ROOT / "LICENSE", bundle / "LICENSE")

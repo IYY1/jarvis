@@ -17,7 +17,8 @@
     "model_path": "",
     "closest_match": true,
     "accurate": true,
-    "noise_suppression": false
+    "noise_suppression": false,
+    "speech_model": "small"
   },
   "privacy": {
     "onboarded": false

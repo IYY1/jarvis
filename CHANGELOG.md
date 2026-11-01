@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- **Light command model**: Settings → Voice → Command model → Light uses
+  Whisper tiny.en instead of small.en. On Linux the voice worker's peak fell
+  from 546 to 280 MiB and commands finished in 0.16 s instead of 0.33 s after
+  speech; small.en stays the default ([details](docs/light-model.md)). Model
+  downloads and the Windows installer now include both models (about 790 MB
+  instead of 680 MB).
+
 ## 0.3.0 — 2026-11-01
 
 ### Windows

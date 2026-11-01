@@ -579,18 +579,22 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         microphone.append(self.test_button)
         microphone.append(_button("Refresh microphones & displays", self._refresh_devices))
         body.append(microphone)
-        recognizer = self._card("Recognizer", "Vosk listens for your wake names. After it, the accurate model (Whisper small) writes "
-                                "down your command; it copes much better with accents. One-time download of about 680 MB; "
-                                "uses about 800 MB of RAM while the microphone is on. Everything stays on this computer.")
+        recognizer = self._card("Recognizer", "Vosk listens for your wake names. After it, Whisper writes down your command; "
+                                "it copes much better with accents. Whisper loads when you say the wake name and unloads a "
+                                "minute after your last command. One-time download of about 790 MB. Everything stays on this computer.")
         self.engine_label = _label("Recognizer: not running", "row-title")
         recognizer.append(self.engine_label)
-        self.install_model_button = _button("Download voice models (about 680 MB)", self._install_model, "primary")
+        self.install_model_button = _button("Download voice models (about 790 MB)", self._install_model, "primary")
         recognizer.append(self.install_model_button)
         body.append(recognizer)
         card, tuning = self._advanced("Fine-tuning", "Matching, noise handling and sensitivity. The defaults suit most rooms; change one at a time and test with your own voice.")
         self.accurate = Gtk.Switch()
         self._row(tuning, "Accurate model for commands", self.accurate,
                   "Turn off to save memory; commands then use the small Vosk model only.")
+        self.speech_model = Gtk.DropDown.new_from_strings(["Small (most accurate)", "Light (less memory)"])
+        self._row(tuning, "Command model", self.speech_model,
+                  "Light uses Whisper tiny: about 280 MB at most while you give commands instead of about 550 MB, "
+                  "and answers a little faster. It may mishear unusual names more often; test it with your voice.")
         self.noise_suppression = Gtk.Switch()
         self._row(tuning, "Noise suppression", self.noise_suppression,
                   "Cleans steady noise (fans, hum) from command audio. It can't remove other voices, and in tests "
@@ -776,9 +780,10 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         engine = status.get("engine")
         if engine:
             names = {"vosk": "Vosk (accurate model not installed or off)", "pocketsphinx": "PocketSphinx (basic)",
-                     "vosk+whisper-small": "Vosk + Whisper small (most accurate)"}
+                     "vosk+whisper-small": "Vosk + Whisper small (most accurate)",
+                     "vosk+whisper-tiny": "Vosk + Whisper tiny (light)"}
             self.engine_label.set_text("Recognizer: " + names.get(engine, engine))
-        if engine in ("vosk+whisper-small", "vosk+parakeet"):
+        if engine in ("vosk+whisper-small", "vosk+whisper-tiny", "vosk+parakeet"):
             self.install_model_button.set_visible(False)
         if self._test_active:
             value = min(1.0, max(0.0, float(status.get("level", 0))))
@@ -879,6 +884,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         recognition = self.config.get("recognition", {})
         self.closest_match.set_active(bool(recognition.get("closest_match", True)))
         self.accurate.set_active(bool(recognition.get("accurate", True)))
+        self.speech_model.set_selected(1 if recognition.get("speech_model") == "light" else 0)
         self.noise_suppression.set_active(bool(recognition.get("noise_suppression", False)))
         self.adaptive_gate.set_active(bool(self.config.get("audio", {}).get("adaptive_gate", True)))
         self.output_dir.set_text(str(recorder.get("output_dir", "~/Videos/Murmur")))
@@ -1141,6 +1147,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         device = self._devices[selected].get("id", "") if selected < len(self._devices) else ""
         self._save({"recognition": {"closest_match": self.closest_match.get_active(),
                                     "accurate": self.accurate.get_active(),
+                                    "speech_model": "light" if self.speech_model.get_selected() == 1 else "small",
                                     "noise_suppression": self.noise_suppression.get_active()},
                     "audio": {"device": device, "vad_rms": self.vad_rms.get_value(),
                               "adaptive_gate": self.adaptive_gate.get_active()}, "activation": {
@@ -1152,12 +1159,13 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
 
     def _install_model(self) -> None:
         self.install_model_button.set_sensitive(False)
-        self._notice("Downloading the voice models (about 680 MB) and checking their checksums… This can take a few minutes.")
+        self._notice("Downloading the voice models (about 790 MB) and checking their checksums… This can take a few minutes.")
         def install() -> dict:
             from .models import install as install_model, install_accurate, install_denoiser
             install_model()
             install_denoiser()
             path = install_accurate()
+            install_accurate("whisper-tiny")
             # Restart the listener so it picks up the new model (only if it is on).
             if not self.status.get("muted", True):
                 client.request("mute", muted=False)
