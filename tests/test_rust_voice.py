@@ -149,9 +149,21 @@ class PreparationTests(unittest.TestCase):
         self.assertEqual(ready, ["whisper-tiny"])
         self.assertTrue(payload["native"]["whisper"]["encoder"].endswith("sherpa-onnx-whisper-tiny.en/tiny.en-encoder.int8.onnx"))
 
+    def test_missing_chosen_model_falls_back_to_the_installed_one(self):
+        from murmur.models import usable_model
+        config = copy.deepcopy(DEFAULTS)
+        for chosen, installed, expected in (("light", {"whisper-tiny", "whisper-small"}, "whisper-tiny"),
+                                            ("light", {"whisper-small"}, "whisper-small"),
+                                            ("small", {"whisper-tiny"}, "whisper-tiny"),
+                                            ("light", set(), "whisper-tiny")):
+            config["recognition"]["speech_model"] = chosen
+            with self.subTest(chosen=chosen, installed=installed), \
+                    patch("murmur.models.accurate_model_ready", side_effect=lambda name: name in installed):
+                self.assertEqual(usable_model(config), expected)
+
     def test_speech_model_setting_is_validated(self):
         from murmur.config import validate
-        self.assertEqual(validate({})["recognition"]["speech_model"], "small")
+        self.assertEqual(validate({})["recognition"]["speech_model"], "light")
         self.assertEqual(validate({"recognition": {"speech_model": "light"}})["recognition"]["speech_model"], "light")
         with self.assertRaisesRegex(ValueError, "small or light"):
             validate({"recognition": {"speech_model": "tiny"}})

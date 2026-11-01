@@ -1,10 +1,12 @@
 # Light command model (Whisper tiny.en)
 
 Jarvis' peak memory comes from Whisper, which loads when you say the wake name
-and unloads a minute after your last command. **Settings → Voice → Command
-model → Light** uses Whisper tiny.en instead of small.en. Small stays the
-default; Light halves the peak and answers faster, with less evidence about
-accuracy on unusual words.
+and unloads a minute after your last command. Since 0.3.1 the default command
+model is **Light** (Whisper tiny.en): it halves the peak and answers faster.
+**Settings → Voice → Command model → Small** switches back to Whisper small.en,
+which is better on unusual words. If only one of the two models is installed
+(for example an install updated without re-running the model download),
+Jarvis uses the installed one instead of dropping to the small Vosk model.
 
 `jarvis install-model` (and the Arch installer) downloads both models, and the
 Windows installer bundles both, so you can switch without a download. The

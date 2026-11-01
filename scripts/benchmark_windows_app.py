@@ -66,6 +66,8 @@ def main():
     parser.add_argument("--idle", type=float, default=300.0)
     parser.add_argument("--interval", type=float, default=0.25)
     parser.add_argument("--ui-seconds", type=float, default=20.0)
+    parser.add_argument("--speech-model", choices=("small", "light"), default="small",
+                        help="Command model setting for builds that support it (0.3.1+)")
     args = parser.parse_args()
     sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
     from murmur import config
@@ -79,7 +81,8 @@ def main():
     pcm, command_ends = timeline(fixture, args.settle, args.commands, args.gap, args.idle)
     (work / "capture.raw").write_bytes(pcm)
     cfg = config.validate({"activation": {"wake_phrase": "go forward", "mode": "wake_word"},
-                           "commands": {"ten meters": "start recording"}})
+                           "commands": {"ten meters": "start recording"},
+                           "recognition": {"speech_model": args.speech_model}})
     cfg["privacy"]["onboarded"] = True
     config.save(cfg, work / "config.json")
     env = dict(os.environ, MURMUR_CONFIG=str(work / "config.json"), MURMUR_ENDPOINT=str(work / "run/control.json"),

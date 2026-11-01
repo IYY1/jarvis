@@ -108,14 +108,29 @@ pub fn prepare(
         return err("Rust voice worker requires the local Vosk library and model");
     }
     // "light" selects Whisper tiny.en: about half the peak RAM of small.en.
-    let size = if config["recognition"]["speech_model"] == "light" {
-        "tiny"
+    // If only the other model is installed (an update without the new
+    // download), use it rather than dropping to Vosk alone.
+    let chosen = if config["recognition"]["speech_model"] == "small" {
+        ["small", "tiny"]
     } else {
-        "small"
+        ["tiny", "small"]
     };
-    let whisper = model_root().join(format!("sherpa-onnx-whisper-{size}.en"));
-    let file = |part: &str| whisper.join(format!("{size}.en-{part}"));
-    let mut files = json!({"encoder":file("encoder.int8.onnx"),"decoder":file("decoder.int8.onnx"),"tokens":file("tokens.txt")});
+    let paths = |size: &str| {
+        let whisper = model_root().join(format!("sherpa-onnx-whisper-{size}.en"));
+        let file = |part: &str| whisper.join(format!("{size}.en-{part}"));
+        json!({"encoder":file("encoder.int8.onnx"),"decoder":file("decoder.int8.onnx"),"tokens":file("tokens.txt")})
+    };
+    let installed = |files: &Value| {
+        files
+            .as_object()
+            .unwrap()
+            .values()
+            .all(|p| std::path::Path::new(p.as_str().unwrap()).is_file())
+    };
+    let mut files = paths(chosen[0]);
+    if !installed(&files) && installed(&paths(chosen[1])) {
+        files = paths(chosen[1]);
+    }
     if config["recognition"]["accurate"] != true
         || !files
             .as_object()

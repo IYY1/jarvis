@@ -337,7 +337,7 @@ checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
 
 [[package]]
 name = "jarvis-gtcrn"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "rustfft",
  "tract-onnx",
@@ -345,7 +345,7 @@ dependencies = [
 
 [[package]]
 name = "jarvis-phrases"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "regex",
  "serde_json",
@@ -355,7 +355,7 @@ dependencies = [
 
 [[package]]
 name = "jarvis-voice"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "jarvis-gtcrn",
  "jarvis-phrases",
@@ -369,7 +369,7 @@ dependencies = [
 
 [[package]]
 name = "jarvis-whisper"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "base64",
  "libc",

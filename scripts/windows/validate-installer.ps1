@@ -97,6 +97,10 @@ if ($Phase -in 'all', 'install') {
     $entry.UninstallString -and $entry.QuietUninstallString -and $entry.DisplayIcon -and $entry.Publisher -and $entry.EstimatedSize
   }
   Check 'upgrade: old Python speech runtime removed' { -not (Test-Path (Join-Path $install '_internal\sherpa_onnx')) -and -not (Test-Path (Join-Path $install '_internal\vosk')) }
+  Check 'upgrade: both command models bundled (Small and Light)' {
+    (Test-Path (Join-Path $install 'models\sherpa-onnx-whisper-small.en\small.en-encoder.int8.onnx')) -and
+      (Test-Path (Join-Path $install 'models\sherpa-onnx-whisper-tiny.en\tiny.en-encoder.int8.onnx'))
+  }
   Check 'upgrade: Rust voice worker and Vosk runtime bundled' { (Test-Path (Join-Path $install 'tools\jarvis-voice.exe')) -and (Test-Path (Join-Path $install 'tools\libvosk.dll')) }
   Check 'upgrade: settings kept' { (Get-Content -Raw (Join-Path $data 'config.json')) -match 'upgrade marker' }
   Check 'upgrade: user files kept' { (Test-Path (Join-Path $data 'user-marker.txt')) -and (Test-Path (Join-Path $videos 'marker-clip.mp4')) }
