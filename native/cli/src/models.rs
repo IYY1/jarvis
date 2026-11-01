@@ -28,9 +28,25 @@ pub const WHISPER_FILES: &[&str] = &[
     "small.en-decoder.int8.onnx",
     "small.en-tokens.txt",
 ];
+pub const WHISPER_TINY_NAME: &str = "sherpa-onnx-whisper-tiny.en";
+pub const WHISPER_TINY_FILES: &[&str] = &[
+    "tiny.en-encoder.int8.onnx",
+    "tiny.en-decoder.int8.onnx",
+    "tiny.en-tokens.txt",
+];
 pub const DENOISER_NAME: &str = "gtcrn_simple.onnx";
 const VOSK_SHA: &str = "30f26242c4eb449f948e42cb302dd7a686cb29a3423a8367f99ff41780942498";
 const WHISPER_SHA: &str = "0cdba2b8aaab69e04847f3427cc9709574112e67913a1a84b7fec3a8729faa9a";
+const WHISPER_TINY_SHA: &str = "2bd6cf965c8bb3e068ef9fa2191387ee63a9dfa2a4e37582a8109641c20005dd";
+
+/// Folder and files of the command model chosen in settings ("small" or "light").
+pub fn whisper(speech_model: &str) -> (&'static str, &'static [&'static str]) {
+    if speech_model == "light" {
+        (WHISPER_TINY_NAME, WHISPER_TINY_FILES)
+    } else {
+        (WHISPER_NAME, WHISPER_FILES)
+    }
+}
 const DENOISER_SHA: &str = "e77603ac0c23dac3227dd2d7135b3a585cbee2679048aecfa886657d3ae1b534";
 const MIB: u64 = 1024 * 1024;
 
@@ -196,7 +212,7 @@ fn unpack_zip(archive: &Path, stage: &Path) -> Result<PathBuf> {
     }
     Ok(model)
 }
-fn unpack_tar(archive: &Path, stage: &Path) -> Result<PathBuf> {
+fn unpack_tar(archive: &Path, stage: &Path, model_name: &str, files: &[&str]) -> Result<PathBuf> {
     let decoder = bzip2_rs::DecoderReader::new(File::open(archive)?);
     let mut archive = tar::Archive::new(decoder);
     let mut names = HashSet::new();
@@ -212,7 +228,7 @@ fn unpack_tar(archive: &Path, stage: &Path) -> Result<PathBuf> {
                 .path()?
                 .to_str()
                 .ok_or("Non-UTF-8 model archive path")?,
-            WHISPER_NAME,
+            model_name,
         )?;
         if !names.insert(path.clone()) {
             return err("Duplicate model archive path");
@@ -227,9 +243,9 @@ fn unpack_tar(archive: &Path, stage: &Path) -> Result<PathBuf> {
         if total > 4096 * MIB {
             return err("Expanded model archive exceeds its size limit");
         }
-        if WHISPER_FILES
+        if files
             .iter()
-            .any(|name| path == Path::new(WHISPER_NAME).join(name))
+            .any(|name| path == Path::new(model_name).join(name))
         {
             if !kind.is_file() || entry.size() > remaining {
                 return err("Invalid accurate model file");
@@ -237,8 +253,8 @@ fn unpack_tar(archive: &Path, stage: &Path) -> Result<PathBuf> {
             bounded_file(&mut entry, &stage.join(&path), &mut remaining)?;
         }
     }
-    let model = stage.join(WHISPER_NAME);
-    if !valid(&model, WHISPER_FILES) {
+    let model = stage.join(model_name);
+    if !valid(&model, files) {
         return err("Accurate model archive is missing required int8 files");
     }
     Ok(model)
@@ -285,16 +301,22 @@ pub fn install(local: Option<&Path>, basic: bool) -> Result<()> {
     }
     println!("Vosk model: ready at {}", vosk.display());
     if !basic {
-        let whisper = root.join(WHISPER_NAME);
-        if !ready(&whisper, WHISPER_FILES)? {
-            println!("Downloading accurate model (about 636 MB), checked by SHA-256…");
-            let stage = Stage::new(&root)?;
-            let archive = stage.0.join("model.tar.bz2");
-            download(&format!("https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/{WHISPER_NAME}.tar.bz2"),&archive,WHISPER_SHA,700*MIB)?;
-            let model = unpack_tar(&archive, &stage.0)?;
-            publish(&model, &whisper)?;
+        // Both command models, so Settings can switch between them offline.
+        for (name, files, sha, size) in [
+            (WHISPER_NAME, WHISPER_FILES, WHISPER_SHA, 636),
+            (WHISPER_TINY_NAME, WHISPER_TINY_FILES, WHISPER_TINY_SHA, 113),
+        ] {
+            let whisper = root.join(name);
+            if !ready(&whisper, files)? {
+                println!("Downloading command model {name} (about {size} MB), checked by SHA-256…");
+                let stage = Stage::new(&root)?;
+                let archive = stage.0.join("model.tar.bz2");
+                download(&format!("https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/{name}.tar.bz2"),&archive,sha,(size + size / 10) * MIB)?;
+                let model = unpack_tar(&archive, &stage.0, name, files)?;
+                publish(&model, &whisper)?;
+            }
+            println!("Command model: ready at {}", whisper.display());
         }
-        println!("Accurate model: ready at {}", whisper.display());
         let denoiser = root.join(DENOISER_NAME);
         if exists(&denoiser) {
             let mut digest = Sha256::new();
@@ -358,7 +380,12 @@ mod tests {
             let stage = stage();
             let archive = stage.0.join("archive.tar.bz2");
             fs::write(&archive, bytes).unwrap();
-            let result = unpack_tar(&archive, &stage.0.join("output"));
+            let result = unpack_tar(
+                &archive,
+                &stage.0.join("output"),
+                WHISPER_NAME,
+                WHISPER_FILES,
+            );
             assert_eq!(result.is_ok(), *expected, "{name}: {result:?}");
             if let Ok(model) = result {
                 assert!(valid(&model, WHISPER_FILES));

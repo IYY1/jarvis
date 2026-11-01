@@ -55,7 +55,7 @@ curl -fsSL https://raw.githubusercontent.com/abdullaho21/jarvis/main/install.sh 
 
 [`install.sh`](install.sh) installs missing packages with pacman (asking for
 your password), downloads Jarvis into `~/.local/share/jarvis`, builds the Rust
-parts, downloads and verifies the voice models (about 680 MB), and adds an app
+parts, downloads and verifies the voice models (about 790 MB), and adds an app
 launcher, a `jarvis` command and a disabled user service. It does not edit
 Hyprland. Run the same line again to update.
 
@@ -105,7 +105,7 @@ python3 -m venv --system-site-packages .venv
 ./run-jarvis
 ```
 
-The model download is about 680 MB and checked against pinned SHA-256 hashes.
+The model download is about 790 MB and checked against pinned SHA-256 hashes.
 `install_user.py` creates the app launcher and a disabled user service; review
 an existing installation before using `--replace`. Keep the checkout and venv
 where they are. Optional Rust parts are described under [Development](#development).

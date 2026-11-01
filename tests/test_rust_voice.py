@@ -109,7 +109,7 @@ class PreparationTests(unittest.TestCase):
             (tools / "libvosk.dll").touch()
         return patch.multiple("murmur.native_worker", is_windows=lambda: True, app_dir=lambda: Path(directory), EXE=".exe",
                               python_worker_available=lambda: False, valid_model=lambda _path: True,
-                              accurate_model_ready=lambda: False)
+                              accurate_model_ready=lambda *_: False)
 
     def test_windows_release_uses_the_bundled_rust_worker_and_vosk_dll(self):
         with tempfile.TemporaryDirectory() as directory, self.windows_release(directory), patch.dict(os.environ):
@@ -136,6 +136,25 @@ class PreparationTests(unittest.TestCase):
             config = copy.deepcopy(DEFAULTS)
             config["recognition"]["backend"] = "pocketsphinx"
             self.assertFalse(rust_ready(config))
+
+    def test_light_speech_model_loads_whisper_tiny(self):
+        config = copy.deepcopy(DEFAULTS)
+        config["recognition"].update(accurate=True, speech_model="light")
+        ready = []
+        with patch.dict(os.environ, MURMUR_VOICE_WORKER="rust"), \
+                patch("murmur.native_worker.binary_path", return_value=Path("/built/jarvis-voice")), \
+                patch("murmur.native_worker.package_dir", return_value=None), \
+                patch("murmur.native_worker.accurate_model_ready", side_effect=lambda name: ready.append(name) or True):
+            _, payload, _ = prepare(config, "test", Parser().grammar([]))
+        self.assertEqual(ready, ["whisper-tiny"])
+        self.assertTrue(payload["native"]["whisper"]["encoder"].endswith("sherpa-onnx-whisper-tiny.en/tiny.en-encoder.int8.onnx"))
+
+    def test_speech_model_setting_is_validated(self):
+        from murmur.config import validate
+        self.assertEqual(validate({})["recognition"]["speech_model"], "small")
+        self.assertEqual(validate({"recognition": {"speech_model": "light"}})["recognition"]["speech_model"], "light")
+        with self.assertRaisesRegex(ValueError, "small or light"):
+            validate({"recognition": {"speech_model": "tiny"}})
 
     def test_rust_whisper_preparation_does_not_require_sherpa(self):
         config = copy.deepcopy(DEFAULTS)

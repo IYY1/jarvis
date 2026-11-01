@@ -387,12 +387,18 @@ impl Engine {
             quiet_run: 0,
             unsupported,
             unmatched: None,
-            name: if native.whisper.is_some() {
-                "vosk+whisper-small"
-            } else {
-                "vosk"
-            }
-            .into(),
+            name: match &native.whisper {
+                // tiny.en-encoder.int8.onnx -> vosk+whisper-tiny
+                Some(files) => format!(
+                    "vosk+whisper-{}",
+                    std::path::Path::new(&files.encoder)
+                        .file_name()
+                        .and_then(|n| n.to_str())
+                        .and_then(|n| n.split_once(".en-"))
+                        .map_or("small", |(size, _)| size)
+                ),
+                None => "vosk".into(),
+            },
         })
     }
     fn canonical(&self, text: &str) -> String {

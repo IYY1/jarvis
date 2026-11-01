@@ -22,7 +22,7 @@ Usage: install.sh [options]
                    replay). It adds a privileged KMS capture helper; see
                    docs/recording.md before enabling replay.
   --basic-models   Download only the small wake model (40 MB, lower accuracy)
-                   instead of all voice models (about 680 MB).
+                   instead of all voice models (about 790 MB).
   --python-only    Skip building the Rust voice worker, CLI and controller.
   --dir PATH       Install location (default: $dir).
   --branch NAME    Git branch to install (default: $branch).

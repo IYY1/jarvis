@@ -44,13 +44,14 @@ def describe(config: dict) -> dict:
     settings = config.get("recognition", {})
     from .native_worker import binary_path, vosk_library
     rust = binary_path() is not None
-    accurate = (rust or importlib.util.find_spec("sherpa_onnx") is not None) and accurate_model_ready()
+    accurate = (rust or importlib.util.find_spec("sherpa_onnx") is not None) and accurate_model_ready(selected_model(config))
     requested = settings.get("backend", "auto")
     path = Path(settings.get("model_path") or default_model_path()).expanduser()
     ready = (vosk_library() is not None if rust else importlib.util.find_spec("vosk") is not None) and valid_model(path)
     selected = "vosk" if requested == "vosk" or (requested == "auto" and ready) else "pocketsphinx"
     return {"backend": selected, "model_path": str(path), "model_ready": ready,
             "accurate_model_ready": accurate, "accurate_model_on": bool(settings.get("accurate", True)),
+            "speech_model": settings.get("speech_model", "small"),
             "note": "Vosk: better with accents; about 200 MB RAM while the microphone is on." if selected == "vosk" else
             "Basic PocketSphinx recognizer. Install the improved Vosk model (40 MB) for better accuracy."}
 
@@ -125,6 +126,14 @@ ACCURATE_MODELS = {
         "files": {"encoder": "small.en-encoder.int8.onnx", "decoder": "small.en-decoder.int8.onnx",
                   "tokens": "small.en-tokens.txt"},
     },
+    # Light: about 93 MiB resident instead of 320 MiB. The int8 files match the
+    # hashes pinned in docs/benchmarks/whisper-model-provenance-2026-10-26.json.
+    "whisper-tiny": {
+        "archive": "sherpa-onnx-whisper-tiny.en", "kind": "whisper", "megabytes": 113,
+        "sha256": "2bd6cf965c8bb3e068ef9fa2191387ee63a9dfa2a4e37582a8109641c20005dd",
+        "files": {"encoder": "tiny.en-encoder.int8.onnx", "decoder": "tiny.en-decoder.int8.onnx",
+                  "tokens": "tiny.en-tokens.txt"},
+    },
     "parakeet": {
         "archive": "sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8", "kind": "nemo_transducer", "megabytes": 483,
         "sha256": "157c157bc51155e03e37d2466522a3a737dd9c72bb25f36eb18912964161e1ad",
@@ -133,6 +142,12 @@ ACCURATE_MODELS = {
     },
 }
 DEFAULT_ACCURATE_MODEL = "whisper-small"
+SPEECH_MODELS = {"small": "whisper-small", "light": "whisper-tiny"}
+
+
+def selected_model(config: dict) -> str:
+    """Catalog name of the Whisper model chosen in settings."""
+    return SPEECH_MODELS[config.get("recognition", {}).get("speech_model", "small")]
 DENOISER = {"name": "gtcrn_simple.onnx", "section": "speech-enhancement-models", "megabytes": 1,
             "sha256": "e77603ac0c23dac3227dd2d7135b3a585cbee2679048aecfa886657d3ae1b534"}
 

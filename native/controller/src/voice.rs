@@ -107,8 +107,15 @@ pub fn prepare(
     {
         return err("Rust voice worker requires the local Vosk library and model");
     }
-    let whisper = model_root().join("sherpa-onnx-whisper-small.en");
-    let mut files = json!({"encoder":whisper.join("small.en-encoder.int8.onnx"),"decoder":whisper.join("small.en-decoder.int8.onnx"),"tokens":whisper.join("small.en-tokens.txt")});
+    // "light" selects Whisper tiny.en: about half the peak RAM of small.en.
+    let size = if config["recognition"]["speech_model"] == "light" {
+        "tiny"
+    } else {
+        "small"
+    };
+    let whisper = model_root().join(format!("sherpa-onnx-whisper-{size}.en"));
+    let file = |part: &str| whisper.join(format!("{size}.en-{part}"));
+    let mut files = json!({"encoder":file("encoder.int8.onnx"),"decoder":file("decoder.int8.onnx"),"tokens":file("tokens.txt")});
     if config["recognition"]["accurate"] != true
         || !files
             .as_object()

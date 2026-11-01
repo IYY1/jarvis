@@ -351,6 +351,14 @@ class Window:
         self.check(
             p, "Match the closest supported command", "recognition", "closest_match", 9
         )
+        self.field(
+            p,
+            "Command model",
+            "recognition",
+            "speech_model",
+            11,
+            choices={"Small (most accurate)": "small", "Light (less memory)": "light"},
+        )
         self.check(
             p,
             "Noise suppression (experimental)",
@@ -361,7 +369,7 @@ class Window:
         self.note(
             p,
             "Microphone input IDs are shown after refreshing. An empty ID uses your Windows default input. No audio leaves your computer.",
-            11,
+            12,
         )
 
     def load_inputs(self, result):

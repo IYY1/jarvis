@@ -94,9 +94,10 @@ def make_engine(config: dict, grammar: dict | list[str]):
         transcriber = None
         if settings.get("accurate", True):
             from . import transcriber as accurate
-            if accurate.available():
+            from .models import selected_model
+            if accurate.available(selected_model(config)):
                 emit(event="loading", message="Loading the accurate voice model…")
-                transcriber = accurate.Transcriber(denoise=settings.get("noise_suppression", False))
+                transcriber = accurate.Transcriber(selected_model(config), denoise=settings.get("noise_suppression", False))
         engine = VoskEngine(grammar, activation["wake_phrase"], activation["sensitivity"], path,
                             fuzzy=settings.get("closest_match", True), transcriber=transcriber, wake_aliases=activation.get("wake_aliases", []))
         engine.name = "vosk+" + transcriber.name if transcriber else "vosk"

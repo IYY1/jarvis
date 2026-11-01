@@ -8,8 +8,8 @@ import sys
 
 from .commands import GREETINGS, POLITE_PREFIXES, POLITE_SUFFIXES, match_candidates, all_wake_variants
 from .host import app_dir, is_windows
-from .models import (ACCURATE_MODELS, DEFAULT_ACCURATE_MODEL, accurate_model_dir,
-                     accurate_model_ready, default_model_path, denoiser_path, valid_model)
+from .models import (ACCURATE_MODELS, accurate_model_dir, accurate_model_ready,
+                     default_model_path, denoiser_path, selected_model, valid_model)
 
 # The Rust worker loads Whisper when it hears a wake name and frees it after
 # this long without a command; waiting for the wake phrase needs only Vosk.
@@ -91,9 +91,10 @@ def prepare(config: dict, mode: str, grammar: dict) -> tuple[list[str], dict, di
               "wake_forms": all_wake_variants(config["activation"]),
               "greetings": list(GREETINGS), "prefixes": list(POLITE_PREFIXES),
               "suffixes": list(POLITE_SUFFIXES), "whisper_idle_seconds": WHISPER_IDLE_SECONDS}
-    if settings["accurate"] and accurate_model_ready():
-        folder = accurate_model_dir()
-        native["whisper"] = {k: str(folder / v) for k, v in ACCURATE_MODELS[DEFAULT_ACCURATE_MODEL]["files"].items()}
+    whisper = selected_model(config)
+    if settings["accurate"] and accurate_model_ready(whisper):
+        folder = accurate_model_dir(whisper)
+        native["whisper"] = {k: str(folder / v) for k, v in ACCURATE_MODELS[whisper]["files"].items()}
         if settings["noise_suppression"] and denoiser_path().is_file():
             native["denoiser"] = str(denoiser_path())
     payload["native"] = native
