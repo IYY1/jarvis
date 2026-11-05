@@ -87,6 +87,10 @@ class EncoderTests(unittest.TestCase):
         self.assertIn("aac", args)
         self.assertEqual(args.count("-i"), 2)
 
+    def test_ten_bit_settings_record_the_same_family_until_windows_supports_them(self):
+        self.assertEqual(encoding.format_for({"codec": "av1_10bit"}, "sdr"), "av1")
+        self.assertEqual(encoding.format_for({"codec": "hevc_10bit"}, "hdr"), "hevc")
+
     def test_hdr_promotes_h264_and_refuses_known_sdr_display(self):
         self.cfg["color_mode"] = "hdr"
         with self.assertRaises(RecorderError):

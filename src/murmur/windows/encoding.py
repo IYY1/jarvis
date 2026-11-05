@@ -12,7 +12,8 @@ VENDORS = {0x10DE: "nvenc", 0x1002: "amf", 0x8086: "qsv"}
 
 
 def format_for(cfg, color):
-    name = cfg.get("codec", "libx264")
+    # 10-bit SDR is not implemented on Windows yet; those settings record 8-bit.
+    name = cfg.get("codec", "libx264").removesuffix("_10bit")
     codec = name if name in ("h264", "hevc", "av1") else "h264"
     return "hevc" if color == "hdr" and codec == "h264" else codec
 

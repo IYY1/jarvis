@@ -41,7 +41,7 @@ elif program == "ffprobe":
     time.sleep(float(os.environ.get("MURMUR_TEST_VERIFY_DELAY", "0")))
     hdr = os.environ.get("MURMUR_TEST_COLOR") == "hdr" and os.environ.get("MURMUR_TEST_BAD_HDR") != "1"
     print(json.dumps({"streams": [{"codec_type": "video", "codec_name": os.environ.get("MURMUR_TEST_CODEC", "h264"), "width": 1920, "height": 1080,
-                                   "pix_fmt": "yuv420p10le" if hdr else "yuv420p",
+                                   "pix_fmt": os.environ.get("MURMUR_TEST_PIX_FMT") or ("yuv420p10le" if hdr else "yuv420p"),
                                    "color_transfer": "smpte2084" if hdr else "bt709",
                                    "color_primaries": "bt2020" if hdr else "bt709",
                                    "color_space": "bt2020nc" if hdr else "bt709", "color_range": "tv"}]}))

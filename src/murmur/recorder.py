@@ -14,7 +14,7 @@ import subprocess
 import threading
 import uuid
 
-from .encoding import expected_codec, gpu_video_args, validate_encoding
+from .encoding import GPU_CODECS, expected_codec, gpu_video_args, split_codec, validate_encoding
 
 
 class RecorderError(RuntimeError):
@@ -129,6 +129,9 @@ def capture_color(cfg: dict, monitor: dict) -> str:
 
 
 
+TEN_BIT = ("yuv420p10le", "p010le", "p010be", "yuv420p10be")
+
+
 def verify_video(path: Path, *, color: str = "sdr", codec: str | None = None):
     if not path.exists() or path.stat().st_size == 0:
         raise RecorderError("The recorder produced no video data.")
@@ -140,10 +143,13 @@ def verify_video(path: Path, *, color: str = "sdr", codec: str | None = None):
                   and s.get("width", 0) > 0 and s.get("height", 0) > 0]
         if not videos:
             raise RecorderError("The output contains no valid video stream.")
-        if codec and not any(s.get("codec_name") == codec for s in videos):
-            raise RecorderError(f"Video format verification failed: expected {codec}. Check GPU and driver support for the selected format.")
+        name, ten_bit = split_codec(codec) if codec else (None, False)
+        if name and not any(s.get("codec_name") == name for s in videos):
+            raise RecorderError(f"Video format verification failed: expected {name}. Check GPU and driver support for the selected format.")
+        if ten_bit and not any(s.get("pix_fmt") in TEN_BIT for s in videos):
+            raise RecorderError(f"Video format verification failed: expected 10-bit {name}. Check GPU and driver support for the selected format.")
         if color == "hdr" and not any(
-                s.get("pix_fmt") in ("yuv420p10le", "p010le", "p010be", "yuv420p10be")
+                s.get("pix_fmt") in TEN_BIT
                 and s.get("color_transfer") == "smpte2084"
                 and s.get("color_primaries") == "bt2020"
                 and s.get("color_space") == "bt2020nc"
@@ -230,7 +236,7 @@ class Recorder:
         if display is None:
             raise RecorderError(f"Capture source {monitor!r} is unavailable. Choose a connected monitor.")
         color = capture_color(cfg, display)
-        gpu = color == "hdr" or cfg.get("codec") in ("h264", "hevc", "av1")
+        gpu = color == "hdr" or cfg.get("codec") in GPU_CODECS
         backend_name = "gpu-screen-recorder" if gpu else "wf-recorder"
         backend = shutil.which(backend_name)
         if not backend:

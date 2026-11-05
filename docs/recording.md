@@ -42,7 +42,19 @@ Review that grant before adding it: it allows the named recorder to capture with
 | --- | --- | --- |
 | **Recommended** | AV1 on the GPU when the display's GPU encodes it, otherwise HEVC | Smallest files at similar quality; recent players and editors |
 | **Compatible** | H.264 on the GPU | Plays and edits almost everywhere, at larger sizes |
-| Choose a format… | AV1, HEVC or H.264 on the GPU | Pick one explicitly |
+| Choose a format… | AV1 10-bit, AV1, HEVC 10-bit, HEVC or H.264 on the GPU | Pick one explicitly |
+
+**AV1 10-bit** (`recording.codec: "av1_10bit"`) has the highest quality ceiling
+for SDR: 10 bits per channel remove the banding 8-bit leaves in dark scenes,
+skies and gradients, even at high bitrates, and files are only slightly larger
+than 8-bit AV1. It runs on the GPU's video encoder like the other GPU formats,
+so it costs games about the same. The tradeoff is playback: older phones and
+GPUs and some editors can't decode 10-bit AV1. `hevc_10bit` is the same idea
+for GPUs without AV1 (on this machine, DP-5's integrated GPU). Each is offered
+only when its 10-bit encoder test passes, and saved files are checked for a
+10-bit pixel format. On HDR displays both use the HDR path below. Windows does
+not record 10-bit SDR yet; these settings record the 8-bit format of the same
+family there.
 
 HDR always uses AV1 or HEVC 10-bit. VP9 is not offered: neither AMD nor NVIDIA
 GPUs encode it in hardware (only some Intel GPUs do), and AV1 does the same job

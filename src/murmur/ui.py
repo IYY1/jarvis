@@ -29,7 +29,7 @@ else:
 
 from . import client
 from .commands import normalize
-from .encoding import QUALITY_PRESETS, storage_estimate
+from .encoding import GPU_CODECS, QUALITY_PRESETS, storage_estimate
 
 
 def _merge(base: dict, patch: dict) -> dict:
@@ -544,7 +544,8 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.format_choice = Gtk.DropDown.new_from_strings(["Recommended", "Compatible · H.264 on the GPU", "Choose a format…"])
         self._row(quality, "Video format", self.format_choice,
                   "Recommended: AV1 when this display's GPU encodes it (smallest files), otherwise HEVC. "
-                  "Compatible: H.264 plays and edits almost everywhere, at larger sizes. HDR always uses AV1 or HEVC 10-bit.")
+                  "Compatible: H.264 plays and edits almost everywhere, at larger sizes. HDR always uses AV1 or HEVC 10-bit. "
+                  "For the highest SDR quality, Choose a format… and pick AV1 10-bit.")
         self.format_detail = _label("Testing which formats this display's GPU can encode…", "caption")
         quality.append(self.format_detail)
         self._codec_options: list[str] = []
@@ -577,6 +578,8 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         legacy = advanced
         self.codec = Gtk.DropDown.new_from_strings(["AV1"])
         self._row(legacy, "Exact format (with Choose a format…)", self.codec,
+                  "AV1 10-bit: the best quality for its size, without banding in dark scenes and gradients; "
+                  "files are only slightly larger than 8-bit AV1, but older phones, GPUs and some editors can't play them. "
                   "AV1 GPU: smallest files; needs a recent GPU and player. HEVC GPU: smaller than H.264, widely "
                   "supported by hardware, some editors and browsers lack it. H.264 GPU: the most compatible.")
         self.format_tested = _label("", "caption")
@@ -1456,8 +1459,8 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
             self._notice("Choose an explicit recording audio source, or turn audio capture off.", True)
             return
         codec = self._chosen_codec()
-        if codec in ("h264", "hevc", "av1") and self._formats.get("formats") and not self._formats["formats"].get(codec):
-            self._notice(f"{codec.upper()} did not pass the encoder test on {self._formats.get('gpu')} (the GPU of "
+        if codec in GPU_CODECS and self._formats.get("formats") and not self._formats["formats"].get(codec):
+            self._notice(f"{self.NAMES[codec]} did not pass the encoder test on {self._formats.get('gpu')} (the GPU of "
                          f"{monitor or 'this display'}). Choose another format.", True)
             return
         self._save({"recording": {"output_dir": self.output_dir.get_text().strip(), "monitor": monitor,
@@ -1501,13 +1504,15 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
             self.replay_max_mb.set_value(max(512, self.replay_max_mb.get_value()))
 
     LEGACY = {"libx264": "H.264 · CPU (legacy, uses far more CPU)", "h264_vaapi": "H.264 · VA-API via wf-recorder (legacy)"}
-    LABELS = {"av1": "AV1 · GPU", "hevc": "HEVC · GPU", "h264": "H.264 · GPU"}
+    LABELS = {"av1_10bit": "AV1 10-bit · GPU (best quality)", "av1": "AV1 · GPU",
+              "hevc_10bit": "HEVC 10-bit · GPU", "hevc": "HEVC · GPU", "h264": "H.264 · GPU"}
+    NAMES = {"av1_10bit": "AV1 10-bit", "av1": "AV1", "hevc_10bit": "HEVC 10-bit", "hevc": "HEVC", "h264": "H.264"}
 
     def _show_codec(self, codec: str) -> None:
         """Put a saved codec into the picker. Legacy encoders stay selectable only
         for configurations that already use them; nothing changes until Save."""
         self._saved_codec = codec
-        self._codec_options = ["av1", "hevc", "h264"] + ([codec] if codec in self.LEGACY else [])
+        self._codec_options = list(self.LABELS) + ([codec] if codec in self.LEGACY else [])
         self.codec.set_model(Gtk.StringList.new([self.LABELS.get(c) or self.LEGACY[c] for c in self._codec_options]))
         self.codec.set_selected(self._codec_options.index(codec) if codec in self._codec_options else 0)
         from .encoder_probe import recommended
@@ -1547,12 +1552,12 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         formats = self._formats.get("formats", {})
         codec = self._chosen_codec()
         self.codec.set_sensitive(self.format_choice.get_selected() == 2)
-        names = {"av1": "AV1", "hevc": "HEVC", "h264": "H.264"}
+        names = self.NAMES
         if formats:
             best = recommended(formats)
-            works = ", ".join(n for c, n in names.items() if formats.get(c)) or "none"
-            hdr = ", ".join(n for c, n in (("av1_10bit", "AV1"), ("hevc_10bit", "HEVC")) if formats.get(c)) or "none"
-            self.format_tested.set_text(f"Tested on {self._formats.get('gpu')}: {works} · HDR 10-bit: {hdr}.")
+            works = ", ".join(names[c] for c in ("av1", "hevc", "h264") if formats.get(c)) or "none"
+            ten = ", ".join(n for c, n in (("av1_10bit", "AV1"), ("hevc_10bit", "HEVC")) if formats.get(c)) or "none"
+            self.format_tested.set_text(f"Tested on {self._formats.get('gpu')}: {works} · 10-bit (SDR and HDR): {ten}.")
             usable = codec not in names or formats.get(codec)
             detail = (f"Recommended here: {names.get(best, 'none')} on {self._formats.get('gpu')}." if best else
                       "No GPU format passed the test on this display's GPU.")
@@ -1566,7 +1571,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         elif shutil.which("ffmpeg") is None:
             self.format_detail.set_text("FFmpeg is missing, so formats can't be tested. Install ffmpeg.")
         budget = self.rate_control.get_selected() == 1
-        gpu = codec in ("h264", "hevc", "av1")
+        gpu = codec in GPU_CODECS
         self.bitrate.set_sensitive(budget)
         self.quality_preset.set_sensitive(not budget and gpu)
         self.quality.set_sensitive(not budget and not gpu)

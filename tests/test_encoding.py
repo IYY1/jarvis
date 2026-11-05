@@ -7,7 +7,7 @@ import unittest
 from unittest.mock import patch
 
 from murmur.config import validate
-from murmur.encoding import CODECS, gpu_video_args, storage_estimate
+from murmur.encoding import CODECS, GPU_CODECS, gpu_video_args, storage_estimate
 from murmur.recorder import Recorder
 from murmur.replay import command
 
@@ -38,7 +38,7 @@ class EncodingTests(unittest.TestCase):
             for color in ("sdr", "hdr"):
                 cfg = validate({"recording": {"codec": codec, "monitor": "DP-1", "rate_control": "bitrate", "bitrate_mbps": 8}})["recording"]
                 args = command(cfg, {}, Path("/fake"), Path("/fake/ipc"), color=color)
-                expected = ("av1_hdr" if codec == "av1" else "hevc_hdr") if color == "hdr" else codec if codec in ("av1", "hevc", "h264") else "h264"
+                expected = ("av1_hdr" if codec.startswith("av1") else "hevc_hdr") if color == "hdr" else codec if codec in GPU_CODECS else "h264"
                 self.assertEqual(args[args.index("-k") + 1], expected)
                 self.assertEqual(args[args.index("-q") + 1], "8000")
                 self.assertEqual(args[args.index("-bm") + 1], "cbr")
@@ -47,7 +47,7 @@ class EncodingTests(unittest.TestCase):
         self.assertEqual(storage_estimate({"bitrate_mbps": 8}, 120), 120)
 
     def test_sdr_gpu_uses_gpu_backend_with_explicit_audio(self):
-        for codec in ("h264", "hevc", "av1"):
+        for codec in GPU_CODECS:
             cfg = validate({"recording": {"configured": True, "monitor": "DP-1", "codec": codec,
                            "system_audio": True, "audio_device": "game.monitor", "rate_control": "bitrate"}})
             with patch("murmur.recorder.sources", return_value=[{"name": "DP-1"}]), \
@@ -79,6 +79,21 @@ class EncodingTests(unittest.TestCase):
                 with self.assertRaisesRegex(RecorderError, "expected av1"):
                     verify_video(path, codec="av1")
                 verify_video(path, codec="h264")
+
+    def test_ten_bit_formats_are_verified_as_ten_bit(self):
+        from murmur.recorder import RecorderError, verify_video
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "clip.mkv"
+            path.write_bytes(b"fake")
+            for pixel in ("yuv420p", "yuv420p10le"):
+                probe = {"streams": [{"codec_type": "video", "codec_name": "av1", "width": 640, "height": 360, "pix_fmt": pixel}]}
+                with self.subTest(pixel=pixel), patch("murmur.recorder._query", return_value=json.dumps(probe)):
+                    if pixel == "yuv420p":
+                        with self.assertRaisesRegex(RecorderError, "expected 10-bit av1"):
+                            verify_video(path, codec="av1_10bit")
+                    else:
+                        verify_video(path, codec="av1_10bit")
+                    verify_video(path, codec="av1")
 
     def test_native_gpu_record_and_replay_use_same_budget(self):
         from tests.test_rust_controller import BINARY, Harness

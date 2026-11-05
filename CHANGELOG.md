@@ -20,6 +20,9 @@
 - **Video formats**: Recommended (AV1, else HEVC) / Compatible (H.264 GPU),
   each tested on the selected display's GPU with synthetic frames. CPU H.264
   and legacy VA-API remain only for existing configurations.
+- **AV1 10-bit and HEVC 10-bit for SDR** (Choose a format…): no banding in dark
+  scenes and gradients, at nearly the size of 8-bit; saved files are verified
+  as 10-bit ([details](docs/recording.md)).
 - **Apps**: Snap apps are discovered; installers and uninstallers are hidden;
   duplicate native/Flatpak entries show once; AppImages and portable programs
   can be added as normal launcher entries.

@@ -277,7 +277,15 @@ pub fn validate(data: &Value) -> Result<Value> {
     }
     choices(
         &r["codec"],
-        &["libx264", "h264_vaapi", "h264", "hevc", "av1"],
+        &[
+            "libx264",
+            "h264_vaapi",
+            "h264",
+            "hevc",
+            "av1",
+            "hevc_10bit",
+            "av1_10bit",
+        ],
         "Choose H.264, HEVC or AV1 recording encoding",
     )?;
     choices(

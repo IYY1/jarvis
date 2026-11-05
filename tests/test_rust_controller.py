@@ -714,6 +714,20 @@ class ControllerServiceTests(unittest.TestCase):
         self.assertTrue(Path(status["file"]).exists())
         self.assertTrue(Path(status["file"]).name.endswith(".part.mkv"))
 
+    def test_ten_bit_sdr_recording_is_requested_and_verified(self):
+        for pixel, ok in (("yuv420p", False), ("yuv420p10le", True)):
+            with self.subTest(pixel=pixel):
+                h = self.start(dry_run=False, config_patch={"recording": {"codec": "av1_10bit"}},
+                               MURMUR_TEST_CODEC="av1", MURMUR_TEST_PIX_FMT=pixel)
+                self.assertTrue(h.rpc("record_start")["ok"])
+                h.wait(lambda: bool(h.events("gpu-screen-recorder")))
+                args = h.events("gpu-screen-recorder")[0]["args"]
+                self.assertEqual(args[args.index("-k") + 1], "av1_10bit")
+                result = h.rpc("record_stop")
+                self.assertEqual(result["ok"], ok, result)
+                if not ok:
+                    self.assertIn("expected 10-bit av1", h.status()["recording"]["message"])
+
 
 @unittest.skipUnless(BINARY.is_file() and os.environ.get("MURMUR_SPEECH_TEST_RAW")
                      and os.environ.get("MURMUR_VOSK_MODEL") and os.environ.get("MURMUR_WHISPER_MODEL")

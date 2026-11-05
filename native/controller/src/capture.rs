@@ -39,20 +39,24 @@ pub fn color(cfg: &Value, monitor: &Value) -> Result<&'static str> {
         "sdr"
     })
 }
+/// Formats GPU Screen Recorder encodes. The 10-bit ones record SDR without
+/// banding; HDR capture is always 10-bit whichever family is chosen.
+pub const GPU_CODECS: [&str; 5] = ["h264", "hevc", "av1", "hevc_10bit", "av1_10bit"];
+const TEN_BIT: [&str; 4] = ["yuv420p10le", "p010le", "p010be", "yuv420p10be"];
 fn gpu_args(color: &str, r: &Value) -> Vec<String> {
     let codec = match r["codec"].as_str().unwrap_or("libx264") {
-        "av1" => {
+        c @ ("av1" | "av1_10bit") => {
             if color == "hdr" {
                 "av1_hdr"
             } else {
-                "av1"
+                c
             }
         }
-        "hevc" => {
+        c @ ("hevc" | "hevc_10bit") => {
             if color == "hdr" {
                 "hevc_hdr"
             } else {
-                "hevc"
+                c
             }
         }
         _ => {
@@ -271,14 +275,21 @@ pub async fn verify(path: &Path, color: &str, codec: Option<&str>) -> Result<()>
         return err("The output contains no valid video stream.");
     }
     if let Some(codec) = codec {
-        if !video.iter().any(|s| s["codec_name"] == codec) {
-            return err(format!("Video format verification failed: expected {codec}. Check GPU and driver support for the selected format."));
+        let name = codec.trim_end_matches("_10bit");
+        if !video.iter().any(|s| s["codec_name"] == name) {
+            return err(format!("Video format verification failed: expected {name}. Check GPU and driver support for the selected format."));
+        }
+        if codec.ends_with("_10bit")
+            && !video
+                .iter()
+                .any(|s| TEN_BIT.contains(&s["pix_fmt"].as_str().unwrap_or("")))
+        {
+            return err(format!("Video format verification failed: expected 10-bit {name}. Check GPU and driver support for the selected format."));
         }
     }
     if color == "hdr"
         && !video.iter().any(|s| {
-            ["yuv420p10le", "p010le", "p010be", "yuv420p10be"]
-                .contains(&s["pix_fmt"].as_str().unwrap_or(""))
+            TEN_BIT.contains(&s["pix_fmt"].as_str().unwrap_or(""))
                 && s["color_transfer"] == "smpte2084"
                 && s["color_primaries"] == "bt2020"
                 && s["color_space"] == "bt2020nc"
@@ -383,7 +394,7 @@ impl Capture {
         self.color = color(r, display)?.into();
         self.codec = r["codec"]
             .as_str()
-            .filter(|c| ["h264", "hevc", "av1"].contains(c))
+            .filter(|c| GPU_CODECS.contains(c))
             .map(|c| {
                 if c == "h264" && self.color == "hdr" {
                     "hevc"
@@ -394,7 +405,7 @@ impl Capture {
             });
         let gpu = self.replay
             || self.color == "hdr"
-            || ["h264", "hevc", "av1"].contains(&r["codec"].as_str().unwrap_or(""));
+            || GPU_CODECS.contains(&r["codec"].as_str().unwrap_or(""));
         let backend = if gpu {
             "gpu-screen-recorder"
         } else {
