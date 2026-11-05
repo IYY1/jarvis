@@ -420,6 +420,10 @@ class Window:
         self.alias_tree.grid(row=5, column=0, columnspan=3, sticky="ew")
         self.alias_tree.bind("<<TreeviewSelect>>", self.select_alias)
         self.refresh_aliases()
+        self.close_words = tk.StringVar(value=", ".join(self.config["close_words"]))
+        ttk.Label(p, text="Close words (comma separated)").grid(row=6, column=0, sticky="w")
+        ttk.Entry(p, textvariable=self.close_words).grid(row=6, column=1, sticky="ew", pady=7)
+        self.note(p, "Say a close word before an app name to close it, for example “close Firefox” or “quit Firefox”.", 7)
 
     def refresh_aliases(self):
         self.alias_tree.delete(*self.alias_tree.get_children())
@@ -645,7 +649,7 @@ class Window:
             "Replay uses the recording display and encoding controls. RAM writes video only when you save. Choosing Disk writes unsaved screen and sound continuously, roughly 1–10 GB/hour depending on bitrate. Deleted files are not securely erased; crash leftovers are cleaned on next start.",
             1,
         )
-        self.field(p, "History (10–600 seconds)", "replay", "seconds", 2)
+        self.field(p, "History (10–1800 seconds)", "replay", "seconds", 2)
         self.check(p, "Include game / system sound", "replay", "game_audio", 3)
         self.check(p, "Include microphone", "replay", "microphone", 4)
         self.check(p, "Play a sound when a replay is saved", "replay", "sound", 5)
@@ -729,6 +733,7 @@ class Window:
         value["recording"]["fps"] = round(self.fps.get())
         value["aliases"] = dict(self.aliases)
         value["app_prefixes"] = dict(self.prefixes)
+        value["close_words"] = [word.strip() for word in self.close_words.get().split(",") if word.strip()]
         value["commands"] = json.loads(self.commands_text.get("1.0", "end"))
         return config.validate(value)
 

@@ -846,7 +846,7 @@ async fn dispatch(
             let status = match action {
                 "replay_start" => capture.start(cfg).await?,
                 "replay_stop" => capture.stop().await?,
-                _ => capture.save().await?,
+                _ => capture.save(intent["target"].as_u64()).await?,
             };
             Ok(status["message"].as_str().unwrap_or("").into())
         }

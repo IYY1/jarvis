@@ -153,6 +153,8 @@
       "title": "Instant replay",
       "examples": [
         "clip that",
+        "clip the last thirty seconds",
+        "clip the last two minutes",
         "save replay",
         "start replay",
         "stop replay"

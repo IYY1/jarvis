@@ -200,11 +200,37 @@ class ReplayPhraseTests(unittest.TestCase):
                 self.assertEqual(parser.parse(phrase), Intent(action))
         self.assertIn("clip that", parser.grammar([])["phrases"])
 
+    def test_clip_lengths_in_seconds_and_minutes(self):
+        parser = Parser()
+        for phrase, seconds in (("clip the last twenty five seconds", 25), ("clip last 25 seconds", 25),
+                                ("Clip that last 25 seconds.", 25), ("please clip the last 2 minutes", 120),
+                                ("save the last three minutes", 180), ("clip the last minute", 60),
+                                ("clip 90 seconds", 90), ("clip the last thirty minutes", 1800)):
+            with self.subTest(phrase=phrase):
+                self.assertEqual(parser.parse(phrase), Intent("replay_save", seconds))
+        for phrase in ("clip the last thirty one minutes", "clip the last zero seconds", "clip the last seconds"):
+            with self.subTest(phrase=phrase), self.assertRaises(ValueError):
+                parser.parse(phrase)
+        phrases = parser.grammar([])["phrases"]
+        self.assertIn("clip the last twenty five seconds", phrases)
+        self.assertIn("clip the last two minutes", phrases)
+
+    def test_spoken_clip_lengths_are_matched_exactly_never_guessed(self):
+        from murmur.commands import closest_match, match_candidates
+        candidates = match_candidates(Parser().grammar([]))
+        self.assertEqual(candidates["clip the last fifteen seconds"], "replay_save:15")
+        for heard, phrase in (("Clip the last 25 seconds.", "clip the last twenty five seconds"),
+                              ("uh clip last twenty-five seconds", "clip the last twenty five seconds"),
+                              ("Save the last 2 minutes please.", "clip the last two minutes")):
+            with self.subTest(heard=heard):
+                self.assertEqual(closest_match(heard, candidates), (phrase, 1.0))
+        self.assertIsNone(closest_match("clip the last fiftteen seconds", candidates))
+
     def test_config_defaults_and_bounds(self):
         self.assertEqual(config.validate({})["replay"], {"seconds": 120, "autostart": False, "game_audio": True,
                                                        "microphone": True, "sound": True,
                                                        "storage": "ram", "max_mb": 256, "buffer_dir": ""})
-        for bad in ({"seconds": 5}, {"seconds": 601}, {"seconds": "120"}, {"autostart": 1}, {"game_audio": "yes"},
+        for bad in ({"seconds": 5}, {"seconds": 1801}, {"seconds": "120"}, {"autostart": 1}, {"game_audio": "yes"},
                     {"microphone": 0}, {"sound": None}, {"storage": "auto"}, {"storage": None},
                     {"max_mb": True}, {"max_mb": 63}, {"max_mb": 16385}, {"max_mb": 64.0},
                     {"buffer_dir": None}, {"buffer_dir": "a\0b"}):
@@ -219,6 +245,8 @@ class ReplayPhraseTests(unittest.TestCase):
             with self.subTest(action=action):
                 self.assertEqual(dispatch.execute(Intent(action)), "ok")
                 method.assert_called_once_with()
+        self.assertEqual(dispatch.execute(Intent("replay_save", 25)), "ok")
+        replay.save.assert_called_with(25)
 
 
 class ReplayWindowTests(unittest.TestCase):

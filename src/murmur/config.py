@@ -25,7 +25,8 @@ DEFAULTS = {
     "recognition": {"backend": "auto", "model_path": "", "closest_match": True,
                     "accurate": True, "noise_suppression": False, "speech_model": "light"},
     "privacy": {"onboarded": False},
-    "aliases": {}, "commands": {}, "app_prefixes": {}, "startup": False,
+    # close_words: what to say before an app name to close it ("close firefox").
+    "aliases": {}, "commands": {}, "app_prefixes": {}, "close_words": ["close"], "startup": False,
     "recording": {"output_dir": "~/Videos/Murmur", "monitor": "", "system_audio": False,
                   "microphone": False, "audio_device": "", "fps": 30,
                   "codec": "libx264", "quality": 23, "rate_control": "quality",
@@ -167,8 +168,8 @@ def validate(data: dict) -> dict:
     for key in ("output_dir", "monitor", "audio_device"):
         if not isinstance(r[key], str) or len(r[key]) > 4096 or "\0" in r[key]:
             raise ValueError(f"Invalid recording {key}")
-    if type(c["replay"]["seconds"]) is not int or not 10 <= c["replay"]["seconds"] <= 600:
-        raise ValueError("Replay length must be 10–600 seconds")
+    if type(c["replay"]["seconds"]) is not int or not 10 <= c["replay"]["seconds"] <= 1800:
+        raise ValueError("Replay length must be 10–1800 seconds (30 minutes)")
     if c["replay"]["storage"] not in ("ram", "disk"):
         raise ValueError("Replay storage must be ram or disk")
     if type(c["replay"]["max_mb"]) is not int or not 64 <= c["replay"]["max_mb"] <= 16384:

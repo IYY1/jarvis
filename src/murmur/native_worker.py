@@ -90,7 +90,9 @@ def prepare(config: dict, mode: str, grammar: dict) -> tuple[list[str], dict, di
               "candidates": list(match_candidates(grammar).items()),
               "wake_forms": all_wake_variants(config["activation"]),
               "greetings": list(GREETINGS), "prefixes": list(POLITE_PREFIXES),
-              "suffixes": list(POLITE_SUFFIXES), "whisper_idle_seconds": WHISPER_IDLE_SECONDS}
+              "suffixes": list(POLITE_SUFFIXES), "whisper_idle_seconds": WHISPER_IDLE_SECONDS,
+              # Frees each Vosk decoder's feature history; see docs/vosk-finalization.md.
+              "vosk_finalize_utterances": True}
     whisper = usable_model(config)
     if settings["accurate"] and accurate_model_ready(whisper):
         folder = accurate_model_dir(whisper)

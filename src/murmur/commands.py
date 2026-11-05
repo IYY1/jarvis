@@ -120,7 +120,7 @@ REFERENCE = [
     {"category": "Windows", "title": "Fullscreen", "examples": ["make this window fullscreen", "exit fullscreen"]},
     {"category": "Audio", "title": "Volume", "examples": ["turn the volume down", "turn down the volume", "turn the volume up", "mute volume", "turn the sound back on"]},
     {"category": "Recording", "title": "Capture your screen", "examples": ["start recording", "stop recording", "open the video recorder"]},
-    {"category": "Recording", "title": "Instant replay", "examples": ["clip that", "save replay", "start replay", "stop replay"]},
+    {"category": "Recording", "title": "Instant replay", "examples": ["clip that", "clip the last thirty seconds", "clip the last two minutes", "save replay", "start replay", "stop replay"]},
     {"category": "Privacy", "title": "Stop immediately", "examples": ["stop listening", "cancel"]},
 ]
 
@@ -149,11 +149,29 @@ class GrammarMatcher:
         return stripped != text and self._core(stripped)
 
 
+def close_words(words) -> list[str]:
+    """Validated words that close an application ("close", "quit", "kill")."""
+    message = "Close words must be 1–8 distinct words of up to three words each, not other app verbs"
+    if not isinstance(words, list) or not 1 <= len(words) <= 8:
+        raise CommandError(message)
+    reserved = {verb for verb, action in APP_VERBS.items() if action != "close_app"} | set(POLITE_PREFIXES)
+    result = []
+    for word in words:
+        if not isinstance(word, str) or len(word) > 40 or any(ord(ch) < 32 or 127 <= ord(ch) < 160 for ch in word):
+            raise CommandError(message)
+        word = normalize(word)
+        if not word or len(word.split(" ")) > 3 or word in reserved or word in result:
+            raise CommandError(message)
+        result.append(word)
+    return result
+
+
 class Parser:
     def __init__(self, custom: dict[str, str] | None = None):
         from .phrases import Rules
         self.rules = Rules()
         self.blocked_apps = set()
+        self.close_words = ["close"]
         self.custom = {normalize(k): normalize(v) for k, v in (custom or {}).items()}
         # Targets are canonical built-ins; no recursion, arbitrary commands, or app paths.
         for phrase, target in self.custom.items():
@@ -166,6 +184,7 @@ class Parser:
     def from_config(cls, config):
         from .phrases import Rules
         parser = cls(config["commands"])
+        parser.close_words = close_words(config["close_words"])
         rules = Rules.from_config(config)
         for phrase in parser.custom:
             if rules.parse_normalized(phrase) is not None:
@@ -200,19 +219,30 @@ class Parser:
         exact = self.rules.parse_normalized(phrase)
         if exact is not None:
             return exact
+        from .phrases import clip_seconds
+        seconds = clip_seconds(phrase)
+        if seconds is not None:
+            return Intent("replay_save", seconds)
         m = WORKSPACE_RE.fullmatch(phrase)
         if m:
             number = NUMBERS.get(m[2], int(m[2]) if m[2].isascii() and m[2].isdigit() else 0)
             if not 1 <= number <= 10:
                 raise CommandError("Choose workspace one through ten")
             return Intent(WORKSPACE_FORMS[m[1]], number)
-        m = APP_RE.fullmatch(phrase)
+        verbs = self.app_verbs()
+        m = re.fullmatch(rf"({_alternation(verbs)}) (.+)", phrase)
         if m:
             target = m[2].removeprefix("the ")
-            if APP_VERBS[m[1]] == "open_app" and target in self.blocked_apps:
+            if verbs[m[1]] == "open_app" and target in self.blocked_apps:
                 raise CommandError("Use the launch word configured for this application name")
-            return Intent(APP_VERBS[m[1]], target)
+            if target:
+                return Intent(verbs[m[1]], target)
         raise CommandError("Phrase not recognized. Open Commands to see supported phrases.")
+
+    def app_verbs(self) -> dict[str, str]:
+        """Built-in app verbs, with the configured close words replacing "close"."""
+        verbs = {verb: action for verb, action in APP_VERBS.items() if action != "close_app"}
+        return verbs | dict.fromkeys(self.close_words, "close_app")
 
     def grammar(self, app_names) -> dict:
         """Everything the recognizer may hear, built from the parser's own tables.
@@ -221,14 +251,16 @@ class Parser:
         by one entry per app rather than one per verb and app. Apps beyond
         ``MAX_GRAMMAR_APPS`` are reported in ``overflow`` instead of failing.
         """
-        core = set(FIXED) | set(VARIANTS) | set(self.custom) | set(self.rules.phrases())
+        from .phrases import clip_phrases
+        core = set(FIXED) | set(VARIANTS) | set(self.custom) | set(self.rules.phrases()) | set(clip_phrases())
         for form in WORKSPACE_FORMS:
             core.update(f"{form} {number}" for number in NUMBERS)
         if len(core) > MAX_GRAMMAR_PHRASES:
             raise CommandError(f"Too many command phrases (limit {MAX_GRAMMAR_PHRASES}). Remove command shortcuts.")
         apps = sorted({name for name in app_names if name})
         return {"launches": self.rules.launches, "blocked_apps": sorted(self.blocked_apps), "phrases": sorted(core), "apps": apps[:MAX_GRAMMAR_APPS], "custom": dict(self.custom),
-                "verbs": sorted(v for v in APP_VERBS if v not in TYPED_ONLY_VERBS),
+                "verbs": sorted(v for v in self.app_verbs() if v not in TYPED_ONLY_VERBS),
+                "close_verbs": list(self.close_words),
                 "prefixes": list(POLITE_PREFIXES),
                 "suffixes": [],
                 "overflow": [f"open {name}" for name in apps[MAX_GRAMMAR_APPS:]]}
@@ -271,7 +303,8 @@ def spoken_numbers(text: str) -> str:
 MAX_LEADING_WORDS = 2   # tolerate a misheard word or two before the command ("a", "uh")
 
 
-def closest_match(heard: str, candidates: dict, min_score: float = 0.82, min_margin: float = 0.06, exact_only: bool = False):
+def closest_match(heard: str, candidates: dict, min_score: float = 0.82, min_margin: float = 0.06, exact_only: bool = False,
+                  close_verbs=("close",)):
     """Return (command, score) for the command closest to free-form text, or None.
 
     ``candidates`` maps each full command phrase to what it does (its intent),
@@ -301,12 +334,20 @@ def closest_match(heard: str, candidates: dict, min_score: float = 0.82, min_mar
         return None
     if text in candidates:
         return text, 1.0
-    text = re.sub(r"^(open|open up|launch|start|focus|switch to|close) the ", r"\1 ", text)
+    verbs = ["open", "open up", "launch", "start", "focus", "switch to", *close_verbs]
+    text = re.sub(rf"^({_alternation(verbs)}) the ", r"\1 ", text)
     if text in candidates:
         return text, 1.0
+    # A clip length may follow a misheard word or two, like other commands.
+    from .phrases import clip_canonical
+    words = text.split()
+    for start in range(min(3, len(words))):
+        clip = clip_canonical(" ".join(words[start:]))
+        if clip is not None:
+            return (clip, 1.0) if clip in candidates else None
     # Closing requires a complete, exact name/alias. Never infer it from
     # a similar open command, or turn a misheard close into an open command.
-    if text.startswith("close "):
+    if any(text.startswith(verb + " ") for verb in close_verbs):
         return None
     if exact_only:
         return None
@@ -337,7 +378,8 @@ def _closest(windows, candidates, min_score, min_margin):
     for candidate, intent in candidates.items():
         # Exclude exact-only actions while iterating, without copying the full
         # candidate dictionary for each matching pass.
-        if intent.startswith("close_app:"):
+        # Clip lengths are never guessed either: "fifteen" is spelled like "fifty".
+        if intent.startswith("close_app:") or re.fullmatch(r"replay_save:\d+", intent):
             continue
         target = _squash(candidate)
         target_letters = matcher = None
@@ -383,6 +425,7 @@ def match_candidates(grammar: dict, extra_apps=()) -> dict:
     from .phrases import Rules
     parser.rules = Rules(grammar.get("launches"))
     parser.blocked_apps = set(grammar.get("blocked_apps", []))
+    parser.close_words = list(grammar.get("close_verbs", ["close"]))
     app_ids = grammar.get("app_ids", {})
     phrases = list(grammar.get("phrases", []))
     apps = list(grammar.get("apps", [])) + [a for a in extra_apps if a]

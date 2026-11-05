@@ -179,7 +179,7 @@ class PreparationTests(unittest.TestCase):
         self.assertIsNotNone(payload["native"]["whisper"])
         self.assertEqual(payload["native"]["whisper_idle_seconds"], 60)
         self.assertNotIn("vosk_fast_path", payload["native"])
-        self.assertNotIn("vosk_finalize_utterances", payload["native"])
+        self.assertIs(payload["native"]["vosk_finalize_utterances"], True)
         self.assertEqual([c.args[0] for c in packages.call_args_list], ["vosk"])
 
 

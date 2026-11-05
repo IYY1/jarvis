@@ -191,14 +191,14 @@ class AppRegistry:
                     continue
                 seen.add(name)
                 try:
-                    intents = [parser.parse(f'{verb} {name}') for verb in ('open', 'close')]
+                    intents = [parser.parse(f'{verb} {name}') for verb in ('open', parser.close_words[0])]
                     if any(intent.action != action or self.resolve(intent.target).id != app.id
                            for intent, action in zip(intents, ('open_app', 'close_app'))):
                         continue
                 except (ValueError, KeyError):
                     continue
                 result.append({'category': 'Applications', 'title': app.name, 'app_id': app.id,
-                               'voice_name': name, 'examples': [f'open {name}', f'close {name}']})
+                               'voice_name': name, 'examples': [f'open {name}', f'{parser.close_words[0]} {name}']})
                 break
             else:
                 raise CommandError(f'Cannot assign open/close commands to {app.name}')

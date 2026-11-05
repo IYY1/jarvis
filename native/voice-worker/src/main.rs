@@ -252,6 +252,7 @@ fn policy(reader: &mut impl BufRead) -> Result<()> {
             exact_only: request["exact_only"].as_bool().unwrap_or(false),
             rules: jarvis_phrases::Rules::from_grammar(&request["grammar"]),
             blocked_apps: Default::default(),
+            close_verbs: vec!["close".into()],
         };
         emit(json!({"match":matcher.closest(request["heard"].as_str().ok_or("heard required")?)}))?;
     }
@@ -264,6 +265,14 @@ fn run() -> Result<()> {
     #[cfg(all(target_os = "linux", target_env = "gnu"))]
     unsafe {
         libc::mallopt(libc::M_ARENA_MAX, 1);
+    }
+    // With transparent huge pages set to "always" (CachyOS and others), the
+    // kernel backs sparse model allocations with whole 2 MiB pages. Opting out
+    // kept the released floor 16 MiB lower over 12 Whisper load cycles at the
+    // same latency (docs/benchmarks/voice-worker-thp-2026-11-05.json).
+    #[cfg(target_os = "linux")]
+    unsafe {
+        libc::prctl(libc::PR_SET_THP_DISABLE, 1, 0, 0, 0);
     }
     let args: Vec<_> = std::env::args().skip(1).collect();
     if args.iter().any(|s| {

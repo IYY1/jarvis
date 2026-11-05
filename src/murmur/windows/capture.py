@@ -400,7 +400,8 @@ class Recorder(_Capture):
 class Replay(_Capture):
     replay = True
 
-    def save(self):
+    def save(self, seconds=None):
+        """Save the whole buffer, or only its last ``seconds``."""
         if not self._saving.acquire(blocking=False):
             raise RecorderError("A replay is already being saved")
         partial = None
@@ -424,6 +425,9 @@ class Replay(_Capture):
             partial = folder / f".Murmur_replay_{tag}.part.mkv"
             final = folder / f"Replay_{tag}.mkv"
             with buffer.files(after=time.monotonic(), timeout=2) as paths:
+                if seconds is not None:
+                    # One-second segments, plus the one finishing at the request.
+                    paths = paths[-(seconds + 1):]
                 # The listing sits beside the segments. Use simple relative
                 # names so FFmpeg's safe concat mode accepts paths on Windows.
                 root = paths[0].parent

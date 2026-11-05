@@ -135,13 +135,16 @@ fallback recognizes less accurately.
 
 | Action | Examples |
 | --- | --- |
-| Applications | “open Firefox”, “launch Dolphin”, “switch to Steam” |
+| Applications | “open Firefox”, “launch Dolphin”, “switch to Steam”, “close Firefox” |
 | Workspaces | “go to workspace three”, “move this window to workspace two” |
 | Fullscreen | “make this window fullscreen”, “exit fullscreen” |
 | Volume | “turn the volume down”, “mute volume”, “turn the sound back on” |
 | Recording | “start recording”, “stop recording”, “open the video recorder” |
-| Instant replay | “clip that”, “save replay”, “start replay”, “stop replay” |
+| Instant replay | “clip that”, “clip the last 25 seconds”, “clip the last 2 minutes”, “save replay”, “start replay”, “stop replay” |
 | Voice control | “cancel”, “stop listening” |
+
+**Applications → Close words** changes the word that closes an app (for
+example “quit Firefox”, or several words such as “close, quit”).
 
 The **Commands** page has the full list. **Applications → Add voice name** maps
 a phrase to an installed app, or from a terminal (`./run-jarvis` in a checkout):
@@ -219,6 +222,21 @@ ship only the Rust voice worker. Tests and checks:
 
 Regular tests never open the microphone or capture the screen. [GitHub
 Actions](https://github.com/abdullaho21/jarvis/actions) runs them on every push.
+
+### Install locally before pushing
+
+Every change runs on the local installation before it is pushed. Rebuild the
+parts it touches, restart the service and try the change with your own voice:
+
+```sh
+python scripts/build_controller.py --offline
+python scripts/build_voice_worker.py --offline
+python scripts/build_cli.py --offline
+systemctl --user restart murmur
+./run-jarvis status
+```
+
+Push only after the restarted service runs the new build and the change works.
 
 ## Project layout
 

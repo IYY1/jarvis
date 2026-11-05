@@ -126,13 +126,14 @@ class Replay:
             self._done.set()
         self._notify()
 
-    def _request(self, name: str, timeout: float = 30) -> str:
+    def _request(self, name: str, timeout: float = 30, data=None) -> str:
         """One request on gpu-screen-recorder's socket; replies once the file is written."""
         try:
             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as connection:
                 connection.settimeout(timeout)
                 connection.connect(str(self.ipc))
-                connection.sendall((json.dumps({"id": 1, "name": name}) + "\n").encode())
+                request = {"id": 1, "name": name} if data is None else {"id": 1, "name": name, "data": data}
+                connection.sendall((json.dumps(request) + "\n").encode())
                 with connection.makefile("rb") as replies:
                     reply = json.loads(replies.readline(65536) or b"{}")
         except (FileNotFoundError, ConnectionRefusedError) as exc:
@@ -145,7 +146,8 @@ class Replay:
             raise RecorderError(f"Replay not saved: {reply.get('data') or 'no reply'}")
         return reply["data"]
 
-    def save(self) -> dict:
+    def save(self, seconds: int | None = None) -> dict:
+        """Save the whole buffer, or only its last ``seconds``."""
         with self._lock:
             if self._process is None:
                 raise RecorderError("Instant replay is off. Say “start replay” first.")
@@ -154,7 +156,7 @@ class Replay:
         self._notify()
         path = None
         try:
-            path = Path(self._request("save-replay"))
+            path = Path(self._request("save-replay", data=None if seconds is None else {"seconds": seconds}))
             verify_video(path, color=color, codec=codec)
         except RecorderError as exc:
             detail = f"{exc} File retained at {path}." if path is not None else str(exc)

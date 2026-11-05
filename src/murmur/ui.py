@@ -351,6 +351,12 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         aliases.append(self.alias_app)
         aliases.append(_button("Add application alias", self._add_alias))
         body.append(aliases)
+        closing = self._card("Close words", "What you say before an app name to close it, for example “close Firefox” or “quit Firefox”.")
+        self.close_words = self._entry("close, quit")
+        self._row(closing, "Words that close an app", self.close_words,
+                  "Separate words with commas; up to eight. They replace “close”, so keep it in the list to still say “close”.")
+        closing.append(_button("Save close words", self._save_close_words))
+        body.append(closing)
 
     def _recording_page(self) -> None:
         body = self._page("recording", "Keep the moment.", "Set up once, then start and stop recording with your voice.")
@@ -382,8 +388,10 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         replay_controls.append(self.replay_save)
         replay_controls.append(self.replay_toggle)
         replay.append(replay_controls)
-        self.replay_seconds = self._spin(10, 600, 10)
-        self._row(replay, "Replay length (seconds)", self.replay_seconds)
+        self.replay_seconds = self._spin(10, 1800, 10)
+        self._row(replay, "Replay length (seconds)", self.replay_seconds,
+                  "Up to 30 minutes (1800). Say “clip that” for all of it, or “clip the last 30 seconds” / “clip the last 2 minutes”. "
+                  "Long RAM replays hold the whole buffer in memory (often 1–3 GB for 20 minutes of gameplay); choose Disk for long replays.")
         self.replay_storage = Gtk.DropDown.new_from_strings(["RAM", "Disk (continuous writes)"])
         self._row(replay, "Replay storage", self.replay_storage, "Disk requires the Rust controller and a real disk; tmpfs is refused.")
         self.replay_max_mb = self._spin(64, 16384, 64)
@@ -877,6 +885,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.activation.set_selected(0 if activation.get("mode") == "push_to_talk" else 1)
         self.wake_phrase.set_text(str(activation.get("wake_phrase", "hey jarvis")))
         self.wake_aliases.set_text(", ".join(activation.get("wake_aliases", [])))
+        self.close_words.set_text(", ".join(self.config.get("close_words", ["close"])))
         self.sensitivity.set_value(float(activation.get("sensitivity", .5)))
         self.timeout.set_value(float(activation.get("command_timeout", 8)))
         self.confidence.set_value(float(activation.get("confidence", .35)))
@@ -1077,6 +1086,14 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         launch = normalize(prefix.get_text())
         wording = " ".join(word for word in (launch, phrase) if word)
         self._save({"aliases": {phrase: app_id}, "app_prefixes": {phrase: launch}}, f"Saved. Say “{wake}, {wording}”.")
+
+    def _save_close_words(self) -> None:
+        words = [normalize(word) for word in self.close_words.get_text().split(",") if word.strip()]
+        if not words:
+            self._notice("Enter at least one word, for example close.", True)
+            return
+        wake = str(self.config.get("activation", {}).get("wake_phrase", "jarvis")).capitalize()
+        self._save({"close_words": words}, f"Close words saved. Say “{wake}, {words[0]} Firefox”.", replace_keys=("close_words",))
 
     def _render_aliases(self) -> None:
         self._clear(self.alias_list)

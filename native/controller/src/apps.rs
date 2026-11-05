@@ -395,13 +395,14 @@ impl Registry {
                     .filter(|(_, id)| **id == app.id)
                     .map(|(name, _)| name.clone()),
             );
+            let close = parser.close_words[0].as_str();
             let name = names
                 .into_iter()
                 .find(|name| {
                     if name.is_empty() {
                         return false;
                     }
-                    [("open", "open_app"), ("close", "close_app")]
+                    [("open", "open_app"), (close, "close_app")]
                         .iter()
                         .all(|(verb, action)| {
                             parser.parse(&format!("{verb} {name}")).is_ok_and(|intent| {
@@ -416,7 +417,7 @@ impl Registry {
                 .ok_or_else(|| format!("Cannot assign open/close commands to {}", app.name))?;
             result.push(
                 json!({"category":"Applications", "title":app.name, "app_id":app.id,
-                "voice_name":name, "examples":[format!("open {name}"),format!("close {name}")]}),
+                "voice_name":name, "examples":[format!("open {name}"),format!("{close} {name}")]}),
             );
         }
         Ok(result)

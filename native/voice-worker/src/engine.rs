@@ -24,6 +24,12 @@ pub struct Grammar {
     pub launches: serde_json::Map<String, Value>,
     #[serde(default)]
     pub blocked_apps: HashSet<String>,
+    #[serde(default = "default_close_verbs")]
+    pub close_verbs: Vec<String>,
+}
+
+fn default_close_verbs() -> Vec<String> {
+    vec!["close".into()]
 }
 
 #[cfg(test)]
@@ -268,7 +274,8 @@ impl Engine {
             for a in &spoken_apps {
                 let original = sounds.get(a).unwrap_or(a);
                 if grammar.blocked_apps.contains(original)
-                    && !["focus", "switch to", "close"].contains(&v.as_str())
+                    && !["focus", "switch to"].contains(&v.as_str())
+                    && !grammar.close_verbs.contains(v)
                 {
                     continue;
                 }
@@ -356,6 +363,7 @@ impl Engine {
                 launches: grammar.launches.clone(),
             },
             blocked_apps: grammar.blocked_apps.clone(),
+            close_verbs: grammar.close_verbs.clone(),
         };
         Ok(Self {
             wake,
