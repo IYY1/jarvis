@@ -223,6 +223,21 @@ ship only the Rust voice worker. Tests and checks:
 Regular tests never open the microphone or capture the screen. [GitHub
 Actions](https://github.com/abdullaho21/jarvis/actions) runs them on every push.
 
+### Install locally before pushing
+
+Every change runs on the local installation before it is pushed. Rebuild the
+parts it touches, restart the service and try the change with your own voice:
+
+```sh
+python scripts/build_controller.py --offline
+python scripts/build_voice_worker.py --offline
+python scripts/build_cli.py --offline
+systemctl --user restart murmur
+./run-jarvis status
+```
+
+Push only after the restarted service runs the new build and the change works.
+
 ## Project layout
 
 ```text
