@@ -1,6 +1,7 @@
 """Windows policies run on Linux too; no live audio, desktop actions or services."""
 
 import importlib.util
+import io
 import json
 from pathlib import Path
 import queue
@@ -81,11 +82,65 @@ class EncoderTests(unittest.TestCase):
             self.display,
             "ffmpeg.exe",
             "amf",
-            audio_pipe=r"\\.\pipe\Jarvis-test",
+            audio_pipes=[(r"\\.\pipe\Jarvis-test", None)],
         )
         self.assertIn("s16le", args)
         self.assertIn("aac", args)
         self.assertEqual(args.count("-i"), 2)
+        self.assertNotIn("-metadata:s:a:0", args)
+
+    def test_separate_replay_tracks_get_their_own_inputs_and_titles(self):
+        replay = config.validate({"replay": {"audio_tracks": "separate", "separate_apps": ["firefox"]}})["replay"]
+        cfg = dict(self.cfg, system_audio=True, microphone=True)
+        plan = encoding.audio_plan(cfg, replay, build=22631)
+        self.assertEqual([title for title, _ in plan], ["Game and other apps", "firefox", "Microphone"])
+        self.assertEqual([c["track"] for _, c in plan],
+                         [{"kind": "game", "app": "firefox"}, {"kind": "app", "app": "firefox"}, {"kind": "microphone"}])
+        pipes = [(rf"\\.\pipe\Jarvis-t-audio{i}", title) for i, (title, _) in enumerate(plan)]
+        args, _, _ = encoding.command(self.cfg, self.display, "ffmpeg.exe", "amf", audio_pipes=pipes)
+        self.assertEqual(args.count("-i"), 4)
+        for i in range(3):
+            self.assertIn(f"{i + 1}:a:0", args)
+        self.assertEqual(args[args.index("-metadata:s:a:1") + 1], "title=firefox")
+        # Without a program, the game track is all system sound.
+        alone = dict(replay, separate_apps=[])
+        self.assertEqual(encoding.audio_plan(cfg, alone, build=22631)[0][1]["track"], {"kind": "game", "app": ""})
+        # Mixed replays and recordings keep one input with the existing mix.
+        self.assertEqual(encoding.audio_plan(cfg, dict(replay, audio_tracks="mixed"), build=19045), [(None, cfg)])
+        self.assertEqual(encoding.audio_plan(cfg), [(None, cfg)])
+
+    def test_separate_tracks_refuse_windows_10_and_several_programs(self):
+        replay = config.validate({"replay": {"audio_tracks": "separate", "separate_apps": ["firefox"]}})["replay"]
+        with self.assertRaisesRegex(RecorderError, "Windows 11"):
+            encoding.audio_plan(self.cfg, replay, build=19045)
+        with self.assertRaisesRegex(RecorderError, "one program"):
+            encoding.audio_plan(self.cfg, dict(replay, separate_apps=["firefox", "spotify"]), build=22631)
+
+    def test_app_audio_is_relayed_and_its_error_reported(self):
+        from murmur.windows import audio
+        with tempfile.TemporaryDirectory() as folder:
+            worker = Path(folder) / "jarvis-voice"
+            worker.write_text("#!/bin/sh\nread request\necho \"$request\" > \"$0.request\"\nprintf 'PCMDATA!'\n"
+                              "echo '{\"event\":\"error\",\"message\":\"firefox is not running.\"}' >&2\nexit 1\n")
+            worker.chmod(0o755)
+            written = []
+            pipe = MagicMock()
+            pipe.return_value.__enter__.return_value.write.side_effect = written.append
+            with patch("murmur.native_worker.binary_path", return_value=worker), \
+                    patch("murmur.windows.pipes.PipeWriter", pipe):
+                with self.assertRaisesRegex(RuntimeError, "firefox is not running"):
+                    audio.track_to_pipe({"track": {"kind": "game", "app": "firefox"}}, r"\\.\pipe\Jarvis-x")
+            self.assertEqual(b"".join(written), b"PCMDATA!")
+            self.assertEqual(json.loads((Path(folder) / "jarvis-voice.request").read_text()),
+                             {"process": "firefox", "include": False})
+
+    def test_audio_failure_names_the_track_and_reason(self):
+        from murmur.windows.capture import audio_failure
+        process = types.SimpleNamespace(stderr=io.BytesIO(
+            b"Traceback ...\nRuntimeError: firefox is not running. Start it before instant replay.\n"))
+        self.assertEqual(audio_failure(process, "firefox"),
+                         "The firefox track stopped: firefox is not running. Start it before instant replay.")
+        self.assertIn("unexpectedly", audio_failure(types.SimpleNamespace(stderr=io.BytesIO(b"")), None))
 
     def test_ten_bit_settings_record_the_same_family_until_windows_supports_them(self):
         self.assertEqual(encoding.format_for({"codec": "av1_10bit"}, "sdr"), "av1")

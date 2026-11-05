@@ -10,7 +10,7 @@ from pathlib import Path
 import queue
 import threading
 import tkinter as tk
-from tkinter import filedialog, messagebox, ttk
+from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from .. import config
 from ..client import TIMEOUTS, request, watch
@@ -378,7 +378,7 @@ class Window:
     def build_applications(self, p):
         self.note(
             p,
-            "Refresh installed applications, select one and give it a short spoken name. Save settings to apply. A launch word such as “open” or “watch” goes before the name; leave it empty to say only the name.",
+            "Refresh installed applications, select one and give it a short spoken name. Save settings to apply. Add program… adds a portable program that Windows does not list, as a Start menu shortcut in a Jarvis folder. A launch word such as “open” or “watch” goes before the name; leave it empty to say only the name.",
             0,
         )
         self.apps_tree = ttk.Treeview(
@@ -404,6 +404,7 @@ class Window:
             p,
             [
                 ("Refresh apps", lambda: self.call("apps", self.show_apps)),
+                ("Add program…", self.add_program),
                 ("Assign voice name", self.assign_alias),
                 ("Remove voice name", self.remove_alias),
             ],
@@ -450,6 +451,63 @@ class Window:
             self.apps_tree.insert("", "end", values=(app["name"], app["id"]))
         self.refresh_aliases()
         self.call("commands", self.show_app_commands)
+
+    def add_program(self):
+        """Add a portable program as a Start-menu shortcut (Start Menu\\Programs\\
+        Jarvis), so Windows and Jarvis list it like an installed app. Programs
+        found in the usual folders are offered first."""
+        from .. import app_catalog
+
+        self.submit(app_catalog.program_candidates, self.pick_program)
+
+    def pick_program(self, candidates):
+        if not candidates:
+            self.browse_program()
+            return
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Add a program")
+        dialog.transient(self.root)
+        ttk.Label(dialog, text="Programs found on the desktop, in Downloads and portable-app folders:").pack(
+            anchor="w", padx=12, pady=(12, 6))
+        listing = tk.Listbox(dialog, height=min(12, len(candidates)), width=90)
+        for path in candidates:
+            listing.insert("end", str(path))
+        listing.selection_set(0)
+        listing.pack(fill="both", expand=True, padx=12)
+
+        def choose(path=None):
+            dialog.destroy()
+            self.name_program(path) if path else self.browse_program()
+
+        row = ttk.Frame(dialog)
+        row.pack(anchor="e", padx=12, pady=12)
+        ttk.Button(row, text="Add selected",
+                   command=lambda: choose(str(candidates[listing.curselection()[0]]))
+                   if listing.curselection() else None).pack(side="left", padx=(0, 8))
+        ttk.Button(row, text="Browse…", command=choose).pack(side="left", padx=(0, 8))
+        ttk.Button(row, text="Cancel", command=dialog.destroy).pack(side="left")
+        listing.focus_set()
+
+    def browse_program(self):
+        path = filedialog.askopenfilename(
+            parent=self.root, title="Add a program",
+            filetypes=[("Programs", "*.exe *.bat *.cmd *.lnk"), ("All files", "*.*")])
+        if path:
+            self.name_program(path)
+
+    def name_program(self, path):
+        name = simpledialog.askstring("Add a program", "Name to show and say:",
+                                      initialvalue=Path(path).stem, parent=self.root)
+        if not name:
+            return
+
+        def add():
+            from .. import app_catalog
+            from .system import com_context
+            with com_context():
+                return app_catalog.add(path, name)
+
+        self.submit(add, lambda _: self.call("apps", self.show_apps))
 
     def assign_alias(self):
         selected = self.apps_tree.selection()
@@ -657,6 +715,17 @@ class Window:
         self.field(p, "Storage", "replay", "storage", 7, choices={"RAM": "ram", "Disk (continuous writes)": "disk"})
         self.field(p, "Encoded-history budget (64–16384 MiB)", "replay", "max_mb", 8)
         self.field(p, "Private disk-buffer directory (blank: app data)", "replay", "buffer_dir", 9)
+        self.field(p, "Sound tracks", "replay", "audio_tracks", 10,
+                   choices={"One mixed track": "mixed", "Separate tracks (Windows 11)": "separate"})
+        self.separate_app = tk.StringVar(value=", ".join(self.config["replay"]["separate_apps"]))
+        ttk.Label(p, text="Program on its own track").grid(row=11, column=0, sticky="w")
+        ttk.Entry(p, textvariable=self.separate_app).grid(row=11, column=1, sticky="ew", pady=7)
+        self.note(
+            p,
+            "Separate tracks keep the game, one program and your microphone apart, so a podcast in Firefox can be muted in the clip editor. "
+            "Enter the program's file name without .exe, for example firefox, and start it before replay. Needs Windows 11; Windows 10 keeps one mixed track.",
+            12,
+        )
         self.buttons(
             p,
             [
@@ -664,12 +733,12 @@ class Window:
                 ("Save clip", lambda: self.call("replay_save")),
                 ("Stop replay", lambda: self.call("replay_stop")),
             ],
-            10,
+            13,
         )
         self.note(
             p,
             "Save finalizes the current second, so a clip can include up to one extra second. Disk mode needs the Rust helper and a local NTFS/ReFS disk. Pending segments and files pinned by a save share its size cap; a save can shorten history or stop replay if that cap is exhausted. RAM has additional in-flight and saved-snapshot memory. Save settings before starting replay.",
-            11,
+            14,
         )
 
     def build_privacy(self, p):
@@ -734,6 +803,9 @@ class Window:
         value["aliases"] = dict(self.aliases)
         value["app_prefixes"] = dict(self.prefixes)
         value["close_words"] = [word.strip() for word in self.close_words.get().split(",") if word.strip()]
+        value["replay"]["separate_apps"] = [
+            name.strip().removesuffix(".exe") for name in self.separate_app.get().split(",") if name.strip()
+        ]
         value["commands"] = json.loads(self.commands_text.get("1.0", "end"))
         return config.validate(value)
 

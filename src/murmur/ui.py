@@ -1198,7 +1198,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
             row.append(_button("Remove", lambda identity=item["id"]: self._remove_added_app(identity)))
             self.added_apps.append(row)
         known = " ".join(str(app.get("exec", "")) for app in self._apps)
-        for path in app_catalog.appimage_candidates(known):
+        for path in app_catalog.program_candidates(known):
             row = _box(8, True)
             row.append(_label(f"Found {path.name} in {path.parent}", "caption"))
             row.append(_button("Use this file", lambda path=path: self._use_app_file(str(path))))

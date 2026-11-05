@@ -18,6 +18,32 @@ def format_for(cfg, color):
     return "hevc" if color == "hdr" and codec == "h264" else codec
 
 
+# Process loopback (one program's sound, or all but it) needs this build.
+PROCESS_LOOPBACK_BUILD = 20348
+
+
+def audio_plan(cfg, replay=None, build=0):
+    """Audio inputs for one capture: [(title or None, worker config)].
+
+    Recordings and mixed replays use one mixed input. Separate replay tracks
+    keep the game, one program and the microphone apart; Windows can exclude
+    only one process tree from the game track, so one program is supported."""
+    if not replay or replay.get("audio_tracks", "mixed") != "separate":
+        return [(None, cfg)] if cfg.get("system_audio") or cfg.get("microphone") else []
+    from ..replay import track_names, valid_app_name
+
+    if build < PROCESS_LOOPBACK_BUILD:
+        raise RecorderError("Separate replay tracks need Windows 11 (build 20348 or later). "
+                            "Choose One mixed track in Replay settings.")
+    apps = [a for a in replay.get("separate_apps", []) if valid_app_name(a)]
+    if len(apps) > 1:
+        raise RecorderError("On Windows, one program can have its own replay track. Keep one in Replay settings.")
+    kinds = ([{"kind": "game", "app": apps[0] if apps else ""}] if replay.get("game_audio", True) else [])
+    kinds += [{"kind": "app", "app": a} for a in apps]
+    kinds += [{"kind": "microphone"}] if replay.get("microphone", True) else []
+    return [(name, dict(cfg, track=track)) for name, track in zip(track_names(replay), kinds)]
+
+
 def encoder_options(cfg, family, codec):
     q = QUALITY[cfg.get("quality_preset", "very_high")]
     bitrate = str(cfg.get("bitrate_mbps", 8) * 1000000)
@@ -162,7 +188,8 @@ def select_encoder(cfg, display, codec):
     )
 
 
-def command(cfg, display, binary, family, *, audio_pipe=None):
+def command(cfg, display, binary, family, *, audio_pipes=()):
+    """``audio_pipes``: [(pipe, title or None)], one audio track each."""
     validate_encoding(cfg)
     color = capture_color(cfg, display)
     if (
@@ -194,22 +221,14 @@ def command(cfg, display, binary, family, *, audio_pipe=None):
         "-i",
         f"ddagrab=output_idx={display['output']}:framerate={fps}:output_fmt={'10bit' if color == 'hdr' else '8bit'}:allow_fallback=0",
     ]
-    if audio_pipe:
-        args += [
-            "-thread_queue_size",
-            "64",
-            "-f",
-            "s16le",
-            "-ar",
-            "48000",
-            "-ac",
-            "2",
-            "-i",
-            audio_pipe,
-        ]
-    args += ["-map", "0:v:0"] + (
-        ["-map", "1:a:0", "-c:a", "aac", "-b:a", "160k"] if audio_pipe else ["-an"]
-    )
+    for pipe, _ in audio_pipes:
+        args += ["-thread_queue_size", "64", "-f", "s16le", "-ar", "48000", "-ac", "2", "-i", pipe]
+    args += ["-map", "0:v:0"]
+    for index, (_, title) in enumerate(audio_pipes):
+        args += ["-map", f"{index + 1}:a:0"]
+        if title:
+            args += [f"-metadata:s:a:{index}", f"title={title}"]
+    args += ["-c:a", "aac", "-b:a", "160k"] if audio_pipes else ["-an"]
     # NVIDIA/AMD consume the captured D3D11 frames directly. Compatibility and
     # QSV use an explicit download/conversion, never an accidental CPU encoder.
     if family in ("qsv", "mf", "cpu"):

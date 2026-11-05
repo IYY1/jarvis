@@ -16,6 +16,11 @@ from .host import is_windows
 
 MARK = "X-Jarvis-Added"
 APPIMAGE_FOLDERS = ("Applications", "AppImages", ".local/bin", "Downloads", "Desktop")
+# Where portable Windows programs usually sit; PortableApps.com keeps each in
+# its own subfolder, so one level below these is searched too.
+WINDOWS_FOLDERS = ("Desktop", "Downloads", "Apps", "Portable", "PortableApps")
+# Setup, uninstall, update and runtime files are not apps (FirefoxSetup.exe, unins000.exe).
+NOT_PROGRAMS = re.compile(r"setup|install|unins|updat|redist|crash|helper", re.I)
 
 
 def _applications() -> Path:
@@ -107,10 +112,11 @@ def remove(identity: str) -> None:
     Path(match["entry"]).unlink()
 
 
-def appimage_candidates(known_exec: str = "") -> list[Path]:
-    """AppImages in the usual folders that no launcher entry runs yet."""
+def program_candidates(known_exec: str = "") -> list[Path]:
+    """Programs in the usual folders that no launcher entry runs yet:
+    AppImages on Linux, portable .exe files on Windows."""
     if is_windows():
-        return []
+        return _portable_programs(known_exec)
     found = []
     for folder in APPIMAGE_FOLDERS:
         root = Path.home() / folder
@@ -119,4 +125,23 @@ def appimage_candidates(known_exec: str = "") -> list[Path]:
         except OSError:
             continue
         found += [p for p in files if str(p) not in known_exec and p.name not in known_exec]
+    return found[:20]
+
+
+def _portable_programs(known_exec: str) -> list[Path]:
+    roots = [Path.home() / folder for folder in WINDOWS_FOLDERS]
+    roots.append(Path(os.environ.get("SystemDrive", "C:") + "\\") / "PortableApps")
+    found = []
+    for root in roots:
+        try:
+            folders = [root] + sorted(p for p in root.iterdir() if p.is_dir())
+        except OSError:
+            continue
+        for folder in folders:
+            try:
+                files = sorted(p for p in folder.iterdir() if p.suffix.lower() == ".exe" and p.is_file())
+            except OSError:
+                continue
+            found += [p for p in files if not NOT_PROGRAMS.search(p.stem)
+                      and str(p).casefold() not in known_exec.casefold() and p not in found]
     return found[:20]

@@ -64,14 +64,47 @@ class CatalogTests(unittest.TestCase):
         (folder / "Known.AppImage").write_text("")
         (folder / "New.AppImage").write_text("")
         with patch("pathlib.Path.home", return_value=self.home):
-            found = app_catalog.appimage_candidates(known_exec=str(folder / "Known.AppImage"))
+            found = app_catalog.program_candidates(known_exec=str(folder / "Known.AppImage"))
         self.assertEqual([p.name for p in found], ["New.AppImage"])
+
+    def test_windows_suggests_portable_programs_but_not_installers(self):
+        portable = self.home / "PortableApps" / "FirefoxPortable"
+        portable.mkdir(parents=True)
+        for name in ("FirefoxPortable.exe", "unins000.exe", "FirefoxSetup 120.exe", "notes.txt"):
+            (portable / name).write_text("")
+        (self.home / "Downloads").mkdir()
+        (self.home / "Downloads" / "Tool.exe").write_text("")
+        (self.home / "Downloads" / "Known.exe").write_text("")
+        with patch("murmur.app_catalog.is_windows", return_value=True), \
+                patch("pathlib.Path.home", return_value=self.home), \
+                patch.dict(os.environ, {"SystemDrive": str(self.home / "none")}):
+            found = app_catalog.program_candidates(known_exec=str(self.home / "Downloads" / "Known.exe"))
+        self.assertEqual([p.name for p in found], ["Tool.exe", "FirefoxPortable.exe"])
 
     def test_installers_and_uninstallers_are_not_apps(self):
         for name in ("Uninstall Wine Software", "Steam Setup", "Foo Updater", "Bar-Uninstaller"):
             self.assertTrue(utility(name), name)
         for name in ("Steam", "Settings", "Install Manager Pro"):
             self.assertFalse(utility(name), name)
+
+    def test_add_app_command_adds_lists_and_removes_with_a_rescan(self):
+        from argparse import Namespace
+        import contextlib
+        import io
+        from murmur.cli import run_add_app
+        calls = []
+        request = lambda op, **_: calls.append(op) or {"ok": True}
+        path = self.program("Tool.AppImage")
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            run_add_app(Namespace(target=str(path), name=None, remove=False), request)
+            run_add_app(Namespace(target=None, name=None, remove=False), request)
+        self.assertIn("Tool  ->", out.getvalue())
+        self.assertEqual(calls, ["apps"])
+        with self.assertRaisesRegex(ValueError, "No added program"):
+            run_add_app(Namespace(target="Other", name=None, remove=True), request)
+        with contextlib.redirect_stdout(io.StringIO()):
+            run_add_app(Namespace(target="tool", name=None, remove=True), request)
+        self.assertEqual(app_catalog.added(), [])
 
 
 if __name__ == "__main__":

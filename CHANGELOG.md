@@ -20,6 +20,11 @@
 - **Video formats**: Recommended (AV1, else HEVC) / Compatible (H.264 GPU),
   each tested on the selected display's GPU with synthetic frames. CPU H.264
   and legacy VA-API remain only for existing configurations.
+- **Separate replay tracks on Windows 11**: the game, one program and the
+  microphone on their own tracks through Windows process loopback. Not yet run
+  on Windows; Windows 10 is refused with a message.
+- **Add programs**: `jarvis add-app` (Linux and Windows) and **Add program…**
+  on Windows, which suggests portable programs it finds and hides installers.
 - **AV1 10-bit and HEVC 10-bit for SDR** (Choose a format…): no banding in dark
   scenes and gradients, at nearly the size of 8-bit; saved files are verified
   as 10-bit ([details](docs/recording.md)).

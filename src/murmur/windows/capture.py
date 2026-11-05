@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 import threading
 import time
@@ -15,6 +16,7 @@ import uuid
 
 from ..host import child_options, command as worker_command, tool
 from ..recorder import RecorderError, capture_color, verify_video
+from ..replay import write_track_names
 from . import encoding
 
 
@@ -99,18 +101,25 @@ class ReplayBuffer:
         pass
 
 
+def audio_failure(process, title):
+    """The reason an audio worker ended, from the last line it wrote."""
+    try:
+        lines = process.stderr.read(8192).decode(errors="replace").strip().splitlines()
+    except (OSError, ValueError):
+        lines = []
+    reason = lines[-1].split(": ", 1)[-1] if lines else ""  # drop "RuntimeError: "
+    track = f"The {title} track" if title else "Recording audio"
+    return f"{track} stopped: {reason}" if reason else f"{track} stopped unexpectedly; check Windows audio permissions"
+
+
 class _Capture:
     replay = False
 
     def __init__(self, config, on_change=None):
         self.config, self.on_change = config, on_change
         self._lock = threading.RLock()
-        self._process, self._audio, self._segments, self._buffer = (
-            None,
-            None,
-            None,
-            None,
-        )
+        self._process, self._segments, self._buffer = None, None, None
+        self._audio = []  # [(audio worker process, track title or None)]
         self._done = threading.Event()
         self._done.set()
         self._requested, self._forced, self._error = False, False, None
@@ -193,13 +202,12 @@ class _Capture:
                     + uuid.uuid4().hex[:10]
                 )
                 prefix = r"\\.\pipe\Jarvis-" + uuid.uuid4().hex
-                audio_pipe = (
-                    prefix + "-audio"
-                    if cfg["system_audio"] or cfg["microphone"]
-                    else None
-                )
+                plan = encoding.audio_plan(
+                    cfg, self.config["replay"] if self.replay else None,
+                    sys.getwindowsversion().build if hasattr(sys, "getwindowsversion") else 0)
+                pipes = [(f"{prefix}-audio{i}", title) for i, (title, _) in enumerate(plan)]
                 argv, self._color, self._codec = encoding.command(
-                    cfg, display, binary, family, audio_pipe=audio_pipe
+                    cfg, display, binary, family, audio_pipes=pipes
                 )
                 self._folder = folder
                 self._error, self._requested, self._forced = None, False, False
@@ -237,16 +245,17 @@ class _Capture:
                         pass
                     argv[argv.index("-n")] = "-y"
                     argv += ["-f", "matroska", str(partial)]
-                if audio_pipe:
-                    self._audio = subprocess.Popen(
-                        worker_command("audio", audio_pipe),
+                for (pipe, title), (_, worker_cfg) in zip(pipes, plan):
+                    audio = subprocess.Popen(
+                        worker_command("audio", pipe),
                         stdin=subprocess.PIPE,
                         stdout=subprocess.DEVNULL,
                         stderr=subprocess.PIPE,
                         **child_options(),
                     )
-                    self._audio.stdin.write(json.dumps(cfg).encode() + b"\n")
-                    self._audio.stdin.close()
+                    self._audio.append((audio, title))
+                    audio.stdin.write(json.dumps(worker_cfg).encode() + b"\n")
+                    audio.stdin.close()
                 self._process = subprocess.Popen(
                     argv,
                     stdin=subprocess.PIPE,
@@ -302,14 +311,9 @@ class _Capture:
                 try:
                     process.wait(timeout=0.5)
                 except subprocess.TimeoutExpired:
-                    if (
-                        not self._requested
-                        and self._audio is not None
-                        and self._audio.poll() is not None
-                    ):
-                        self._abort(
-                            "Recording audio stopped unexpectedly; check Windows audio permissions"
-                        )
+                    stopped = next((a for a in self._audio if a[0].poll() is not None), None)
+                    if not self._requested and stopped is not None:
+                        self._abort(audio_failure(*stopped))
             diagnostics.join(timeout=2)
             if self._error:
                 raise RecorderError(self._error)
@@ -349,17 +353,17 @@ class _Capture:
         if self._segments:
             self._segments.close()
             self._segments = None
-        if self._audio:
-            if self._audio.poll() is None:
-                self._audio.terminate()
+        for audio, _ in self._audio:
+            if audio.poll() is None:
+                audio.terminate()
             try:
-                self._audio.wait(timeout=3)
+                audio.wait(timeout=3)
             except subprocess.TimeoutExpired:
-                self._audio.kill()
-                self._audio.wait()
-            if self._audio.stderr:
-                self._audio.stderr.close()
-            self._audio = None
+                audio.kill()
+                audio.wait()
+            if audio.stderr:
+                audio.stderr.close()
+        self._audio = []
         if self._buffer:
             self._buffer.close()
             self._buffer = None
@@ -415,6 +419,7 @@ class Replay(_Capture):
                     self._color,
                     self._codec,
                 )
+                titles = [title for _, title in self._audio if title]
             # Wait for the current independent segment so the requested moment
             # is included. This may add up to one second of later video.
             tag = (
@@ -472,6 +477,7 @@ class Replay(_Capture):
             with partial.open("r+b") as f:
                 os.fsync(f.fileno())
             os.rename(partial, final)
+            write_track_names(final, titles)
             if self._error:
                 self._set("error", f"{self._error} Clip saved: {final.name}", final)
             else:

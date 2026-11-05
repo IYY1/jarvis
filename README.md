@@ -25,7 +25,9 @@ Jarvis is early software. Recognition depends on your voice, microphone and room
   your microphone apart, then mute one when exporting a clip.
 - **Simpler video formats**: Recommended / Compatible, tested on your
   display's own GPU. CPU H.264 is kept only for setups that already use it.
-- **Add any app**: AppImages and portable programs can be added in Apps.
+- **Add any app**: AppImages and portable programs can be added in Apps, or
+  with `jarvis add-app PATH --name NAME`. Jarvis suggests ones it finds on the
+  desktop, in Downloads and in portable-app folders.
 
 ## What's new in 0.3.1
 
@@ -173,6 +175,19 @@ jarvis alias streamio stremio
 jarvis alias
 jarvis alias streamio --remove
 ```
+
+Programs your launcher doesn't list (an AppImage, a portable `.exe`) can be
+added first, then named:
+
+```sh
+jarvis add-app ~/Applications/Obsidian.AppImage --name Obsidian
+jarvis add-app
+jarvis add-app Obsidian --remove
+```
+
+On Windows, **Applications → Add program…** lists portable programs found on
+the desktop, in Downloads and in `Apps`, `Portable` and `PortableApps` folders,
+and adds the chosen one as a Start menu shortcut in a Jarvis folder.
 
 Each voice name has a **Launch word**, initially `open`. Change it to `watch`
 for “Alfred, watch video”, or clear it for “Jarvis, Firefox”. A `the` after the

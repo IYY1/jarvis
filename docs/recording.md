@@ -247,11 +247,21 @@ beside the clip (the editor falls back to “Audio 1”, “Audio 2”).
 
 Limits: sound that was already mixed can't be separated afterwards. Players
 other than Jarvis's editor usually play only the first track. Recordings (not
-replays) keep their single explicit audio source. **Windows replays keep one
-mixed track:** per-app capture needs Windows' process-loopback API, which
-Microsoft documents for build 20348 and later, so Windows 11, not Windows 10
-22H2 ([AUDIOCLIENT_ACTIVATION_TYPE](https://learn.microsoft.com/en-us/windows/win32/api/audioclientactivationparams/ne-audioclientactivationparams-audioclient_activation_type)).
-It is not implemented yet.
+replays) keep their single explicit audio source.
+
+**Windows (Windows 11 only, not yet run on Windows).** Per-app capture uses
+Windows' process-loopback API, which Microsoft documents for build 20348 and
+later, so Windows 11, not Windows 10 22H2
+([AUDIOCLIENT_ACTIVATION_TYPE](https://learn.microsoft.com/en-us/windows/win32/api/audioclientactivationparams/ne-audioclientactivationparams-audioclient_activation_type)).
+Replay → Sound tracks → *Separate tracks* records three tracks: everything
+except the chosen program, that program alone (`jarvis-voice --app-audio`
+captures each one, filling silent gaps so tracks stay in step with the video)
+and the microphone. Name the program by its file name without `.exe` (for
+example `firefox`) and start it before replay; its whole process tree is
+captured, so browser tabs count. Windows can leave out only one process tree,
+so one program can have its own track. On Windows 10 Jarvis refuses separate
+tracks with a message and keeps the mixed default. This path is
+compile-checked and unit-tested on Linux, but has not run on Windows 11.
 
 ### Replay storage and privacy
 

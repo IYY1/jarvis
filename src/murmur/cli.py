@@ -72,6 +72,43 @@ def run_alias(args, request) -> int:
     return 0
 
 
+def run_add_app(args, request) -> int:
+    """jarvis add-app                     -> list programs added in Jarvis
+       jarvis add-app PATH [--name NAME]  -> add one (a portable program or AppImage)
+       jarvis add-app NAME --remove       -> remove one Jarvis added"""
+    from pathlib import Path
+    from . import app_catalog
+    from .host import is_windows
+    if not args.target:
+        for app in app_catalog.added():
+            print(f"{app['name']}  ->  {app['entry']}")
+        if not app_catalog.added():
+            print("No programs added yet. Example: jarvis add-app ~/Applications/Tool.AppImage --name tool")
+        return 0
+    if args.remove:
+        wanted = args.target.casefold()
+        match = next((a for a in app_catalog.added() if a["name"].casefold() == wanted or a["id"] == args.target), None)
+        if match is None:
+            raise ValueError(f"No added program named “{args.target}”")
+        app_catalog.remove(match["id"])
+        message = f"Removed {match['name']}."
+    else:
+        name = args.name or Path(args.target).stem
+        if is_windows():
+            from .windows.system import com_context
+            with com_context():
+                app_catalog.add(args.target, name)
+        else:
+            app_catalog.add(args.target, name)
+        message = f"Added {name}. Give it a voice name with: jarvis alias NAME \"{name}\""
+    try:
+        request("apps")  # the service rescans so the change is usable at once
+    except (OSError, ConnectionError):
+        message += " Jarvis is not running; the change applies when it starts."
+    print(message)
+    return 0
+
+
 def run_waybar(watch, stop: threading.Event, wait=None) -> int:
     """Stream status to Waybar and stay alive across service restarts.
 
@@ -137,6 +174,10 @@ def main():
     alias.add_argument("name", nargs="?", help="What you will say (\"open <name>\")")
     alias.add_argument("app", nargs="?", help="The app: its name as in your launcher, or its desktop ID")
     alias.add_argument("--remove", action="store_true", help="Remove the voice name instead")
+    add_app = sub.add_parser("add-app", help="Add a program your launcher doesn't list, e.g.: jarvis add-app ~/Tool.AppImage")
+    add_app.add_argument("target", nargs="?", help="The program file, or with --remove the added program's name")
+    add_app.add_argument("--name", help="Name to show and say (default: the file name)")
+    add_app.add_argument("--remove", action="store_true", help="Remove a program Jarvis added")
     install = sub.add_parser("install-model", help="Download and verify the voice models (one time, about 790 MB)")
     install.add_argument("--archive", help="Use an already downloaded vosk-model-small-en-us-0.15.zip")
     install.add_argument("--basic", action="store_true", help="Only the small Vosk model (40 MB)")
@@ -204,6 +245,8 @@ def main():
         from .client import request, watch
         if args.command == "alias":
             return run_alias(args, request)
+        if args.command == "add-app":
+            return run_add_app(args, request)
         if args.command == "waybar":
             try:
                 return run_waybar(watch, threading.Event())

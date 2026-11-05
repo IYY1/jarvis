@@ -229,6 +229,59 @@ def mix_to_pipe(config, pipe):
                 stream.close()
 
 
+def app_audio_to_pipe(program, include, pipe):
+    """One program's sound (``include``) or everything except it, from the
+    voice worker's process-loopback mode, relayed into an FFmpeg pipe."""
+    import subprocess
+    from .pipes import PipeWriter
+    from ..host import child_options
+    from ..native_worker import binary_path
+
+    worker = binary_path()
+    if worker is None:
+        raise RuntimeError("The Windows voice worker is missing; reinstall the complete Jarvis package")
+    with PipeWriter(pipe) as output:
+        process = subprocess.Popen([str(worker), "--app-audio"], stdin=subprocess.PIPE,
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, **child_options())
+        try:
+            process.stdin.write(json.dumps({"process": program, "include": include}).encode() + b"\n")
+            process.stdin.close()
+            while chunk := process.stdout.read(3840):
+                output.write(chunk)
+            detail = process.stderr.read(4096).decode(errors="replace")
+            message = next((json.loads(line).get("message") for line in detail.splitlines()
+                            if line.startswith("{")), detail.strip())
+            raise RuntimeError(message or f"Audio capture for {program} stopped")
+        finally:
+            if process.poll() is None:
+                process.kill()
+            process.wait()
+            process.stdout.close()
+            process.stderr.close()
+
+
+def track_to_pipe(config, pipe):
+    """One replay track, unmixed: "game" (everything except ``app``, or all
+    system sound), "app" (only that program) or "microphone"."""
+    track = config["track"]
+    kind, program = track.get("kind"), track.get("app", "")
+    if kind == "app" or (kind == "game" and program):
+        return app_audio_to_pipe(program, kind == "app", pipe)
+    if kind not in ("game", "microphone"):
+        raise RuntimeError("Unknown replay audio track")
+    from .pipes import PipeWriter
+
+    pa = _library()
+    with PipeWriter(pipe) as output, pa.PyAudio() as engine:
+        stream = (PCMStream(engine, pa, select_device(engine, pa, "default_output", loopback=True), silence_on_idle=True)
+                  if kind == "game" else PCMStream(engine, pa, select_device(engine, pa, "default_input")))
+        try:
+            while True:
+                output.write(stream.read(960))
+        finally:
+            stream.close()
+
+
 def main(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("pipe")
@@ -237,7 +290,10 @@ def main(args=None):
     if not isinstance(config, dict) or not config.get("configured"):
         raise RuntimeError("Recording audio requires reviewed capture setup")
     try:
-        mix_to_pipe(config, options.pipe)
+        if config.get("track"):
+            track_to_pipe(config, options.pipe)
+        else:
+            mix_to_pipe(config, options.pipe)
     except Exception as exc:
         code = getattr(exc, "winerror", exc.args[0] if exc.args else None)
         if code in (109, 232, 233, 995):
