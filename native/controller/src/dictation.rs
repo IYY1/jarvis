@@ -4,7 +4,8 @@
 //! Text goes through `jarvis-type` (Wayland input method, or a virtual
 //! keyboard for apps without text-input support). Before each insertion the
 //! focused window is compared with the starting one; if it changed, nothing
-//! is typed and dictation stops, keeping the text for the user to copy.
+//! is typed and dictation stops. Text that could not be typed is put on the
+//! clipboard (never from a password field), so Ctrl+V pastes it.
 use crate::{desktop, err, policy::normalize, util, Result};
 use serde_json::{json, Value};
 use std::{process::Stdio, sync::Arc};
@@ -126,6 +127,38 @@ pub async fn focused() -> Option<(String, bool)> {
     Some((address, secret))
 }
 
+/// Puts text on the Wayland clipboard with wl-copy, which keeps serving it
+/// after it returns. False when wl-copy is missing or fails.
+pub async fn copy(text: &str) -> bool {
+    copy_with("wl-copy", text).await
+}
+async fn copy_with(program: &str, text: &str) -> bool {
+    let Ok(mut child) = tokio::process::Command::new(program)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()
+    else {
+        return false;
+    };
+    if let Some(mut input) = child.stdin.take() {
+        if input.write_all(text.as_bytes()).await.is_err() {
+            return false;
+        }
+    }
+    matches!(timeout(Duration::from_secs(3), child.wait()).await, Ok(Ok(s)) if s.success())
+}
+
+/// What to tell the user about text that was not typed: a refusal's message,
+/// plus how to paste it when it reached the clipboard.
+pub fn held_message(message: &str, copied: bool) -> String {
+    if copied {
+        format!("{message} The text is on the clipboard: press Ctrl+V to paste it.")
+    } else {
+        message.to_owned()
+    }
+}
+
 /// Splits a configured stop phrase off the end of dictated text. Returns the
 /// text to type and whether dictation should stop.
 pub fn split_stop(text: &str, stops: &[String]) -> (String, bool) {
@@ -200,6 +233,26 @@ impl Session {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[tokio::test(flavor = "current_thread")]
+    async fn copy_sends_the_text_and_reports_failure() {
+        let dir = std::env::temp_dir().join(format!("jarvis-copy-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let fake = dir.join("wl-copy");
+        let saved = dir.join("clipboard");
+        std::fs::write(&fake, format!("#!/bin/sh\ncat > '{}'\n", saved.display())).unwrap();
+        std::fs::set_permissions(&fake, std::os::unix::fs::PermissionsExt::from_mode(0o755)).unwrap();
+        assert!(copy_with(fake.to_str().unwrap(), "مرحبا hello").await);
+        assert_eq!(std::fs::read_to_string(&saved).unwrap(), "مرحبا hello");
+        assert!(!copy_with("/nonexistent/wl-copy", "x").await);
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn held_text_says_how_to_paste_only_when_copied() {
+        let refusal = "No text field is focused.";
+        assert!(held_message(refusal, true).ends_with("press Ctrl+V to paste it."));
+        assert_eq!(held_message(refusal, false), refusal);
+    }
     #[test]
     fn stop_phrases_end_dictation_without_being_typed() {
         let stops = vec!["stop dictation".to_owned(), "وقف الكتابة".to_owned()];

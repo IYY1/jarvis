@@ -54,7 +54,8 @@
     "turn off instant replay": "stop replay",
     "start dictation": "listen to me",
     "take dictation": "listen to me",
-    "start dictating": "listen to me"
+    "start dictating": "listen to me",
+    "listen": "listen to me"
   },
   "POLITE_PREFIXES": [
     "please",

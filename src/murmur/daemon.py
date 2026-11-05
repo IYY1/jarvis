@@ -406,6 +406,14 @@ class Service:
         session.active = False
         session.window = None
 
+    async def hold(self, text, reason, message):
+        """Keep text that was not typed and, unless it was meant for a password
+        field, put everything held this session on the clipboard."""
+        self.dictation.held += text
+        copied = reason != "sensitive" and await asyncio.to_thread(
+            dictation.copy_to_clipboard, self.dictation.held.lstrip())
+        return dictation.held_message(message, copied)
+
     async def dictated(self, text):
         session = self.dictation
         if not session.active or session.typer is None:
@@ -416,9 +424,10 @@ class Service:
             session.typed_any = True
             window = await asyncio.to_thread(dictation.focused)
             if session.window is not None and (window is None or window[0] != session.window):
-                session.held += text
+                message = await self.hold(text, "focus",
+                                          "Focus moved to another window, so dictation stopped without typing there.")
                 await self.stop_dictation(cancel=True)
-                await self.end_dictation("Focus moved to another window, so dictation stopped without typing there.")
+                await self.end_dictation(message)
                 self.publish()
                 return
             keyboard = self.config["dictation"]["keyboard_fallback"] and not (window and window[1])
@@ -430,8 +439,8 @@ class Service:
                 session.inserted += len(text)
                 session.method = result.get("method", "")
             else:
-                session.held += text
-                session.message = self.message = result.get("message", "Dictation could not type the text")
+                session.message = self.message = await self.hold(
+                    text, result.get("reason", ""), result.get("message", "Dictation could not type the text"))
                 if result.get("reason") in ("focus", "sensitive", "blocked"):
                     await self.stop_dictation(cancel=True)
                     await self.end_dictation(session.message)

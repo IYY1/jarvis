@@ -20,6 +20,9 @@
 - **Video formats**: Recommended (AV1, else HEVC) / Compatible (H.264 GPU),
   each tested on the selected display's GPU with synthetic frames. CPU H.264
   and legacy VA-API remain only for existing configurations.
+- **Dictation**: “Jarvis, listen” starts it too, and text that can't be typed
+  (no text field, focus moved, an app without text input) is put on the
+  clipboard so Ctrl+V pastes it; password-field text never is.
 - **Separate replay tracks on Windows 11**: the game, one program and the
   microphone on their own tracks through Windows process loopback. Not yet run
   on Windows; Windows 10 is refused with a message.

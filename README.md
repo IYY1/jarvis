@@ -160,7 +160,7 @@ fallback recognizes less accurately.
 | Volume | “turn the volume down”, “mute volume”, “turn the sound back on” |
 | Recording | “start recording”, “stop recording”, “open the video recorder” |
 | Instant replay | “clip that”, “clip the last 25 seconds”, “clip the last 2 minutes”, “save replay”, “start replay”, “stop replay” |
-| Dictation | “listen to me”, “start dictation”, “stop dictation” |
+| Dictation | “listen”, “listen to me”, “start dictation”, “stop dictation” |
 | Voice control | “cancel”, “stop listening” |
 | Arabic (Arabic and English setting) | “افتح فايرفوكس”, “سكّر ديسكورد”, “علّ الصوت”, “روح لمساحة العمل الثالثة”, “احفظ آخر ثلاثين ثانية”, “اسمعني” |
 

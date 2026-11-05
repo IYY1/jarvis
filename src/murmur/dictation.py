@@ -74,6 +74,29 @@ def focused() -> tuple[str, bool] | None:
         return None
 
 
+def copy_to_clipboard(text: str) -> bool:
+    """Put text on the clipboard (Windows, or wl-copy on Wayland); False if not possible."""
+    try:
+        if is_windows():
+            import win32clipboard
+            win32clipboard.OpenClipboard()
+            try:
+                win32clipboard.EmptyClipboard()
+                win32clipboard.SetClipboardText(text, win32clipboard.CF_UNICODETEXT)
+            finally:
+                win32clipboard.CloseClipboard()
+            return True
+        return subprocess.run(["wl-copy"], input=text.encode(), timeout=3,
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
+    except Exception:  # best effort; pywin32 raises its own error type
+        return False
+
+
+def held_message(message: str, copied: bool) -> str:
+    """A refusal's message, plus how to paste the text when it reached the clipboard."""
+    return f"{message} The text is on the clipboard: press Ctrl+V to paste it." if copied else message
+
+
 class Typer:
     """One `jarvis-type` process for one dictation session."""
 

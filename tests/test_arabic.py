@@ -64,6 +64,22 @@ class DictationPolicyTests(unittest.TestCase):
         self.assertEqual(split_stop("ارسل التقرير وقّف الكتابة", stops), ("ارسل التقرير", True))
         self.assertEqual(split_stop("stop dictation software is fine", stops), ("stop dictation software is fine", False))
 
+    def test_untyped_text_goes_to_the_clipboard_except_for_password_fields(self):
+        import asyncio
+        import types
+        from unittest.mock import patch
+        from murmur import dictation
+        from murmur.daemon import Service
+        copies = []
+        host = types.SimpleNamespace(dictation=dictation.Session())
+        with patch("murmur.dictation.copy_to_clipboard", side_effect=lambda text: copies.append(text) or True):
+            first = asyncio.run(Service.hold(host, "hello", "no-field", "No text field is focused."))
+            asyncio.run(Service.hold(host, " world", "error", "Could not type."))
+            secret = asyncio.run(Service.hold(host, " hunter2", "sensitive", "Password field."))
+        self.assertTrue(first.endswith("press Ctrl+V to paste it."))
+        self.assertEqual(copies, ["hello", "hello world"])  # the whole untyped text, never the password
+        self.assertEqual(secret, "Password field.")
+
     def test_dictation_settings_are_validated(self):
         defaults = config.validate({})["dictation"]
         self.assertEqual(defaults["language"], "auto")

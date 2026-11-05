@@ -889,7 +889,14 @@ impl Service {
             self.stop_dictation(false).await;
         }
     }
-    /// Outcome of one insertion. Refusals keep the text for the user to copy.
+    /// Keeps text that was not typed and, unless it was meant for a password
+    /// field, puts everything held this session on the clipboard.
+    async fn hold(&mut self, text: &str, reason: &str, message: &str) -> String {
+        self.dictation.held.push_str(text);
+        let copied = reason != "sensitive" && dictation::copy(self.dictation.held.trim_start()).await;
+        dictation::held_message(message, copied)
+    }
+    /// Outcome of one insertion. Refusals keep the text on the clipboard.
     pub async fn typed(&mut self, session: u64, text: String, result: std::result::Result<Value, String>) {
         if session != self.dictation.id {
             return;
@@ -900,9 +907,10 @@ impl Service {
                 self.dictation.method = r["method"].as_str().unwrap_or("").to_owned();
             }
             Ok(r) => {
-                self.dictation.held.push_str(&text);
-                let message = r["message"].as_str().unwrap_or("Dictation could not type the text").to_owned();
-                if ["focus", "sensitive"].contains(&r["reason"].as_str().unwrap_or("")) {
+                let reason = r["reason"].as_str().unwrap_or("");
+                let message = r["message"].as_str().unwrap_or("Dictation could not type the text");
+                let message = self.hold(&text, reason, message).await;
+                if ["focus", "sensitive"].contains(&reason) {
                     self.stop_dictation(true).await;
                     self.end_dictation(&message).await;
                 } else {
@@ -911,8 +919,8 @@ impl Service {
                 }
             }
             Err(e) => {
-                self.dictation.held.push_str(&text);
-                self.dictation.message = format!("Dictation could not type the text: {e}");
+                let message = format!("Dictation could not type the text: {e}");
+                self.dictation.message = self.hold(&text, "error", &message).await;
                 self.message = self.dictation.message.clone();
             }
         }

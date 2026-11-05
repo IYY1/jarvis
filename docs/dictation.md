@@ -1,6 +1,6 @@
 # Dictation
 
-Say **“Jarvis, listen to me”** (also “start dictation”, or اسمعني), press
+Say **“Jarvis, listen”** or **“Jarvis, listen to me”** (also “start dictation”, or اسمعني), press
 **Start dictation** in Overview or Voice, press **Ctrl+D** in the settings
 window, or bind a key to `jarvis dictate`:
 
@@ -29,9 +29,15 @@ Dictation stops when you:
   Tab or any other key: newlines become spaces. A terminal therefore never runs
   anything because of dictation.
 - Jarvis remembers the window that was focused when dictation started. If focus
-  moves to another window, dictation stops **without typing there**; the text
-  that wasn't typed is kept, and **Copy text that was not typed** puts it on the
-  clipboard.
+  moves to another window, dictation stops **without typing there**.
+- **Text that can't be typed goes to the clipboard.** When focus moved, no text
+  field is focused, the app accepts no typed text or typing fails, everything
+  not typed in this session is copied (wl-copy on Linux, the Windows
+  clipboard) and the status says “press Ctrl+V to paste it”. Text meant for a
+  password field is never copied; it stays under **Copy text that was not
+  typed**, which copies only when you press it. **Also type into apps without
+  text-field support** (Voice → Dictation, on by default) is what lets Jarvis
+  type into terminals, Electron apps and XWayland windows at all.
 - Long continuous speech is cut at 20 seconds. If transcription falls behind,
   at most three pieces wait; later speech is dropped and the status says so.
 

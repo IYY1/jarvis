@@ -79,6 +79,7 @@ VARIANTS = {
     "turn on instant replay": "start replay", "stop instant replay": "stop replay",
     "turn off instant replay": "stop replay",
     "start dictation": "listen to me", "take dictation": "listen to me", "start dictating": "listen to me",
+    "listen": "listen to me",
 }
 
 # Optional sentence-edge courtesy. The parser accepts both; the speech grammar
