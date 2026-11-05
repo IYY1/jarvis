@@ -58,6 +58,41 @@ pub struct Parser {
     pub custom: Value,
     pub rules: jarvis_phrases::Rules,
     pub blocked_apps: BTreeSet<String>,
+    pub close_words: Vec<String>,
+}
+/// Validated words that close an application ("close", "quit", "kill").
+pub fn close_words(value: &Value) -> Result<Vec<String>> {
+    let message =
+        "Close words must be 1–8 distinct words of up to three words each, not other app verbs";
+    let list = value.as_array().ok_or(message)?;
+    if list.is_empty() || list.len() > 8 {
+        return err(message);
+    }
+    let reserved: BTreeSet<_> = TABLES["APP_VERBS"]
+        .as_object()
+        .unwrap()
+        .iter()
+        .filter(|(_, action)| *action != "close_app")
+        .map(|(verb, _)| verb.clone())
+        .chain(strings(&TABLES["POLITE_PREFIXES"]))
+        .collect();
+    let mut words = vec![];
+    for item in list {
+        let word = item
+            .as_str()
+            .filter(|s| s.chars().count() <= 40 && !s.chars().any(char::is_control))
+            .ok_or(message)?;
+        let word = normalize(word)?;
+        if word.is_empty()
+            || word.split(' ').count() > 3
+            || reserved.contains(&word)
+            || words.contains(&word)
+        {
+            return err(message);
+        }
+        words.push(word);
+    }
+    Ok(words)
 }
 impl Parser {
     pub fn new(custom: &Value) -> Result<Self> {
@@ -79,10 +114,12 @@ impl Parser {
             custom: Value::Object(output),
             rules: jarvis_phrases::Rules::default(),
             blocked_apps: BTreeSet::new(),
+            close_words: vec!["close".into()],
         })
     }
     pub fn from_config(c: &Value) -> Result<Self> {
         let mut parser = Self::new(&c["commands"])?;
+        parser.close_words = close_words(&c["close_words"])?;
         let rules = jarvis_phrases::Rules::from_config(c).map_err(std::io::Error::other)?;
         for phrase in parser.custom.as_object().unwrap().keys() {
             if rules.parse_normalized(phrase).is_some() {
@@ -137,6 +174,9 @@ impl Parser {
         if let Some(intent) = self.rules.parse_normalized(&phrase) {
             return Ok(intent);
         }
+        if let Some(seconds) = jarvis_phrases::clip_seconds(&phrase) {
+            return Ok(json!({"action":"replay_save","target":seconds}));
+        }
         for (form, action) in TABLES["WORKSPACE_FORMS"].as_object().unwrap() {
             if let Some(number) = phrase.strip_prefix(&format!("{form} ")) {
                 if number.contains(' ') {
@@ -158,7 +198,7 @@ impl Parser {
                 return Ok(json!({"action":action,"target":n}));
             }
         }
-        let mut verbs: Vec<_> = TABLES["APP_VERBS"].as_object().unwrap().iter().collect();
+        let mut verbs = self.app_verbs();
         verbs.sort_by_key(|(verb, _)| std::cmp::Reverse(verb.len()));
         for (verb, action) in verbs {
             if let Some(target) = phrase.strip_prefix(&format!("{verb} ")) {
@@ -173,6 +213,21 @@ impl Parser {
         }
         err("Phrase not recognized. Open Commands to see supported phrases.")
     }
+    /// Built-in app verbs, with the configured close words replacing "close".
+    fn app_verbs(&self) -> Vec<(String, String)> {
+        TABLES["APP_VERBS"]
+            .as_object()
+            .unwrap()
+            .iter()
+            .filter(|(_, action)| *action != "close_app")
+            .map(|(verb, action)| (verb.clone(), action.as_str().unwrap().to_owned()))
+            .chain(
+                self.close_words
+                    .iter()
+                    .map(|w| (w.clone(), "close_app".into())),
+            )
+            .collect()
+    }
     pub fn grammar(&self, names: impl IntoIterator<Item = String>) -> Value {
         let mut core = BTreeSet::new();
         for key in ["FIXED", "VARIANTS"] {
@@ -180,6 +235,7 @@ impl Parser {
         }
         core.extend(self.custom.as_object().unwrap().keys().cloned());
         core.extend(self.rules.phrases());
+        core.extend(jarvis_phrases::clip_phrases());
         for form in TABLES["WORKSPACE_FORMS"].as_object().unwrap().keys() {
             for number in TABLES["NUMBERS"].as_object().unwrap().keys() {
                 core.insert(format!("{form} {number}"));
@@ -191,15 +247,15 @@ impl Parser {
             .collect::<BTreeSet<_>>()
             .into_iter()
             .collect();
-        let mut verbs: Vec<_> = TABLES["APP_VERBS"]
-            .as_object()
-            .unwrap()
-            .keys()
+        let mut verbs: Vec<_> = self
+            .app_verbs()
+            .into_iter()
+            .map(|(verb, _)| verb)
             .filter(|s| !strings(&TABLES["TYPED_ONLY_VERBS"]).contains(s))
-            .cloned()
             .collect();
         verbs.sort();
-        json!({"launches":self.rules.launches,"blocked_apps":self.blocked_apps,"phrases":core,"apps":apps.iter().take(2048).collect::<Vec<_>>(),"custom":self.custom,"verbs":verbs,"prefixes":TABLES["POLITE_PREFIXES"],"suffixes":[],"overflow":apps.iter().skip(2048).map(|s|format!("open {s}")).collect::<Vec<_>>()})
+        verbs.dedup();
+        json!({"launches":self.rules.launches,"blocked_apps":self.blocked_apps,"phrases":core,"apps":apps.iter().take(2048).collect::<Vec<_>>(),"custom":self.custom,"verbs":verbs,"close_verbs":self.close_words,"prefixes":TABLES["POLITE_PREFIXES"],"suffixes":[],"overflow":apps.iter().skip(2048).map(|s|format!("open {s}")).collect::<Vec<_>>()})
     }
     pub fn candidates(&self, grammar: &Value) -> Result<Value> {
         let mut phrases = strings(&grammar["phrases"]);

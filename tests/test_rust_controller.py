@@ -728,7 +728,7 @@ class ControllerRealVoiceTests(unittest.TestCase):
         # A private config/socket and fake paced pw-record use the actual native
         # worker/weights. Dry-run dispatch prevents any desktop or recorder action.
         patch_config = {"activation": {"wake_phrase": "go forward"},
-                        "recognition": {"noise_suppression": True},
+                        "recognition": {"noise_suppression": True, "speech_model": "small"},
                         "commands": {"ten meters": "cancel"}}
         h = Harness(onboarded=True, accurate=True, config_patch=patch_config,
                     real_worker=worker, real_library=package_dir("vosk") / "libvosk.so",

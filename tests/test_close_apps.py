@@ -39,6 +39,31 @@ class CloseCommandTests(unittest.TestCase):
                 self.assertIsNone(result)
         self.assertEqual(closest_match("open visual studio code", candidates), ("open visual studio code", 1.0))
 
+    def test_configured_close_words_replace_close(self):
+        cfg = config.validate({"close_words": ["Quit", "shut down"], "aliases": {"web browser": "firefox.desktop"},
+                               "app_prefixes": {"web browser": ""}})
+        self.assertEqual(cfg["close_words"], ["Quit", "shut down"])
+        parser = Parser.from_config(cfg)
+        for phrase in ("quit firefox", "please shut down the firefox", "quit web browser"):
+            self.assertEqual(parser.parse(phrase).action, "close_app", phrase)
+        with self.assertRaises(CommandError):
+            parser.parse("close firefox")
+        grammar = parser.grammar(["firefox", "web browser"])
+        self.assertEqual(grammar["close_verbs"], ["quit", "shut down"])
+        self.assertIn("quit", grammar["verbs"])
+        self.assertNotIn("close", grammar["verbs"])
+        candidates = match_candidates(dict(grammar, app_ids={"firefox": "firefox.desktop", "web browser": "firefox.desktop"}))
+        self.assertEqual(closest_match("quit firefox", candidates, close_verbs=grammar["close_verbs"]), ("quit firefox", 1.0))
+        # A misheard close word phrase must not fall back to opening "web browser".
+        self.assertIsNone(closest_match("quit web browsr", candidates, close_verbs=grammar["close_verbs"]))
+        self.assertTrue(GrammarMatcher(grammar["phrases"], grammar["apps"], grammar["verbs"]).accepts("quit firefox"))
+
+    def test_close_words_are_validated(self):
+        self.assertEqual(config.validate({})["close_words"], ["close"])
+        for bad in ([], ["open"], ["please"], ["quit", "QUIT"], ["a b c d"], [""], ["x" * 41], "close", [1], ["close"] * 9):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                config.validate({"close_words": bad})
+
     def test_dispatch_closes_only_resolved_windows_without_launching_or_focusing(self):
         apps, desktop = MagicMock(), MagicMock()
         apps.resolve.return_value.name = "Firefox"
@@ -98,6 +123,23 @@ class NativeCloseCommandTests(unittest.TestCase):
         actual = policies([{"op": "parse", "text": text} for text in phrases])
         for text, result in zip(phrases, actual, strict=True):
             self.assertEqual(result["result"]["intent"], dataclasses.asdict(Parser().parse(text)))
+        cfg = {"close_words": ["quit", "kill"]}
+        phrases = ["quit firefox", "kill the steam", "close firefox", "clip last 25 seconds", "save the last two minutes"]
+        actual = policies([{"op": "parse", "text": text, "config": cfg} for text in phrases])
+        parser = Parser.from_config(config.validate(cfg))
+        for text, result in zip(phrases, actual, strict=True):
+            try:
+                expected = dataclasses.asdict(parser.parse(text))
+            except ValueError:
+                self.assertFalse(result["ok"], text)
+            else:
+                self.assertEqual(result["result"]["intent"], expected, text)
+        grammar = policies([{"op": "grammar", "apps": ["firefox"], "config": cfg}])[0]["result"]["grammar"]
+        expected = parser.grammar(["firefox"])
+        for key in ("verbs", "close_verbs", "phrases"):
+            self.assertEqual(sorted(grammar[key]), sorted(expected[key]), key)
+        for bad in ([], ["open"], ["please"]):
+            self.assertFalse(policies([{"op": "validate", "config": {"close_words": bad}}])[0]["ok"], bad)
         targets = ["0xabc", "0x1; anything", "", None, 1]
         results = policies([{"op": "dispatch", "action": "close_address", "target": target} for target in targets])
         expected = Hyprland._commands("close_address", "0xabc")

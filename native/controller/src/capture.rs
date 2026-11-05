@@ -543,16 +543,16 @@ impl Capture {
             if replay { "on" } else { "recording" },
             if replay && cfg["replay"]["storage"] == "disk" {
                 format!(
-                    "Instant replay on · {} · up to {} seconds · disk buffer · {} MiB budget.",
+                    "Instant replay on · {} · up to {} · disk buffer · {} MiB budget.",
                     color.to_uppercase(),
-                    cfg["replay"]["seconds"],
+                    duration(cfg["replay"]["seconds"].as_u64().unwrap_or(120)),
                     cfg["replay"]["max_mb"],
                 )
             } else if replay {
                 format!(
-                    "Instant replay on · {} · keeping the last {} seconds in memory.",
+                    "Instant replay on · {} · keeping the last {} in memory.",
                     color.to_uppercase(),
-                    cfg["replay"]["seconds"]
+                    duration(cfg["replay"]["seconds"].as_u64().unwrap_or(120))
                 )
             } else {
                 format!(
@@ -697,7 +697,8 @@ impl Capture {
         }
         Ok(status)
     }
-    pub async fn save(&self) -> Result<Value> {
+    /// Save the whole buffer, or only its last `seconds` when given.
+    pub async fn save(&self, seconds: Option<u64>) -> Result<Value> {
         if !self.replay || !self.active() {
             return err("Instant replay is off. Say “start replay” first.");
         }
@@ -711,13 +712,15 @@ impl Capture {
             "Saving the replay…",
             previous["file"].as_str().map(Path::new),
         );
+        // GSR saves what it has when asked for more than the buffer holds.
+        let seconds = seconds.map_or(self.replay_seconds, |s| s.min(self.replay_seconds));
         let mut path = None;
         let saved = timeout(Duration::from_secs(40), async {
             let mut stream = UnixStream::connect(&self.ipc).await.map_err(|e| {
                 format!("Instant replay is still starting; try again in a moment. {e}")
             })?;
             let mut command = serde_json::to_vec(&json!({
-                "id":1,"name":"save-replay","data":{"seconds":self.replay_seconds}
+                "id":1,"name":"save-replay","data":{"seconds":seconds}
             }))?;
             command.push(b'\n');
             stream.write_all(&command).await?;
@@ -763,7 +766,12 @@ impl Capture {
                 self.set(
                     state,
                     format!(
-                        "Saved replay: {}{}",
+                        "Saved replay{}: {}{}",
+                        if seconds < self.replay_seconds {
+                            format!(" (last {})", duration(seconds))
+                        } else {
+                            String::new()
+                        },
                         path.file_name().unwrap_or_default().to_string_lossy(),
                         if state == "error" {
                             format!(
@@ -804,6 +812,16 @@ impl Capture {
                 err(message)
             }
         }
+    }
+}
+/// "25 seconds", "2 minutes", "1 min 30 s".
+pub fn duration(seconds: u64) -> String {
+    match (seconds / 60, seconds % 60) {
+        (0, 1) => "1 second".into(),
+        (0, s) => format!("{s} seconds"),
+        (1, 0) => "1 minute".into(),
+        (m, 0) => format!("{m} minutes"),
+        (m, s) => format!("{m} min {s} s"),
     }
 }
 fn timestamp() -> String {

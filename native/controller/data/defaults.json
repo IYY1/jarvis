@@ -26,6 +26,9 @@
   "aliases": {},
   "commands": {},
   "app_prefixes": {},
+  "close_words": [
+    "close"
+  ],
   "startup": false,
   "recording": {
     "output_dir": "~/Videos/Murmur",

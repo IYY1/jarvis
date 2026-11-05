@@ -89,6 +89,7 @@ class VoskEngine:
         known = self._supported(grammar.get("phrases", []))
         apps = self._supported(grammar.get("apps", []), report="open {}")
         verbs = self._supported(grammar.get("verbs", []), report=None)
+        self._close_verbs = tuple(grammar.get("close_verbs", ["close"]))
         prefixes = self._supported(grammar.get("prefixes", []), report=None)
         if not known and not apps:
             raise ValueError("No command phrases use words the Vosk model knows")
@@ -107,7 +108,7 @@ class VoskEngine:
         blocked = set(grammar.get("blocked_apps", []))
         self._verbs = sorted(verbs, key=len, reverse=True)
         full = list(known) + [f"{verb}{article} {app}" for verb in verbs for app in spoken_apps
-                              if self._sounds_like.get(app, app) not in blocked or verb in ("focus", "switch to", "close")
+                              if self._sounds_like.get(app, app) not in blocked or verb in ("focus", "switch to", *self._close_verbs)
                               for article in ("", " the")]
         for p, alias in self._rules.launches.items():
             article = p[:-len(alias)] + "the " + alias
@@ -418,12 +419,12 @@ class VoskEngine:
         self._open_text = []
         audio, self._command_audio = bytes(self._command_audio), bytearray()
         self._speech_frames = self._quiet_run = 0
-        heard_match = closest_match(heard, self._candidates, exact_only=not self._fuzzy) if heard and self._candidates else None
+        heard_match = closest_match(heard, self._candidates, exact_only=not self._fuzzy, close_verbs=self._close_verbs) if heard and self._candidates else None
         if self._transcriber is not None and audio:
             # The stronger model's transcript comes first; the small model's
             # free transcript is the fallback.
             accurate = normalize_phrase(self._transcriber.transcribe(audio))
-            accurate_match = closest_match(accurate, self._candidates, exact_only=not self._fuzzy) if accurate and self._candidates else None
+            accurate_match = closest_match(accurate, self._candidates, exact_only=not self._fuzzy, close_verbs=self._close_verbs) if accurate and self._candidates else None
             if accurate_match or not heard_match:
                 heard, heard_match = accurate or heard, accurate_match
         confidence = self._confidence(result)

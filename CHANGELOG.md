@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+- **Clip a length**: “clip the last 25 seconds”, “clip last 2 minutes” or
+  “save the last minute” saves only the end of the replay buffer (1–59
+  seconds or 1–30 minutes); “clip that” still saves all of it.
+- **Longer replays**: the buffer can now keep up to 30 minutes (was 10).
+  RAM replays hold the whole buffer in memory; use disk storage for long ones.
+- **Close words**: Settings → Applications → Close words chooses what you say
+  to close an app (“quit Firefox”); several words can be listed.
+- **Lower standby memory**: Vosk now finalizes each utterance, freeing decoder
+  feature history that grew by about 45 MiB while waiting
+  ([measurements](docs/vosk-finalization.md)).
+- **No transparent huge pages for the voice worker**: on systems that enable
+  them for every program (CachyOS), the worker's idle floor was 16 MiB higher
+  at the same speed ([measurements](docs/benchmarks/voice-worker-thp-2026-11-05.json)).
+
 ## 0.3.1 — 2026-11-01
 
 - **Light command model, now the default**: commands use Whisper tiny.en

@@ -233,8 +233,8 @@ pub fn validate(data: &Value) -> Result<Value> {
         (
             &c["replay"]["seconds"],
             10,
-            600,
-            "Replay length must be 10–600 seconds",
+            1800,
+            "Replay length must be 10–1800 seconds (30 minutes)",
         ),
     ] {
         if !value.as_u64().is_some_and(|n| (min..=max).contains(&n)) {

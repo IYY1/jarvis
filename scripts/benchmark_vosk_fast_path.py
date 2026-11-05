@@ -49,7 +49,7 @@ def counters(binary, fixture, fast, free_decoder, commands):
     if actual != ["ten meters"] * commands:
         raise RuntimeError(f"Counter fixture mismatch: {actual}")
     stats = events[-1]["recognition_stats"]
-    expected = {"vosk_fast_path": fast, "vosk_finalize_utterances": False,
+    expected = {"vosk_fast_path": fast, "vosk_finalize_utterances": payload["native"]["vosk_finalize_utterances"],
                 "fast_commands": commands if fast and free_decoder else 0,
                 "whisper_transcriptions": 0 if fast and free_decoder else commands,
                 "whisper_loads": 0 if fast and free_decoder else 1}

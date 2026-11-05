@@ -44,6 +44,16 @@ pub struct Matcher {
     pub exact_only: bool,
     pub rules: jarvis_phrases::Rules,
     pub blocked_apps: HashSet<String>,
+    /// Configured words that close an application ("close" by default).
+    pub close_verbs: Vec<String>,
+}
+
+/// A clip of a specific length. Lengths never come from a fuzzy guess:
+/// "fifteen" and "fifty" are close in spelling but not in what they save.
+fn timed_clip(intent: &str) -> bool {
+    intent
+        .strip_prefix("replay_save:")
+        .is_some_and(|s| s.bytes().all(|c| c.is_ascii_digit()))
 }
 
 impl Matcher {
@@ -128,7 +138,8 @@ impl Matcher {
                     let a = a.strip_prefix("the ").unwrap_or(a);
                     self.apps.contains(a)
                         && (!self.blocked_apps.contains(a)
-                            || ["focus", "switch to", "close"].contains(&v.as_str()))
+                            || ["focus", "switch to"].contains(&v.as_str())
+                            || self.close_verbs.contains(v))
                 })
             })
     }
@@ -166,6 +177,13 @@ impl Matcher {
         if self.intent(&text).is_some() {
             return Some((text, 1.0));
         }
+        // A clip length may follow a misheard word or two, like other commands.
+        let words: Vec<_> = text.split_whitespace().collect();
+        for start in 0..3.min(words.len()) {
+            if let Some(p) = jarvis_phrases::clip_canonical(&words[start..].join(" ")) {
+                return self.intent(&p).map(|_| (p, 1.0));
+            }
+        }
         if text.chars().count() > 256 {
             return None;
         }
@@ -187,7 +205,12 @@ impl Matcher {
         if self.intent(&text).is_some() {
             return Some((text, 1.0));
         }
-        if self.exact_only || text.starts_with("close ") {
+        if self.exact_only
+            || self
+                .close_verbs
+                .iter()
+                .any(|v| text.starts_with(&format!("{v} ")))
+        {
             return None;
         }
         let whole = text.replace(' ', "");
@@ -219,7 +242,7 @@ impl Matcher {
         // this request, then release it instead of retaining a growing cache.
         let mut scratch = MatchScratch::default();
         for (candidate, intent) in &self.candidates {
-            if intent.starts_with("close_app:") {
+            if intent.starts_with("close_app:") || timed_clip(intent) {
                 continue;
             }
             let target: Vec<char> = candidate.chars().filter(|&c| c != ' ').collect();
@@ -322,6 +345,7 @@ mod tests {
             exact_only: false,
             rules: Default::default(),
             blocked_apps: Default::default(),
+            close_verbs: vec!["close".into()],
             candidates: vec![
                 ("launch deadlock".into(), "deadlock".into()),
                 ("launch discord".into(), "discord".into()),
@@ -494,6 +518,7 @@ mod tests {
             exact_only: false,
             rules: Default::default(),
             blocked_apps: Default::default(),
+            close_verbs: vec!["close".into()],
             candidates: vec![
                 ("open steam".into(), "steam".into()),
                 ("open stream".into(), "stream".into()),
@@ -549,5 +574,64 @@ mod tests {
                 Some(("close visual studio code".into(), 1.0))
             )
             .is_some());
+    }
+    #[test]
+    fn clip_lengths_are_exact_and_never_guessed() {
+        let mut m = command_matcher();
+        m.suffixes = vec!["please".into()];
+        m.candidates = vec![
+            ("clip that".into(), "replay_save:None".into()),
+            (
+                "clip the last fifteen seconds".into(),
+                "replay_save:15".into(),
+            ),
+            (
+                "clip the last fifty seconds".into(),
+                "replay_save:50".into(),
+            ),
+            (
+                "clip the last twenty five seconds".into(),
+                "replay_save:25".into(),
+            ),
+            ("clip the last two minutes".into(), "replay_save:120".into()),
+        ];
+        for (heard, phrase) in [
+            (
+                "Clip the last 25 seconds.",
+                "clip the last twenty five seconds",
+            ),
+            (
+                "clip last twenty-five seconds",
+                "clip the last twenty five seconds",
+            ),
+            (
+                "uh clip the last 2 minutes please",
+                "clip the last two minutes",
+            ),
+            ("Save the last two minutes.", "clip the last two minutes"),
+        ] {
+            assert_eq!(m.closest(heard), Some((phrase.into(), 1.0)), "{heard}");
+        }
+        // Near-miss lengths must not become a different length.
+        assert_eq!(m.closest("clip the last fiftteen seconds"), None);
+    }
+    #[test]
+    fn configured_close_words_replace_close() {
+        let mut m = command_matcher();
+        m.apps.insert("firefox".into());
+        m.verbs = vec!["open".into(), "quit".into()];
+        m.close_verbs = vec!["quit".into()];
+        m.blocked_apps.insert("firefox".into());
+        m.candidates = vec![
+            ("firefox".into(), "open_app:firefox".into()),
+            ("quit firefox".into(), "close_app:firefox".into()),
+        ];
+        assert!(m.accepts("quit firefox"));
+        assert_eq!(
+            m.closest("quit firefox"),
+            Some(("quit firefox".into(), 1.0))
+        );
+        // A misheard close must never fall back to opening the app.
+        assert_eq!(m.closest("quit firefux"), None);
     }
 }

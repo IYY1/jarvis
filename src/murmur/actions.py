@@ -51,6 +51,8 @@ class Dispatcher:
         if action in ("record_start", "record_stop"):
             result = self.recorder.start() if action == "record_start" else self.recorder.stop()
             return result["message"]
+        if action == "replay_save" and intent.target is not None:
+            return self.replay.save(intent.target)["message"]   # only the last N seconds
         if action in ("replay_start", "replay_stop", "replay_save"):
             return getattr(self.replay, action.removeprefix("replay_"))()["message"]
         if action == "open_recorder":
