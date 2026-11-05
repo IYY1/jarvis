@@ -99,6 +99,7 @@ pub fn validate(data: &Value) -> Result<Value> {
         "replay",
         "aliases",
         "commands",
+        "dictation",
     ] {
         if !c[section].is_object() {
             return err(format!("{section} must be an object"));
@@ -118,6 +119,39 @@ pub fn validate(data: &Value) -> Result<Value> {
         &["small", "light"],
         "Speech model must be small or light",
     )?;
+    choices(
+        &n["language"],
+        &["en", "ar_en"],
+        "Recognition language must be en (English) or ar_en (Arabic and English)",
+    )?;
+    let d = &c["dictation"];
+    choices(
+        &d["language"],
+        &["auto", "ar", "en"],
+        "Dictation language must be auto, ar or en",
+    )?;
+    if !d["idle_seconds"]
+        .as_f64()
+        .is_some_and(|v| (5.0..=300.0).contains(&v))
+        || !d["max_minutes"]
+            .as_f64()
+            .is_some_and(|v| (1.0..=60.0).contains(&v))
+        || !d["keyboard_fallback"].is_boolean()
+    {
+        return err("Dictation needs 5–300 idle seconds, 1–60 minutes and a true/false keyboard fallback");
+    }
+    let stops = d["stop_phrases"]
+        .as_array()
+        .filter(|a| a.len() <= 8)
+        .ok_or("Use up to eight dictation stop phrases")?;
+    for phrase in stops {
+        let ok = phrase.as_str().is_some_and(|s| {
+            s.chars().count() <= 40 && !normalize(s).unwrap_or_default().is_empty()
+        });
+        if !ok {
+            return err("Dictation stop phrases must be short words");
+        }
+    }
     for value in [
         &n["closest_match"],
         &n["accurate"],
@@ -285,6 +319,20 @@ pub fn validate(data: &Value) -> Result<Value> {
     for key in ["autostart", "game_audio", "microphone", "sound"] {
         if !c["replay"][key].is_boolean() {
             return err("Replay switches must be true or false");
+        }
+    }
+    choices(
+        &c["replay"]["audio_tracks"],
+        &["mixed", "separate"],
+        "Replay audio tracks must be mixed or separate",
+    )?;
+    let apps = c["replay"]["separate_apps"]
+        .as_array()
+        .filter(|a| a.len() <= 4)
+        .ok_or("Choose up to four apps for their own replay tracks")?;
+    for app in apps {
+        if !app.as_str().is_some_and(crate::capture::valid_app_name) {
+            return err("App audio names may use letters, digits, spaces, dots, dashes and underscores");
         }
     }
     if r["system_audio"] == true

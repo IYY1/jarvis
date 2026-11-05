@@ -43,6 +43,9 @@ def main():
     parser.add_argument("--voice-worker", type=Path,
                         default=ROOT / "src/murmur/bin/jarvis-voice.exe",
                         help="Rust voice worker for Windows (scripts/build_windows_release.py cross-compiles it)")
+    parser.add_argument("--text-helper", type=Path,
+                        default=ROOT / "src/murmur/bin/jarvis-type.exe",
+                        help="Dictation text helper for Windows (native/text-input, cross-compiled)")
     parser.add_argument("--vosk-dir", type=Path,
                         help="Folder with libvosk.dll and its MinGW runtime DLLs (default: installed vosk package)")
     args = parser.parse_args()
@@ -99,6 +102,8 @@ def main():
     shutil.copy2(args.replay_store, bundle / "tools/jarvis-replay-store.exe")
     # libvosk.dll resolves its MinGW runtime DLLs from the same folder.
     shutil.copy2(args.voice_worker, bundle / "tools/jarvis-voice.exe")
+    if args.text_helper.is_file():   # dictation stays unavailable without it
+        shutil.copy2(args.text_helper, bundle / "tools/jarvis-type.exe")
     for dll in vosk_dlls:
         shutil.copy2(dll, bundle / "tools" / dll.name)
     shutil.copytree(

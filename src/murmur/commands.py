@@ -12,10 +12,19 @@ import re
 import unicodedata
 
 
+# Arabic spelling folded the way speech transcripts vary: no diacritics,
+# tatweel or hamza seats, one alef, Western digits (see phrases.translate_arabic).
+_ARABIC_MARKS = re.compile("[\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06ed\u0640\u0621]")
+_ARABIC_FOLD = str.maketrans({"أ": "ا", "إ": "ا", "آ": "ا", "ٱ": "ا", "ة": "ه", "ى": "ي", "ئ": "ي", "ؤ": "و",
+                              **{chr(0x660 + i): str(i) for i in range(10)},
+                              **{chr(0x6F0 + i): str(i) for i in range(10)}})
+
+
 def normalize(text: str) -> str:
     if not isinstance(text, str) or len(text) > 256:
         raise ValueError("Phrase must be at most 256 characters")
-    phrase = " ".join(re.sub(r"[^\w\s]", " ", unicodedata.normalize("NFKC", text).casefold()).split())
+    text = _ARABIC_MARKS.sub("", unicodedata.normalize("NFKC", text)).translate(_ARABIC_FOLD)
+    phrase = " ".join(re.sub(r"[^\w\s]", " ", text.casefold()).split())
     return re.sub(r"\bfullscreen\b", "full screen", phrase)
 
 
@@ -43,6 +52,7 @@ FIXED = {
     "open the video recorder": Intent("open_recorder"), "open video recorder": Intent("open_recorder"),
     "save replay": Intent("replay_save"), "start replay": Intent("replay_start"), "stop replay": Intent("replay_stop"),
     "stop listening": Intent("pause"), "cancel": Intent("cancel"),
+    "listen to me": Intent("dictation_start"), "stop dictation": Intent("dictation_stop"),
 }
 
 # Explicit wording variants. These are grammar rules, never fuzzy intent guesses.
@@ -68,6 +78,7 @@ VARIANTS = {
     "save a replay": "save replay", "start instant replay": "start replay",
     "turn on instant replay": "start replay", "stop instant replay": "stop replay",
     "turn off instant replay": "stop replay",
+    "start dictation": "listen to me", "take dictation": "listen to me", "start dictating": "listen to me",
 }
 
 # Optional sentence-edge courtesy. The parser accepts both; the speech grammar
@@ -121,7 +132,9 @@ REFERENCE = [
     {"category": "Audio", "title": "Volume", "examples": ["turn the volume down", "turn down the volume", "turn the volume up", "mute volume", "turn the sound back on"]},
     {"category": "Recording", "title": "Capture your screen", "examples": ["start recording", "stop recording", "open the video recorder"]},
     {"category": "Recording", "title": "Instant replay", "examples": ["clip that", "clip the last thirty seconds", "clip the last two minutes", "save replay", "start replay", "stop replay"]},
+    {"category": "Dictation", "title": "Type what you say into the focused text field", "examples": ["listen to me", "start dictation", "stop dictation"]},
     {"category": "Privacy", "title": "Stop immediately", "examples": ["stop listening", "cancel"]},
+    {"category": "Arabic", "title": "Arabic commands (Arabic and English setting)", "examples": ["افتح فايرفوكس", "سكّر ديسكورد", "علّ الصوت", "وطّ الصوت", "روح لمساحة العمل الثالثة", "احفظ آخر ثلاثين ثانية", "كلّبها", "اسمعني", "خلاص"]},
 ]
 
 
@@ -201,8 +214,23 @@ class Parser:
         return parser
 
     def parse(self, text: str) -> Intent:
+        """Arabic speech is first tried as an exact configured shortcut or voice
+        alias, then translated onto the English command it asks for."""
+        from .phrases import has_arabic, translate_arabic
         if not isinstance(text, str):
             raise CommandError("Phrase must be text")
+        if not has_arabic(text):
+            return self._parse_text(text)
+        try:
+            return self._parse_text(text)
+        except CommandError:
+            pass
+        english = translate_arabic(text, self.close_words[0] if self.close_words else "close")
+        if english is None:
+            raise CommandError("Arabic phrase not recognized. Open Commands to see the Arabic commands.")
+        return self._parse_text(english)
+
+    def _parse_text(self, text: str) -> Intent:
         if re.search(r"workspace\s+[+-]\s*\w", text, re.IGNORECASE):
             raise CommandError("Use an unsigned workspace number one through ten")
         phrase = normalize(text)
@@ -325,6 +353,8 @@ def closest_match(heard: str, candidates: dict, min_score: float = 0.82, min_mar
     """
     if len(heard) > 256:   # only the start can hold the command; keep it within normalize()'s limit
         heard = heard[:257].rsplit(" ", 1)[0]
+    from .phrases import translate_arabic
+    heard = translate_arabic(heard, close_verbs[0] if close_verbs else "close") or heard
     try:
         literal = normalize(heard)
         if literal in candidates:

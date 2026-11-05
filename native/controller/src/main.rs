@@ -170,6 +170,11 @@ async fn message(service: &mut service::Service, message: service::Message) {
         Message::StartupDone(enabled, result, reply) => {
             let _ = reply.send(response(service.startup_done(enabled, result)));
         }
+        Message::Typed {
+            session,
+            text,
+            result,
+        } => service.typed(session, text, result).await,
         Message::ActionDone {
             result,
             reply,

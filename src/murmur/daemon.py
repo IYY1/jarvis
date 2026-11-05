@@ -30,6 +30,7 @@ else:
     from .replay import Replay
 from .state import Activation
 from .desktop_process import desktop_argv
+from . import dictation
 
 
 class Service:
@@ -67,6 +68,7 @@ class Service:
         self.tray = None
         self.engine = None
         self.gate = None
+        self.dictation = dictation.Session()
         self.dispatcher = Dispatcher(self.apps, self.desktop, self.recorder, self.pause_from_action, self.open_ui,
                                      replay=self.replay, config=self.config)
 
@@ -77,7 +79,8 @@ class Service:
                 "unsupported_phrases": self.unsupported, "engine": self.engine, "gate": self.gate,
                 "dry_run": os.environ.get("MURMUR_DRY_RUN") == "1",
                 "microphone_open": self.worker is not None,
-                "mic_test": self.worker is not None and self.worker_mode == "test"}
+                "mic_test": self.worker is not None and self.worker_mode == "test",
+                "dictation": self.dictation.status()}
 
     async def desktop_call(self, func, *args):
         if self.desktop_executor is None:
@@ -214,7 +217,7 @@ class Service:
                 return
             self.worker.stdin.write(encoded)
             await self.worker.stdin.drain()
-            if mode != "wake_word":   # only a wake worker takes listen/cancel lines
+            if mode not in ("wake_word", "dictation"):   # only these take control lines
                 self.worker.stdin.close()
             self.voice_task = asyncio.create_task(self.read_voice(self.worker, mode))
             self.publish()
@@ -277,6 +280,20 @@ class Service:
                 elif kind == "timeout":
                     self.message = "No command heard. Try again."
                     self.activation.arm() if mode == "wake_word" else self.activation.pause()
+                elif kind == "dictation":
+                    if event.get("state") == "started":
+                        self.dictation.active = True
+                        self.message = self.dictation.message = "Dictation · speak, then say “stop dictation” or press Stop"
+                    elif self.dictation.active:
+                        reason = {"idle": "Dictation stopped after a quiet stretch", "limit": "Dictation stopped at its time limit",
+                                  "cancel": "Dictation cancelled", "error": "Dictation could not start"}.get(event.get("reason"), "Dictation stopped")
+                        if event.get("dropped"):
+                            reason += f" · {event['dropped']} part(s) were skipped because transcription fell behind"
+                        await self.end_dictation(reason)
+                elif kind == "dictation_text":
+                    await self.dictated(event.get("text", ""))
+                elif kind == "dictation_error":
+                    self.message = self.dictation.message = "Dictation: " + event.get("message", "transcription failed")
                 elif kind == "level":
                     self.level = event["level"]
                     self.gate = event.get("gate")
@@ -313,6 +330,7 @@ class Service:
         self.muted = muted
         if muted:
             # Mark closed before awaiting termination so no queued result can dispatch.
+            await self.end_dictation("Dictation stopped: microphone muted")
             self.activation.pause()
             await self.stop_worker()
             self.message = "Microphone muted · audio capture closed"
@@ -324,11 +342,116 @@ class Service:
             self.message = "Push-to-talk ready · microphone closed"
         self.publish()
 
+    async def start_dictation(self):
+        """Dictation in the running hands-free worker, or a dictation-only worker."""
+        if self.muted or not self.config["privacy"]["onboarded"]:
+            raise CommandError("Microphone is muted. Complete consent and unmute in Settings.")
+        if self.dictation.active:
+            return
+        if not self.config["recognition"]["accurate"]:
+            raise CommandError("Dictation needs the speech model. Turn on Accurate recognition in Voice settings.")
+        try:
+            typer = await dictation.Typer.start()
+        except (OSError, RuntimeError, ValueError, TimeoutError) as exc:
+            raise CommandError(str(exc)) from exc
+        session = dictation.Session()
+        session.active, session.typer = True, typer
+        session.window = (await asyncio.to_thread(dictation.focused) or (None,))[0]
+        language = self.config["dictation"]["language"]
+        session.language = language if language != "auto" else ("ar" if self.config["recognition"]["language"] == "ar_en" else "en")
+        session.message = "Starting dictation…"
+        session.indicator = dictation.indicator()
+        self.dictation = session
+        async with self.worker_lock:
+            proc = self.worker
+            steered = False
+            if proc is not None and self.worker_mode == "wake_word" and self.unanswered is not None:
+                try:
+                    proc.stdin.write(b"dictate\n")
+                    await proc.stdin.drain()
+                    steered = True
+                except (BrokenPipeError, ConnectionResetError):
+                    pass
+        if not steered:
+            try:
+                await self.start_worker("dictation")
+            except (CommandError, ValueError, OSError) as exc:
+                await self.end_dictation(str(exc))
+                raise CommandError(str(exc)) from exc
+        self.publish()
+
+    async def stop_dictation(self, cancel=False):
+        if not self.dictation.active:
+            return
+        proc = self.worker
+        try:
+            if proc is None or proc.stdin.is_closing():
+                raise BrokenPipeError
+            proc.stdin.write(b"cancel\n" if cancel else b"dictate_stop\n")
+            await proc.stdin.drain()
+        except (BrokenPipeError, ConnectionResetError, AttributeError):
+            await self.end_dictation("Dictation stopped")
+        self.publish()
+
+    async def end_dictation(self, message):
+        session = self.dictation
+        if session.typer is not None:
+            typer, session.typer = session.typer, None
+            self.background(typer.close(), "dictation helper")
+        if session.indicator is not None and session.indicator.poll() is None:
+            indicator, session.indicator = session.indicator, None
+            self.loop.call_later(2, lambda: indicator.poll() is None and indicator.terminate())
+        if session.active or message:
+            session.message = self.message = message
+        session.active = False
+        session.window = None
+
+    async def dictated(self, text):
+        session = self.dictation
+        if not session.active or session.typer is None:
+            return
+        text, stop = dictation.split_stop(text.strip(), self.config["dictation"]["stop_phrases"])
+        if text.strip():
+            text = (" " if session.typed_any else "") + text.strip()   # never Enter or Tab
+            session.typed_any = True
+            window = await asyncio.to_thread(dictation.focused)
+            if session.window is not None and (window is None or window[0] != session.window):
+                session.held += text
+                await self.stop_dictation(cancel=True)
+                await self.end_dictation("Focus moved to another window, so dictation stopped without typing there.")
+                self.publish()
+                return
+            keyboard = self.config["dictation"]["keyboard_fallback"] and not (window and window[1])
+            try:
+                result = await session.typer.insert(text, keyboard)
+            except (OSError, RuntimeError, ValueError, TimeoutError) as exc:
+                result = {"ok": False, "reason": "error", "message": f"Dictation could not type the text: {exc}"}
+            if result.get("ok"):
+                session.inserted += len(text)
+                session.method = result.get("method", "")
+            else:
+                session.held += text
+                session.message = self.message = result.get("message", "Dictation could not type the text")
+                if result.get("reason") in ("focus", "sensitive", "blocked"):
+                    await self.stop_dictation(cancel=True)
+                    await self.end_dictation(session.message)
+        if stop:
+            await self.stop_dictation()
+
     async def execute(self, phrase):
         async with self.action_lock:
             intent = None
             try:
                 intent = self.parser.parse(phrase)
+                if intent.action in ("dictation_start", "dictation_stop"):
+                    if intent.action == "dictation_start":
+                        await self.start_dictation()
+                        self.message = "Dictation starting · speak into the focused text field"
+                    else:
+                        await self.stop_dictation()
+                        self.message = "Dictation stopped"
+                    self.publish()
+                    return {"ok": True, "message": self.message}
                 if os.environ.get("MURMUR_DRY_RUN") == "1":
                     self.message = "Dry run: " + intent.action
                 else:
@@ -387,6 +510,18 @@ class Service:
                     await self.start_worker("wake_word")
                 else:
                     self.message = "Cancelled · microphone closed"
+        elif op == "dictation":
+            action = payload.get("action")
+            if action == "toggle":
+                action = "stop" if self.dictation.active else "start"
+            if action == "start":
+                await self.start_dictation()
+            elif action in ("stop", "cancel"):
+                await self.stop_dictation(cancel=action == "cancel")
+            elif action == "copied":
+                self.dictation.held = ""
+            else:
+                raise CommandError("Dictation action must be start, stop, cancel or toggle")
         elif op == "mic_test":
             if payload.get("enabled"):
                 await self.start_worker("test")
@@ -403,7 +538,8 @@ class Service:
             if self.replay.status()["state"] in ("on", "stopping") and (
                     c["recording"] != self.config["recording"] or any(
                         c["replay"][key] != self.config["replay"][key]
-                        for key in ("seconds", "game_audio", "microphone", "storage", "max_mb", "buffer_dir"))):
+                        for key in ("seconds", "game_audio", "microphone", "storage", "max_mb", "buffer_dir",
+                                    "audio_tracks", "separate_apps"))):
                 raise CommandError("Stop instant replay before changing capture settings")
             was_onboarded = self.config["privacy"]["onboarded"]
             self.config = await asyncio.to_thread(configuration.save, c)

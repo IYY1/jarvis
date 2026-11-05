@@ -24,14 +24,61 @@ from .recorder import (RecorderError, _parent_death_prefix, _spawn, capture_colo
 BACKEND = "gpu-screen-recorder"
 
 
+def valid_app_name(name: str) -> bool:
+    """A name gpu-screen-recorder can match as app:NAME (its syntax uses | and :)."""
+    return bool(name.strip()) and len(name) <= 64 and all(c.isalnum() or c in " ._-" for c in name)
+
+
+def audio_tracks(replay: dict) -> list[str]:
+    """Replay audio sources, one -a value per track; mirrors capture.rs.
+
+    Mixed (default): game sound and microphone share one track. Separate: all
+    apps except the chosen ones, each chosen app, and the microphone get their
+    own tracks. The game track uses app-inverse:, never default_output, which
+    would also contain the chosen apps."""
+    game, mic = replay.get("game_audio", True), replay.get("microphone", True)
+    if replay.get("audio_tracks", "mixed") != "separate":
+        mixed = [name for name, on in (("default_output", game), ("default_input", mic)) if on]
+        return ["|".join(mixed)] if mixed else []
+    apps = [a for a in replay.get("separate_apps", []) if valid_app_name(a)]
+    tracks = []
+    if game:
+        tracks.append("|".join(f"app-inverse:{a}" for a in apps) if apps else "default_output")
+    tracks += [f"app:{a}" for a in apps]
+    if mic:
+        tracks.append("default_input")
+    return tracks
+
+
+def track_names(replay: dict) -> list[str]:
+    """Human names for audio_tracks, in the same order (mirrors capture.rs)."""
+    game, mic = replay.get("game_audio", True), replay.get("microphone", True)
+    if replay.get("audio_tracks", "mixed") != "separate":
+        return {(True, True): ["Game sound and microphone"], (True, False): ["Game sound"],
+                (False, True): ["Microphone"]}.get((bool(game), bool(mic)), [])
+    apps = [a for a in replay.get("separate_apps", []) if valid_app_name(a)]
+    names = (["Game and other apps" if apps else "Game and desktop sound"] if game else []) + apps
+    return names + (["Microphone"] if mic else [])
+
+
+def write_track_names(clip: Path, names: list[str]) -> None:
+    """MP4 replays lose the recorder's track titles; keep them in a hidden
+    `.NAME.tracks.json` beside the clip. Best effort."""
+    if len(names) < 2:
+        return
+    try:
+        (clip.parent / f".{clip.name}.tracks.json").write_text(json.dumps({"tracks": names}))
+    except OSError:
+        pass
+
+
 def command(cfg: dict, replay: dict, folder: Path, ipc: Path, *, color: str = "sdr") -> list[str]:
-    """gpu-screen-recorder replay mode for the configured monitor. Game sound (the
-    default output) and the default microphone are mixed into one audio track."""
+    """gpu-screen-recorder replay mode for the configured monitor (see audio_tracks)."""
     argv = [BACKEND, "-w", cfg["monitor"], "-f", str(cfg.get("fps", 30)), "-r", str(replay.get("seconds", 120)),
             "-replay-storage", "ram", "-c", "mp4", "-o", str(folder), "-ipc", str(ipc), "-v", "no"] + gpu_video_args(color, cfg)
-    audio = [name for name, wanted in (("default_output", replay.get("game_audio", True)),
-                                       ("default_input", replay.get("microphone", True))) if wanted]
-    return argv + (["-a", "|".join(audio)] if audio else [])
+    for track in audio_tracks(replay):
+        argv += ["-a", track]
+    return argv
 
 
 class Replay:
@@ -158,6 +205,7 @@ class Replay:
         try:
             path = Path(self._request("save-replay", data=None if seconds is None else {"seconds": seconds}))
             verify_video(path, color=color, codec=codec)
+            write_track_names(path, track_names(self.config.get("replay", {})))
         except RecorderError as exc:
             detail = f"{exc} File retained at {path}." if path is not None else str(exc)
             with self._lock:

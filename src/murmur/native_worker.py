@@ -8,8 +8,8 @@ import sys
 
 from .commands import GREETINGS, POLITE_PREFIXES, POLITE_SUFFIXES, match_candidates, all_wake_variants
 from .host import app_dir, is_windows
-from .models import (ACCURATE_MODELS, accurate_model_dir, accurate_model_ready,
-                     default_model_path, denoiser_path, usable_model, valid_model)
+from .models import (ACCURATE_MODELS, accurate_model_dir, accurate_model_ready, arabic_model_dir,
+                     arabic_model_ready, default_model_path, denoiser_path, usable_model, valid_model)
 
 # The Rust worker loads Whisper when it hears a wake name and frees it after
 # this long without a command; waiting for the wake phrase needs only Vosk.
@@ -99,5 +99,17 @@ def prepare(config: dict, mode: str, grammar: dict) -> tuple[list[str], dict, di
         native["whisper"] = {k: str(folder / v) for k, v in ACCURATE_MODELS[whisper]["files"].items()}
         if settings["noise_suppression"] and denoiser_path().is_file():
             native["denoiser"] = str(denoiser_path())
+        # Arabic and English: Moonshine Streaming Tiny Arabic beside Whisper.
+        if settings["language"] == "ar_en":
+            if not arabic_model_ready():
+                raise ValueError("Arabic is selected but the Arabic model is missing. "
+                                 "Install it in Voice settings or run: jarvis install-model --arabic")
+            native["arabic"] = str(arabic_model_dir())
+    language = config["dictation"]["language"]
+    if language == "auto":
+        language = "ar" if native.get("arabic") else "en"
+    if language == "ar" and not native.get("arabic") and mode == "dictation":
+        raise ValueError("Arabic dictation needs the Arabic and English language setting and the Arabic model")
+    native["dictation_language"] = language if native.get("arabic") else "en"
     payload["native"] = native
     return [str(binary)], payload, env

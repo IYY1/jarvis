@@ -1,3 +1,4 @@
+mod dictation;
 mod engine;
 mod history;
 mod inference;
@@ -22,6 +23,13 @@ struct NativeConfig {
     whisper: Option<WhisperFiles>,
     denoiser: Option<String>,
     threads: i32,
+    /// Arabic model directory (Moonshine Streaming Tiny Arabic). With it,
+    /// commands may be spoken in Arabic as well as English.
+    #[serde(default)]
+    arabic: Option<String>,
+    /// Language dictation transcribes: "ar" (with the Arabic model) or "en".
+    #[serde(default)]
+    dictation_language: Option<String>,
     /// Load Whisper on wake and release it after this many idle seconds.
     /// Absent: load it at startup and keep it for the worker's lifetime.
     #[serde(default)]

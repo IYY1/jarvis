@@ -23,10 +23,17 @@ DEFAULTS = {
     # speech_model: "light" (Whisper tiny.en, default: about half the peak RAM)
     # or "small" (small.en: more accurate on unusual words).
     "recognition": {"backend": "auto", "model_path": "", "closest_match": True,
-                    "accurate": True, "noise_suppression": False, "speech_model": "light"},
+                    "accurate": True, "noise_suppression": False, "speech_model": "light",
+                    # language: "en", or "ar_en" for Arabic and English commands and dictation
+                    # (a multilingual model; see docs/arabic.md).
+                    "language": "en"},
     "privacy": {"onboarded": False},
     # close_words: what to say before an app name to close it ("close firefox").
     "aliases": {}, "commands": {}, "app_prefixes": {}, "close_words": ["close"], "startup": False,
+    # dictation: "Jarvis, listen to me" types speech into the focused text field.
+    # language: "auto" follows recognition.language; "ar" or "en" chooses one.
+    "dictation": {"language": "auto", "idle_seconds": 20, "max_minutes": 10, "stop_phrases": ["stop dictation", "وقف الكتابة"],
+                  "keyboard_fallback": True},
     "recording": {"output_dir": "~/Videos/Murmur", "monitor": "", "system_audio": False,
                   "microphone": False, "audio_device": "", "fps": 30,
                   "codec": "libx264", "quality": 23, "rate_control": "quality",
@@ -35,8 +42,9 @@ DEFAULTS = {
                   "vaapi_device": "/dev/dri/renderD128"},
     # Disk storage is an explicit privacy choice. RAM remains the default.
     # game_audio/microphone mix the default output and input into one track; sound chirps on save.
+    # audio_tracks "separate" keeps game, each of separate_apps and the microphone on their own tracks.
     "replay": {"seconds": 120, "autostart": False, "game_audio": True, "microphone": True, "sound": True,
-               "storage": "ram", "max_mb": 256, "buffer_dir": ""},
+               "storage": "ram", "max_mb": 256, "buffer_dir": "", "audio_tracks": "mixed", "separate_apps": []},
 }
 # Sections that existed in earlier versions and are now ignored.
 LEGACY_SECTIONS: tuple[str, ...] = ()
@@ -97,7 +105,7 @@ def validate(data: dict) -> dict:
     if unknown:
         raise ValueError("Unknown setting(s): " + ", ".join(sorted(unknown)[:5]))
     c = merged(DEFAULTS, {k: v for k, v in data.items() if k not in LEGACY_SECTIONS})
-    for key in ("activation", "audio", "recognition", "privacy", "recording", "replay", "aliases", "commands"):
+    for key in ("activation", "audio", "recognition", "privacy", "recording", "replay", "aliases", "commands", "dictation"):
         if not isinstance(c[key], dict):
             raise ValueError(f"{key} must be an object")
     a = c["activation"]
@@ -108,6 +116,20 @@ def validate(data: dict) -> dict:
         raise ValueError("Invalid voice model path")
     if recognition["speech_model"] not in ("small", "light"):
         raise ValueError("Speech model must be small or light")
+    if recognition["language"] not in ("en", "ar_en"):
+        raise ValueError("Recognition language must be en (English) or ar_en (Arabic and English)")
+    d = c["dictation"]
+    if d["language"] not in ("auto", "ar", "en"):
+        raise ValueError("Dictation language must be auto, ar or en")
+    if not isinstance(d, dict) or not all(isinstance(d[k], (int, float)) and not isinstance(d[k], bool) for k in ("idle_seconds", "max_minutes")) \
+            or not 5 <= d["idle_seconds"] <= 300 or not 1 <= d["max_minutes"] <= 60 or not isinstance(d["keyboard_fallback"], bool):
+        raise ValueError("Dictation needs 5–300 idle seconds, 1–60 minutes and a true/false keyboard fallback")
+    if not isinstance(d["stop_phrases"], list) or len(d["stop_phrases"]) > 8:
+        raise ValueError("Use up to eight dictation stop phrases")
+    from .commands import normalize as _normalize
+    for phrase in d["stop_phrases"]:
+        if not isinstance(phrase, str) or len(phrase) > 40 or not _normalize(phrase):
+            raise ValueError("Dictation stop phrases must be short words")
     for flag in (recognition["closest_match"], recognition["accurate"], recognition["noise_suppression"],
                  c["audio"]["adaptive_gate"]):
         if not isinstance(flag, bool):
@@ -179,6 +201,14 @@ def validate(data: dict) -> dict:
         raise ValueError("Invalid replay buffer directory")
     if not all(isinstance(c["replay"][key], bool) for key in ("autostart", "game_audio", "microphone", "sound")):
         raise ValueError("Replay switches must be true or false")
+    if c["replay"]["audio_tracks"] not in ("mixed", "separate"):
+        raise ValueError("Replay audio tracks must be mixed or separate")
+    apps = c["replay"]["separate_apps"]
+    if not isinstance(apps, list) or len(apps) > 4:
+        raise ValueError("Choose up to four apps for their own replay tracks")
+    from .replay import valid_app_name
+    if not all(isinstance(app, str) and valid_app_name(app) for app in apps):
+        raise ValueError("App audio names may use letters, digits, spaces, dots, dashes and underscores")
     from .host import is_windows
     if not is_windows() and r["system_audio"] and r["microphone"] and not (r["combined_audio_source"] and r["audio_device"].strip()):
         raise ValueError("wf-recorder accepts one audio source. Set up a combined PipeWire source first.")

@@ -2,6 +2,30 @@
 
 ## Unreleased
 
+- **Arabic commands and dictation** (Voice → Language → Arabic and English),
+  using Moonshine Streaming Tiny Arabic (MIT) on Jarvis's Rust/tract runtime.
+  Ten models were compared on Saudi TV speech; it was the most accurate
+  permissively licensed one (Najdi WER 52% vs 85–93% for multilingual Whisper
+  base/tiny). Install with `jarvis install-model --arabic` ([details](docs/arabic.md)).
+- **Dictation**: “Jarvis, listen to me”, `jarvis dictate`, Ctrl+D or the new
+  buttons type speech into the focused field through the Wayland input method
+  (password fields refused) with a virtual-keyboard fallback; a top-of-screen
+  bar has Stop/Cancel; focus changes stop typing ([details](docs/dictation.md)).
+- **Clips editor**: trim, cut, split, join, choose or mix audio tracks, Fast
+  (keyframe) or Exact (re-encoded, HDR kept) export to a new file
+  ([details](docs/clips.md)).
+- **Separate replay sound tracks**: `replay.audio_tracks: "separate"` keeps the
+  game, each app in `replay.separate_apps` and the microphone on their own
+  tracks, verified on saved replays.
+- **Video formats**: Recommended (AV1, else HEVC) / Compatible (H.264 GPU),
+  each tested on the selected display's GPU with synthetic frames. CPU H.264
+  and legacy VA-API remain only for existing configurations.
+- **Apps**: Snap apps are discovered; installers and uninstallers are hidden;
+  duplicate native/Flatpak entries show once; AppImages and portable programs
+  can be added as normal launcher entries.
+- **Settings window**: practical Overview (voice, dictation, capture state and
+  the latest action), direct page names, and advanced capture settings folded away.
+
 - **Clip a length**: “clip the last 25 seconds”, “clip last 2 minutes” or
   “save the last minute” saves only the end of the replay buffer (1–59
   seconds or 1–30 minutes); “clip that” still saves all of it.

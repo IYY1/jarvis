@@ -157,6 +157,13 @@ impl Matcher {
                 .rsplit_once(' ')
                 .map_or(heard.clone(), |(p, _)| p.to_owned());
         }
+        // An Arabic transcript is matched as the English command it asks for.
+        if let Some(english) = jarvis_phrases::arabic::translate(
+            &heard,
+            self.close_verbs.first().map_or("close", String::as_str),
+        ) {
+            heard = english;
+        }
         let literal = jarvis_phrases::normalize(&heard);
         if let Some(p) = self.rules.canonical(&literal) {
             return self.intent(&p).map(|_| (p, 1.0));

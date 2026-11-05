@@ -1,7 +1,7 @@
 """Installed Start-menu/Store applications, launched through Windows Shell."""
 
 from pathlib import PureWindowsPath
-from ..apps import App, AppRegistry as BaseRegistry
+from ..apps import App, AppRegistry as BaseRegistry, utility
 from ..commands import CommandError, normalize, spoken_numbers
 from .system import com_context
 
@@ -43,6 +43,7 @@ class AppRegistry(BaseRegistry):
                         or not name
                         or len(identity) > 4096
                         or len(name) > 256
+                        or utility(name)   # "Uninstall X", setup and updater shortcuts
                     ):
                         continue
                     target = (

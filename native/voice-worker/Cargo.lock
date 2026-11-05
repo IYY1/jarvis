@@ -344,6 +344,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "jarvis-moonshine"
+version = "0.3.1"
+dependencies = [
+ "libc",
+ "serde_json",
+ "tract-onnx",
+]
+
+[[package]]
 name = "jarvis-phrases"
 version = "0.3.1"
 dependencies = [
@@ -358,6 +367,7 @@ name = "jarvis-voice"
 version = "0.3.1"
 dependencies = [
  "jarvis-gtcrn",
+ "jarvis-moonshine",
  "jarvis-phrases",
  "jarvis-whisper",
  "libc",

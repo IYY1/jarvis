@@ -18,7 +18,8 @@
     "closest_match": true,
     "accurate": true,
     "noise_suppression": false,
-    "speech_model": "light"
+    "speech_model": "light",
+    "language": "en"
   },
   "privacy": {
     "onboarded": false
@@ -57,6 +58,18 @@
     "sound": true,
     "storage": "ram",
     "max_mb": 256,
-    "buffer_dir": ""
+    "buffer_dir": "",
+    "audio_tracks": "mixed",
+    "separate_apps": []
+  },
+  "dictation": {
+    "language": "auto",
+    "idle_seconds": 20,
+    "max_minutes": 10,
+    "stop_phrases": [
+      "stop dictation",
+      "وقف الكتابة"
+    ],
+    "keyboard_fallback": true
   }
 }

@@ -19,7 +19,8 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = "x86_64-pc-windows-gnu"
-RUST_HELPERS = (("voice-worker", "jarvis-voice"), ("replay-store", "jarvis-replay-store"))
+RUST_HELPERS = (("voice-worker", "jarvis-voice"), ("replay-store", "jarvis-replay-store"),
+                ("text-input", "jarvis-type"))
 
 
 def windows_path(path: Path) -> str:
@@ -149,6 +150,8 @@ def main():
                "--replay-store", windows_path(helpers["jarvis-replay-store"])]
     if "jarvis-voice" in helpers:
         command += ["--voice-worker", windows_path(helpers["jarvis-voice"])]
+    if "jarvis-type" in helpers:
+        command += ["--text-helper", windows_path(helpers["jarvis-type"])]
     with Display(xvfb, args.display):
         run(command, env=env, log=logs / "freeze.log", cwd=root)
     setup = output / f"Jarvis-{version}-Windows-x64-Setup.exe"

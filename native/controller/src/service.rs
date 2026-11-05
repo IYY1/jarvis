@@ -3,7 +3,7 @@ use crate::{
     capture::Capture,
     config,
     desktop::{self, Desktop},
-    err,
+    dictation, err,
     policy::{self, Activation, Parser},
     util, voice, Result,
 };
@@ -29,6 +29,12 @@ pub enum Message {
     Voice(u64, Value),
     VoiceEnd(u64, String),
     StartupDone(bool, std::result::Result<(), String>, Reply),
+    /// A dictated segment was typed (or refused) by the text helper.
+    Typed {
+        session: u64,
+        text: String,
+        result: std::result::Result<Value, String>,
+    },
     ActionDone {
         result: std::result::Result<String, String>,
         reply: Option<Reply>,
@@ -72,6 +78,7 @@ pub struct Service {
     pending_captures: usize,
     last_recording: String,
     last_replay: Value,
+    dictation: dictation::Session,
 }
 impl Service {
     pub fn new(
@@ -118,12 +125,13 @@ impl Service {
             pending_captures: 0,
             last_recording: "idle".into(),
             last_replay: Value::Null,
+            dictation: Default::default(),
         };
         result.publish();
         Ok(result)
     }
     pub fn status(&self) -> Value {
-        json!({"state":self.activation.state,"message":self.message,"muted":self.muted,"recording":*self.recording_updates.borrow(),"replay":*self.replay_updates.borrow(),"level":self.level,"voice_available":self.voice_available,"unsupported_phrases":self.unsupported,"engine":self.engine,"gate":self.gate,"dry_run":env::var("MURMUR_DRY_RUN").as_deref()==Ok("1"),"microphone_open":self.worker.is_some(),"mic_test":self.worker.as_ref().is_some_and(|w|w.mode=="test"),"controller":"rust"})
+        json!({"state":self.activation.state,"message":self.message,"muted":self.muted,"recording":*self.recording_updates.borrow(),"replay":*self.replay_updates.borrow(),"level":self.level,"voice_available":self.voice_available,"unsupported_phrases":self.unsupported,"engine":self.engine,"gate":self.gate,"dry_run":env::var("MURMUR_DRY_RUN").as_deref()==Ok("1"),"microphone_open":self.worker.is_some(),"mic_test":self.worker.as_ref().is_some_and(|w|w.mode=="test"),"dictation":self.dictation.status(),"controller":"rust"})
     }
     pub fn publish(&mut self) {
         self.updates
@@ -183,7 +191,7 @@ impl Service {
             let _ = child.kill().await;
             return err("Voice worker did not accept configuration");
         }
-        let input = if mode == "wake_word" {
+        let input = if mode == "wake_word" || mode == "dictation" {
             Some(input)
         } else {
             drop(input);
@@ -227,6 +235,7 @@ impl Service {
         }
         self.muted = muted;
         if muted {
+            self.end_dictation("Dictation stopped: microphone muted").await;
             self.activation.set("paused");
             self.stop_worker().await;
             self.message = "Microphone muted · audio capture closed".into();
@@ -338,6 +347,53 @@ impl Service {
                     self.finish_voice(self.epoch.load(Ordering::SeqCst));
                 }
             }
+            "dictation" => {
+                if event["state"] == "started" {
+                    self.dictation.active = true;
+                    self.activation.set("dictating");
+                    self.message = "Dictation · speak, then say “stop dictation” or press Stop".into();
+                    self.dictation.message = self.message.clone();
+                } else {
+                    let reason = match event["reason"].as_str().unwrap_or("") {
+                        "idle" => "Dictation stopped after a quiet stretch",
+                        "limit" => "Dictation stopped at its time limit",
+                        "cancel" => "Dictation cancelled",
+                        "error" => "Dictation could not start",
+                        _ => "Dictation stopped",
+                    };
+                    let dropped = event["dropped"].as_u64().unwrap_or(0);
+                    let mut message = reason.to_owned();
+                    if dropped > 0 {
+                        message.push_str(&format!(
+                            " · {dropped} part(s) were skipped because transcription fell behind"
+                        ));
+                    }
+                    // A refusal already ended the session with its own reason.
+                    if self.dictation.active {
+                        self.end_dictation(&message).await;
+                    }
+                    if self.activation.state == "dictating" {
+                        self.activation.set(
+                            if self.worker.as_ref().is_some_and(|w| w.mode == "wake_word") {
+                                "idle"
+                            } else {
+                                "paused"
+                            },
+                        );
+                    }
+                }
+            }
+            "dictation_text" => {
+                let text = event["text"].as_str().unwrap_or("").to_owned();
+                self.dictated(text).await;
+            }
+            "dictation_error" => {
+                self.dictation.message = format!(
+                    "Dictation: {}",
+                    event["message"].as_str().unwrap_or("transcription failed")
+                );
+                self.message = self.dictation.message.clone();
+            }
             "level" => {
                 self.level = event["level"].clone();
                 self.gate = event["gate"].clone();
@@ -447,6 +503,15 @@ impl Service {
             )
         } else if action == "cancel" {
             Some(Ok("Cancelled".into()))
+        } else if action == "dictation_start" {
+            Some(
+                self.start_dictation()
+                    .await
+                    .map(|_| "Dictation starting · speak into the focused text field".into()),
+            )
+        } else if action == "dictation_stop" {
+            self.stop_dictation(false).await;
+            Some(Ok("Dictation stopped".into()))
         } else {
             None
         };
@@ -609,6 +674,15 @@ impl Service {
                     }
                 }
             }
+            "dictation" => match payload["action"].as_str().unwrap_or("") {
+                "start" => self.start_dictation().await?,
+                "stop" => self.stop_dictation(false).await,
+                "cancel" => self.stop_dictation(true).await,
+                "toggle" if self.dictation.active => self.stop_dictation(false).await,
+                "toggle" => self.start_dictation().await?,
+                "copied" => self.dictation.held.clear(),
+                _ => return err("Dictation action must be start, stop, cancel or toggle"),
+            },
             "mic_test" => {
                 if payload["enabled"] == true {
                     self.start_worker("test").await?;
@@ -644,6 +718,8 @@ impl Service {
                             "storage",
                             "max_mb",
                             "buffer_dir",
+                            "audio_tracks",
+                            "separate_apps",
                         ]
                         .iter()
                         .any(|key| c["replay"][key] != self.config["replay"][key]))
@@ -677,6 +753,170 @@ impl Service {
         }
         self.publish();
         Ok(json!({"ok":true,"status":self.status()}))
+    }
+    /// Starts dictation in the running hands-free worker, or a dictation-only
+    /// worker in push-to-talk mode. Text goes to the window focused now.
+    pub async fn start_dictation(&mut self) -> Result<()> {
+        if self.muted || self.config["privacy"]["onboarded"] != true {
+            return err("Microphone is muted. Complete consent and unmute in Settings.");
+        }
+        if self.dictation.active {
+            return Ok(());
+        }
+        if self.config["recognition"]["accurate"] != true {
+            return err("Dictation needs the speech model. Turn on Accurate recognition in Voice settings.");
+        }
+        let (typer, capabilities) = dictation::Typer::start().await?;
+        if capabilities["input_method"] != true && capabilities["virtual_keyboard"] != true {
+            typer.close().await;
+            return err("This desktop offers no way to type into other apps (no Wayland input method or virtual keyboard)");
+        }
+        self.dictation = dictation::Session {
+            active: true,
+            id: self.dictation.id + 1,
+            typer: Some(Arc::new(Mutex::new(typer))),
+            window: dictation::focused().await.map(|(address, _)| address),
+            capabilities,
+            message: "Starting dictation…".into(),
+            language: match self.config["dictation"]["language"].as_str() {
+                Some("auto") | None if self.config["recognition"]["language"] == "ar_en" => "ar",
+                Some("ar") => "ar",
+                _ => "en",
+            }
+            .into(),
+            indicator: dictation::indicator(),
+            ..Default::default()
+        };
+        let steered = match &mut self.worker {
+            Some(Worker {
+                mode,
+                input: Some(input),
+                ..
+            }) if mode == "wake_word" => matches!(
+                timeout(Duration::from_secs(2), input.write_all(b"dictate\n")).await,
+                Ok(Ok(()))
+            ),
+            _ => false,
+        };
+        if !steered {
+            if let Err(e) = self.start_worker("dictation").await {
+                self.end_dictation(&e.to_string()).await;
+                return Err(e);
+            }
+        }
+        self.publish();
+        Ok(())
+    }
+    /// Ends dictation. Without `cancel`, speech already captured is still typed.
+    pub async fn stop_dictation(&mut self, cancel: bool) {
+        if !self.dictation.active {
+            return;
+        }
+        let line: &[u8] = if cancel { b"cancel\n" } else { b"dictate_stop\n" };
+        let sent = match &mut self.worker {
+            Some(Worker {
+                input: Some(input), ..
+            }) => matches!(
+                timeout(Duration::from_secs(2), input.write_all(line)).await,
+                Ok(Ok(()))
+            ),
+            _ => false,
+        };
+        if !sent {
+            self.end_dictation("Dictation stopped").await;
+        }
+        self.publish();
+    }
+    async fn end_dictation(&mut self, message: &str) {
+        if let Some(typer) = self.dictation.typer.take() {
+            // Queued insertions finish first; they hold the lock.
+            tokio::spawn(async move {
+                let typer = typer.lock().await;
+                drop(typer);
+            });
+        }
+        if self.dictation.active || !message.is_empty() {
+            self.dictation.message = message.to_owned();
+            self.message = message.to_owned();
+        }
+        self.dictation.active = false;
+        self.dictation.window = None;
+        // The bar also closes itself when it sees dictation end.
+        if let Some(mut bar) = self.dictation.indicator.take() {
+            tokio::spawn(async move {
+                if timeout(Duration::from_secs(2), bar.wait()).await.is_err() {
+                    let _ = bar.kill().await;
+                }
+            });
+        }
+    }
+    async fn dictated(&mut self, text: String) {
+        if !self.dictation.active {
+            return;
+        }
+        let stops = policy::strings(&self.config["dictation"]["stop_phrases"]);
+        let (text, stop) = dictation::split_stop(text.trim(), &stops);
+        if !text.trim().is_empty() {
+            if let Some(typer) = self.dictation.typer.clone() {
+                // Separate segments with a space; never press Enter or Tab.
+                let text = if self.dictation.typed_any {
+                    format!(" {}", text.trim())
+                } else {
+                    text.trim().to_owned()
+                };
+                self.dictation.typed_any = true;
+                let session = self.dictation.id;
+                let window = self.dictation.window.clone();
+                let keyboard = self.config["dictation"]["keyboard_fallback"] == true;
+                let tx = self.events.clone();
+                tokio::spawn(async move {
+                    let mut typer = typer.lock().await;
+                    let result = async {
+                        let focused = dictation::focused().await;
+                        if window.is_some() && focused.as_ref().map(|f| &f.0) != window.as_ref() {
+                            return Ok(json!({"ok":false,"reason":"focus","message":"Focus moved to another window, so dictation stopped without typing there."}));
+                        }
+                        let secret = focused.is_some_and(|f| f.1);
+                        typer.insert(&text, keyboard && !secret).await
+                    }
+                    .await
+                    .map_err(|e| e.to_string());
+                    let _ = tx.send(Message::Typed { session, text, result }).await;
+                });
+            }
+        }
+        if stop {
+            self.stop_dictation(false).await;
+        }
+    }
+    /// Outcome of one insertion. Refusals keep the text for the user to copy.
+    pub async fn typed(&mut self, session: u64, text: String, result: std::result::Result<Value, String>) {
+        if session != self.dictation.id {
+            return;
+        }
+        match result {
+            Ok(r) if r["ok"] == true => {
+                self.dictation.inserted += text.chars().count();
+                self.dictation.method = r["method"].as_str().unwrap_or("").to_owned();
+            }
+            Ok(r) => {
+                self.dictation.held.push_str(&text);
+                let message = r["message"].as_str().unwrap_or("Dictation could not type the text").to_owned();
+                if ["focus", "sensitive"].contains(&r["reason"].as_str().unwrap_or("")) {
+                    self.stop_dictation(true).await;
+                    self.end_dictation(&message).await;
+                } else {
+                    self.dictation.message = message.clone();
+                    self.message = message;
+                }
+            }
+            Err(e) => {
+                self.dictation.held.push_str(&text);
+                self.dictation.message = format!("Dictation could not type the text: {e}");
+                self.message = self.dictation.message.clone();
+            }
+        }
+        self.publish();
     }
     pub fn capture_changed(&mut self) {
         let recording = self.recording_updates.borrow().clone();

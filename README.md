@@ -10,6 +10,23 @@ window can close while Jarvis keeps listening in the background.
 
 Jarvis is early software. Recognition depends on your voice, microphone and room.
 
+## What's new (unreleased)
+
+- **Arabic, with Najdi and Saudi speech first**: choose Voice → Language →
+  Arabic and English for Arabic commands (افتح فايرفوكس، علّ الصوت، كلّبها) and
+  Arabic dictation, using a local 118 MB model. Chosen by testing ten models
+  on Saudi speech ([details](docs/arabic.md)).
+- **Dictation**: “Jarvis, listen to me” types what you say into the focused
+  text field, in Arabic or English, without pressing Enter and never into a
+  password field ([details](docs/dictation.md)).
+- **Clips editor**: trim, cut, split and join clips, pick audio tracks, and
+  export a copy; the original never changes ([details](docs/clips.md)).
+- **Separate sound tracks for replays**: keep the game, Firefox (or any app) and
+  your microphone apart, then mute one when exporting a clip.
+- **Simpler video formats**: Recommended / Compatible, tested on your
+  display's own GPU. CPU H.264 is kept only for setups that already use it.
+- **Add any app**: AppImages and portable programs can be added in Apps.
+
 ## What's new in 0.3.1
 
 - **Lighter by default**: commands now use Whisper tiny.en, which halves the
@@ -141,7 +158,9 @@ fallback recognizes less accurately.
 | Volume | “turn the volume down”, “mute volume”, “turn the sound back on” |
 | Recording | “start recording”, “stop recording”, “open the video recorder” |
 | Instant replay | “clip that”, “clip the last 25 seconds”, “clip the last 2 minutes”, “save replay”, “start replay”, “stop replay” |
+| Dictation | “listen to me”, “start dictation”, “stop dictation” |
 | Voice control | “cancel”, “stop listening” |
+| Arabic (Arabic and English setting) | “افتح فايرفوكس”, “سكّر ديسكورد”, “علّ الصوت”, “روح لمساحة العمل الثالثة”, “احفظ آخر ثلاثين ثانية”, “اسمعني” |
 
 **Applications → Close words** changes the word that closes an app (for
 example “quit Firefox”, or several words such as “close, quit”).

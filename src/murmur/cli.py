@@ -117,6 +117,8 @@ def main():
     sub.add_parser("config")
     sub.add_parser("listen", help="Listen for one bounded command")
     sub.add_parser("cancel")
+    dictate = sub.add_parser("dictate", help="Type speech into the focused text field (toggles by default)")
+    dictate.add_argument("action", nargs="?", default="toggle", choices=["start", "stop", "cancel", "toggle"])
     sub.add_parser("mute")
     sub.add_parser("resume")
     from .host import is_windows
@@ -138,6 +140,8 @@ def main():
     install = sub.add_parser("install-model", help="Download and verify the voice models (one time, about 790 MB)")
     install.add_argument("--archive", help="Use an already downloaded vosk-model-small-en-us-0.15.zip")
     install.add_argument("--basic", action="store_true", help="Only the small Vosk model (40 MB)")
+    install.add_argument("--arabic", action="store_true",
+                         help="Install the optional Arabic model (with --archive moonshine-streaming-tiny-ar.tar.bz2)")
     sub.add_parser("waybar", help="Event-driven JSON lines for a Waybar custom module")
     args = parser.parse_args()
     try:
@@ -156,6 +160,12 @@ def main():
                 os.execv(str(native), [str(native)])
             from .daemon import main as daemon_main
             return daemon_main()
+        if args.command == "install-model" and args.arabic:
+            from pathlib import Path
+            from .models import install_arabic
+            print(f"Arabic model: ready at {install_arabic(Path(args.archive).expanduser() if args.archive else None)}")
+            print("Choose Arabic and English in Voice settings, then restart Jarvis.")
+            return 0
         if args.command == "install-model":
             from pathlib import Path
             from .models import (ACCURATE_MODELS, DEFAULT_ACCURATE_MODEL, MODEL_URL, install,
@@ -202,6 +212,8 @@ def main():
         op = {"resume": "mute", "mute": "mute", "record": "record_" + getattr(args, "action", ""),
               "replay": "replay_" + getattr(args, "action", "")}.get(args.command, args.command)
         kwargs = {"muted": args.command == "mute"} if args.command in ("resume", "mute") else {}
+        if args.command == "dictate":
+            op, kwargs = "dictation", {"action": args.action}
         if args.command == "execute":
             kwargs["phrase"] = args.phrase
         result = request(op, **kwargs)

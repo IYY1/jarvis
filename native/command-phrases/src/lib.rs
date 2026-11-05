@@ -1,11 +1,13 @@
 //! Exact, configured shortcuts shared by the controller and recognizer.
+pub mod arabic;
 use serde_json::{json, Map, Value};
 use std::collections::BTreeSet;
 use unicode_casefold::UnicodeCaseFold;
 use unicode_normalization::UnicodeNormalization;
 
 pub fn normalize(s: &str) -> String {
-    s.nfkc()
+    arabic::fold_chars(&s.nfkc().collect::<String>())
+        .chars()
         .case_fold()
         .map(|c| {
             if c.is_alphanumeric() || c == '_' || c.is_whitespace() {

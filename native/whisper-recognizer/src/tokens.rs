@@ -8,7 +8,6 @@ use std::{
 use tract_onnx::prelude::*;
 use tract_onnx::tract_core::internal::{ensure, format_err};
 
-const TOKEN_COUNT: usize = 50256;
 const MAX_BYTES: u64 = 2 * 1024 * 1024;
 const MISSING: [u32; 2] = [u32::MAX; 2];
 
@@ -17,14 +16,15 @@ pub struct TokenTable {
     bytes: Box<[u8]>,
 }
 impl TokenTable {
-    pub fn load(path: &Path) -> TractResult<Self> {
+    /// `count` text tokens: 50,256 (English-only) or 50,257 (multilingual).
+    pub fn load(path: &Path, count: usize) -> TractResult<Self> {
         let file = File::open(path)?;
         ensure!(
             file.metadata()?.len() <= MAX_BYTES,
             "Token table exceeds 2 MiB"
         );
         // Bound reads too, including a file that grows after the metadata check.
-        Self::read(BufReader::new(file.take(MAX_BYTES + 1)), TOKEN_COUNT)
+        Self::read(BufReader::new(file.take(MAX_BYTES + 1)), count)
     }
     fn read(mut reader: impl BufRead, count: usize) -> TractResult<Self> {
         let mut ranges = vec![MISSING; count];
@@ -47,7 +47,11 @@ impl TokenTable {
             let id: usize = id.parse()?;
             ensure!(id < count && ranges[id] == MISSING, "Invalid token ID");
             let start = bytes.len() as u32;
-            STANDARD.decode_vec(encoded, &mut bytes)?;
+            // The multilingual sherpa exports write token 50256 as a bare
+            // "=", which their own reader decodes as an empty piece.
+            if encoded != "=" {
+                STANDARD.decode_vec(encoded, &mut bytes)?;
+            }
             ranges[id] = [start, bytes.len() as u32];
             seen += 1;
         }
@@ -73,6 +77,7 @@ mod tests {
         assert_eq!(table.get(1), Some(&b""[..]));
         assert_eq!(table.get(2), Some(&[255, 0, 195][..]));
         assert!(table.get(3).is_none());
+        assert_eq!(TokenTable::read(&b"= 0\n"[..], 1)?.get(0), Some(&b""[..]));
         // Both backing allocations have no spare retained capacity.
         assert_eq!(
             table.ranges.len() * std::mem::size_of::<[u32; 2]>() + table.bytes.len(),

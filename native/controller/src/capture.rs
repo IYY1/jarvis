@@ -114,17 +114,107 @@ pub fn replay_command(cfg: &Value, ipc: &Path, folder: &Path, color: &str) -> Ve
         "no".into(),
     ];
     argv.extend(gpu_args(color, r));
-    let mut sources = vec![];
-    if replay["game_audio"] == true {
-        sources.push("default_output");
-    }
-    if replay["microphone"] == true {
-        sources.push("default_input");
-    }
-    if !sources.is_empty() {
-        argv.extend(["-a".into(), sources.join("|")]);
+    for track in audio_tracks(replay) {
+        argv.extend(["-a".into(), track]);
     }
     argv
+}
+
+/// An application name gpu-screen-recorder can match (`app:NAME`). The
+/// recorder's source syntax uses `|` and `:`, so neither may appear.
+pub fn valid_app_name(name: &str) -> bool {
+    !name.trim().is_empty()
+        && name.chars().count() <= 64
+        && name
+            .chars()
+            .all(|c| c.is_alphanumeric() || " ._-".contains(c))
+}
+
+/// Human names for `audio_tracks`, in the same order.
+pub fn track_names(replay: &Value) -> Vec<String> {
+    let game = replay["game_audio"] == true;
+    let mic = replay["microphone"] == true;
+    if replay["audio_tracks"] != "separate" {
+        return match (game, mic) {
+            (true, true) => vec!["Game sound and microphone".into()],
+            (true, false) => vec!["Game sound".into()],
+            (false, true) => vec!["Microphone".into()],
+            _ => vec![],
+        };
+    }
+    let apps: Vec<String> = crate::policy::strings(&replay["separate_apps"])
+        .into_iter()
+        .filter(|a| valid_app_name(a))
+        .collect();
+    let mut names = vec![];
+    if game {
+        names.push(if apps.is_empty() {
+            "Game and desktop sound".into()
+        } else {
+            "Game and other apps".into()
+        });
+    }
+    names.extend(apps);
+    if mic {
+        names.push("Microphone".into());
+    }
+    names
+}
+
+/// MP4 replays lose gpu-screen-recorder's track titles, so the names go in a
+/// small hidden file beside the clip (`.NAME.tracks.json`). Best effort: a
+/// missing file only means the editor shows "Audio 1", "Audio 2"….
+fn write_track_names(clip: &Path, names: &[String]) {
+    if names.len() < 2 {
+        return;
+    }
+    if let (Some(dir), Some(name)) = (clip.parent(), clip.file_name()) {
+        let sidecar = dir.join(format!(".{}.tracks.json", name.to_string_lossy()));
+        let _ = std::fs::write(sidecar, json!({"tracks":names}).to_string());
+    }
+}
+
+/// Replay audio sources, one `-a` value per track.
+///
+/// Mixed (the default): game sound and microphone share one track. Separate:
+/// "everything except the chosen apps" is one track, each chosen app has its
+/// own, and the microphone has its own. The game track deliberately uses
+/// `app-inverse:` rather than `default_output`, which would also contain the
+/// chosen apps and make muting them in a clip impossible.
+pub fn audio_tracks(replay: &Value) -> Vec<String> {
+    let game = replay["game_audio"] == true;
+    let mic = replay["microphone"] == true;
+    if replay["audio_tracks"] != "separate" {
+        let mixed: Vec<&str> = [(game, "default_output"), (mic, "default_input")]
+            .into_iter()
+            .filter_map(|(on, source)| on.then_some(source))
+            .collect();
+        return if mixed.is_empty() {
+            vec![]
+        } else {
+            vec![mixed.join("|")]
+        };
+    }
+    let apps: Vec<String> = crate::policy::strings(&replay["separate_apps"])
+        .into_iter()
+        .filter(|a| valid_app_name(a))
+        .collect();
+    let mut tracks = vec![];
+    if game {
+        tracks.push(if apps.is_empty() {
+            "default_output".into()
+        } else {
+            apps.iter()
+                .map(|a| format!("app-inverse:{a}"))
+                .collect::<Vec<_>>()
+                .join("|")
+        });
+    }
+    tracks.extend(apps.iter().map(|a| format!("app:{a}")));
+    if mic {
+        tracks.push("default_input".into());
+    }
+    tracks
 }
 pub fn orphaned() -> Vec<u32> {
     let mut result = vec![];
@@ -211,6 +301,8 @@ pub struct Capture {
     replay_session: Option<PathBuf>,
     replay_seconds: u64,
     replay_cleanup: Arc<RwLock<()>>,
+    /// Names of the replay's audio tracks, in file order, for the clip editor.
+    track_names: Vec<String>,
 }
 impl Capture {
     pub fn new(replay: bool, ipc: PathBuf) -> Self {
@@ -230,6 +322,7 @@ impl Capture {
             replay_output: None,
             replay_session: None,
             replay_seconds: 120,
+            track_names: vec![],
             replay_cleanup: Arc::new(RwLock::new(())),
         }
     }
@@ -564,6 +657,7 @@ impl Capture {
         );
         self.replay_output = self.replay.then(|| folder.clone());
         self.replay_seconds = cfg["replay"]["seconds"].as_u64().unwrap_or(120);
+        self.track_names = track_names(&cfg["replay"]);
         self.replay_session = budget
             .as_ref()
             .and_then(|b| b.disk.as_ref())
@@ -752,6 +846,7 @@ impl Capture {
             }
             path = Some(output.clone());
             verify(&output, &self.color, self.codec.as_deref()).await?;
+            write_track_names(&output, &self.track_names);
             Ok::<_, crate::Error>(output)
         })
         .await;
@@ -840,4 +935,25 @@ fn timestamp() -> String {
         tm.tm_min,
         tm.tm_sec
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+    #[test]
+    fn separate_tracks_never_overlap_and_mixed_is_unchanged() {
+        let mixed = json!({"game_audio":true,"microphone":true,"audio_tracks":"mixed","separate_apps":["Firefox"]});
+        assert_eq!(audio_tracks(&mixed), ["default_output|default_input"]);
+        let split = json!({"game_audio":true,"microphone":true,"audio_tracks":"separate","separate_apps":["Firefox","Spotify"]});
+        assert_eq!(
+            audio_tracks(&split),
+            ["app-inverse:Firefox|app-inverse:Spotify", "app:Firefox", "app:Spotify", "default_input"]
+        );
+        let quiet = json!({"game_audio":false,"microphone":false,"audio_tracks":"separate","separate_apps":[]});
+        assert!(audio_tracks(&quiet).is_empty());
+        assert!(!valid_app_name("a|b") && !valid_app_name("app:x") && valid_app_name("Firefox Nightly"));
+        assert_eq!(track_names(&split), ["Game and other apps", "Firefox", "Spotify", "Microphone"]);
+        assert_eq!(track_names(&mixed), ["Game sound and microphone"]);
+    }
 }

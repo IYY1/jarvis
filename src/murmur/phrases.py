@@ -138,3 +138,143 @@ def clip_canonical(p):
     """Maps any accepted clip wording ("clip last 25 seconds") to its grammar form."""
     seconds = clip_seconds(p)
     return None if seconds is None else clip_phrase(seconds)
+
+
+# Arabic command wording, mirrored by native/command-phrases/src/arabic.rs.
+# Recognizing Arabic speech is the transcriber's job; this only decides
+# whether a transcript is a supported Arabic command, mapped onto English.
+_ARABIC = None
+def _table():
+    global _ARABIC
+    if _ARABIC is None:
+        import json
+        from pathlib import Path
+        _ARABIC = json.loads((Path(__file__).with_name("arabic_commands.json")).read_text(encoding="utf-8"))
+    return _ARABIC
+
+
+def _longest(key):
+    return sorted(_table()[key], key=len, reverse=True)
+
+
+def has_arabic(text):
+    return any("؀" <= c <= "ۿ" or "ݐ" <= c <= "ݿ" for c in text)
+
+
+def fold_arabic(text):
+    """The spelling the table uses (the ordinary command normalization)."""
+    from .commands import normalize
+    return normalize(text)
+
+
+def arabic_number(text):
+    """1–59 in Arabic words or digits: "خمسه وعشرين", "خمسطعش", "30"."""
+    numbers = _table()["numbers"]
+    if text and len(text) <= 4 and text.isascii() and text.isdigit():
+        return int(text)
+    if text in numbers:
+        return numbers[text]
+    words = text.split(" ")
+    if len(words) == 2 and words[1].startswith("و"):
+        unit, tens = words[0], words[1][1:]
+    elif len(words) == 3 and words[1] == "و":
+        unit, tens = words[0], words[2]
+    else:
+        return None
+    unit, tens = numbers.get(unit), numbers.get(tens)
+    if unit is None or tens is None or not 1 <= unit < 10 or tens < 20 or tens % 10:
+        return None
+    return tens + unit
+
+
+def _strip_edges(text):
+    while True:
+        before = text
+        text = text.removeprefix("يا ")
+        for wake in [*_longest("wake_words"), "jarvis", "hey jarvis"]:
+            if text == wake:
+                return ""
+            text = text.removeprefix(wake + " ")
+        for p in _longest("polite_prefixes"):
+            if text.startswith(p + " "):
+                text = text[len(p) + 1:]
+                break
+        for s in _longest("polite_suffixes"):
+            if text.endswith(" " + s):
+                text = text[:-len(s) - 1]
+                break
+        if text == before:
+            return text
+
+
+def _arabic_clip(text):
+    rest = next((text[len(v) + 1:] for v in _longest("clip_verbs") if text.startswith(v + " ")), None)
+    if rest is None:
+        return None
+    rest = rest.removeprefix("لي ")
+    for last in _longest("clip_last"):
+        rest = rest.removeprefix(last + " ").removesuffix(" " + last)
+    for gone in (" اللي فاتت", " اللي فات", " اللي راحت"):
+        rest = rest.removesuffix(gone)
+    if rest.startswith("ال") and arabic_number(rest[2:]) is not None:
+        rest = rest[2:]
+    seconds = _table()["lengths"].get(rest)
+    if seconds is None and " " in rest:
+        amount, unit = rest.rsplit(" ", 1)
+        scale = 1 if unit in _table()["second_words"] else 60 if unit in _table()["minute_words"] else None
+        number = arabic_number(amount.removeprefix("ال")) if scale else None
+        seconds = None if number is None else number * scale
+    if seconds is None or not 1 <= seconds <= MAX_CLIP_SECONDS:
+        return None
+    return clip_phrase(seconds) or f"clip the last {seconds} seconds"
+
+
+def _arabic_workspace(text):
+    for kind, english in (("move", "move this window to workspace"), ("go", "go to workspace")):
+        for form in sorted(_table()["workspace"][kind], key=len, reverse=True):
+            if text.startswith(form + " "):
+                rest = text[len(form) + 1:].removeprefix("رقم ")
+                n = arabic_number(rest)
+                if n is None:
+                    n = _table()["ordinals"].get(rest)
+                if n is None:
+                    return None
+                return f"{english} {number_words(n) if 1 <= n <= 20 else n}"
+    return None
+
+
+def _app_name(name):
+    return _table()["app_names"].get(name, name)
+
+
+def _arabic_application(text, close_word):
+    for verb in _longest("close_verbs"):
+        if text.startswith(verb + " "):
+            return f"{close_word} {_app_name(text[len(verb) + 1:])}"
+    for verb in _longest("switch_verbs"):
+        if not text.startswith(verb + " "):
+            continue
+        rest = text[len(verb) + 1:]
+        name = next((rest[len(p) + 1:] for p in _longest("switch_prepositions") if rest.startswith(p + " ")), None)
+        if name is None:
+            name = "ال" + rest[2:] if rest.startswith("لل") else rest[1:] if rest.startswith("ل") else rest
+        if name:
+            return f"switch to {_app_name(name)}"
+    for verb in _longest("open_verbs"):
+        if text.startswith(verb + " "):
+            return f"open {_app_name(text[len(verb) + 1:])}"
+    return None
+
+
+def translate_arabic(text, close_word="close"):
+    """The English command an Arabic transcript asks for, or None.
+
+    Text without Arabic letters is left to the English parser."""
+    if not isinstance(text, str) or not has_arabic(text) or len(text) > 256:
+        return None
+    p = _strip_edges(fold_arabic(text))
+    if not p:
+        return None
+    if p in _table()["fixed"]:
+        return _table()["fixed"][p]
+    return _arabic_clip(p) or _arabic_workspace(p) or _arabic_application(p, close_word)

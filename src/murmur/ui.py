@@ -29,7 +29,7 @@ else:
 
 from . import client
 from .commands import normalize
-from .encoding import CODECS, CODEC_LABELS, QUALITY_PRESETS, storage_estimate
+from .encoding import QUALITY_PRESETS, storage_estimate
 
 
 def _merge(base: dict, patch: dict) -> dict:
@@ -76,6 +76,20 @@ def _button(text: str, callback: Callable, css: str = "") -> Any:
     return widget
 
 
+def _audio_summary(config: dict, recording: bool, replay: bool) -> str:
+    """Which audio the running capture keeps, so microphone capture is never a surprise."""
+    parts = []
+    if replay:
+        r = config.get("replay", {})
+        kept = [name for name, on in (("game and desktop sound", r.get("game_audio")), ("microphone", r.get("microphone"))) if on]
+        parts.append("Replay keeps " + (" and ".join(kept) if kept else "no sound"))
+    if recording:
+        c = config.get("recording", {})
+        kept = [name for name, on in (("system sound", c.get("system_audio")), ("microphone", c.get("microphone"))) if on]
+        parts.append("Recording keeps " + (" and ".join(kept) if kept else "no sound"))
+    return " · ".join(parts)
+
+
 PAGES = {"dashboard", "commands", "applications", "recording", "clips", "voice", "privacy"}
 
 
@@ -99,8 +113,6 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self._recording_devices: list[dict] = []
         self._shown_recording_devices: list[dict] = []
         self._apps: list[dict] = []
-        self.player = None          # Gtk.Video, created on the first Play so GStreamer loads only then
-        self._playing = ""
         self._last_clip = None
         self._grammar_signature: tuple | None = None
         self._test_active = False
@@ -154,11 +166,11 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         shell.append(self.stack)
 
         self._dashboard()
+        self._voice_page()
         self._commands_page()
         self._applications_page()
         self._recording_page()
         self._clips_page()
-        self._voice_page()
         self._privacy_page()
         self.stack.set_visible_child_name(page if page in PAGES else "dashboard")
 
@@ -180,8 +192,8 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         body.append(heading)
         scroller.set_child(body)
         self.stack.add_titled(scroller, name, {
-            "dashboard": "Overview", "commands": "Commands", "applications": "Applications", "clips": "Clips",
-            "recording": "Recorder", "voice": "Voice & microphone", "privacy": "Privacy & startup",
+            "dashboard": "Overview", "commands": "Commands", "applications": "Apps", "clips": "Clips",
+            "recording": "Capture", "voice": "Voice", "privacy": "Privacy",
         }[name])
         return body
 
@@ -238,8 +250,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         return spin
 
     def _dashboard(self) -> None:
-        body = self._page("dashboard", "A quieter way to control your desktop.",
-                          "Stay in your flow. Open an app, switch workspaces, or record a moment.")
+        body = self._page("dashboard", "Overview", "What Jarvis is doing now, and the controls you reach for most.")
         self.connection_card = self._card("The background service is offline",
                                          "Start the local service to configure Jarvis. Microphone access waits for your privacy choice.")
         actions = _box(8, True)
@@ -249,7 +260,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.connection_card.append(actions)
         body.append(self.connection_card)
 
-        self.onboard_banner = self._card("Make the microphone yours",
+        self.onboard_banner = self._card("Allow the microphone first",
             "Choose when Jarvis may listen. Complete the privacy setup before the first microphone session.")
         self.onboard_banner.append(_button("Review privacy & activation", lambda: self.stack.set_visible_child_name("privacy"), "primary"))
         body.append(self.onboard_banner)
@@ -257,42 +268,86 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
 
         status_row = _box(16, True)
         status_row.set_homogeneous(True)
-        voice = self._card("VOICE CONTROL")
+        voice = self._card("VOICE")
         voice.set_hexpand(True)
         self.voice_badge = _label("Service offline", "state-title")
         voice.append(self.voice_badge)
         self.voice_message = _label("Waiting for the service.", "caption")
+        self.voice_message.set_selectable(True)
         voice.append(self.voice_message)
+        voice_actions = _box(8, True)
         self.listen_button = _button("Listen once", self._listen, "primary")
         self.listen_button.set_tooltip_text("Open one bounded command session (Ctrl+Space)")
-        voice.append(self.listen_button)
+        voice_actions.append(self.listen_button)
+        self.overview_dictate = _button("Start dictation", self._toggle_dictation)
+        self.overview_dictate.set_tooltip_text("Type what you say into the focused text field (Ctrl+D)")
+        voice_actions.append(self.overview_dictate)
+        voice.append(voice_actions)
+        self.overview_dictation = _label("Dictation is off.", "caption")
+        self.overview_dictation.set_selectable(True)
+        voice.append(self.overview_dictation)
+        self.overview_copy = _button("Copy text that was not typed", self._copy_held)
+        self.overview_copy.set_visible(False)
+        voice.append(self.overview_copy)
         status_row.append(voice)
-        recording = self._card("SCREEN RECORDING")
-        recording.set_hexpand(True)
+
+        capture = self._card("CAPTURE")
+        capture.set_hexpand(True)
         self.record_badge = _label("Not recording", "state-title")
-        self.record_message = _label("Choose a capture source before your first recording.", "caption")
+        self.record_message = _label("Choose a display before your first recording.", "caption")
         self.record_message.set_selectable(True)
-        recording.append(self.record_badge)
-        recording.append(self.record_message)
-        recording.append(_button("Open recorder", lambda: self.stack.set_visible_child_name("recording")))
-        status_row.append(recording)
+        capture.append(self.record_badge)
+        capture.append(self.record_message)
+        self.overview_replay = _label("Replay off", "row-title")
+        capture.append(self.overview_replay)
+        self.overview_audio = _label("", "caption")
+        capture.append(self.overview_audio)
+        capture_actions = _box(8, True)
+        self.overview_save = _button("Save replay", lambda: self._action("replay_save"), "primary")
+        self.overview_save.set_tooltip_text("Save the replay buffer as a clip (“clip that”)")
+        capture_actions.append(self.overview_save)
+        self.overview_record = _button("Start recording", self._overview_record)
+        capture_actions.append(self.overview_record)
+        capture_actions.append(_button("Clips", lambda: self.stack.set_visible_child_name("clips")))
+        capture.append(capture_actions)
+        status_row.append(capture)
         body.append(status_row)
 
-        ideas = self._card("Small phrases. Useful actions.", "After activation, try one of the supported commands.")
-        for phrase, detail in [("“Open Firefox”", "Find and launch an installed app"),
-                               ("“Close Firefox”", "Close the app's windows normally"),
-                               ("“Go to workspace three”", "Move around Hyprland"),
-                               ("“Start recording”", "Capture without leaving your game")]:
-            line = _box(4)
+        recent = self._card("RECENT")
+        self.recent_label = _label("Nothing yet. Actions and errors from voice, shortcuts and this window appear here.", "caption")
+        self.recent_label.set_selectable(True)
+        recent.append(self.recent_label)
+        body.append(recent)
+
+        ideas = self._card("Try saying", "After “Jarvis” (or your wake name).")
+        grid = Gtk.Grid(column_spacing=24, row_spacing=8)
+        for i, (phrase, detail) in enumerate([("“Open Firefox”", "Open or focus an app"),
+                                              ("“Clip the last thirty seconds”", "Save part of the replay"),
+                                              ("“Listen to me”", "Dictate into the focused field"),
+                                              ("“Go to workspace three”", "Move around Hyprland")]):
+            line = _box(2)
             line.append(_label(phrase, "example"))
             line.append(_label(detail, "caption"))
-            ideas.append(line)
-        ideas.append(_button("Explore all commands →", lambda: self.stack.set_visible_child_name("commands")))
+            grid.attach(line, i % 2, i // 2, 1, 1)
+        ideas.append(grid)
+        ideas.append(_button("All commands →", lambda: self.stack.set_visible_child_name("commands")))
         body.append(ideas)
-        body.append(_label("Closing this window releases the settings UI. Voice and recording status come from the background service.", "caption"))
+
+    def _overview_record(self) -> None:
+        state = self.status.get("recording", {}).get("state", "idle")
+        self._action("record_stop" if state == "recording" else "record_start")
+
+    def _dictation_buttons(self) -> list:
+        return [self.dictation_button, self.overview_dictate]
+
+    def _dictation_labels(self) -> list:
+        return [self.dictation_state, self.overview_dictation]
+
+    def _held_buttons(self) -> list:
+        return [self.dictation_copy, self.overview_copy]
 
     def _commands_page(self) -> None:
-        body = self._page("commands", "Say it your way.", "Find supported phrases and add shortcuts to the words you use most.")
+        body = self._page("commands", "Commands", "Every supported phrase, in English and Arabic, and shortcuts to the words you use most.")
         self.command_search = Gtk.SearchEntry()
         self.command_search.set_placeholder_text("Search actions or example phrases")
         self.command_search.connect("search-changed", self._filter_commands)
@@ -322,7 +377,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         body.append(custom)
 
     def _applications_page(self) -> None:
-        body = self._page("applications", "Give your apps familiar names.", "Open, focus or close your installed desktop applications. Aliases work with all three commands.")
+        body = self._page("applications", "Apps", "Open, focus or close apps by voice. Give them names you'd say, or add apps Jarvis didn't find.")
         self.app_search = Gtk.SearchEntry()
         self.app_search.set_placeholder_text("Search installed applications")
         self.app_search.connect("search-changed", lambda _entry: self._render_apps())
@@ -332,6 +387,24 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         body.append(self.app_grammar_notice)
         self.app_list = _box(12)
         body.append(self.app_list)
+        adding = self._card("Add an app", "Jarvis finds apps that have a launcher entry: desktop entries, Flatpak "
+                            "and Snap apps on Linux; Start menu and Store apps on Windows. Programs without one, "
+                            "such as AppImages, portable programs or scripts, can be added here. Jarvis creates a "
+                            "normal launcher entry, so the app also appears in your app menu.")
+        self.add_app_name = self._entry("Name to say, for example: Obsidian")
+        self._row(adding, "Name", self.add_app_name)
+        self.add_app_path = ""
+        pick = _box(8, True)
+        pick.append(_button("Choose a program or AppImage…", self._choose_app_file))
+        self.add_app_file = _label("No file chosen", "caption")
+        pick.append(self.add_app_file)
+        adding.append(pick)
+        adding.append(_button("Add app", self._add_app, "primary"))
+        self.added_apps = _box(8)
+        adding.append(self.added_apps)
+        self.appimage_hints = _box(8)
+        adding.append(self.appimage_hints)
+        body.append(adding)
         aliases = self._card("Application aliases", "One alias per line: a phrase and its installed desktop application. Removing an alias keeps the app installed.")
         self.alias_list = _box(8)
         aliases.append(self.alias_list)
@@ -359,7 +432,9 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         body.append(closing)
 
     def _recording_page(self) -> None:
-        body = self._page("recording", "Keep the moment.", "Set up once, then start and stop recording with your voice.")
+        body = self._page("recording", "Capture", "Recording, instant replay and the sound they keep. Set up once, then use your voice.")
+        advanced_card, advanced = self._advanced("Advanced capture settings",
+            "Replay storage, audio routing for recordings, the exact video format and legacy encoder tuning.")
         live = self._card("Capture status")
         self.recorder_status = _label("Not recording", "state-title")
         self.recorder_file = _label("Your saved file will appear here.", "caption")
@@ -393,18 +468,35 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
                   "Up to 30 minutes (1800). Say “clip that” for all of it, or “clip the last 30 seconds” / “clip the last 2 minutes”. "
                   "Long RAM replays hold the whole buffer in memory (often 1–3 GB for 20 minutes of gameplay); choose Disk for long replays.")
         self.replay_storage = Gtk.DropDown.new_from_strings(["RAM", "Disk (continuous writes)"])
-        self._row(replay, "Replay storage", self.replay_storage, "Disk requires the Rust controller and a real disk; tmpfs is refused.")
+        self._row(advanced, "Replay storage", self.replay_storage, "Disk requires the Rust controller and a real disk; tmpfs is refused.")
         self.replay_max_mb = self._spin(64, 16384, 64)
-        self._row(replay, "Disk buffer budget (MiB)", self.replay_max_mb,
+        self._row(advanced, "Disk buffer budget (MiB)", self.replay_max_mb,
                   "Disk only: replay stops when the buffer reaches this size, checked every 250 ms. At least 512 MiB, "
                   "because gpu-screen-recorder writes 256 MiB buffer files. RAM replay is not capped on Linux.")
         self.replay_storage.connect("notify::selected", lambda *_: self._replay_storage_changed())
         self.replay_buffer_dir = self._entry("Default private app-data directory")
-        self._row(replay, "Private disk-buffer directory", self.replay_buffer_dir, "Optional dedicated directory. Unsaved buffers are deleted on stop and stale buffers on next start.")
+        self._row(advanced, "Private disk-buffer directory", self.replay_buffer_dir, "Optional dedicated directory. Unsaved buffers are deleted on stop and stale buffers on next start.")
         self.replay_game = Gtk.Switch()
         self._row(replay, "Game sound", self.replay_game, "Everything you hear, from your default output.")
         self.replay_mic = Gtk.Switch()
-        self._row(replay, "Microphone", self.replay_mic, "Your voice from the default input, mixed into the same track.")
+        self._row(replay, "Microphone", self.replay_mic, "Your voice from the default input.")
+        self.replay_tracks = Gtk.DropDown.new_from_strings(["One mixed track", "Separate tracks"])
+        self._row(replay, "Sound tracks", self.replay_tracks,
+                  "One mixed track plays everywhere. Separate tracks keep the game, each app below and your microphone "
+                  "apart, so you can mute a podcast or your voice in Clips later. Sound that was mixed while "
+                  "recording can't be separated afterwards. Linux only; Windows replays keep one track.")
+        self.replay_apps = self._entry("Firefox")
+        self._row(replay, "Apps on their own tracks", self.replay_apps,
+                  "Up to four, separated by commas, named as gpu-screen-recorder lists them. The game track then "
+                  "holds everything except these apps, so muting one later leaves the game intact.")
+        playing = _box(8, True)
+        playing.append(_button("Show apps playing sound now", self._list_app_audio))
+        self.replay_apps_found = _label("", "caption")
+        self.replay_apps_found.set_selectable(True)
+        playing.append(self.replay_apps_found)
+        replay.append(playing)
+        self._replay_apps_rows = [self.replay_apps.get_parent(), playing]
+        self.replay_tracks.connect("notify::selected", lambda *_: self._replay_tracks_changed())
         self.replay_sound = Gtk.Switch()
         self._row(replay, "Clip sound", self.replay_sound, "A short chirp when a clip is saved; a low tone if saving fails.")
         self.replay_autostart = Gtk.Switch()
@@ -429,7 +521,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.record_mic = Gtk.Switch()
         self._row(capture, "Microphone audio", self.record_mic, "Include your voice in the saved video")
         self.combined_audio = Gtk.Switch()
-        self._row(capture, "Use a preconfigured combined audio source", self.combined_audio, "Enable only after creating a PipeWire source mixing microphone and system audio. Then select that source below.")
+        self._row(advanced, "Use a preconfigured combined audio source", self.combined_audio, "Enable only after creating a PipeWire source mixing microphone and system audio. Then select that source below.")
         self.combined_audio.connect("notify::active", lambda control, _pspec: self._combined_audio_changed())
         self.record_device = Gtk.DropDown.new_from_strings(["Default audio source"])
         self.record_device.set_hexpand(True)
@@ -440,10 +532,23 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         capture.append(self.capture_configured)
         capture.append(_label("Verify a short recording in your desktop session before enabling this. Initial capture permissions may require system UI. This setting cannot bypass a portal or compositor permission prompt.", "caption"))
         body.append(capture)
-        quality = self._card("Picture & storage", "Applies to recordings and replay. Hardware formats require GPU Screen Recorder and a GPU that supports the selected format. No CPU fallback.")
-        self.codec = Gtk.DropDown.new_from_strings(CODEC_LABELS)
-        self._row(quality, "Video format", self.codec,
-                  "AV1 saves the most space at similar quality on supported GPUs. HEVC is a useful middle ground; H.264 is easiest to share and edit. HDR uses AV1 or HEVC 10-bit.")
+        quality = self._card("Picture & storage", "Applies to recordings and replay. Formats are encoded on the GPU "
+                             "of the chosen display; each one is tested there, not assumed. There is no silent CPU fallback.")
+        self.legacy_banner = _box(8)
+        self.legacy_banner.add_css_class("card")
+        self.legacy_text = _label("", "caption")
+        self.legacy_banner.append(self.legacy_text)
+        self.legacy_banner.append(_button("Use the recommended format", lambda: self.format_choice.set_selected(0)))
+        self.legacy_banner.set_visible(False)
+        quality.append(self.legacy_banner)
+        self.format_choice = Gtk.DropDown.new_from_strings(["Recommended", "Compatible · H.264 on the GPU", "Choose a format…"])
+        self._row(quality, "Video format", self.format_choice,
+                  "Recommended: AV1 when this display's GPU encodes it (smallest files), otherwise HEVC. "
+                  "Compatible: H.264 plays and edits almost everywhere, at larger sizes. HDR always uses AV1 or HEVC 10-bit.")
+        self.format_detail = _label("Testing which formats this display's GPU can encode…", "caption")
+        quality.append(self.format_detail)
+        self._codec_options: list[str] = []
+        self._formats: dict = {}
         self.fps = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 1, 60, 1)
         self.fps.set_digits(0)
         self.fps.set_size_request(220, -1)
@@ -465,15 +570,24 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         for title, fps, bitrate in (("Small", 30, 4), ("Balanced", 30, 8), ("Smooth", 60, 16)):
             presets.append(_button(title, lambda fps=fps, bitrate=bitrate: self._recording_preset(fps, bitrate)))
         quality.append(presets)
-        quality.append(_label("Presets select GPU AV1 and a bitrate budget. Check that your GPU and player support AV1 before recording. Existing settings change only when saved.", "caption"))
+        quality.append(_label("Presets select the recommended format and a bitrate budget. Existing settings change only when saved.", "caption"))
         self.sound_feedback = Gtk.Switch()
         self._row(quality, "Recording sounds", self.sound_feedback, "Short local tones on start, save and error.")
         body.append(quality)
-        card, legacy = self._advanced("Legacy encoder tuning", "Only used for H.264 CPU / legacy VA-API in quality mode; GPU presets use the quality choice above.")
+        legacy = advanced
+        self.codec = Gtk.DropDown.new_from_strings(["AV1"])
+        self._row(legacy, "Exact format (with Choose a format…)", self.codec,
+                  "AV1 GPU: smallest files; needs a recent GPU and player. HEVC GPU: smaller than H.264, widely "
+                  "supported by hardware, some editors and browsers lack it. H.264 GPU: the most compatible.")
+        self.format_tested = _label("", "caption")
+        legacy.append(self.format_tested)
+        legacy.append(_button("Test formats again", lambda: self._probe_formats(force=True)))
         self.quality = self._spin(0, 51, 1)
         self._row(legacy, "H.264 quality value", self.quality, "Lower values improve quality and increase file size. Your existing value is preserved.")
-        body.append(card)
+        body.append(advanced_card)
         self.codec.connect("notify::selected", lambda *_: self._encoding_changed())
+        self.format_choice.connect("notify::selected", lambda *_: self._encoding_changed())
+        self.monitor.connect("notify::selected", lambda *_: self._probe_formats())
         self.rate_control.connect("notify::selected", lambda *_: self._encoding_changed())
         self.bitrate.connect("value-changed", lambda *_: self._encoding_changed())
         self.fps.connect("value-changed", lambda *_: self._encoding_changed())
@@ -482,85 +596,24 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         body.append(_label("Opening the recorder never starts capture. Stop & save requests a graceful finalization; wait for the saved-file confirmation.", "caption"))
 
     def _clips_page(self) -> None:
-        body = self._page("clips", "Your clips.", "Saved replays and recordings, newest first. Play them right here.")
-        self.player_card = self._card("Now playing")
-        self.player_title = _label("", "caption")
-        self.player_card.append(self.player_title)
-        self.player_card.append(_label("HDR color depends on player support. If colors look washed out, use Open in your player "
-                                       "with HDR output or HDR-to-SDR tone mapping enabled.", "caption"))
-        player_actions = _box(8, True)
-        player_actions.append(_button("Close player", self._close_player))
-        player_actions.append(_button("Open in your player", lambda: self._launch_clip(False)))
-        player_actions.append(_button("Show in folder", lambda: self._launch_clip(True)))
-        self.player_card.append(player_actions)
-        self.player_card.set_visible(False)
-        body.append(self.player_card)
-        library = self._card("Library")
-        self.clips_caption = _label("Your saved clips appear here.", "caption")
-        library.append(self.clips_caption)
-        self.clip_list = _box(8)
-        library.append(self.clip_list)
-        library.append(_button("Refresh", self._refresh_clips))
-        body.append(library)
+        from .clips_ui import ClipsPage
+        body = self._page("clips", "Clips", "Watch, trim and join your replays and recordings. "
+                          "Edits are saved as new files; originals never change.")
+        self.clips_page = ClipsPage(self, body, self._card, _label, _button, _box, self._notice)
         self.stack.connect("notify::visible-child-name", lambda *_: self._clips_page_shown())
 
     def _clips_page_shown(self) -> None:
         if self.stack.get_visible_child_name() == "clips":
             self._refresh_clips()
         else:
-            self._close_player()   # leaving the page releases the video and its pipeline
+            self.clips_page.close()   # leaving the page releases the video and its pipeline
 
     def _refresh_clips(self) -> None:
         folder = Path(str(self.config.get("recording", {}).get("output_dir", "~/Videos/Murmur"))).expanduser()
-        self._work(lambda: clips(folder), lambda found: self._render_clips(folder, found if isinstance(found, list) else []))
-
-    def _render_clips(self, folder: Path, found: list) -> None:
-        self._clear(self.clip_list)
-        self.clips_caption.set_text(f"{len(found)} clips in {folder}" if found else
-                                    f"No clips in {folder} yet. Say “clip that” while instant replay is on.")
-        for clip in found:
-            row = _box(12, True)
-            row.add_css_class("app-row")
-            labels = _box(4)
-            labels.set_hexpand(True)
-            labels.append(_label(clip["name"], "row-title"))
-            when = time.strftime("%Y-%m-%d %H:%M", time.localtime(clip["modified"]))   # no locale month names in English text
-            labels.append(_label(f"{when} · {clip['bytes'] / 1048576:.1f} MB", "caption"))
-            play = _button("Play", lambda path=clip["path"]: self._play_clip(path))
-            play.set_valign(Gtk.Align.CENTER)
-            play.update_property([Gtk.AccessibleProperty.LABEL], [f"Play {clip['name']}"])
-            row.append(labels)
-            row.append(play)
-            self.clip_list.append(row)
-
-    def _play_clip(self, path: str) -> None:
-        if self.player is None:
-            self.player = Gtk.Video(autoplay=True)
-            self.player.set_size_request(-1, 360)
-            self.player_card.insert_child_after(self.player, self.player_title)
-        self.player.set_filename(path)
-        stream = self.player.get_media_stream()
-        if stream is not None:
-            stream.connect("notify::error", self._player_error)
-        self._playing = path
-        self.player_title.set_text(Path(path).name)
-        self.player_card.set_visible(True)
-
-    def _player_error(self, stream: Any, _pspec: Any) -> None:
-        if stream.get_error() is not None:
-            self._notice("This clip can't play here. Install gst-plugins-good for MP4 playback, or use “Open in your player”.", True)
-
-    def _close_player(self) -> None:
-        if self.player is not None:
-            self.player.set_file(None)   # drops the media stream and its GStreamer pipeline
-        self.player_card.set_visible(False)
-
-    def _launch_clip(self, folder: bool) -> None:
-        launcher = Gtk.FileLauncher.new(Gio.File.new_for_path(self._playing))
-        (launcher.open_containing_folder if folder else launcher.launch)(self, None, None)
+        self._work(lambda: clips(folder), lambda found: self.clips_page.render(folder, found if isinstance(found, list) else []))
 
     def _voice_page(self) -> None:
-        body = self._page("voice", "A microphone on your terms.", "Hands-free activation uses a small local recognizer. Push-to-talk is available when you prefer it.")
+        body = self._page("voice", "Voice", "Wake word, language, dictation and the microphone. Everything is recognized on this computer.")
         self.voice_grammar_notice = _label("", "caption")
         self.voice_grammar_notice.set_visible(False)
         body.append(self.voice_grammar_notice)
@@ -572,6 +625,51 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.wake_aliases = self._entry("Jarvis, Alfred")
         self._row(activation, "Additional wake names", self.wake_aliases, "Separate names with commas. Every name works; up to eight names including the primary.")
         body.append(activation)
+        language = self._card("Language", "Choose what Jarvis understands. Arabic adds a local Arabic model "
+                              "(Moonshine Streaming Tiny, about 120 MB) beside the English one; English keeps working.")
+        self.language = Gtk.DropDown.new_from_strings(["English", "Arabic and English"])
+        self._row(language, "Commands and dictation", self.language,
+                  "Arabic commands are a fixed list (see Commands → Arabic) in Saudi/Najdi and formal wording. "
+                  "Dictation writes any Arabic speech, but only listed commands ever run.")
+        self.arabic_status = _label("", "caption")
+        language.append(self.arabic_status)
+        arabic_actions = _box(8, True)
+        self.arabic_install = _button("Download the Arabic model (about 118 MB)", self._download_arabic, "primary")
+        arabic_actions.append(self.arabic_install)
+        self.arabic_file = _button("Install from a file…", self._install_arabic)
+        arabic_actions.append(self.arabic_file)
+        language.append(arabic_actions)
+        body.append(language)
+        dictation = self._card("Dictation", "Say “Jarvis, listen to me” (or “اسمعني”), press Start below or your "
+                               "shortcut. Jarvis types what you say into the text field you are in, and never presses "
+                               "Enter. A bar at the top of the screen shows it is listening and has a Stop button.")
+        self.dictation_button = _button("Start dictation", self._toggle_dictation, "primary")
+        self.dictation_button.set_tooltip_text("Start or stop typing what you say into the focused text field (Ctrl+D)")
+        dictation.append(self.dictation_button)
+        self.dictation_state = _label("Dictation is off.", "caption")
+        self.dictation_state.set_selectable(True)
+        dictation.append(self.dictation_state)
+        self.dictation_copy = _button("Copy text that was not typed", self._copy_held)
+        self.dictation_copy.set_visible(False)
+        dictation.append(self.dictation_copy)
+        self.dictation_language = Gtk.DropDown.new_from_strings(["Same as Language", "Arabic", "English"])
+        self._row(dictation, "Dictation language", self.dictation_language,
+                  "Arabic writes Najdi, Hijazi and other dialects as spoken; English words inside Arabic speech "
+                  "usually come out in Arabic script. Choose English for English-only dictation.")
+        self.stop_phrases = self._entry("stop dictation, وقف الكتابة")
+        self._row(dictation, "Stop phrases", self.stop_phrases,
+                  "Ending a sentence with one of these stops dictation; the phrase itself is not typed. Separate with commas.")
+        self.dictation_idle = self._spin(5, 300, 5)
+        self._row(dictation, "Stop after quiet (seconds)", self.dictation_idle)
+        self.keyboard_fallback = Gtk.Switch()
+        self._row(dictation, "Also type into apps without text-field support", self.keyboard_fallback,
+                  "Most apps tell Jarvis when a text field is focused and whether it is a password field. Some "
+                  "(many terminals, games, Electron apps, X11 apps) don't; with this on, Jarvis types into them like "
+                  "a keyboard, but it cannot see whether that field is a password. Known password prompts are skipped.")
+        dictation.append(_label("Shortcut: bind a key in Hyprland to “jarvis dictate” (for example "
+                                "bind = SUPER, D, exec, jarvis dictate). Jarvis never edits your Hyprland "
+                                "configuration. Focus changes stop dictation without typing into the new window.", "caption"))
+        body.append(dictation)
         microphone = self._card("Microphone", "The level test opens the microphone only while the test is enabled. It stops when this window closes.")
         self.device = Gtk.DropDown.new_from_strings(["Default microphone"])
         self.device.set_hexpand(True)
@@ -628,7 +726,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         body.append(_label("Hyprland can bind a key to “jarvis listen”. The command reference and README include the optional user-level binding; Jarvis never edits your Hyprland configuration.", "caption"))
 
     def _privacy_page(self) -> None:
-        body = self._page("privacy", "You decide when it listens.", "Local processing, a visible state, and an immediate microphone mute.")
+        body = self._page("privacy", "Privacy", "When Jarvis may listen, what stays local, and starting with your session.")
         privacy = self._card("Before the first microphone session")
         for title, text in [
             ("Audio stays local", "Voice processing does not require a cloud account, subscription, or API key."),
@@ -657,6 +755,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         for name, callback, accelerators in [
             ("mute", self._toggle_mute, ["<Control>m"]),
             ("listen", self._listen, ["<Control>space"]),
+            ("dictate", self._toggle_dictation, ["<Control>d"]),
             ("commands", lambda: self.stack.set_visible_child_name("commands"), ["<Control>k"]),
             ("close", self.close, ["<Control>w"]),
         ]:
@@ -718,6 +817,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.app_grammar_notice.set_visible(False)
         self.voice_grammar_notice.set_visible(False)
         self._render_apps()
+        self._render_added_apps()
         self._render_aliases()
         self._render_commands([*result.get("commands", {}).get("commands", []), *result.get("commands", {}).get("applications", [])])
         self._render_phrases()
@@ -771,7 +871,8 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         muted = bool(status.get("muted", True))
         if validate_grammar:
             self._update_speech_support(status)
-        titles = {"paused": "Microphone paused", "idle": "Waiting for your wake phrase", "listening": "Listening to your command", "processing": "Working on it", "error": "Voice needs attention"}
+        titles = {"paused": "Microphone paused", "idle": "Waiting for your wake phrase", "listening": "Listening to your command",
+                  "processing": "Working on it", "dictating": "Dictating", "error": "Voice needs attention"}
         self.voice_badge.set_text(titles.get(state, state.capitalize()))
         self._show_state(state)
         self.voice_message.set_text(str(status.get("message", "")) or "Use Listen once to start a bounded command session.")
@@ -811,6 +912,20 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.recorder_file.set_text(detail or "Your saved file will appear here.")
         self.record_start.set_sensitive(self.connected and rec_state in {"idle", "error"})
         self.record_stop.set_sensitive(self.connected and rec_state == "recording")
+        dictation = status.get("dictation") or {}
+        dictating = bool(dictation.get("active"))
+        for button in self._dictation_buttons():
+            button.set_label("Stop dictation" if dictating else "Start dictation")
+            button.set_sensitive(self.connected and onboarded and (dictating or state in ("idle", "paused")))
+        held = str(dictation.get("held") or "")
+        typed = int(dictation.get("inserted") or 0)
+        detail = dictation.get("message") or ("Dictating · speak now" if dictating else "Dictation is off.")
+        if typed:
+            detail += f" · {typed} characters typed"
+        for label in self._dictation_labels():
+            label.set_text(detail + (f"\nNot typed: {held}" if held else ""))
+        for button in self._held_buttons():
+            button.set_visible(bool(held))
         replay = status.get("replay", {})
         replay_state = replay.get("state", "off")
         self.replay_pill.set_visible(replay_state == "on")
@@ -826,6 +941,16 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         replay_detail = "\n".join(str(value) for value in (replay.get("message"), replay.get("file")) if value)
         self.replay_detail.set_text(replay_detail or "Start replay to keep the last moments ready to save.")
         self.replay_save.set_sensitive(self.connected and replay_state == "on")
+        self.overview_replay.set_text({"on": f"Replay on · last {int(self.config.get('replay', {}).get('seconds', 120))} s kept",
+                                       "stopping": "Stopping replay…", "error": "Replay needs attention"}.get(replay_state, "Replay off"))
+        self.overview_save.set_sensitive(self.connected and replay_state == "on")
+        self.overview_record.set_label("Stop recording" if rec_state == "recording" else "Start recording")
+        self.overview_record.set_sensitive(self.connected and rec_state in {"idle", "error", "recording"})
+        self.overview_audio.set_text(_audio_summary(self.config, rec_state == "recording", replay_state == "on"))
+        message = str(status.get("message") or "")
+        if message and message != getattr(self, "_recent", ""):
+            self._recent = message
+            self.recent_label.set_text(time.strftime("%H:%M  ") + message)
         self.replay_toggle.set_label("Stop replay" if replay_state == "on" else "Start replay")
         self.replay_toggle.set_sensitive(self.connected and replay_state in ("on", "off", "error"))
         return False
@@ -894,6 +1019,13 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.closest_match.set_active(bool(recognition.get("closest_match", True)))
         self.accurate.set_active(bool(recognition.get("accurate", True)))
         self.speech_model.set_selected(0 if recognition.get("speech_model") == "small" else 1)
+        self.language.set_selected(1 if recognition.get("language") == "ar_en" else 0)
+        dictation = self.config.get("dictation", {})
+        self.dictation_language.set_selected({"auto": 0, "ar": 1, "en": 2}.get(dictation.get("language", "auto"), 0))
+        self.stop_phrases.set_text(", ".join(dictation.get("stop_phrases", [])))
+        self.dictation_idle.set_value(float(dictation.get("idle_seconds", 20)))
+        self.keyboard_fallback.set_active(bool(dictation.get("keyboard_fallback", True)))
+        self._show_arabic_model()
         self.noise_suppression.set_active(bool(recognition.get("noise_suppression", False)))
         self.adaptive_gate.set_active(bool(self.config.get("audio", {}).get("adaptive_gate", True)))
         self.output_dir.set_text(str(recorder.get("output_dir", "~/Videos/Murmur")))
@@ -912,11 +1044,13 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.replay_autostart.set_active(bool(replay.get("autostart", False)))
         self.replay_game.set_active(bool(replay.get("game_audio", True)))
         self.replay_mic.set_active(bool(replay.get("microphone", True)))
+        self.replay_tracks.set_selected(1 if replay.get("audio_tracks") == "separate" else 0)
+        self.replay_apps.set_text(", ".join(replay.get("separate_apps", [])))
+        self._replay_tracks_changed()
         self.replay_sound.set_active(bool(replay.get("sound", True)))
         self._populate_record_devices()
         self.fps.set_value(float(recorder.get("fps", 30)))
-        codecs = CODECS
-        self.codec.set_selected(codecs.index(recorder.get("codec")) if recorder.get("codec") in codecs else 0)
+        self._show_codec(recorder.get("codec", "libx264"))
         self.quality.set_value(float(recorder.get("quality", 23)))
         self.rate_control.set_selected(1 if recorder.get("rate_control") == "bitrate" else 0)
         self.bitrate.set_value(float(recorder.get("bitrate_mbps", 8)))
@@ -952,6 +1086,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
                   for item in self._monitors]
         self.monitor.set_model(Gtk.StringList.new(labels or ["No displays discovered — reconnect in Hyprland"]))
         self.monitor.set_selected(next((i for i, item in enumerate(self._monitors) if item.get("name") == selected_monitor), 0))
+        self._probe_formats()
 
     def _record_audio_changed(self, control: Any) -> None:
         if control.get_active() and not self.combined_audio.get_active():
@@ -1019,8 +1154,14 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
     def _render_apps(self) -> None:
         self._clear(self.app_list)
         needle = self.app_search.get_text().casefold().strip()
-        visible = [app for app in self._apps if needle in f"{app.get('name', '')} {app.get('id', '')}".casefold()]
-        self.app_list.append(_label(f"{len(visible)} installed applications" if self._apps else "Connect to discover installed applications.", "caption"))
+        matching = [app for app in self._apps if needle in f"{app.get('name', '')} {app.get('id', '')}".casefold()]
+        # The same app installed twice (native + Flatpak) shows once: the entry
+        # voice commands open. An alias can still pick the other copy.
+        visible = [app for app in matching if not app.get("duplicate_of")]
+        hidden = len(matching) - len(visible)
+        summary = f"{len(visible)} apps" + (f" · {hidden} duplicate entr{'y' if hidden == 1 else 'ies'} hidden "
+                                            "(for example a Flatpak copy; Jarvis opens the native one)" if hidden else "")
+        self.app_list.append(_label(summary if self._apps else "Connect to discover installed applications.", "caption"))
         # A widget for every system desktop entry is unnecessary until searched.
         for app in visible[:30]:
             row = _box(4)
@@ -1043,6 +1184,61 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         if ids != self._alias_model_ids:
             self._alias_model_ids = ids
             self.alias_app.set_model(Gtk.StringList.new([f"{app.get('name', app['id'])} ({app['id']})" for app in self._apps] or ["No applications discovered"]))
+
+    def _render_added_apps(self) -> None:
+        from . import app_catalog
+        self._clear(self.added_apps)
+        self._clear(self.appimage_hints)
+        for item in app_catalog.added():
+            row = _box(8, True)
+            row.append(_label(f"{item['name']} · added by Jarvis", "caption"))
+            row.append(_button("Remove", lambda identity=item["id"]: self._remove_added_app(identity)))
+            self.added_apps.append(row)
+        known = " ".join(str(app.get("exec", "")) for app in self._apps)
+        for path in app_catalog.appimage_candidates(known):
+            row = _box(8, True)
+            row.append(_label(f"Found {path.name} in {path.parent}", "caption"))
+            row.append(_button("Use this file", lambda path=path: self._use_app_file(str(path))))
+            self.appimage_hints.append(row)
+
+    def _choose_app_file(self) -> None:
+        dialog = Gtk.FileDialog(title="Choose a program or AppImage")
+        def chosen(source, result) -> None:
+            try:
+                self._use_app_file(source.open_finish(result).get_path())
+            except GLib.Error:
+                pass
+        dialog.open(self, None, chosen)
+
+    def _use_app_file(self, path: str) -> None:
+        self.add_app_path = path
+        self.add_app_file.set_text(path)
+        if not self.add_app_name.get_text().strip():
+            stem = Path(path).stem.replace("_", " ").replace("-", " ")
+            self.add_app_name.set_text(stem.split(".AppImage")[0].split(" x86")[0].strip())
+
+    def _add_app(self) -> None:
+        from . import app_catalog
+        try:
+            app_catalog.add(self.add_app_path, self.add_app_name.get_text())
+        except (ValueError, OSError) as error:
+            self._notice(str(error), True)
+            return
+        self._notice(f"Added {self.add_app_name.get_text().strip()}. Say “open {self.add_app_name.get_text().strip()}”.")
+        self.add_app_path = ""
+        self.add_app_file.set_text("No file chosen")
+        self.add_app_name.set_text("")
+        self.refresh()   # the service rescans launcher entries
+
+    def _remove_added_app(self, identity: str) -> None:
+        from . import app_catalog
+        try:
+            app_catalog.remove(identity)
+        except (ValueError, OSError) as error:
+            self._notice(str(error), True)
+            return
+        self._notice("Removed the app Jarvis added. The program file itself was not deleted.")
+        self.refresh()
 
     def _voice_name_editor(self, app: dict) -> Any:
         """Per-app "Add voice name": click, type a name, press Enter. Done."""
@@ -1165,7 +1361,12 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self._save({"recognition": {"closest_match": self.closest_match.get_active(),
                                     "accurate": self.accurate.get_active(),
                                     "speech_model": "light" if self.speech_model.get_selected() == 1 else "small",
-                                    "noise_suppression": self.noise_suppression.get_active()},
+                                    "noise_suppression": self.noise_suppression.get_active(),
+                                    "language": "ar_en" if self.language.get_selected() == 1 else "en"},
+                    "dictation": {"language": ("auto", "ar", "en")[self.dictation_language.get_selected()],
+                                  "stop_phrases": [p.strip() for p in self.stop_phrases.get_text().split(",") if p.strip()],
+                                  "idle_seconds": self.dictation_idle.get_value_as_int(),
+                                  "keyboard_fallback": self.keyboard_fallback.get_active()},
                     "audio": {"device": device, "vad_rms": self.vad_rms.get_value(),
                               "adaptive_gate": self.adaptive_gate.get_active()}, "activation": {
             "mode": "wake_word" if self.activation.get_selected() == 1 else "push_to_talk",
@@ -1173,6 +1374,59 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
             "wake_aliases": [name.strip() for name in self.wake_aliases.get_text().split(",") if name.strip()], "sensitivity": self.sensitivity.get_value(),
             "command_timeout": self.timeout.get_value_as_int(), "confidence": self.confidence.get_value(),
         }}, "Voice settings saved. Use Listen once, or unmute to enable the selected activation mode.")
+
+    def _show_arabic_model(self) -> None:
+        from .models import arabic_model_dir, arabic_model_ready
+        ready = arabic_model_ready()
+        self.arabic_status.set_text(f"Arabic model installed at {arabic_model_dir()}." if ready else
+                                    "The Arabic model is not installed. It is needed for Arabic and English.")
+        self.arabic_install.set_visible(not ready)
+        self.arabic_file.set_visible(not ready)
+
+    def _download_arabic(self) -> None:
+        self.arabic_install.set_sensitive(False)
+        self._notice("Downloading the Arabic model (about 118 MB) and checking its checksum…")
+        def install() -> dict:
+            from .models import install_arabic
+            return {"ok": True, "message": f"Arabic model installed at {install_arabic()}. "
+                                           "Choose Arabic and English, then Save."}
+        def done(result: dict) -> None:
+            self.arabic_install.set_sensitive(True)
+            self._show_arabic_model()
+            self._notice(str(result.get("message") or result.get("error")), not result.get("ok"))
+        self._work(install, done)
+
+    def _install_arabic(self) -> None:
+        dialog = Gtk.FileDialog(title="Choose moonshine-streaming-tiny-ar.tar.bz2")
+        def chosen(source, result) -> None:
+            try:
+                path = Path(source.open_finish(result).get_path())
+            except GLib.Error:
+                return
+            self._notice("Checking and installing the Arabic model…")
+            def install() -> dict:
+                from .models import install_arabic
+                return {"ok": True, "message": f"Arabic model installed at {install_arabic(path)}. "
+                                               "Choose Arabic and English, then Save."}
+            def done(result: dict) -> None:
+                self._show_arabic_model()
+                self._notice(str(result.get("message") or result.get("error")), not result.get("ok"))
+            self._work(install, done)
+        dialog.open(self, None, chosen)
+
+    def _toggle_dictation(self) -> None:
+        if not self.config.get("privacy", {}).get("onboarded"):
+            self.stack.set_visible_child_name("privacy")
+            self._notice("Complete the privacy setup before opening the microphone.", True)
+            return
+        self._action("dictation", action="toggle")
+
+    def _copy_held(self) -> None:
+        held = str(self.status.get("dictation", {}).get("held", ""))
+        if held:
+            self.get_clipboard().set(held)
+            self._action("dictation", action="copied")
+            self._notice("Copied the text that was not typed.")
 
     def _install_model(self) -> None:
         self.install_model_button.set_sensitive(False)
@@ -1201,6 +1455,11 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         if (self.system_audio.get_active() or self.record_mic.get_active()) and not source:
             self._notice("Choose an explicit recording audio source, or turn audio capture off.", True)
             return
+        codec = self._chosen_codec()
+        if codec in ("h264", "hevc", "av1") and self._formats.get("formats") and not self._formats["formats"].get(codec):
+            self._notice(f"{codec.upper()} did not pass the encoder test on {self._formats.get('gpu')} (the GPU of "
+                         f"{monitor or 'this display'}). Choose another format.", True)
+            return
         self._save({"recording": {"output_dir": self.output_dir.get_text().strip(), "monitor": monitor,
             "system_audio": self.system_audio.get_active(), "microphone": self.record_mic.get_active(),
             "configured": self.capture_configured.get_active(), "sound_feedback": self.sound_feedback.get_active(),
@@ -1210,13 +1469,30 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
             "rate_control": "bitrate" if self.rate_control.get_selected() == 1 else "quality",
             "bitrate_mbps": self.bitrate.get_value_as_int(),
             "quality_preset": QUALITY_PRESETS[self.quality_preset.get_selected()],
-            "codec": CODECS[self.codec.get_selected()], "quality": self.quality.get_value_as_int()},
+            "codec": codec, "quality": self.quality.get_value_as_int()},
             "replay": {"seconds": self.replay_seconds.get_value_as_int(), "autostart": self.replay_autostart.get_active(),
                        "game_audio": self.replay_game.get_active(), "microphone": self.replay_mic.get_active(),
                        "sound": self.replay_sound.get_active(),
                        "storage": "disk" if self.replay_storage.get_selected() == 1 else "ram",
-                       "max_mb": self.replay_max_mb.get_value_as_int(), "buffer_dir": self.replay_buffer_dir.get_text().strip()}},
+                       "max_mb": self.replay_max_mb.get_value_as_int(), "buffer_dir": self.replay_buffer_dir.get_text().strip(),
+                       "audio_tracks": "separate" if self.replay_tracks.get_selected() == 1 else "mixed",
+                       "separate_apps": [a.strip() for a in self.replay_apps.get_text().split(",") if a.strip()]}},
             "Recorder settings saved. Start recording explicitly, or say “Start recording”.")
+
+    def _replay_tracks_changed(self) -> None:
+        for row in self._replay_apps_rows:
+            row.set_visible(self.replay_tracks.get_selected() == 1)
+
+    def _list_app_audio(self) -> None:
+        def listing() -> dict:
+            result = subprocess.run(["gpu-screen-recorder", "--list-application-audio"], capture_output=True, text=True, timeout=10)
+            return {"ok": result.returncode == 0, "apps": sorted({line.strip() for line in result.stdout.splitlines() if line.strip()})}
+        def done(result: dict) -> None:
+            apps = result.get("apps") or []
+            self.replay_apps_found.set_text(("Playing now: " + ", ".join(apps)) if apps else
+                                            "No app is playing sound right now (or gpu-screen-recorder is not installed). "
+                                            "Start the podcast or video, then try again.")
+        self._work(listing, done)
 
     def _replay_storage_changed(self) -> None:
         # Disk needs room for gpu-screen-recorder's 256 MiB files. Raise, never
@@ -1224,9 +1500,73 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         if self.replay_storage.get_selected() == 1:
             self.replay_max_mb.set_value(max(512, self.replay_max_mb.get_value()))
 
+    LEGACY = {"libx264": "H.264 · CPU (legacy, uses far more CPU)", "h264_vaapi": "H.264 · VA-API via wf-recorder (legacy)"}
+    LABELS = {"av1": "AV1 · GPU", "hevc": "HEVC · GPU", "h264": "H.264 · GPU"}
+
+    def _show_codec(self, codec: str) -> None:
+        """Put a saved codec into the picker. Legacy encoders stay selectable only
+        for configurations that already use them; nothing changes until Save."""
+        self._saved_codec = codec
+        self._codec_options = ["av1", "hevc", "h264"] + ([codec] if codec in self.LEGACY else [])
+        self.codec.set_model(Gtk.StringList.new([self.LABELS.get(c) or self.LEGACY[c] for c in self._codec_options]))
+        self.codec.set_selected(self._codec_options.index(codec) if codec in self._codec_options else 0)
+        from .encoder_probe import recommended
+        best = recommended(self._formats.get("formats", {})) or "av1"
+        self.format_choice.set_selected(0 if codec == best else 1 if codec == "h264" else 2)
+        self.legacy_banner.set_visible(codec in self.LEGACY)
+        self.legacy_text.set_text(f"This recorder uses {self.LEGACY.get(codec, '')}. It keeps working, but the GPU "
+                                  "formats record games with a small fraction of the CPU. Nothing changes until you Save.")
+
+    def _chosen_codec(self) -> str:
+        from .encoder_probe import recommended
+        choice = self.format_choice.get_selected()
+        if choice == 0:
+            return recommended(self._formats.get("formats", {})) or "av1"
+        if choice == 1:
+            return "h264"
+        index = self.codec.get_selected()
+        return self._codec_options[index] if index < len(self._codec_options) else "av1"
+
+    def _probe_formats(self, force: bool = False) -> None:
+        selected = self.monitor.get_selected()
+        monitor = self._monitors[selected]["name"] if selected < len(self._monitors) else ""
+        def probe() -> dict:
+            from . import encoder_probe
+            if force:
+                encoder_probe.probe_node.cache_clear()
+            return encoder_probe.formats_for_monitor(monitor)
+        def done(result: dict) -> None:
+            if isinstance(result, dict) and "formats" in result:
+                self._formats = result
+                self._show_codec(getattr(self, "_saved_codec", "libx264")) if not force else None
+            self._encoding_changed()
+        self._work(probe, done)
+
     def _encoding_changed(self) -> None:
+        from .encoder_probe import recommended
+        formats = self._formats.get("formats", {})
+        codec = self._chosen_codec()
+        self.codec.set_sensitive(self.format_choice.get_selected() == 2)
+        names = {"av1": "AV1", "hevc": "HEVC", "h264": "H.264"}
+        if formats:
+            best = recommended(formats)
+            works = ", ".join(n for c, n in names.items() if formats.get(c)) or "none"
+            hdr = ", ".join(n for c, n in (("av1_10bit", "AV1"), ("hevc_10bit", "HEVC")) if formats.get(c)) or "none"
+            self.format_tested.set_text(f"Tested on {self._formats.get('gpu')}: {works} · HDR 10-bit: {hdr}.")
+            usable = codec not in names or formats.get(codec)
+            detail = (f"Recommended here: {names.get(best, 'none')} on {self._formats.get('gpu')}." if best else
+                      "No GPU format passed the test on this display's GPU.")
+            if codec in self.LEGACY:
+                detail = f"Selected: {self.LEGACY[codec]}."
+            elif not usable:
+                detail = f"{names[codec]} did not pass the encoder test on this display's GPU; choose another format."
+            else:
+                detail = f"Selected: {names[codec]} on the GPU. " + detail
+            self.format_detail.set_text(detail)
+        elif shutil.which("ffmpeg") is None:
+            self.format_detail.set_text("FFmpeg is missing, so formats can't be tested. Install ffmpeg.")
         budget = self.rate_control.get_selected() == 1
-        gpu = self.codec.get_selected() >= 2
+        gpu = codec in ("h264", "hevc", "av1")
         self.bitrate.set_sensitive(budget)
         self.quality_preset.set_sensitive(not budget and gpu)
         self.quality.set_sensitive(not budget and not gpu)
@@ -1241,10 +1581,10 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
 
     def _recording_preset(self, fps=30, bitrate=8) -> None:
         self.fps.set_value(fps)
-        self.codec.set_selected(CODECS.index("av1"))
+        self.format_choice.set_selected(0)
         self.rate_control.set_selected(1)
         self.bitrate.set_value(bitrate)
-        self._notice(f"Selected AV1 GPU, {fps} fps, {bitrate} Mbps. Save to apply; hardware support is required.")
+        self._notice(f"Selected the recommended format, {fps} fps, {bitrate} Mbps. Save to apply.")
 
     def _save_startup(self) -> None:
         self._action("set_startup", enabled=self.startup.get_active())
@@ -1348,14 +1688,14 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
 
     def _show_state(self, state: str) -> None:
         pills = {"offline": "Offline", "paused": "Mic off", "idle": "Waiting for wake word",
-                 "listening": "Listening", "processing": "Working", "error": "Needs attention"}
+                 "listening": "Listening", "processing": "Working", "dictating": "Dictating", "error": "Needs attention"}
         self.state_pill.set_text(pills.get(state, state.capitalize()))
         for name in pills:
             self.state_pill.remove_css_class(name)
         self.state_pill.add_css_class(state)
         self.voice_badge.remove_css_class("active")
         self.voice_badge.remove_css_class("error")
-        if state in ("listening", "processing", "error"):
+        if state in ("listening", "processing", "dictating", "error"):
             self.voice_badge.add_css_class("error" if state == "error" else "active")
 
     def _show_test(self, active: bool) -> None:

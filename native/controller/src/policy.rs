@@ -144,7 +144,22 @@ impl Parser {
             .collect::<Result<_>>()?;
         Ok(parser)
     }
+    /// Arabic speech is first tried as an exact configured shortcut or voice
+    /// alias, then translated onto the English command it asks for.
     pub fn parse(&self, text: &str) -> Result<Value> {
+        if !jarvis_phrases::arabic::has_arabic(text) {
+            return self.parse_text(text);
+        }
+        if let Ok(intent) = self.parse_text(text) {
+            return Ok(intent);
+        }
+        let close = self.close_words.first().map_or("close", String::as_str);
+        match jarvis_phrases::arabic::translate(text, close) {
+            Some(english) => self.parse_text(&english),
+            None => err("Arabic phrase not recognized. Open Commands to see the Arabic commands."),
+        }
+    }
+    fn parse_text(&self, text: &str) -> Result<Value> {
         static SIGNED: LazyLock<regex::Regex> =
             LazyLock::new(|| regex::Regex::new(r"(?i)workspace\s+[+-]\s*\w").unwrap());
         if SIGNED.is_match(text) {

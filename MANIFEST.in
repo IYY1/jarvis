@@ -1,6 +1,6 @@
 include LICENSE README.md CONTRIBUTING.md SECURITY.md pyproject.toml
 include run-jarvis run-murmur
-recursive-include src/murmur *.py *.css *.conf
+recursive-include src/murmur *.py *.css *.conf *.json
 recursive-include tests *.py
 recursive-include scripts *.py
 recursive-include native/voice-worker *.rs Cargo.toml Cargo.lock
@@ -26,3 +26,7 @@ recursive-include native/replay-store *.rs Cargo.toml Cargo.lock
 prune native/replay-store/target
 recursive-include native/kws-probe *.rs *.c *.h *.md LICENSE Cargo.toml Cargo.lock
 prune native/kws-probe/target
+recursive-include native/text-input *.rs Cargo.toml Cargo.lock
+prune native/text-input/target
+recursive-include native/moonshine-recognizer *.rs Cargo.toml Cargo.lock
+prune native/moonshine-recognizer/target

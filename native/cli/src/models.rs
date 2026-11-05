@@ -35,6 +35,13 @@ pub const WHISPER_TINY_FILES: &[&str] = &[
     "tiny.en-tokens.txt",
 ];
 pub const DENOISER_NAME: &str = "gtcrn_simple.onnx";
+/// Moonshine Streaming Tiny Arabic, exported by scripts/export_moonshine_arabic.py.
+pub const ARABIC_NAME: &str = "moonshine-streaming-tiny-ar";
+pub const ARABIC_FILES: &[&str] = &["encoder.onnx", "cross.onnx", "decoder.onnx", "tokenizer.json"];
+const ARABIC_SHA: &str = "df959ea0723c07733ac5996f0f7580a8bdf5612f09caf381332a7debd946cfd5";
+/// The published archive (release models-arabic-1 on GitHub);
+/// `--archive` installs a local copy with the same checksum instead.
+const ARABIC_URL: Option<&str> = Some("https://github.com/abdullaho21/jarvis/releases/download/models-arabic-1/moonshine-streaming-tiny-ar.tar.bz2");
 const VOSK_SHA: &str = "30f26242c4eb449f948e42cb302dd7a686cb29a3423a8367f99ff41780942498";
 const WHISPER_SHA: &str = "0cdba2b8aaab69e04847f3427cc9709574112e67913a1a84b7fec3a8729faa9a";
 const WHISPER_TINY_SHA: &str = "2bd6cf965c8bb3e068ef9fa2191387ee63a9dfa2a4e37582a8109641c20005dd";
@@ -276,6 +283,32 @@ fn publish(source: &Path, target: &Path) -> Result<()> {
         return Err(std::io::Error::last_os_error().into());
     }
     File::open(target.parent().ok_or("Missing model parent")?)?.sync_all()?;
+    Ok(())
+}
+
+/// The optional Arabic model (about 118 MB), from a local archive or its
+/// published download, checked by SHA-256 like every other model.
+pub fn install_arabic(local: Option<&Path>) -> Result<()> {
+    let root = root();
+    let arabic = root.join(ARABIC_NAME);
+    if !ready(&arabic, ARABIC_FILES)? {
+        let stage = Stage::new(&root)?;
+        let archive = stage.0.join("model.tar.bz2");
+        match (local, ARABIC_URL) {
+            (Some(local), _) => copy_verified(File::open(local)?, &archive, ARABIC_SHA, 160 * MIB)?,
+            (None, Some(url)) => {
+                println!("Downloading the Arabic model (about 118 MB), checked by SHA-256…");
+                download(url, &archive, ARABIC_SHA, 160 * MIB)?;
+            }
+            (None, None) => {
+                return err("The Arabic model is not published for download yet. Install it from a file: jarvis install-model --arabic --archive moonshine-streaming-tiny-ar.tar.bz2")
+            }
+        }
+        let model = unpack_tar(&archive, &stage.0, ARABIC_NAME, ARABIC_FILES)?;
+        publish(&model, &arabic)?;
+    }
+    println!("Arabic model: ready at {}", arabic.display());
+    println!("Choose Arabic and English in Voice settings, then restart Jarvis.");
     Ok(())
 }
 

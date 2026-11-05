@@ -46,8 +46,16 @@ async fn dispatch(command: command::Command) -> Result<i32> {
         }
         Alias { name, app, remove } => command::alias(name, app, remove).await,
         Waybar => watch::run().await,
-        Install { archive, basic } => {
-            models::install(archive.as_deref(), basic)?;
+        Install {
+            archive,
+            basic,
+            arabic,
+        } => {
+            if arabic {
+                models::install_arabic(archive.as_deref())?;
+            } else {
+                models::install(archive.as_deref(), basic)?;
+            }
             Ok(0)
         }
         Setup {

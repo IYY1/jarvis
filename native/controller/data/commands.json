@@ -51,7 +51,10 @@
     "start instant replay": "start replay",
     "turn on instant replay": "start replay",
     "stop instant replay": "stop replay",
-    "turn off instant replay": "stop replay"
+    "turn off instant replay": "stop replay",
+    "start dictation": "listen to me",
+    "take dictation": "listen to me",
+    "start dictating": "listen to me"
   },
   "POLITE_PREFIXES": [
     "please",
@@ -161,11 +164,35 @@
       ]
     },
     {
+      "category": "Dictation",
+      "title": "Type what you say into the focused text field",
+      "examples": [
+        "listen to me",
+        "start dictation",
+        "stop dictation"
+      ]
+    },
+    {
       "category": "Privacy",
       "title": "Stop immediately",
       "examples": [
         "stop listening",
         "cancel"
+      ]
+    },
+    {
+      "category": "Arabic",
+      "title": "Arabic commands (Arabic and English setting)",
+      "examples": [
+        "افتح فايرفوكس",
+        "سكّر ديسكورد",
+        "علّ الصوت",
+        "وطّ الصوت",
+        "روح لمساحة العمل الثالثة",
+        "احفظ آخر ثلاثين ثانية",
+        "كلّبها",
+        "اسمعني",
+        "خلاص"
       ]
     }
   ],
@@ -266,6 +293,14 @@
     },
     "cancel": {
       "action": "cancel",
+      "target": null
+    },
+    "listen to me": {
+      "action": "dictation_start",
+      "target": null
+    },
+    "stop dictation": {
+      "action": "dictation_stop",
       "target": null
     }
   }

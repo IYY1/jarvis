@@ -45,7 +45,7 @@ window.murmur { background: @bg; color: @text; }
 .murmur .state-title.error { color: @error-text; }
 .murmur .pill { padding: 4px 12px; border-radius: 999px; font-size: 0.95em; font-weight: 600; background: @control; color: @text-muted; border: 1px solid @line-strong; }
 .murmur .pill.idle { background: @selected; color: @accent-hover; border-color: @selected; }
-.murmur .pill.listening { background: @gold; color: @on-gold; border-color: @gold; }
+.murmur .pill.listening, .murmur .pill.dictating { background: @gold; color: @on-gold; border-color: @gold; }
 .murmur .pill.processing, .murmur .pill.replay { background: @gold-soft; color: @gold; border-color: @gold; }
 .murmur .pill.error, .murmur .pill.offline { background: @error-bg; color: @error-text; border-color: @error-bg; }
 .murmur expander-widget title { padding: 4px 0; }

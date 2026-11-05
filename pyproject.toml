@@ -44,4 +44,4 @@ where = ["src"]
 include = ["murmur*"]
 
 [tool.setuptools.package-data]
-murmur = ["style.css", "onnx-cpu.conf"]
+murmur = ["style.css", "onnx-cpu.conf", "arabic_commands.json"]

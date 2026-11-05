@@ -36,6 +36,67 @@ def default_model_path() -> Path:
     return data_dir() / "models" / MODEL_NAME
 
 
+# Moonshine Streaming Tiny Arabic (MIT), exported by scripts/export_moonshine_arabic.py.
+ARABIC_NAME = "moonshine-streaming-tiny-ar"
+ARABIC_FILES = ("encoder.onnx", "cross.onnx", "decoder.onnx", "tokenizer.json")
+ARABIC_SHA256 = "df959ea0723c07733ac5996f0f7580a8bdf5612f09caf381332a7debd946cfd5"
+ARABIC_URL = "https://github.com/abdullaho21/jarvis/releases/download/models-arabic-1/moonshine-streaming-tiny-ar.tar.bz2"
+MAX_ARABIC_BYTES = 160 * 1024 * 1024
+
+
+def arabic_model_dir() -> Path:
+    from .host import app_dir, data_dir, is_windows
+    bundled = app_dir() / "models" / ARABIC_NAME
+    if is_windows() and all((bundled / f).is_file() for f in ARABIC_FILES):
+        return bundled
+    return data_dir() / "models" / ARABIC_NAME
+
+
+def arabic_model_ready() -> bool:
+    folder = arabic_model_dir()
+    return all((folder / name).is_file() for name in ARABIC_FILES)
+
+
+def install_arabic(archive: Path | None = None) -> Path:
+    """Explicit setup of the Arabic model: a local .tar.bz2 or the pinned download."""
+    import tempfile
+    destination = arabic_model_dir()
+    if arabic_model_ready():
+        return destination
+    if destination.exists():
+        raise RuntimeError(f"Incomplete Arabic model at {destination}; review and remove it first")
+    destination.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    with tempfile.TemporaryDirectory(prefix=".model-", dir=destination.parent) as temporary:
+        if archive is None:
+            import urllib.request
+            archive = Path(temporary) / "arabic.tar.bz2"
+            request = urllib.request.Request(ARABIC_URL, headers={"User-Agent": "Jarvis-model-setup/0.3"})
+            with urllib.request.urlopen(request, timeout=30) as response, archive.open("wb") as output:
+                total = 0
+                while chunk := response.read(1024 * 1024):
+                    total += len(chunk)
+                    if total > MAX_ARABIC_BYTES:
+                        raise RuntimeError("Arabic model download exceeds its expected size")
+                    output.write(chunk)
+        if archive.stat().st_size > MAX_ARABIC_BYTES or _sha256(archive) != ARABIC_SHA256:
+            raise RuntimeError("Arabic model archive checksum mismatch")
+        _extract_arabic(archive, Path(temporary), destination)
+    return destination
+
+
+def _extract_arabic(archive: Path, temporary: Path, destination: Path) -> None:
+    import tarfile
+    with tarfile.open(archive, "r:bz2") as bundle:
+        wanted = {f"{ARABIC_NAME}/{name}" for name in (*ARABIC_FILES, "LICENSE", "README.md")}
+        for member in bundle.getmembers():
+            if member.name in wanted and member.isfile():
+                bundle.extract(member, temporary, filter="data")
+        staged = Path(temporary) / ARABIC_NAME
+        if not all((staged / name).is_file() for name in ARABIC_FILES):
+            raise RuntimeError("Arabic model archive is incomplete")
+        staged.rename(destination)
+
+
 def valid_model(path: Path) -> bool:
     return path.is_dir() and all((path / name).is_file() for name in REQUIRED)
 

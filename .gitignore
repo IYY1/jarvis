@@ -34,3 +34,5 @@ _to_delete/
 native/command-phrases/target/
 native/replay-store/target/
 native/kws-probe/target/
+native/text-input/target/
+native/moonshine-recognizer/target/

@@ -29,7 +29,7 @@ impl Embedding {
             .checked_mul(columns)
             .ok_or_else(|| format_err!("Embedding too large"))?;
         ensure!(
-            count <= 51864 * 768 && u64::try_from(count)?.checked_mul(4) == Some(bytes),
+            count <= 51865 * 768 && u64::try_from(count)?.checked_mul(4) == Some(bytes),
             "Unexpected embedding byte length"
         );
         let mut compact = Vec::with_capacity(count);

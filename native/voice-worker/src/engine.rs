@@ -1,4 +1,4 @@
-use crate::inference::{trim, Decoder, Model, Transcriber};
+use crate::inference::{trim, Arabic, Decoder, Model, Text, Transcriber};
 use crate::matching::{phrase, Matcher};
 use crate::on_demand::{Loader, OnDemand};
 use crate::{NativeConfig, Result};
@@ -84,6 +84,9 @@ pub struct Engine {
     command: Decoder,
     open: Option<Decoder>,
     whisper: Option<OnDemand<Transcriber>>,
+    /// Arabic commands and dictation, loaded alongside Whisper on demand.
+    arabic: Option<OnDemand<Arabic>>,
+    dictation_language: &'static str,
     vosk_fast_path: bool,
     finalize_utterances: bool,
     fast_commands: u64,
@@ -189,6 +192,20 @@ impl Engine {
             Some(OnDemand::new(load, idle)?)
         } else {
             None
+        };
+        let arabic = if let Some(directory) = &native.arabic {
+            let directory = directory.clone();
+            let load: Loader<Arabic> =
+                Arc::new(move || Arabic::load(&directory).map_err(|e| e.to_string()));
+            let idle = native.whisper_idle_seconds.map(Duration::from_secs_f64);
+            Some(OnDemand::new(load, idle)?)
+        } else {
+            None
+        };
+        let dictation_language = match native.dictation_language.as_deref() {
+            Some("ar") if arabic.is_some() => "ar",
+            Some("ar") => return Err("Arabic dictation needs the Arabic model".into()),
+            _ => "en",
         };
         let model = Model::load(&native.vosk_library, &native.model_path)?;
         let known = supported(&model, &grammar.phrases);
@@ -370,6 +387,8 @@ impl Engine {
             command,
             open,
             whisper,
+            arabic,
+            dictation_language,
             vosk_fast_path: native.vosk_fast_path,
             finalize_utterances: native.vosk_finalize_utterances,
             fast_commands: 0,
@@ -396,14 +415,15 @@ impl Engine {
             unsupported,
             unmatched: None,
             name: match &native.whisper {
-                // tiny.en-encoder.int8.onnx -> vosk+whisper-tiny
+                // tiny.en-encoder.int8.onnx -> vosk+whisper-tiny(+moonshine-ar)
                 Some(files) => format!(
-                    "vosk+whisper-{}",
+                    "vosk+whisper-{}{}",
                     std::path::Path::new(&files.encoder)
                         .file_name()
                         .and_then(|n| n.to_str())
                         .and_then(|n| n.split_once(".en-"))
-                        .map_or("small", |(size, _)| size)
+                        .map_or("small", |(size, _)| size),
+                    if native.arabic.is_some() { "+moonshine-ar" } else { "" }
                 ),
                 None => "vosk".into(),
             },
@@ -467,6 +487,28 @@ impl Engine {
         }
         Ok(())
     }
+    /// A transcriber for dictation, which runs on its own thread: the Arabic
+    /// model for Arabic dictation, otherwise Whisper. Wake and command
+    /// decoding stay idle until `begin` is called again.
+    pub fn dictation_model(&mut self) -> Result<crate::dictation::Transcribe> {
+        let missing = "Dictation needs the speech model. Turn on Accurate recognition in Voice settings.";
+        let model: crate::dictation::Transcribe = if self.dictation_language == "ar" {
+            let arabic = self.arabic.as_mut().ok_or(missing)?.shared()?;
+            Arc::new(move |pcm: &[u8]| {
+                Ok(Text {
+                    text: arabic.transcribe(pcm)?,
+                    language: "ar",
+                })
+            })
+        } else {
+            let whisper = self.whisper.as_mut().ok_or(missing)?.shared()?;
+            Arc::new(move |pcm: &[u8]| whisper.dictate(pcm))
+        };
+        self.reset()?;
+        self.pending = None;
+        self.mode = Some("dictation");
+        Ok(model)
+    }
     pub fn after_wake(&mut self) -> Option<Recognition> {
         self.pending.take()
     }
@@ -479,6 +521,9 @@ impl Engine {
         if let Some(whisper) = &mut self.whisper {
             whisper.prepare();
         }
+        if let Some(arabic) = &mut self.arabic {
+            arabic.prepare();
+        }
     }
     pub fn recognition_stats(&self) -> Value {
         serde_json::json!({"vosk_fast_path":self.vosk_fast_path,"vosk_finalize_utterances":self.finalize_utterances,"fast_commands":self.fast_commands,
@@ -490,10 +535,15 @@ impl Engine {
     /// while it stays released.
     pub fn maintain(&mut self) -> Result<()> {
         let waiting = self.mode == Some("wake") && self.pending.is_none();
+        let mut released = false;
         if let Some(whisper) = &mut self.whisper {
-            if whisper.maintain(!waiting)? {
-                trim();
-            }
+            released |= whisper.maintain(!waiting)?;
+        }
+        if let Some(arabic) = &mut self.arabic {
+            released |= arabic.maintain(!waiting)?;
+        }
+        if released {
+            trim();
         }
         Ok(())
     }
@@ -735,6 +785,30 @@ impl Engine {
                 self.fast_commands += 1;
                 self.mode = None;
                 return Ok(Some(recognition));
+            }
+        }
+        // Arabic first: its transcript is accepted only when it is one of the
+        // supported Arabic commands, so English speech (which this model
+        // writes as Arabic-script sounds) falls through to Whisper unchanged.
+        if let Some(arabic) = &mut self.arabic {
+            if !audio.is_empty() {
+                let heard_ar = phrase(&arabic.get()?.transcribe(&audio)?);
+                if jarvis_phrases::arabic::has_arabic(&heard_ar)
+                    && jarvis_phrases::arabic::translate(
+                        &heard_ar,
+                        self.matcher.close_verbs.first().map_or("close", String::as_str),
+                    )
+                    .is_some()
+                {
+                    if let Some((matched, score)) = self.matcher.closest(&heard_ar) {
+                        self.mode = None;
+                        let mut result = Recognition::new("command", matched, Some(score));
+                        result.heard = Some(heard_ar);
+                        result.closest_match = true;
+                        result.recognition_pass = Some("arabic");
+                        return Ok(Some(result));
+                    }
+                }
             }
         }
         if let Some(whisper) = &mut self.whisper {

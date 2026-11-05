@@ -109,6 +109,7 @@ pub fn data_dirs() -> Vec<PathBuf> {
     roots.extend([
         util::home().join(".local/share/flatpak/exports/share"),
         PathBuf::from("/var/lib/flatpak/exports/share"),
+        PathBuf::from("/var/lib/snapd/desktop"),
     ]);
     let mut seen = HashSet::new();
     roots
@@ -153,6 +154,12 @@ fn entry(path: &Path) -> Result<BTreeMap<String, String>> {
         }
     }
     Ok(values)
+}
+/// Installers, uninstallers and updaters are not apps to open by voice.
+fn utility(name: &str) -> bool {
+    let name = fold(name);
+    name.split(|c: char| !c.is_alphanumeric())
+        .any(|w| ["uninstall", "uninstaller", "installer", "setup", "updater"].contains(&w))
 }
 fn boolean(map: &BTreeMap<String, String>, key: &str) -> Result<bool> {
     match map.get(key).map(|s| s.to_lowercase()).as_deref() {
@@ -215,6 +222,9 @@ impl Registry {
                     }
                     if !get("tryexec").is_empty() && util::which(&get("tryexec")).is_none() {
                         return err("Unavailable program");
+                    }
+                    if utility(&get("name")) {
+                        return err("Installer or uninstaller");
                     }
                     if get("name").is_empty()
                         || (get("exec").is_empty() && !boolean(&e, "dbusactivatable")?)
@@ -373,9 +383,30 @@ impl Registry {
                     .map(|(k, _)| k)
                     .collect::<Vec<_>>());
                 value["speakable"] = Value::Null;
+                value["duplicate_of"] = json!(self.duplicate_of(app));
                 value
             })
             .collect()
+    }
+    /// The entry voice commands open instead of `app`, if it is the same app
+    /// installed twice (same name and windows, e.g. native + Flatpak).
+    pub fn duplicate_of(&self, app: &App) -> Option<String> {
+        let classes = app.classes();
+        let mut same: Vec<&App> = self
+            .apps
+            .values()
+            .filter(|a| {
+                a.display() == app.display()
+                    && !app.display().is_empty()
+                    && (a.id == app.id || !classes.is_disjoint(&a.classes()))
+            })
+            .collect();
+        if same.len() < 2 {
+            return None;
+        }
+        let home = util::home().to_string_lossy().to_string();
+        same.sort_by_key(|a| (a.flatpak(), !a.path.starts_with(&home), a.id.len(), a.id.clone()));
+        (same[0].id != app.id).then(|| same[0].id.clone())
     }
     pub fn voice_commands(&self, parser: &crate::policy::Parser) -> Result<Vec<Value>> {
         let mut apps: Vec<_> = self.apps.values().collect();

@@ -6,6 +6,7 @@ pub mod apps;
 pub mod capture;
 pub mod config;
 pub mod desktop;
+pub mod dictation;
 pub mod ipc;
 pub mod memory;
 pub mod policy;

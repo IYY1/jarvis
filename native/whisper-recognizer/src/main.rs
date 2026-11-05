@@ -11,11 +11,11 @@ use tract_onnx::tract_core::internal::{ensure, format_err};
 fn pcm(path: &str) -> TractResult<Vec<f32>> {
     let mut bytes = Vec::new();
     std::fs::File::open(path)?
-        .take(320001)
+        .take(640001)
         .read_to_end(&mut bytes)?;
     ensure!(
-        (6400..=320000).contains(&bytes.len()) && bytes.len().is_multiple_of(2),
-        "Expected 0.2–10 seconds of complete s16le PCM samples"
+        (6400..=640000).contains(&bytes.len()) && bytes.len().is_multiple_of(2),
+        "Expected 0.2–20 seconds of complete s16le PCM samples"
     );
     Ok(bytes
         .as_chunks::<2>()
@@ -49,7 +49,7 @@ fn run() -> TractResult<()> {
         println!(concat!(
             "jarvis-whisper ",
             env!("CARGO_PKG_VERSION"),
-            "; Rust Whisper tiny.en/base.en/small.en / tract 0.23.9"
+            "; Rust Whisper tiny/base/small (English or multilingual) / tract 0.23.9"
         ));
         return Ok(());
     }
@@ -61,10 +61,18 @@ fn run() -> TractResult<()> {
     } else {
         8
     };
+    let languages: Vec<String> = if let Some(i) = args.iter().position(|a| a == "--languages") {
+        ensure!(i + 1 < args.len(), "--languages requires codes such as ar,en");
+        let list = args.remove(i + 1);
+        args.remove(i);
+        list.split(',').map(str::to_owned).collect()
+    } else {
+        vec!["ar".into(), "en".into()]
+    };
     let model_name = if let Some(i) = args.iter().position(|a| a == "--model-name") {
         ensure!(
             i + 1 < args.len(),
-            "--model-name requires tiny.en, base.en or small.en"
+            "--model-name requires tiny, base or small, with or without .en"
         );
         let name = args.remove(i + 1);
         args.remove(i);
@@ -73,15 +81,15 @@ fn run() -> TractResult<()> {
         "small.en".into()
     };
     ensure!(
-        ["tiny.en", "base.en", "small.en"].contains(&model_name.as_str()),
-        "Unsupported model name; use tiny.en, base.en or small.en"
+        ["tiny.en", "base.en", "small.en", "tiny", "base", "small"].contains(&model_name.as_str()),
+        "Unsupported model name; use tiny, base or small, with or without .en"
     );
     let batch = args.first().is_some_and(|a| a == "--batch");
     let diagnose = args.first().is_some_and(|a| a == "--diagnose");
     if batch || diagnose {
         args.remove(0);
     }
-    ensure!(if batch {args.len()==1} else if diagnose {args.len()==3} else {args.len()==2},"Use jarvis-whisper [--threads N] [--model-name tiny.en|base.en|small.en] MODEL_DIR INPUT.s16le; --batch MODEL_DIR; or --diagnose MODEL_DIR INPUT.s16le NEW_TRACE_DIR");
+    ensure!(if batch {args.len()==1} else if diagnose {args.len()==3} else {args.len()==2},"Use jarvis-whisper [--threads N] [--model-name tiny|base|small[.en]] [--languages ar,en] MODEL_DIR INPUT.s16le; --batch MODEL_DIR; or --diagnose MODEL_DIR INPUT.s16le NEW_TRACE_DIR");
     let root = Path::new(&args[0]);
     let start = Instant::now();
     let model = Recognizer::load(
@@ -102,8 +110,14 @@ fn run() -> TractResult<()> {
     let infer = |path: &str, trace: Option<&str>| -> TractResult<()> {
         let samples = pcm(path)?;
         let start = Instant::now();
+        let mut language = None;
         let text = if let Some(trace) = trace {
             model.diagnose(&samples, Path::new(trace))?
+        } else if model.multilingual() {
+            let codes: Vec<&str> = languages.iter().map(String::as_str).collect();
+            let found = model.transcribe_in(&samples, &codes)?;
+            language = found.language;
+            found.text
         } else {
             model.transcribe(&samples)?
         };
@@ -111,7 +125,7 @@ fn run() -> TractResult<()> {
         trim();
         println!(
             "{}",
-            json!({"event":"result","text":text,"seconds":seconds,"memory":memory()})
+            json!({"event":"result","text":text,"language":language,"seconds":seconds,"memory":memory()})
         );
         Ok(())
     };

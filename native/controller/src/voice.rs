@@ -70,6 +70,8 @@ pub fn vosk_library() -> Result<PathBuf> {
     }
     err("Rust voice worker requires the local Vosk library and model")
 }
+/// Directory of the exported Arabic model under the model root.
+pub const ARABIC_MODEL: &str = "moonshine-streaming-tiny-ar";
 fn model_root() -> PathBuf {
     env::var_os("XDG_DATA_HOME")
         .map(PathBuf::from)
@@ -149,6 +151,28 @@ pub fn prepare(
     } else {
         Value::Null
     };
+    // Arabic and English: Moonshine Streaming Tiny Arabic beside Whisper.
+    let arabic = model_root().join(ARABIC_MODEL);
+    let arabic = if config["recognition"]["language"] == "ar_en" && !files.is_null() {
+        if !["encoder.onnx", "cross.onnx", "decoder.onnx", "tokenizer.json"]
+            .iter()
+            .all(|f| arabic.join(f).is_file())
+        {
+            return err("Arabic is selected but the Arabic model is missing. Install it in Voice settings or run: jarvis install-model --arabic");
+        }
+        json!(arabic)
+    } else {
+        Value::Null
+    };
+    let dictation_language = match config["dictation"]["language"].as_str() {
+        Some("ar") => "ar",
+        Some("en") => "en",
+        _ if !arabic.is_null() => "ar",
+        _ => "en",
+    };
+    if dictation_language == "ar" && arabic.is_null() && mode == "dictation" {
+        return err("Arabic dictation needs the Arabic and English language setting and the Arabic model");
+    }
     let candidates = parser.candidates(&grammar)?;
     let threads = std::thread::available_parallelism()
         .map(usize::from)
@@ -158,7 +182,7 @@ pub fn prepare(
     // without a command, matching murmur.native_worker.WHISPER_IDLE_SECONDS.
     // Finalizing Vosk utterances frees each decoder's feature history (about
     // 45 MiB of standby growth); see docs/vosk-finalization.md.
-    let native = json!({"vosk_library":library.unwrap_or_default(),"model_path":model,"whisper":files,"denoiser":denoiser,"threads":threads.clamp(1,8),"candidates":candidates,"wake_forms":all_wake_forms(config)?,"greetings":TABLES["GREETINGS"],"prefixes":TABLES["POLITE_PREFIXES"],"suffixes":TABLES["POLITE_SUFFIXES"],"whisper_idle_seconds":60,"vosk_finalize_utterances":true});
+    let native = json!({"vosk_library":library.unwrap_or_default(),"model_path":model,"whisper":files,"denoiser":denoiser,"threads":threads.clamp(1,8),"candidates":candidates,"wake_forms":all_wake_forms(config)?,"greetings":TABLES["GREETINGS"],"prefixes":TABLES["POLITE_PREFIXES"],"suffixes":TABLES["POLITE_SUFFIXES"],"whisper_idle_seconds":60,"vosk_finalize_utterances":true,"arabic":arabic,"dictation_language":if arabic.is_null() {"en"} else {dictation_language}});
     Ok((
         worker,
         json!({"config":config,"mode":mode,"grammar":grammar,"native":native}),

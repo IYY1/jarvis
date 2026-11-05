@@ -35,10 +35,14 @@ class GrammarParserConsistencyTests(unittest.TestCase):
         self.matcher = matcher_for(self.grammar)
 
     def test_every_documented_example_is_speakable_and_parses(self):
+        from murmur.phrases import has_arabic
         for example in (e for entry in REFERENCE for e in entry["examples"]):
             with self.subTest(example=example):
                 text = normalize(example)
-                self.assertTrue(self.matcher.accepts(text), f"{example!r} is shown in Commands but not in the grammar")
+                # Arabic is heard by the Arabic model, never the English Vosk
+                # grammar; it must still parse to a supported command.
+                if not has_arabic(text):
+                    self.assertTrue(self.matcher.accepts(text), f"{example!r} is shown in Commands but not in the grammar")
                 self.parser.parse(text)
 
     def test_everything_the_grammar_allows_parses(self):

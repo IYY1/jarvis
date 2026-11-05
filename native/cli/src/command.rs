@@ -3,7 +3,7 @@ use serde_json::{json, Value};
 use std::{collections::BTreeSet, path::PathBuf};
 use unicode_casefold::UnicodeCaseFold;
 
-pub const HELP: &str = "Usage: jarvis [COMMAND]\n\nLocal voice control for Hyprland (native Rust client)\n\n  ui [--page PAGE]           Open the GTK settings window (default)\n  daemon                     Run the Rust controller\n  status | config            Read service state or configuration\n  listen | cancel            Start or cancel one bounded voice command\n  mute | resume              Pause or resume wake listening\n  execute PHRASE             Execute an allowlisted phrase\n  record start|stop          Control screen recording\n  replay start|stop|save      Control instant replay\n  alias [NAME APP]           List or add voice names for installed apps\n  alias NAME --remove        Remove a voice name\n  waybar                     Stream status as Waybar JSON lines\n  doctor                     Read-only dependency and session checks\n  install-model [--basic] [--archive ZIP]\n                             Download and verify voice models\n  install-user [--service] [--replace] [--dry-run]\n                             Install user launcher and optional service\n  --version | --help\n";
+pub const HELP: &str = "Usage: jarvis [COMMAND]\n\nLocal voice control for Hyprland (native Rust client)\n\n  ui [--page PAGE]           Open the GTK settings window (default)\n  daemon                     Run the Rust controller\n  status | config            Read service state or configuration\n  listen | cancel            Start or cancel one bounded voice command\n  dictate [start|stop|cancel|toggle]\n                             Type speech into the focused text field\n  mute | resume              Pause or resume wake listening\n  execute PHRASE             Execute an allowlisted phrase\n  record start|stop          Control screen recording\n  replay start|stop|save      Control instant replay\n  alias [NAME APP]           List or add voice names for installed apps\n  alias NAME --remove        Remove a voice name\n  waybar                     Stream status as Waybar JSON lines\n  doctor                     Read-only dependency and session checks\n  install-model [--basic] [--archive ZIP]\n                             Download and verify voice models\n  install-model --arabic [--archive TAR.BZ2]\n                             Install the optional Arabic model\n  install-user [--service] [--replace] [--dry-run]\n                             Install user launcher and optional service\n  --version | --help\n";
 
 #[derive(Debug)]
 pub enum Command {
@@ -21,6 +21,7 @@ pub enum Command {
     Install {
         archive: Option<PathBuf>,
         basic: bool,
+        arabic: bool,
     },
     Setup {
         service: bool,
@@ -76,6 +77,13 @@ pub fn parse(args: &[String]) -> Result<Command> {
             no_args()?;
             Ok(Request(json!({"op":"mute", "muted":args[0]=="mute"})))
         }
+        "dictate" => match rest {
+            [] => Ok(Request(json!({"op":"dictation","action":"toggle"}))),
+            [action] if ["start", "stop", "cancel", "toggle"].contains(&action.as_str()) => {
+                Ok(Request(json!({"op":"dictation","action":action})))
+            }
+            _ => err("Use dictate [start|stop|cancel|toggle]"),
+        },
         "execute" if rest.len() == 1 => Ok(Request(json!({"op":"execute","phrase":rest[0]}))),
         "record" | "replay"
             if rest.len() == 1
@@ -111,19 +119,28 @@ pub fn parse(args: &[String]) -> Result<Command> {
         "install-model" => {
             let mut archive = None;
             let mut basic = false;
+            let mut arabic = false;
             let mut i = 0;
             while i < rest.len() {
                 match rest[i].as_str() {
                     "--basic" if !basic => basic = true,
+                    "--arabic" if !arabic => arabic = true,
                     "--archive" if archive.is_none() && i + 1 < rest.len() => {
                         i += 1;
                         archive = Some(jarvis_controller::util::expand(&rest[i]));
                     }
-                    _ => return err("Use install-model [--basic] [--archive ZIP]"),
+                    _ => return err("Use install-model [--basic] [--archive ZIP] or install-model --arabic [--archive TAR.BZ2]"),
                 }
                 i += 1;
             }
-            Ok(Install { archive, basic })
+            if arabic && basic {
+                return err("Use install-model --arabic on its own");
+            }
+            Ok(Install {
+                archive,
+                basic,
+                arabic,
+            })
         }
         "install-user" => {
             let mut service = false;

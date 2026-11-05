@@ -10,6 +10,7 @@ description = "CPU-only Vosk/Whisper/GTCRN voice worker for Jarvis"
 jarvis-phrases = { path = "../command-phrases" }
 jarvis-gtcrn = { path = "../gtcrn-denoiser" }
 jarvis-whisper = { path = "../whisper-recognizer" }
+jarvis-moonshine = { path = "../moonshine-recognizer" }
 libc = "0.2"
 libloading = "0.8"
 serde = { version = "1", features = ["derive"] }

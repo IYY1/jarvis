@@ -70,8 +70,16 @@ def data_dirs() -> list[Path]:
     roots = [os.environ.get("XDG_DATA_HOME", str(Path.home() / ".local/share"))]
     roots.extend(os.environ.get("XDG_DATA_DIRS", "/usr/local/share:/usr/share").split(":"))
     # Flatpak exports may not yet be in a service's environment.
-    roots.extend([str(Path.home() / ".local/share/flatpak/exports/share"), "/var/lib/flatpak/exports/share"])
+    roots.extend([str(Path.home() / ".local/share/flatpak/exports/share"), "/var/lib/flatpak/exports/share",
+                  "/var/lib/snapd/desktop"])
     return list(dict.fromkeys(Path(p) / "applications" for p in roots if p))
+
+
+def utility(name: str) -> bool:
+    """Installer, uninstaller or updater entries (mirrors apps.rs)."""
+    import re
+    return any(w in ("uninstall", "uninstaller", "installer", "setup", "updater")
+               for w in re.split(r"\W+", name.casefold()))
 
 
 def current_desktops() -> set[str]:
@@ -127,6 +135,8 @@ class AppRegistry:
                         continue
                     if e.get("TryExec") and not shutil.which(e["TryExec"]):
                         continue
+                    if utility(e.get("Name", "")):
+                        continue   # installers/uninstallers are not apps to open by voice
                     if not e.get("Name") or not (e.get("Exec") or e.getboolean("DBusActivatable", False)):
                         continue
                     a = App(desktop_id, e["Name"], str(path.resolve()), e.get("Exec", ""), e.get("Icon", ""), e.get("StartupWMClass", ""))
@@ -266,6 +276,17 @@ class AppRegistry:
         if completed.returncode:
             raise CommandError("Desktop launch failed: " + completed.stderr.strip()[:300])
 
+    def duplicate_of(self, app: App) -> str | None:
+        """The entry voice commands open instead of this one, if it is the same
+        app installed twice (same name and windows, e.g. native + Flatpak)."""
+        twins = [a for a in self.duplicates(app) if a.classes() & app.classes()]
+        if not twins:
+            return None
+        home = str(Path.home())
+        best = min([app, *twins], key=lambda a: (is_flatpak(a), not a.path.startswith(home), len(a.id), a.id))
+        return None if best is app else best.id
+
     def list(self) -> list[dict]:
-        return [{**asdict(a), "aliases": [k for k, v in self.aliases.items() if v == a.id], "speakable": None}
+        return [{**asdict(a), "aliases": [k for k, v in self.aliases.items() if v == a.id], "speakable": None,
+                 "duplicate_of": self.duplicate_of(a)}
                 for a in sorted(self.apps.values(), key=lambda a: a.name.casefold())]

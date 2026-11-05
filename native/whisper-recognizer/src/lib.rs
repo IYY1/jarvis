@@ -1,5 +1,6 @@
-//! English Whisper inference with Rust feature extraction and tract kernels.
-//! ONNX supplies unchanged int8/f32 weights; no foreign inference runtime.
+//! Whisper inference (English-only or multilingual) with Rust feature
+//! extraction and tract kernels. ONNX supplies unchanged int8/f32 weights; no
+//! foreign inference runtime.
 mod embedding;
 mod features;
 mod graph;
@@ -10,6 +11,7 @@ mod scale;
 mod tokens;
 use embedding::Embedding;
 use features::Features;
+pub use profile::LANGUAGES;
 use profile::Profile;
 use std::{collections::BTreeMap, path::Path, sync::Arc};
 use tokens::TokenTable;
@@ -19,7 +21,14 @@ use tract_onnx::tract_core::{
     internal::{ensure, format_err},
     runtime::RunOptions,
 };
-const VOCAB: usize = 51864;
+
+/// What a transcription found: the text and, for multilingual models, the
+/// language it was decoded as.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Transcript {
+    pub text: String,
+    pub language: Option<&'static str>,
+}
 pub struct Recognizer {
     profile: Profile,
     encoder: Arc<TypedRunnableModel>,
@@ -122,7 +131,7 @@ impl Recognizer {
         };
         let positions = tensor("textDecoder.positional_embedding")?;
         ensure!(
-            embedding.shape() == [VOCAB, profile.state]
+            embedding.shape() == [profile.vocabulary().size, profile.state]
                 && positions.shape() == [448, profile.state],
             "Unexpected embedding shape"
         );
@@ -140,7 +149,7 @@ impl Recognizer {
         )?;
         drop(p);
 
-        let table = TokenTable::load(tokens.as_ref())?;
+        let table = TokenTable::load(tokens.as_ref(), profile.vocabulary().text_tokens)?;
         Ok(Self {
             profile,
             encoder,
@@ -166,15 +175,35 @@ impl Recognizer {
         self.embedding.bytes()
     }
     pub fn transcribe(&self, samples: &[f32]) -> TractResult<String> {
-        self.recognize(samples, None)
+        Ok(self.recognize(samples, None, &[])?.text)
+    }
+    pub fn multilingual(&self) -> bool {
+        self.profile.multilingual
+    }
+    /// Multilingual models only: decode as the most likely of `languages`
+    /// (codes from [`LANGUAGES`]); one code fixes the language. Speech the
+    /// model judges to be no speech at all returns empty text.
+    pub fn transcribe_in(&self, samples: &[f32], languages: &[&str]) -> TractResult<Transcript> {
+        ensure!(self.profile.multilingual, "This Whisper model is English-only");
+        ensure!(
+            !languages.is_empty() && languages.iter().all(|l| LANGUAGES.iter().any(|(c, _)| c == l)),
+            "Unsupported transcription language"
+        );
+        self.recognize(samples, None, languages)
     }
     /// Explicit offline numerical diagnostic. Creates a new directory; never
     /// writes audio/intermediates during ordinary recognition.
     pub fn diagnose(&self, samples: &[f32], directory: &Path) -> TractResult<String> {
         std::fs::create_dir(directory)?;
-        self.recognize(samples, Some(directory))
+        Ok(self.recognize(samples, Some(directory), &[])?.text)
     }
-    fn recognize(&self, samples: &[f32], trace: Option<&Path>) -> TractResult<String> {
+    fn recognize(
+        &self,
+        samples: &[f32],
+        trace: Option<&Path>,
+        languages: &[&str],
+    ) -> TractResult<Transcript> {
+        let vocabulary = self.profile.vocabulary();
         let state = self.profile.state;
         let layers = self.profile.layers;
         let mut profile = BTreeMap::new();
@@ -222,7 +251,30 @@ impl Recognizer {
             .map(|_| Ok(Tensor::zero::<f32>(&[1, 0, state])?.into_tvalue()))
             .collect::<TractResult<Vec<_>>>()?;
         let mut v = k.clone();
-        let mut input = vec![50257, 50362];
+        let mut language = None;
+        let mut input = if self.profile.multilingual {
+            // One step from <|startoftranscript|> scores every language and
+            // "no speech"; then decode from a fresh cache with the full prompt.
+            let first = self.step(&[vocabulary.sot], 0, &mut k.clone(), &mut v.clone(), &keys, &values)?;
+            let code = *languages
+                .iter()
+                .max_by(|a, b| {
+                    let score = |c: &&str| first[LANGUAGES.iter().find(|(l, _)| l == c).unwrap().1];
+                    score(a).total_cmp(&score(b))
+                })
+                .unwrap_or(&"en");
+            if no_speech(&first, vocabulary.no_speech) > 0.6 {
+                return Ok(Transcript {
+                    text: String::new(),
+                    language: Some(LANGUAGES.iter().find(|(l, _)| *l == code).unwrap().0),
+                });
+            }
+            let token = LANGUAGES.iter().find(|(l, _)| *l == code).unwrap();
+            language = Some(token.0);
+            vec![vocabulary.sot, token.1, vocabulary.transcribe, vocabulary.no_timestamps]
+        } else {
+            vec![50257, 50362]
+        };
         let mut offset = 0;
         let mut bytes = Vec::new();
         let mut predicted = Vec::new();
@@ -288,18 +340,25 @@ impl Recognizer {
                 logits.iter().all(|x| x.is_finite()),
                 "Non-finite decoder logits"
             );
-            let token = logits
+            // Multilingual decoding never emits a special token other than
+            // end-of-text; English decoding is unchanged.
+            let choices = if self.profile.multilingual {
+                &logits[..=vocabulary.eot]
+            } else {
+                &logits[..]
+            };
+            let token = choices
                 .iter()
                 .enumerate()
-                .fold(0, |best, (i, v)| if *v > logits[best] { i } else { best });
+                .fold(0, |best, (i, v)| if *v > choices[best] { i } else { best });
             if let Some(dir) = trace {
                 write_tensor(
                     &dir.join(format!("step-{step:03}.f32")),
-                    &Tensor::from_shape(&[VOCAB], &logits)?,
+                    &Tensor::from_shape(&[vocabulary.size], &logits)?,
                 )?;
                 predicted.push(token);
             }
-            if token == 50256 || step == maximum {
+            if token == vocabulary.eot || step == maximum {
                 break;
             }
             if let Some(text) = self.tokens.get(token) {
@@ -310,6 +369,11 @@ impl Recognizer {
             input.push(token);
         }
         let text = token_text(&bytes);
+        let text = if self.profile.multilingual {
+            collapse_repeats(&text)
+        } else {
+            text
+        };
         if let Some(dir) = trace {
             std::fs::write(
                 dir.join("trace.json"),
@@ -318,8 +382,87 @@ impl Recognizer {
                 )?,
             )?;
         }
-        Ok(text)
+        Ok(Transcript { text, language })
     }
+    /// One decoder pass over `input` at `offset`, returning the last position's
+    /// logits and extending the self-attention caches.
+    fn step(
+        &self,
+        input: &[usize],
+        offset: usize,
+        k: &mut [TValue],
+        v: &mut [TValue],
+        keys: &[TValue],
+        values: &[TValue],
+    ) -> TractResult<Vec<f32>> {
+        let state = self.profile.state;
+        let n = input.len();
+        let positions = self.positions.try_as_plain_ram()?.as_slice::<f32>()?;
+        let mut x = Vec::with_capacity(n * state);
+        for (i, &token) in input.iter().enumerate() {
+            self.embedding.append_positioned(
+                token,
+                &positions[(offset + i) * state..(offset + i + 1) * state],
+                &mut x,
+            )?;
+        }
+        let mut x = Tensor::from_shape(&[1, n, state], &x)?.into_tvalue();
+        let total = offset + n;
+        let mask: Vec<f32> = (0..n)
+            .flat_map(|i| (0..total).map(move |j| if n > 1 && j > i { f32::NEG_INFINITY } else { 0.0 }))
+            .collect();
+        let mask = Tensor::from_shape(&[1, 1, n, total], &mask)?.into_tvalue();
+        for layer in 0..self.profile.layers {
+            let out = self.blocks[layer].run(tvec!(
+                x,
+                k[layer].clone(),
+                v[layer].clone(),
+                keys[layer].clone(),
+                values[layer].clone(),
+                mask.clone()
+            ))?;
+            let mut out = out.into_iter();
+            x = out.next().unwrap();
+            k[layer] = out.next().unwrap();
+            v[layer] = out.next().unwrap();
+        }
+        let last = Tensor::from_shape(
+            &[1, 1, state],
+            &x.try_as_plain_ram()?.as_slice::<f32>()?[(n - 1) * state..n * state],
+        )?
+        .into_tvalue();
+        let norm = self.norm.run(tvec!(last))?;
+        let logits = self.embedding.project(norm[0].try_as_plain_ram()?.as_slice::<f32>()?, &self.pool)?;
+        ensure!(logits.iter().all(|x| x.is_finite()), "Non-finite decoder logits");
+        Ok(logits)
+    }
+}
+/// Probability of the no-speech token at the first step.
+fn no_speech(logits: &[f32], token: usize) -> f32 {
+    let max = logits.iter().copied().fold(f32::NEG_INFINITY, f32::max);
+    let sum: f32 = logits.iter().map(|l| (l - max).exp()).sum();
+    (logits[token] - max).exp() / sum
+}
+/// Greedy decoding can loop on one phrase ("شكرا شكرا شكرا …"). Keep a word
+/// sequence's first occurrence when it repeats three or more times in a row.
+fn collapse_repeats(text: &str) -> String {
+    let mut words: Vec<&str> = text.split_whitespace().collect();
+    for size in 1..=4 {
+        let mut i = 0;
+        while i + size * 3 <= words.len() {
+            let run = (1..)
+                .take_while(|r| {
+                    i + (r + 1) * size <= words.len()
+                        && words[i + r * size..i + (r + 1) * size] == words[i..i + size]
+                })
+                .count();
+            if run >= 2 {
+                words.drain(i + size..i + (run + 1) * size);
+            }
+            i += 1;
+        }
+    }
+    words.join(" ")
 }
 /// Byte-level BPE pieces can stop inside a multi-byte character (at the token
 /// limit, or on noise). Drop incomplete sequences instead of failing the command.
@@ -380,5 +523,12 @@ mod tests {
         // "♪" is E2 99 AA; a token limit can stop after its first two bytes.
         assert_eq!(token_text(b" open steam \xE2\x99"), "open steam");
         assert_eq!(token_text(b"\xFF go \xC3"), "go");
+    }
+    #[test]
+    fn repeated_phrases_collapse_but_ordinary_repeats_stay() {
+        assert_eq!(collapse_repeats("شكرا شكرا شكرا شكرا"), "شكرا");
+        assert_eq!(collapse_repeats("go go"), "go go");
+        assert_eq!(collapse_repeats("a b a b a b c"), "a b c");
+        assert_eq!(collapse_repeats("open the door"), "open the door");
     }
 }

@@ -229,7 +229,8 @@ class ReplayPhraseTests(unittest.TestCase):
     def test_config_defaults_and_bounds(self):
         self.assertEqual(config.validate({})["replay"], {"seconds": 120, "autostart": False, "game_audio": True,
                                                        "microphone": True, "sound": True,
-                                                       "storage": "ram", "max_mb": 256, "buffer_dir": ""})
+                                                       "storage": "ram", "max_mb": 256, "buffer_dir": "",
+                                                   "audio_tracks": "mixed", "separate_apps": []})
         for bad in ({"seconds": 5}, {"seconds": 1801}, {"seconds": "120"}, {"autostart": 1}, {"game_audio": "yes"},
                     {"microphone": 0}, {"sound": None}, {"storage": "auto"}, {"storage": None},
                     {"max_mb": True}, {"max_mb": 63}, {"max_mb": 16385}, {"max_mb": 64.0},
@@ -279,12 +280,21 @@ class ClipLibraryTests(unittest.TestCase):
         from murmur.ui import JarvisWindow
         window = MagicMock()
         window.stack.get_visible_child_name.return_value = "recording"
-        window._close_player = lambda: JarvisWindow._close_player(window)
         JarvisWindow._clips_page_shown(window)
-        window.player.set_file.assert_called_once_with(None)
-        window.player_card.set_visible.assert_called_with(False)
-        window.player = None                       # never played: nothing to release, no GStreamer
-        JarvisWindow._close_player(window)
+        window.clips_page.close.assert_called_once_with()
+        try:
+            from murmur.clips_ui import ClipsPage
+        except (ImportError, ValueError):
+            self.skipTest("GTK is not available")
+        page = MagicMock(export=None)
+        player = page.player
+        ClipsPage.close(page)
+        player.set_file.assert_called_once_with(None)   # drops the GStreamer pipeline
+        page.video_slot.remove.assert_called_once_with(player)
+        self.assertIsNone(page.player)
+        busy = MagicMock()                                # an export in progress keeps going
+        ClipsPage.close(busy)
+        busy.player.set_file.assert_not_called()
 
 
 class ReplayCliTests(unittest.TestCase):
