@@ -143,7 +143,8 @@ mod tests {
         let features = Features::default();
         assert!(features.compute(&[0.0; 3072]).is_ok());
         assert!(features.compute(&[]).is_err());
-        assert!(features.compute(&vec![0.0; 160001]).is_err());
+        assert!(features.compute(&vec![0.0; 320000]).is_ok());
+        assert!(features.compute(&vec![0.0; 320001]).is_err());
         assert!(features.compute(&[f32::NAN; 3200]).is_err());
     }
 }

@@ -10,7 +10,8 @@ pub const SAMPLE_RATE: usize = 16000;
 const FFT: usize = 512;
 const HOP: usize = 256;
 const BINS: usize = FFT / 2 + 1;
-const MAX_SAMPLES: usize = SAMPLE_RATE * 10;
+// Twenty seconds: a full dictation segment, which Whisper also accepts.
+const MAX_SAMPLES: usize = SAMPLE_RATE * 20;
 const STATE_SHAPES: [&[usize]; 3] = [&[2, 1, 16, 16, 33], &[2, 3, 1, 1, 16], &[2, 1, 33, 16]];
 
 pub struct Denoiser {
@@ -119,7 +120,7 @@ impl Denoiser {
     pub fn process(&self, samples: &[f32]) -> TractResult<Vec<f32>> {
         ensure!(
             samples.len() > HOP && samples.len() <= MAX_SAMPLES,
-            "Denoiser expects 257–160000 samples of 16 kHz audio"
+            "Denoiser expects 257–320000 samples of 16 kHz audio"
         );
         ensure!(
             samples.iter().all(|x| x.is_finite()),
@@ -127,7 +128,7 @@ impl Denoiser {
         );
         let frames = 1 + samples.len() / HOP;
         // Keep only the returned center crop. Every retained sample receives
-        // two adjacent windows, so normalization needs one hop, not ten seconds.
+        // two adjacent windows, so normalization needs one hop, not the whole input.
         let mut output = vec![0.0_f32; (frames - 1) * HOP];
         let mut spectrum = vec![Complex32::default(); FFT];
         let mut input = vec![0.0_f32; BINS * 2];
