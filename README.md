@@ -33,7 +33,7 @@ Jarvis is early software. Recognition depends on your voice, microphone and room
 
 - **Lighter by default**: commands now use Whisper tiny.en, which halves the
   memory Jarvis needs while you give commands (546 → 280 MiB on Linux) and
-  answers faster. Settings → Voice → Command model → Small switches back to the
+  answers faster. Voice → Fine-tuning → Command model → Small switches back to the
   more accurate model ([details](docs/light-model.md)).
 
 ## What's new in 0.3.0
@@ -141,12 +141,12 @@ After a system Python upgrade, rebuild the venv;
 
 ### First run
 
-In **Privacy & startup**, allow the microphone, then unmute. The default wake
+On **Home**, allow the microphone, then unmute. The default wake
 phrase is **“hey Jarvis”**; plain **“Jarvis”** also works. The command can
 follow in the same breath or after a pause. Closing settings keeps Jarvis
 running; Mute closes voice input.
 
-In **Voice & microphone**, add other wake names separated by commas, such as
+In **Voice**, add other wake names separated by commas, such as
 **Alfred**, up to eight. Without the downloaded models, the PocketSphinx
 fallback recognizes less accurately.
 
@@ -182,7 +182,7 @@ Updates keep your settings. A setting a new version can't use (a changed range
 or a renamed choice) is reset on its own and every other setting is kept; the
 original file is copied to `~/.config/jarvis/backups/` first, and so are the
 settings of the previous version on the first start of a new one. To back up or
-move your settings, use **Overview → Your settings**, or:
+move your settings, use **General → Your settings** (or the ☰ menu), or:
 
 ```sh
 jarvis settings export ~/jarvis-settings.json
@@ -193,7 +193,7 @@ jarvis settings backups
 Importing also repairs settings from another version and keeps a backup of the
 current ones; a running recording or replay restarts if its settings changed.
 
-Switch Arabic on or off with **Turn on Arabic** on Overview, or
+Switch Arabic on or off with the **Arabic** switch on Home, or
 `jarvis language arabic` / `jarvis language english`.
 
 Programs your launcher doesn't list (an AppImage, a portable `.exe`) can be
@@ -205,13 +205,13 @@ jarvis add-app
 jarvis add-app Obsidian --remove
 ```
 
-On Windows, **Applications → Add program…** lists portable programs found on
+On Windows, **Apps → Add program…** lists portable programs found on
 the desktop, in Downloads and in `Apps`, `Portable` and `PortableApps` folders,
 and adds the chosen one as a Start menu shortcut in a Jarvis folder.
 
 Each voice name has a **Launch word**, initially `open`. Change it to `watch`
 for “Alfred, watch video”, or clear it for “Jarvis, Firefox”. A `the` after the
-launch word is ignored. A wake name (or Listen once) is still required.
+launch word is ignored. A wake name (or Listen now) is still required.
 
 An alias selects the application; it never adds an executable. Close matches
 must clearly beat other commands. If both native and Flatpak copies exist,
@@ -219,8 +219,8 @@ Jarvis prefers the native one; use an alias to pick the other.
 
 ## Background startup and recording
 
-After installing the user service, enable **Start at login** in Privacy &
-startup. The service follows `graphical-session.target`, so your session must
+After installing the user service, enable **Start at login** in General →
+Startup. The service follows `graphical-session.target`, so your session must
 start that target (for example with uwsm) and export its environment:
 
 ```sh

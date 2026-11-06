@@ -3,6 +3,7 @@
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import queue
 import struct
@@ -41,6 +42,80 @@ class WindowRequestTests(unittest.TestCase):
                 with patch("jarvis.windows.ui.request", return_value={"ok": True}) as request:
                     runs[0]()
                 self.assertEqual(request.call_args.kwargs["timeout"], timeout)
+
+
+@unittest.skipUnless(TK, "Tk is not installed")
+class SettingsWindowTests(unittest.TestCase):
+    """The redesigned window: sidebar pages, settings that save on their own, Wada colors."""
+
+    def setUp(self):
+        import tkinter
+        try:
+            self.root = tkinter.Tk()
+        except tkinter.TclError:
+            self.skipTest("no display for Tk")
+        self.root.withdraw()
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        environment = patch.dict(os.environ, {"JARVIS_CONFIG": str(Path(folder.name) / "config.json")})
+        environment.start()
+        self.addCleanup(environment.stop)
+        offline = patch("jarvis.windows.ui.request", side_effect=OSError("service offline"))
+        offline.start()
+        self.addCleanup(offline.stop)
+        from jarvis.windows.ui import Window
+        with patch.object(Window, "observe", lambda _window: None):   # no status watcher
+            self.window = Window(self.root)
+        self.addCleanup(self.root.destroy)
+
+    def finish(self):
+        """Let queued work end and deliver its results, as the Tk loop would."""
+        self.window.executor.shutdown(wait=True)
+        while not self.window.events.empty():
+            callback, result, error = self.window.events.get_nowait()
+            self.assertIsNone(error)
+            if callback:
+                callback(result)
+
+    def test_every_page_opens_and_older_links_still_work(self):
+        from jarvis.windows.ui import NAVIGATION
+        for key, _title in NAVIGATION:
+            self.window.show(key)
+            self.assertEqual(self.window.current, key)
+        for old, new in (("activation", "voice"), ("replay", "recording"), ("privacy", "general"), ("nope", "dashboard")):
+            self.window.show(old)
+            self.assertEqual(self.window.current, new)
+
+    def test_a_change_saves_on_its_own_while_the_service_is_off(self):
+        self.window.variable("replay", "sound").set(False)
+        self.window.variable("replay", "seconds").set("300")
+        self.window.save()
+        self.finish()
+        saved = config.load()
+        self.assertEqual((saved["replay"]["sound"], saved["replay"]["seconds"]), (False, 300))
+        self.assertIn("Saved.", self.window.notice.get())
+
+    def test_shown_values_and_invalid_ones_are_not_saved(self):
+        self.window.loading = True
+        self.window.changed(0)
+        self.assertIsNone(self.window.save_timer)
+        self.window.loading = False
+        self.window.variable("replay", "seconds").set("ten")
+        self.window.save()
+        self.assertIn("Not saved", self.window.notice.get())
+
+    def test_shortcuts_are_a_list_not_json(self):
+        self.window.new_phrase.set("Capture That")
+        self.window.new_command.set("start recording")
+        self.window.add_shortcut()
+        self.finish()
+        self.assertEqual(config.load()["commands"], {"capture that": "start recording"})
+
+    def test_color_presets_restyle_the_window(self):
+        from jarvis import palettes
+        self.window.choose_palette("190")
+        self.assertEqual(self.window.style.lookup("TFrame", "background"), palettes.roles("190")["bg"])
+        self.assertEqual(palettes.chosen(), "190")
 
 
 class EncoderTests(unittest.TestCase):

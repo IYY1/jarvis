@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+- **Redesigned settings window** (Linux and Windows): a sidebar with seven
+  pages (Home, Voice, Commands, Apps, Capture, Clips, General), one-line
+  setting rows with an ⓘ for the details, live status at the top of Home and
+  Capture, Mute and a menu in the header, and **Quit Jarvis…** asking first.
+  The Apps list is about a third as tall, and Windows shortcuts are a list
+  instead of JSON ([details](docs/ui.md)).
+- **Settings apply as they change**: no more Save buttons. Switches and lists
+  save at once, numbers after a pause, text on Enter or when you leave the
+  field; a message confirms each save, errors stay until dismissed.
+- **Three color presets** from Sanzo Wada's *A Dictionary of Color
+  Combinations*, two dark and one light (General → Colors), each checked for
+  WCAG AA contrast.
+- **Fixed**: changing Recording sounds (or completing recorder setup) restarted
+  a running instant replay and cleared it; those settings no longer restart a
+  capture. The voice-model download button also stays hidden now when Arabic
+  is on.
 - **Arabic commands and dictation** (Voice → Language → Arabic and English),
   using Moonshine Streaming Tiny Arabic (MIT) on Jarvis's Rust/tract runtime.
   Ten models were compared on Saudi TV speech; it was the most accurate

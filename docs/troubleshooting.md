@@ -13,7 +13,7 @@ presence is not proof of capture permission or working recognition.
 | Waybar shows “off” | The service is not running. The module reconnects by itself once it starts. |
 | GTK/PyGObject missing | Install distro packages, then recreate/use a `--system-site-packages` venv. `jarvis daemon` does not require GTK. |
 | PocketSphinx missing | Use `.venv/bin/python -m pip install -e '.[voice]'`. A source build may need a compiler, CMake and Ninja. No GPU SDK is required. |
-| Microphone paused | Complete consent; choose Resume/Unmute. Push-to-talk standby intentionally has closed input until Listen once. Stop listening mutes voice until explicitly resumed; a restart follows saved consent/mode. |
+| Microphone paused | Complete consent; choose Resume/Unmute. Push-to-talk standby intentionally has closed input until Listen now. Stop listening mutes voice until explicitly resumed; a restart follows saved consent/mode. |
 | No level movement | Refresh/select the input node, save, then explicitly start the 15 second input test. Check PipeWire source mute/permissions. A failed stream enters error; use Resume after repairing it. |
 | Missed wake | Check the Voice page says “Recognizer: Vosk (improved)”; if not, run `./run-jarvis install-model`. Say “hey Jarvis” (or just “Jarvis”) at the start. Run the microphone test: speech should clearly exceed the energy threshold (default 0.005); lower it if your mic is quiet. |
 | Command rejected | Check dictionary/alias warning, command timeout and score threshold. A score is an uncalibrated posterior. Reduce it cautiously after testing; high score alone does not prevent false matches. |

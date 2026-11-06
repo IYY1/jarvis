@@ -1,77 +1,93 @@
-# Native settings window
+# Settings window
 
-Jarvis uses Python and GTK4 through PyGObject. There is no browser runtime in the product. The native window is a separate process from the service: closing it releases GTK and its widgets while voice control and recording continue independently. Opening settings never starts the service or accesses a microphone. **Start service** is an explicit action.
+Jarvis uses Python and GTK4 through PyGObject on Linux, and Tk/ttk on Windows. There is no browser runtime in the product. The window is a separate process from the service: closing it releases its widgets while voice control and recording continue. Opening settings never starts the service or opens a microphone; **Start Jarvis** is an explicit action.
 
-![Actual GTK4 window, connected to an isolated service with microphone consent disabled](ui-preview.png)
+![GTK4 window on first run: the microphone isn't allowed yet, so Home asks for it](ui-preview.png)
 
-The desktop entry opens **Overview**. Its **Open recorder** action opens the Capture page without starting capture. On every page the header shows the microphone state (Connecting, Mic off, Waiting for wake word, Listening, Working, Dictating, Needs attention, Offline) beside **Mute microphone**, plus a **Replay on** pill while instant replay keeps its buffer; gold marks the live states. The seven pages:
+## Layout
 
-- **Overview:** voice state and message, Listen once, Start/Stop dictation (with any text that could not be typed and a Copy button), recording and replay state with the sound each keeps, Save replay / Start recording / Clips, the most recent action or error, and a few phrases to try.
-- **Voice:** activation and wake names; Language (English, or Arabic and English with the Arabic model status and download); Dictation (start/stop, language, stop phrases, quiet timeout, keyboard fallback, shortcut instructions); microphone and level test; recognizer; Fine-tuning folded away.
-- **Commands:** searchable supported actions in English and Arabic, and custom phrase mappings.
-- **Apps:** installed apps (duplicates such as Flatpak copies shown once), voice names, adding AppImages or portable programs, close words.
-- **Capture:** recording status, Instant replay (length, sound, separate tracks and per-app tracks), capture source, Picture & storage (Recommended / Compatible / Choose, with formats tested on the display's GPU), and **Advanced capture settings** for replay storage, audio routing, exact formats and legacy tuning.
+A sidebar with icons holds seven pages. The desktop entry opens **Home**; its **Open recorder** action opens **Capture** without starting capture. On every page the header shows the voice state (Connecting, Muted, Waiting for wake word, Listening, Working, Dictating, Needs attention, Offline), a **Replay on** pill while instant replay keeps its buffer, **Mute** / **Unmute** with a microphone icon, and a ☰ menu with Export settings…, Import settings…, Open backups folder and **Quit Jarvis…** (which asks first, since it stops voice control and replay).
+
+- **Home:** on first run, what allowing the microphone means and the consent to do it; then the voice state with **Listen now** and **Start dictation** (with any text that couldn't be typed and a Copy button) and an **Arabic** switch; recording and replay state with the sound each keeps, **Save clip**, **Start recording** and **Clips**; a few phrases to try. When the service is off, **Start Jarvis** and **Try again**.
+- **Voice:** wake word and names; language and the Arabic model; dictation (start/stop, language, stop phrases, quiet timeout, typing into any app, the Hyprland shortcut); microphone input, level and test; recognition, with **Fine-tuning** folded away.
+- **Commands:** the short “Say this” list, every command (searchable, 30 at a time), and your own shortcuts.
+- **Apps:** installed apps with what to say and **Add voice name** on each row (duplicates such as Flatpak copies shown once), your voice names and their launch words, close words, and adding programs without a launcher entry.
+- **Capture:** **Now** (recording and replay state and controls), Instant replay, Source and files, Picture and size (presets, with the exact format, resolution, frame rate and bitrate folded away and formats tested on the display's GPU), and **Advanced**.
 - **Clips:** a compact library and the clip editor ([clips](clips.md)).
-- **Privacy:** first-use consent and start at login.
+- **General:** colors, privacy, start at login, your settings file, keyboard shortcuts and Quit.
+
+Each setting is one row: a name, one line saying what it does, and the control. Where more is worth knowing (HDR, separate tracks, password fields), an ⓘ button opens the details, so the page stays short. Content is centered at a readable width in a wide window; button rows wrap and long choices end in “…” on a narrow one (the window is at least 800 × 540).
+
+The Windows window has the same pages, plus **Diagnostics**, the same apply-as-you-change saving and the same colors. Voice names, shortcuts and close words are edited as lists there too; shortcuts are no longer raw JSON.
+
+## Settings apply as they change
+
+There are no Save buttons. Switches and lists save just after a change, numbers once you pause, and text when you press Enter or leave the field; a burst of changes makes one save. Text typed and not yet confirmed is saved when the window closes. A short message at the bottom confirms each save and fades; an error (an invalid value, a format that failed the GPU test) stays until dismissed, and the change isn't saved. With the service off, the Linux window says so and keeps nothing; the Windows window writes the settings file directly, as before.
+
+Every save fetches the service's current settings and merges the changed group, so unrelated settings survive, and saves are serialized. A save that changes what a running recording or replay captures restarts it, as the message says: the recording so far is saved as its own file, and replay starts over empty. Settings the service reads only when it needs them, **Recording sounds** and recorder setup completion, never restart a capture. Values the window fills in itself (loading settings, a newly found display, a preset adjusted to the GPU it was tested on) are shown, not saved, unless you changed the display.
+
+## Colors
+
+Three presets come from Sanzo Wada's *A Dictionary of Color Combinations* (1933), each one of the book's numbered combinations: **No. 344** Violet & cinnamon (dark, the default), **No. 166** Grenadine & slate green (dark) and **No. 190** Ivory & English red (light). Choose one in **General → Colors**; it applies at once and is kept in `appearance.json` beside `config.json`, for this window only.
+
+![The three presets: No. 344, No. 166 and No. 190](ui-colors.png)
+
+`palettes.py` holds the pigments (from the MIT-licensed [dataset of the book](https://github.com/mattdesl/dictionary-of-colour-combinations)) and derives the roles a window needs (page, cards, lines, muted text, accent, live state) by mixing the combination's own colors with each other, with paper white or with the book's Black; errors use the book's Carmine Red and Corinthian Pink. `style.css` uses only those roles, and `ui.load_theme` prepends the chosen preset's colors. A test checks every preset against WCAG AA: at least 7:1 for body text, 4.5:1 for secondary text and text on buttons and pills, and 3:1 for the focus ring. Live colors (cinnamon, Naples yellow, English red) mark live states only: listening, working, recording and replay.
 
 ## Privacy and microphone lifecycle
 
-The default activation mode is hands-free wake-word detection **after consent**. Before consent, the daemon keeps microphone input closed. Completing the privacy setup acknowledges that the microphone and small wake recognizer remain available while unmuted. Push-to-talk is an optional alternative; it opens a bounded command session. The service validates consent before opening audio even if a different client requests it.
+The default activation mode is hands-free wake-word detection **after consent**. Before consent, the service keeps microphone input closed and Home explains what allowing it means; the consent box must be ticked before **Allow and turn on the wake word**. The service validates consent before opening audio even if another client asks.
 
-**Mute microphone** closes voice-control input. Recorder microphone audio is a separate deliberate capture setting; stop the recording to end that capture. The input-level test opens input only on request, updates the meter from service events, and sends a stop request when the settings window closes. Command audio and transcripts are not saved by default.
+**Mute** closes voice-control input. Microphone sound in a recording is a separate, deliberate capture setting; stop the recording to end that capture. The input-level test opens input only on request, updates the meter from service events, ends after 15 seconds, and is stopped when the window closes. Command audio and transcripts are not saved.
 
-Screen recording requires the user to select a display, configure audio/output/quality, acknowledge capture setup, and save. The acknowledgement cannot bypass compositor or portal permission UI. Opening Recorder never starts recording. Capture may fail with a clear backend/permission error; test a short recording in the actual desktop session before relying on unattended voice capture.
+Screen recording requires choosing a display and starting a first recording from the window, which marks recorder setup complete. That cannot bypass compositor or portal permission prompts. Opening Capture never starts capture.
 
 ## Accessibility and interaction
 
-All controls are native GTK widgets. Keyboard focus is visible, form controls have accessible labels, text wraps, pages scroll, and relative font sizes follow desktop text scaling. There are no custom animations or frame callbacks. Keyboard shortcuts while the window is open:
+All controls are native GTK widgets with accessible labels; icons are decorative and hidden from screen readers, and ⓘ buttons are named after their setting. Keyboard focus is always visible, text wraps, pages scroll, and relative font sizes follow desktop text scaling. Messages appear in a status region. The only animation is GTK's own short slide for messages, which follows the desktop's animation setting; there are no repeating timers or frame callbacks. Keyboard shortcuts while the window is open:
 
 | Shortcut | Action |
 | --- | --- |
-| Ctrl+M | Mute/unmute voice input; first-use consent is still required |
-| Ctrl+Space | Listen once; cancel an active command session |
+| Ctrl+M | Mute or unmute voice input; first-use consent is still required |
+| Ctrl+Space | Listen now; cancel an active command session |
 | Ctrl+D | Start or stop dictation |
-| Ctrl+K | Open command reference |
-| Ctrl+W | Close settings |
+| Ctrl+K | Commands |
+| Ctrl+W | Close the window |
 
-Save buttons apply the page's settings. Every save fetches the current daemon configuration and merges the edited fields so unrelated settings survive. Saves from this window are serialized. The daemon validates the result and reports failures inline. Enabling startup calls `set_startup`; the optional user service must first be installed using the README procedure. The UI does not edit Hyprland configuration.
+Enabling **Start at login** calls `set_startup`; the optional user service must first be installed using the README procedure. The window never edits Hyprland configuration.
 
 ## Event and resource model
 
-A blocking private Unix-socket subscription delivers status changes. GTK updates are marshalled onto the main thread with `GLib.idle_add`; IPC, device discovery and settings writes run in worker threads. The window has no periodic status polling, no continuously redrawing meter, and no voice model imports. The sole bounded startup retry waits at most 3 seconds for an explicitly launched service socket, then uses the normal IPC timeout for its first request. Input test updates occur only while the test is active.
+A blocking private Unix-socket subscription delivers status changes. GTK updates are marshalled onto the main thread with `GLib.idle_add`; IPC, device discovery and settings writes run in worker threads. There is no periodic status polling, no continuously redrawing meter, and no voice model imports. Saving uses one-shot timers only. The sole bounded startup retry waits at most 5 seconds for an explicitly launched service socket.
 
-Application discovery and command references load when the window opens or reconnects. When the voice worker reports readiness, its pushed `unsupported_phrases` list updates application speech-support badges and a short dictionary-limitation notice. Names outside the local English dictionary need a common-word alias; for example, Stremio can use “stream video”. If that alias is supported, the app row shows the phrase to say while still explaining that the direct name is unavailable. Loading states do not establish dictionary support, and repeated level/status events do not rebuild the app list when exclusions and app mappings are unchanged. This requires no application polling. Microphones/displays can be refreshed explicitly. Device and model availability is reported by the service; missing dependencies do not produce fabricated status.
+Application discovery and command references load when the window opens or reconnects. When the voice worker reports readiness, its pushed `unsupported_phrases` list updates each app's speech support and a short dictionary notice. Names outside the local English dictionary need a common-word voice name; for example, Stremio can use “stream video”. Loading states do not establish dictionary support, and repeated level events do not rebuild the app list. Microphones and displays refresh with the ↻ button beside Input.
 
 ## Verification
 
-On 20 October 2026, GTK 4.24.1/PyGObject construction succeeded for all six pages using the temporary GTK Broadway test display. A live service in an isolated temporary configuration/socket, with privacy consent disabled, verified:
+On 6 November 2026, with GTK 4.24.1 and PyGObject 3.58 on the GTK Broadway test display (never the desktop):
 
-- successful status/configuration/command/application/device IPC (6 command groups, 85 installed desktop entries and 3 input-device entries on this machine);
-- wake-word selection as the default, with listen and microphone-test controls disabled before consent;
-- voice and recorder settings round trips;
-- adding and removing a command shortcut, preserving unrelated configuration;
-- command search filtering and page construction;
-- a second `jarvis ui --page recording` request routing an existing window to Recorder in an isolated session bus;
-- microphone remaining muted and `microphone_open=false` throughout the checks.
+- every page built and rendered in all three presets, connected both to the live service (read only) and to an isolated service with its own temporary settings, socket and state, microphone consent off throughout;
+- against the isolated service, a switch, a number (two quick changes, one save), text confirmed with Enter, close words, replay length, a picture preset and a dropdown each saved the expected setting; opening the window saved nothing; text typed and not confirmed was saved on close; the color choice was kept; a duplicate wake name was refused with the service's own message;
+- every page's minimum width fits the 800-pixel window minimum with the live service's long app and audio-device names.
 
-A final native-display construction smoke, with IPC disabled and no window presented, also verified the sound-feedback save field and combined-source acknowledgement gating both audio flags. No microphone or recorder calls were made. A further native widget check with explicit status fixtures verified that model-loading events leave speech support unconfirmed, readiness repairs initially incorrect app flags, dictionary limitations and the Stremio alias hint appear, and repeated level-only events do not rebuild application widgets.
+The Windows window was rendered page by page on a private Xvfb display in two presets, and its tests (pages and older `--page` names, saving with the service off, refusing invalid values, shortcuts as a list, recoloring) run on Linux under Xvfb and in the Windows CI job. It has not yet been opened on Windows itself.
 
-The PNG above is a real GTK snapshot of that consent-disabled test service. Broadway was a test transport only; it is not a shipped UI dependency. A later browser-connected Broadway benchmark aborted with GTK 4.24.1’s `append_node_ops: node == reused_node` assertion; that run was rejected. Native construction and the static snapshot above passed. Broadway is a test-backend limitation and cannot establish Wayland rendering performance. Real-session keyboard/screen-reader behavior, fractional scaling, and microphone/recording interactions still need interactive testing under Hyprland. The application's main performance report separates settings-window cost from service and recording cost.
+Broadway is a test transport only, not a shipped dependency; it doesn't draw rounded corners, so the screenshots are square-cornered. GTK 4.24's `Gtk.Accessible.announce()` crashed the window without an accessibility bus, so messages use a status-role region instead. Real-session screen-reader behavior, fractional scaling and microphone/recording interactions still need checking in Hyprland.
 
-For a construction smoke check without accessing audio, start a temporary `gtk4-broadwayd :18` in a test session, then run:
+For a construction check without audio, start a temporary `gtk4-broadwayd :18`, then run:
 
 ```sh
 GDK_BACKEND=broadway BROADWAY_DISPLAY=:18 PYTHONPATH=src python - <<'PY'
-from gi.repository import GLib
-from jarvis.ui import Gtk, JarvisWindow
+from jarvis.ui import Gtk, JarvisWindow, load_theme
 assert Gtk.init_check()
 app = Gtk.Application(application_id="org.jarvis.ConstructionCheck")
 app.register(None)
+load_theme()
 window = JarvisWindow(app)
-assert window.stack.get_pages().get_n_items() == 8
+assert window.stack.get_pages().get_n_items() == 7
 window.close()
-print("Eight native GTK pages constructed")
+print("Seven native GTK pages constructed")
 PY
 ```
 
-Official API references used: [Gtk.Application](https://docs.gtk.org/gtk4/class.Application.html), [Gtk.DropDown](https://docs.gtk.org/gtk4/class.DropDown.html), and [GLib.idle_add](https://docs.gtk.org/glib/func.idle_add.html). Install GTK4 and PyGObject using your distribution packages. The UI prints setup guidance when GTK or a graphical display is unavailable; the service and CLI remain separate.
+Official API references used: [Gtk.Application](https://docs.gtk.org/gtk4/class.Application.html), [Gtk.DropDown](https://docs.gtk.org/gtk4/class.DropDown.html), [Gtk.AlertDialog](https://docs.gtk.org/gtk4/class.AlertDialog.html) and [GLib.idle_add](https://docs.gtk.org/glib/func.idle_add.html). Install GTK4 and PyGObject using your distribution packages. The window prints setup guidance when GTK or a graphical display is unavailable; the service and CLI remain separate.

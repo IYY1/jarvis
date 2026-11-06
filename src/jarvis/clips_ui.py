@@ -184,7 +184,8 @@ class ClipsPage:
         library = card("Library")
         self.caption = label("Your saved clips appear here.", "caption")
         library.append(self.caption)
-        self.list = box(8)
+        self.list = box(0)
+        self.list.add_css_class("group")
         library.append(self.list)
         more = box(8, True)
         self.more = button("Show all", self._toggle_more)
@@ -208,7 +209,7 @@ class ClipsPage:
         self.more.set_label("Show fewer" if self.show_all else f"Show all {len(found)}")
         for clip in shown:
             row = self._box(12, True)
-            row.add_css_class("app-row")
+            row.add_css_class("row")
             labels = self._box(2)
             labels.set_hexpand(True)
             name = self._label(clip["name"], "row-title", wrap=False)
