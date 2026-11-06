@@ -488,12 +488,17 @@ impl Engine {
         Ok(())
     }
     /// A transcriber for dictation, which runs on its own thread: the Arabic
-    /// model for Arabic dictation, otherwise Whisper. Wake and command
-    /// decoding stay idle until `begin` is called again.
-    pub fn dictation_model(&mut self) -> Result<crate::dictation::Transcribe> {
+    /// model for Arabic dictation, otherwise Whisper. `language` ("ar"/"en")
+    /// comes from the phrase that started it; None uses the configured one.
+    /// Wake and command decoding stay idle until `begin` is called again.
+    pub fn dictation_model(&mut self, language: Option<&str>) -> Result<crate::dictation::Transcribe> {
         let missing = "Dictation needs the speech model. Turn on Accurate recognition in Voice settings.";
-        let model: crate::dictation::Transcribe = if self.dictation_language == "ar" {
-            let arabic = self.arabic.as_mut().ok_or(missing)?.shared()?;
+        let model: crate::dictation::Transcribe = if language.unwrap_or(self.dictation_language) == "ar" {
+            let arabic = self
+                .arabic
+                .as_mut()
+                .ok_or("Arabic dictation needs Arabic turned on (Voice → Language)")?
+                .shared()?;
             Arc::new(move |pcm: &[u8]| {
                 Ok(Text {
                     text: arabic.transcribe(pcm)?,

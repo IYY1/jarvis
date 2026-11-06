@@ -165,7 +165,12 @@ impl Service {
             self.activation.set("idle");
         }
         let grammar = self.apps.grammar(&self.parser)?;
-        let (binary, payload) = voice::prepare(&self.config, mode, &self.parser, grammar)?;
+        let mut config = self.config.clone();
+        if mode == "dictation" {
+            // The session's language (from the phrase) wins over the setting.
+            config["dictation"]["language"] = json!(self.dictation.language);
+        }
+        let (binary, payload) = voice::prepare(&config, mode, &self.parser, grammar)?;
         let mut encoded = serde_json::to_vec(&payload)?;
         encoded.push(b'\n');
         if encoded.len() > 1048576 {
@@ -505,7 +510,7 @@ impl Service {
             Some(Ok("Cancelled".into()))
         } else if action == "dictation_start" {
             Some(
-                self.start_dictation()
+                self.start_dictation(Some(phrase))
                     .await
                     .map(|_| "Dictation starting · speak into the focused text field".into()),
             )
@@ -675,11 +680,11 @@ impl Service {
                 }
             }
             "dictation" => match payload["action"].as_str().unwrap_or("") {
-                "start" => self.start_dictation().await?,
+                "start" => self.start_dictation(None).await?,
                 "stop" => self.stop_dictation(false).await,
                 "cancel" => self.stop_dictation(true).await,
                 "toggle" if self.dictation.active => self.stop_dictation(false).await,
-                "toggle" => self.start_dictation().await?,
+                "toggle" => self.start_dictation(None).await?,
                 "copied" => self.dictation.held.clear(),
                 _ => return err("Dictation action must be start, stop, cancel or toggle"),
             },
@@ -755,8 +760,10 @@ impl Service {
         Ok(json!({"ok":true,"status":self.status()}))
     }
     /// Starts dictation in the running hands-free worker, or a dictation-only
-    /// worker in push-to-talk mode. Text goes to the window focused now.
-    pub async fn start_dictation(&mut self) -> Result<()> {
+    /// worker in push-to-talk mode. Text goes to the window focused now, or,
+    /// when that is Jarvis's own window, to the next one focused. `trigger` is
+    /// the spoken phrase, which can choose the language.
+    pub async fn start_dictation(&mut self, trigger: Option<&str>) -> Result<()> {
         if self.muted || self.config["privacy"]["onboarded"] != true {
             return err("Microphone is muted. Complete consent and unmute in Settings.");
         }
@@ -775,15 +782,13 @@ impl Service {
             active: true,
             id: self.dictation.id + 1,
             typer: Some(Arc::new(Mutex::new(typer))),
-            window: dictation::focused().await.map(|(address, _)| address),
+            window: dictation::focused()
+                .await
+                .filter(|(_, _, own)| !own)
+                .map(|(address, _, _)| address),
             capabilities,
             message: "Starting dictation…".into(),
-            language: match self.config["dictation"]["language"].as_str() {
-                Some("auto") | None if self.config["recognition"]["language"] == "ar_en" => "ar",
-                Some("ar") => "ar",
-                _ => "en",
-            }
-            .into(),
+            language: dictation::language(&self.config, trigger).into(),
             indicator: dictation::indicator(),
             ..Default::default()
         };
@@ -793,7 +798,11 @@ impl Service {
                 input: Some(input),
                 ..
             }) if mode == "wake_word" => matches!(
-                timeout(Duration::from_secs(2), input.write_all(b"dictate\n")).await,
+                timeout(
+                    Duration::from_secs(2),
+                    input.write_all(format!("dictate {}\n", self.dictation.language).as_bytes())
+                )
+                .await,
                 Ok(Ok(()))
             ),
             _ => false,
@@ -856,6 +865,13 @@ impl Service {
         }
         let stops = policy::strings(&self.config["dictation"]["stop_phrases"]);
         let (text, stop) = dictation::split_stop(text.trim(), &stops);
+        if !text.trim().is_empty() && self.dictation.window.is_none() {
+            // Started from Jarvis's own window: type into the first other one.
+            self.dictation.window = dictation::focused()
+                .await
+                .filter(|(_, _, own)| !own)
+                .map(|(address, _, _)| address);
+        }
         if !text.trim().is_empty() {
             if let Some(typer) = self.dictation.typer.clone() {
                 // Separate segments with a space; never press Enter or Tab.
@@ -873,6 +889,9 @@ impl Service {
                     let mut typer = typer.lock().await;
                     let result = async {
                         let focused = dictation::focused().await;
+                        if focused.as_ref().is_some_and(|f| f.2) {
+                            return Ok(json!({"ok":false,"reason":"no-field","message":"Click into the app you want to type in; Jarvis doesn't type into its own window."}));
+                        }
                         if window.is_some() && focused.as_ref().map(|f| &f.0) != window.as_ref() {
                             return Ok(json!({"ok":false,"reason":"focus","message":"Focus moved to another window, so dictation stopped without typing there."}));
                         }

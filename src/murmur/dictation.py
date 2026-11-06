@@ -49,8 +49,27 @@ def split_stop(text: str, stops) -> tuple[str, bool]:
     return text, False
 
 
-def focused() -> tuple[str, bool] | None:
-    """The focused window's identity, and whether it looks like a secret prompt."""
+# Jarvis's own windows (settings, dictation bar) are never a dictation target.
+OWN_CLASSES = ("org.murmur.controller", "org.murmur.dictation")
+
+
+def language(config, trigger=None) -> str:
+    """Dictation's language. Voice → Dictation can fix it; otherwise ("auto")
+    it follows the phrase that started it: اسمعني dictates Arabic, “listen”
+    English. The button and shortcut dictate Arabic while Arabic is on."""
+    chosen = config["dictation"]["language"]
+    if chosen in ("ar", "en"):
+        return chosen
+    if config["recognition"]["language"] != "ar_en":
+        return "en"
+    if trigger is not None and not any("\u0600" <= c <= "\u06ff" for c in trigger):
+        return "en"
+    return "ar"
+
+
+def focused() -> tuple[str, bool, bool] | None:
+    """The focused window's identity, whether it looks like a secret prompt,
+    and whether it is Jarvis's own window."""
     try:
         if is_windows():
             import ctypes
@@ -63,13 +82,15 @@ def focused() -> tuple[str, bool] | None:
             klass = ctypes.create_unicode_buffer(256)
             user32.GetClassNameW(hwnd, klass, 256)
             label = f"{klass.value} {title.value}".lower()
-            return str(hwnd), any(s in label for s in SECRET_WINDOWS)
+            own = klass.value == "TkTopLevel" and title.value.startswith("Jarvis")
+            return str(hwnd), any(s in label for s in SECRET_WINDOWS), own
         result = subprocess.run(["hyprctl", "-j", "activewindow"], capture_output=True, text=True, timeout=2)
         window = json.loads(result.stdout or "{}")
         if not window.get("address"):
             return None
         label = " ".join(str(window.get(k, "")) for k in ("class", "initialClass", "title")).lower()
-        return window["address"], any(s in label for s in SECRET_WINDOWS)
+        own = str(window.get("class", "")).lower() in OWN_CLASSES
+        return window["address"], any(s in label for s in SECRET_WINDOWS), own
     except (OSError, ValueError, subprocess.TimeoutExpired):
         return None
 

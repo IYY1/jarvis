@@ -112,8 +112,12 @@ fn helper() -> Result<std::path::PathBuf> {
         .ok_or_else(|| "Dictation's text helper is missing. Run scripts/build_controller.py.".into())
 }
 
-/// The focused window: its address, and whether it looks like a secret prompt.
-pub async fn focused() -> Option<(String, bool)> {
+/// Jarvis's own settings window and dictation bar: never a dictation target.
+const OWN_WINDOWS: [&str; 2] = ["org.murmur.controller", "org.murmur.dictation"];
+
+/// The focused window: its address, whether it looks like a secret prompt,
+/// and whether it is Jarvis's own window.
+pub async fn focused() -> Option<(String, bool, bool)> {
     let window = desktop::query("activewindow").await.ok()?;
     let address = window["address"].as_str()?.to_owned();
     let label = format!(
@@ -124,7 +128,24 @@ pub async fn focused() -> Option<(String, bool)> {
     )
     .to_lowercase();
     let secret = SECRET_WINDOWS.iter().any(|s| label.contains(s));
-    Some((address, secret))
+    let class = window["class"].as_str().unwrap_or("").to_lowercase();
+    Some((address, secret, OWN_WINDOWS.contains(&class.as_str())))
+}
+
+/// Dictation's language. Voice → Dictation can fix it; otherwise ("auto") it
+/// follows the phrase that started it: اسمعني dictates Arabic, “listen”
+/// English. The button and shortcut dictate Arabic while Arabic is on.
+pub fn language(config: &Value, trigger: Option<&str>) -> &'static str {
+    let arabic_on = config["recognition"]["language"] == "ar_en";
+    match config["dictation"]["language"].as_str() {
+        Some("ar") => "ar",
+        Some("en") => "en",
+        _ if !arabic_on => "en",
+        _ => match trigger {
+            Some(phrase) if !phrase.chars().any(|c| ('\u{0600}'..='\u{06FF}').contains(&c)) => "en",
+            _ => "ar",
+        },
+    }
 }
 
 /// Puts text on the Wayland clipboard with wl-copy, which keeps serving it
@@ -245,6 +266,20 @@ mod tests {
         assert_eq!(std::fs::read_to_string(&saved).unwrap(), "مرحبا hello");
         assert!(!copy_with("/nonexistent/wl-copy", "x").await);
         std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn dictation_language_follows_the_phrase_unless_fixed() {
+        let config = |recognition: &str, dictation: &str| {
+            json!({"recognition":{"language":recognition},"dictation":{"language":dictation}})
+        };
+        let both = config("ar_en", "auto");
+        assert_eq!(language(&both, Some("جارفس اسمعني")), "ar");
+        assert_eq!(language(&both, Some("listen to me")), "en");
+        assert_eq!(language(&both, None), "ar");
+        assert_eq!(language(&config("en", "auto"), Some("اسمعني")), "en");
+        assert_eq!(language(&config("ar_en", "en"), Some("اسمعني")), "en");
+        assert_eq!(language(&config("ar_en", "ar"), Some("listen")), "ar");
     }
 
     #[test]

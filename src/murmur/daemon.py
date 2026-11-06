@@ -200,9 +200,12 @@ class Service:
             self.message = "Opening microphone…"
             if mode == "once":
                 self.activation.arm()
-            payload = {"config": self.config, "mode": mode, "grammar": self.voice_grammar()}
+            config = self.config
+            if mode == "dictation":
+                # The session's language (from the phrase) wins over the setting.
+                config = dict(config, dictation=dict(config["dictation"], language=self.dictation.language))
             from .native_worker import prepare
-            worker_argv, payload, worker_env = prepare(self.config, mode, payload["grammar"])
+            worker_argv, payload, worker_env = prepare(config, mode, self.voice_grammar())
             encoded = (json.dumps(payload) + "\n").encode()
             if len(encoded) > 1048576:
                 raise CommandError("Voice grammar exceeds the 1 MiB worker limit")
@@ -342,8 +345,9 @@ class Service:
             self.message = "Push-to-talk ready · microphone closed"
         self.publish()
 
-    async def start_dictation(self):
-        """Dictation in the running hands-free worker, or a dictation-only worker."""
+    async def start_dictation(self, trigger=None):
+        """Dictation in the running hands-free worker, or a dictation-only worker.
+        ``trigger`` is the spoken phrase, which can choose the language."""
         if self.muted or not self.config["privacy"]["onboarded"]:
             raise CommandError("Microphone is muted. Complete consent and unmute in Settings.")
         if self.dictation.active:
@@ -356,9 +360,9 @@ class Service:
             raise CommandError(str(exc)) from exc
         session = dictation.Session()
         session.active, session.typer = True, typer
-        session.window = (await asyncio.to_thread(dictation.focused) or (None,))[0]
-        language = self.config["dictation"]["language"]
-        session.language = language if language != "auto" else ("ar" if self.config["recognition"]["language"] == "ar_en" else "en")
+        focus = await asyncio.to_thread(dictation.focused)
+        session.window = focus[0] if focus and not focus[2] else None  # never Jarvis's own window
+        session.language = dictation.language(self.config, trigger)
         session.message = "Starting dictation…"
         session.indicator = dictation.indicator()
         self.dictation = session
@@ -367,7 +371,7 @@ class Service:
             steered = False
             if proc is not None and self.worker_mode == "wake_word" and self.unanswered is not None:
                 try:
-                    proc.stdin.write(b"dictate\n")
+                    proc.stdin.write(f"dictate {session.language}\n".encode())
                     await proc.stdin.drain()
                     steered = True
                 except (BrokenPipeError, ConnectionResetError):
@@ -423,6 +427,14 @@ class Service:
             text = (" " if session.typed_any else "") + text.strip()   # never Enter or Tab
             session.typed_any = True
             window = await asyncio.to_thread(dictation.focused)
+            if window and window[2]:
+                session.message = self.message = await self.hold(
+                    text, "no-field", "Click into the app you want to type in; Jarvis doesn't type into its own window.")
+                if stop:
+                    await self.stop_dictation()
+                return
+            if session.window is None and window:
+                session.window = window[0]   # started from Jarvis's window: the first other one
             if session.window is not None and (window is None or window[0] != session.window):
                 message = await self.hold(text, "focus",
                                           "Focus moved to another window, so dictation stopped without typing there.")
@@ -454,7 +466,7 @@ class Service:
                 intent = self.parser.parse(phrase)
                 if intent.action in ("dictation_start", "dictation_stop"):
                     if intent.action == "dictation_start":
-                        await self.start_dictation()
+                        await self.start_dictation(phrase)
                         self.message = "Dictation starting · speak into the focused text field"
                     else:
                         await self.stop_dictation()

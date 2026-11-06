@@ -102,6 +102,18 @@ class DictationPolicyTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "install-model --arabic"):
                 run_language(Namespace(language="arabic"), request)
 
+    def test_dictation_language_follows_the_phrase_unless_fixed(self):
+        from murmur.dictation import language
+        def cfg(recognition, dictation):
+            return {"recognition": {"language": recognition}, "dictation": {"language": dictation}}
+        both = cfg("ar_en", "auto")
+        self.assertEqual(language(both, "جارفس اسمعني"), "ar")
+        self.assertEqual(language(both, "listen to me"), "en")
+        self.assertEqual(language(both), "ar")
+        self.assertEqual(language(cfg("en", "auto"), "اسمعني"), "en")
+        self.assertEqual(language(cfg("ar_en", "en"), "اسمعني"), "en")
+        self.assertEqual(language(cfg("ar_en", "ar"), "listen"), "ar")
+
     def test_dictation_settings_are_validated(self):
         defaults = config.validate({})["dictation"]
         self.assertEqual(defaults["language"], "auto")
@@ -146,6 +158,43 @@ class ArabicDictationWorkerTests(unittest.TestCase):
         self.assertTrue(texts and all(any("؀" <= c <= "ۿ" for c in t) for t in texts), events)
         self.assertEqual(events[-1]["reason"], "idle")
         self.assertFalse(any(e.get("event") == "command" for e in events), "dictation never runs commands")
+
+    def test_hands_free_worker_dictates_in_the_language_it_is_asked_for(self):
+        """“dictate ar” (said اسمعني) uses the Arabic model, “dictate en” Whisper."""
+        from murmur import native_worker
+        built = ROOT / "native/voice-worker/target/release/jarvis-voice"
+        binary = built if built.is_file() else native_worker.binary_path()
+        if binary is None:
+            self.skipTest("build the Rust voice worker first")
+        speech = Path(os.environ["MURMUR_ARABIC_TEST_RAW"]).read_bytes()
+        arabic = lambda text: any("\u0600" <= c <= "\u06ff" for c in text)
+        for language in ("ar", "en"):
+            with self.subTest(language=language), tempfile.NamedTemporaryFile(suffix=".s16le") as capture:
+                capture.write(b"\0" * 32000 + speech + b"\0" * 96000)
+                capture.flush()
+                c = config.validate({"privacy": {"onboarded": True}, "recognition": {"language": "ar_en"},
+                                     "activation": {"mode": "wake_word"}})
+                with unittest.mock.patch("murmur.native_worker.arabic_model_dir",
+                                         return_value=Path(os.environ["MURMUR_ARABIC_MODEL"])):
+                    _, payload, env = native_worker.prepare(c, "wake_word", Parser.from_config(c).grammar([]))
+                env = dict(env, MURMUR_TEST_CAPTURE_FILE=capture.name, MURMUR_OWNER_PID=str(os.getpid()))
+                proc = subprocess.Popen([str(binary)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, env=env, text=True)
+                proc.stdin.write(json.dumps(payload) + "\n" + f"dictate {language}\n")
+                proc.stdin.flush()
+                texts = []
+                for line in proc.stdout:
+                    event = json.loads(line)
+                    if event.get("event") == "dictation_text":
+                        texts.append(event["text"])
+                        break
+                    self.assertNotEqual(event.get("event"), "dictation_error", event)
+                proc.stdin.write("dictate_stop\n")
+                proc.stdin.close()
+                proc.terminate()
+                proc.wait(timeout=10)
+                proc.stdout.close()
+                self.assertTrue(texts, "no dictation text")
+                self.assertEqual(arabic(texts[0]), language == "ar", texts)
 
 
 if __name__ == "__main__":

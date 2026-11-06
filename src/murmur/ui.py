@@ -659,10 +659,11 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.dictation_copy = _button("Copy text that was not typed", self._copy_held)
         self.dictation_copy.set_visible(False)
         dictation.append(self.dictation_copy)
-        self.dictation_language = Gtk.DropDown.new_from_strings(["Same as Language", "Arabic", "English"])
+        self.dictation_language = Gtk.DropDown.new_from_strings(["The phrase you say", "Always Arabic", "Always English"])
         self._row(dictation, "Dictation language", self.dictation_language,
-                  "Arabic writes Najdi, Hijazi and other dialects as spoken; English words inside Arabic speech "
-                  "usually come out in Arabic script. Choose English for English-only dictation.")
+                  "The phrase you say: اسمعني dictates Arabic, “listen” dictates English (the button dictates Arabic "
+                  "while Arabic is on). Arabic writes Najdi, Hijazi and other dialects as spoken; English words inside "
+                  "Arabic speech usually come out in Arabic script.")
         self.stop_phrases = self._entry("stop dictation, وقف الكتابة")
         self._row(dictation, "Stop phrases", self.stop_phrases,
                   "Ending a sentence with one of these stops dictation; the phrase itself is not typed. Separate with commas.")

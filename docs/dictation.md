@@ -23,8 +23,14 @@ Dictation stops when you:
 ## What it does and does not do
 
 - Speech is cut at pauses (0.6 s) and each piece is transcribed locally:
-  Arabic with the [Arabic model](arabic.md), English with Whisper. Choose the
-  language in Voice → Dictation. Text appears about a second after each pause.
+  Arabic with the [Arabic model](arabic.md), English with Whisper. Text
+  appears about a second after each pause.
+- **The phrase picks the language.** With Arabic on, اسمعني dictates Arabic and
+  “listen” dictates English; the button and shortcut dictate Arabic. Voice →
+  Dictation → *Always Arabic* / *Always English* overrides this. With Arabic
+  off, dictation is English (Jarvis can't hear اسمعني then).
+- **Starting from Jarvis's own window** (the Start dictation button) types into
+  the next window you click into, not into Jarvis.
 - Dictated speech is never parsed as a command, and Jarvis never presses Enter,
   Tab or any other key: newlines become spaces. A terminal therefore never runs
   anything because of dictation.

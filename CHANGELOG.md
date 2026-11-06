@@ -24,6 +24,8 @@
   new Maximum quality, HEVC 10-bit without AV1), Compatible and Custom, each
   explained in one line.
 - **Arabic switch**: **Turn on Arabic** on Overview and `jarvis language`.
+- **Dictation language follows the phrase**: اسمعني dictates Arabic, “listen”
+  English; the Start dictation button no longer locks onto Jarvis's own window.
 - **Dictation**: “Jarvis, listen” starts it too, and text that can't be typed
   (no text field, focus moved, an app without text input) is put on the
   clipboard so Ctrl+V pastes it; password-field text never is.

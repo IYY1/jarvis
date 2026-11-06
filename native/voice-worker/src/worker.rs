@@ -209,12 +209,13 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
     let mut dictation_deadline = 0.0;
     let begin_dictation = |engine: &mut Option<Engine>,
                            dictation: &mut Option<Dictation>,
-                           deadline: &mut f64|
+                           deadline: &mut f64,
+                           language: Option<&str>|
      -> Result<()> {
         let model = engine
             .as_mut()
             .ok_or("Dictation requires a recognition engine")?
-            .dictation_model()?;
+            .dictation_model(language)?;
         *dictation = Some(Dictation::start(model)?);
         *deadline = now() + dictation_limit;
         emit(json!({"event":"dictation","state":"started","idle_seconds":dictation_idle,"max_seconds":dictation_limit}))
@@ -230,7 +231,7 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
     }
     ready(engine.as_ref(), listening, deadline)?;
     if mode == "dictation" {
-        begin_dictation(&mut engine, &mut dictation, &mut dictation_deadline)?;
+        begin_dictation(&mut engine, &mut dictation, &mut dictation_deadline, None)?;
     }
     let minimum = config["audio"]["vad_rms"]
         .as_f64()
@@ -313,14 +314,24 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
         }
         while let Some(end) = controls.iter().position(|&b| b == b'\n') {
             let line = controls.drain(..=end).collect::<Vec<_>>();
+            // "dictate", or "dictate ar" / "dictate en" from the starting phrase.
+            let dictate = match &line[..] {
+                b"dictate\n" => Some(None),
+                b"dictate ar\n" => Some(Some("ar")),
+                b"dictate en\n" => Some(Some("en")),
+                _ => None,
+            };
             match &line[..] {
-                b"dictate\n" => {
+                _ if dictate.is_some() => {
                     if dictation.is_none() {
                         listening = false;
                         deadline = None;
-                        if let Err(e) =
-                            begin_dictation(&mut engine, &mut dictation, &mut dictation_deadline)
-                        {
+                        if let Err(e) = begin_dictation(
+                            &mut engine,
+                            &mut dictation,
+                            &mut dictation_deadline,
+                            dictate.flatten(),
+                        ) {
                             emit(json!({"event":"dictation_error","message":e.to_string()}))?;
                             emit(json!({"event":"dictation","state":"stopped","reason":"error","dropped":0}))?;
                             engine.as_mut().unwrap().begin(false)?;
