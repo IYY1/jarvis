@@ -332,8 +332,12 @@ class Window:
         self.pages[key].pack(fill="both", expand=True)
         self.current = key
         self.root.after_idle(self.rewrap)
-        if key == "commands" and self.online and not self.apps_loaded:
-            self.apps_loaded = True   # the list stays empty otherwise, until someone finds Refresh
+        self.load_apps()
+
+    def load_apps(self):
+        """Fill the app list when first seen; otherwise it stays empty until someone finds Refresh."""
+        if getattr(self, "current", None) == "commands" and self.online and not self.apps_loaded:
+            self.apps_loaded = True
             self.call("apps", self.show_apps)
 
     def scroll(self, event):
@@ -561,6 +565,7 @@ class Window:
         self.status = status
         self.voice_controls.status(status)
         self.online = True
+        self.load_apps()
         self.home.update(status)
         state = status.get("state", "paused")
         muted = bool(status.get("muted", True))
