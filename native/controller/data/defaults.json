@@ -47,6 +47,7 @@
     "vaapi_device": "/dev/dri/renderD128",
     "resolution": "native",
     "bitrate_auto": true,
+    "game_folders": true,
     "rate_control": "bitrate",
     "bitrate_mbps": 8,
     "quality_preset": "very_high",

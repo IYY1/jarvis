@@ -313,6 +313,9 @@ pub fn validate(data: &Value) -> Result<Value> {
     if !r["bitrate_auto"].is_boolean() {
         return err("Automatic bitrate must be true or false");
     }
+    if !r["game_folders"].is_boolean() {
+        return err("Game folders must be true or false");
+    }
     choices(
         &r["resolution"],
         &crate::capture::RESOLUTIONS.map(|(name, _)| name),

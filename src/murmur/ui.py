@@ -44,15 +44,24 @@ def _merge(base: dict, patch: dict) -> dict:
 
 
 def clips(folder: Path, limit: int = 50) -> list[dict]:
-    """Saved videos in the recordings folder, newest first; hidden partial files are skipped."""
+    """Saved videos in the recordings folder and its game folders, newest
+    first, named "Game / file" when in one; hidden partial files are skipped."""
+    def videos(path: str) -> list:
+        try:
+            return [entry for entry in os.scandir(path) if entry.is_file() and not entry.name.startswith(".")
+                    and entry.name.lower().endswith((".mp4", ".mkv"))]
+        except OSError:
+            return []
+    entries = [(None, entry) for entry in videos(folder)]
     try:
-        entries = [entry for entry in os.scandir(folder) if entry.is_file() and not entry.name.startswith(".")
-                   and entry.name.lower().endswith((".mp4", ".mkv"))]
+        games = [entry for entry in os.scandir(folder) if entry.is_dir() and not entry.name.startswith(".")]
     except OSError:
-        return []
-    entries.sort(key=lambda entry: entry.stat().st_mtime, reverse=True)
-    return [{"name": entry.name, "path": entry.path, "modified": entry.stat().st_mtime, "bytes": entry.stat().st_size}
-            for entry in entries[:limit]]
+        games = []
+    for game in games:
+        entries += [(game.name, entry) for entry in videos(game.path)]
+    entries.sort(key=lambda item: item[1].stat().st_mtime, reverse=True)
+    return [{"name": f"{game} / {entry.name}" if game else entry.name, "path": entry.path,
+             "modified": entry.stat().st_mtime, "bytes": entry.stat().st_size} for game, entry in entries[:limit]]
 
 
 def _label(text: str, css: str = "", wrap: bool = True) -> Any:
@@ -711,6 +720,12 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         tuning.append(_button("Test formats again", lambda: self._probe_formats(force=True)))
         self.sound_feedback = Gtk.Switch()
         self._row(quality, "Recording sounds", self.sound_feedback, "Short local tones on start, save and error.")
+        self.game_folders = Gtk.Switch()
+        self.game_folders.set_active(True)
+        self._row(quality, "Folder for each game", self.game_folders,
+                  "Clips and recordings of a game you're playing go in a folder named after it inside your videos "
+                  "folder, for example Deadlock/. Steam, Heroic, Lutris and Wine games are recognized; anything else "
+                  "stays in the main folder.")
         body.append(quality)
         legacy = advanced
         self.quality = self._spin(0, 51, 1)
@@ -1174,6 +1189,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.system_audio.set_active(bool(recorder.get("system_audio", False)))
         self.record_mic.set_active(bool(recorder.get("microphone", False)))
         self.capture_configured.set_active(bool(recorder.get("configured", False)))
+        self.game_folders.set_active(bool(recorder.get("game_folders", True)))
         self.sound_feedback.set_active(bool(recorder.get("sound_feedback", False)))
         replay = self.config.get("replay", {})
         self.replay_seconds.set_value(float(replay.get("seconds", 120)))
@@ -1639,6 +1655,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self._save({"recording": {"output_dir": self.output_dir.get_text().strip(), "monitor": monitor,
             "system_audio": self.system_audio.get_active(), "microphone": self.record_mic.get_active(),
             "configured": self.capture_configured.get_active(), "sound_feedback": self.sound_feedback.get_active(),
+            "game_folders": self.game_folders.get_active(),
             "combined_audio_source": self.combined_audio.get_active(),
             "color_mode": ["auto", "hdr", "sdr"][self.color_mode.get_selected()],
             "audio_device": source, "quality": self.quality.get_value_as_int(), **video},

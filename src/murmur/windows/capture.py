@@ -186,6 +186,9 @@ class _Capture:
         codec = encoding.format_for(cfg, color)
         binary, family = encoding.select_encoder(cfg, display, codec)
         folder = Path(cfg["output_dir"]).expanduser().resolve()
+        if cfg.get("game_folders") and not self.replay:
+            from ..games import focused_game
+            folder = folder / (focused_game() or "")   # the game focused when recording starts
         folder.mkdir(parents=True, exist_ok=True)
         return cfg, display, binary, family, folder
 
@@ -479,6 +482,9 @@ class Replay(_Capture):
             with partial.open("r+b") as f:
                 os.fsync(f.fileno())
             os.rename(partial, final)
+            if self.config["recording"].get("game_folders"):
+                from ..games import into_game_folder
+                final = into_game_folder(final)   # the game focused when the clip is saved
             write_track_names(final, titles)
             if self._error:
                 self._set("error", f"{self._error} Clip saved: {final.name}", final)

@@ -312,6 +312,9 @@ class Recorder:
                                         f"(PID {orphans[0]}). Stop it with: kill -INT {orphans[0]}")
                 cfg, _monitor, argv = self._validate()
                 folder = Path(str(cfg.get("output_dir", "~/Videos/Murmur"))).expanduser().resolve()
+                if cfg.get("game_folders"):
+                    from .games import focused_game
+                    folder = folder / (focused_game() or "")   # the game focused when recording starts
                 folder.mkdir(parents=True, exist_ok=True, mode=0o700)
                 tag = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + "_" + uuid.uuid4().hex[:10]
                 final = folder / f"Murmur_{tag}.mkv"

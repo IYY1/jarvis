@@ -62,6 +62,16 @@ including one opened before an update, and the save reply lists what restarted.
 | **Small files · 1080p** | as Recommended | 1080p at most | 30 fps | Fixed 8 Mbps |
 | **Compatible · H.264** | H.264 | Display's own | 60 fps | Consistent quality, Sharp |
 
+**Folder for each game** (`recording.game_folders`, on by default): a
+recording goes in a folder named after the game focused when it starts, and a
+saved replay clip after the game focused when it is saved, for example
+`Videos/…/Deadlock/Replay_….mp4`. Steam games are named from Steam's own
+manifest (Proton windows are `steam_app_<id>`) or their `steamapps/common`
+folder; Heroic and Lutris games from their `~/Games` folder; other Wine `.exe`
+and gamescope windows by their title. On Windows: programs under
+`steamapps\common`, `Epic Games` or `GOG Galaxy\Games`. Anything else stays in
+the main folder, and Clips lists both.
+
 **Fixed bitrate is the default, and it follows the picture.** With **Match
 resolution and frame rate** on (`bitrate_auto`, the default), the bitrate is
 set when capture starts from the output size, frame rate and format: about

@@ -31,6 +31,8 @@ if program == "hyprctl":
                            "colorManagementPreset": os.environ.get("MURMUR_TEST_COLOR", "sdr")}]))
     elif args == ["-j", "clients"]:
         print(os.environ.get("MURMUR_TEST_CLIENTS", "[]"))
+    elif args == ["-j", "activewindow"]:
+        print(os.environ.get("MURMUR_TEST_ACTIVE_WINDOW", "{}"))
     else:
         print("ok")
 elif program == "pw-dump":

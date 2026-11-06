@@ -37,6 +37,7 @@ DEFAULTS = {
     "recording": {"output_dir": "~/Videos/Murmur", "monitor": "", "system_audio": False,
                   "microphone": False, "audio_device": "", "fps": 30,
                   "codec": "libx264", "quality": 23, "rate_control": "bitrate", "bitrate_auto": True,
+                  "game_folders": True,
                   "bitrate_mbps": 8, "quality_preset": "very_high", "encoder": "auto", "configured": False, "color_mode": "auto",
                   "combined_audio_source": False, "sound_feedback": False,
                   "vaapi_device": "/dev/dri/renderD128", "resolution": "native"},
@@ -178,7 +179,8 @@ def validate(data: dict) -> dict:
     from .commands import Parser
     Parser.from_config(c)  # validate configured shortcuts with the dispatch parser
     for value in (c["privacy"]["onboarded"], c["startup"], c["recording"]["configured"],
-                  c["recording"]["system_audio"], c["recording"]["microphone"], c["recording"]["combined_audio_source"], c["recording"]["sound_feedback"]):
+                  c["recording"]["system_audio"], c["recording"]["microphone"], c["recording"]["combined_audio_source"], c["recording"]["sound_feedback"],
+                  c["recording"]["game_folders"]):
         if not isinstance(value, bool):
             raise ValueError("Consent, startup and recording flags must be booleans")
     r = c["recording"]

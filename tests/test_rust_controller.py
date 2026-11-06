@@ -740,6 +740,23 @@ class ControllerServiceTests(unittest.TestCase):
         self.assertEqual(json.loads(backups[0].read_text())["recording"]["fps"], 999)
         self.assertEqual((h.config_path.parent / ".version").read_text(), "0.3.1")
 
+    def test_clips_and_recordings_of_a_focused_game_go_in_its_folder(self):
+        window = json.dumps({"class": "steam_app_1422450", "title": "Deadlock", "pid": os.getpid()})
+        h = self.start(dry_run=False, MURMUR_TEST_ACTIVE_WINDOW=window)
+        steam = h.root / ".local/share/Steam/steamapps"
+        steam.mkdir(parents=True)
+        (steam / "appmanifest_1422450.acf").write_text('"AppState"\n{\n\t"appid"\t\t"1422450"\n\t"name"\t\t"Deadlock"\n}\n')
+        self.assertTrue(h.rpc("record_start")["ok"])
+        h.wait(lambda: bool(h.events("wf-recorder")))
+        self.assertTrue(h.rpc("record_stop")["ok"])
+        self.assertEqual(Path(h.status()["recording"]["file"]).parent.name, "Deadlock")
+        self.assertTrue(h.rpc("replay_start")["ok"])
+        h.wait(lambda: (h.socket.parent / "replay.sock").exists())
+        saved = h.rpc("replay_save"); self.assertTrue(saved["ok"], saved)
+        clip = Path(h.status()["replay"]["file"])
+        self.assertEqual((clip.parent.name, clip.exists()), ("Deadlock", True))
+        self.assertTrue(h.rpc("replay_stop")["ok"])
+
     def test_close_yourself_saves_the_recording_and_exits(self):
         h = self.start(dry_run=False)
         self.assertTrue(h.rpc("record_start")["ok"])

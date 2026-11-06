@@ -377,6 +377,8 @@ pub struct Capture {
     replay_cleanup: Arc<RwLock<()>>,
     /// Names of the replay's audio tracks, in file order, for the clip editor.
     track_names: Vec<String>,
+    /// recording.game_folders: clips of a focused game go in a folder named after it.
+    game_folders: bool,
 }
 impl Capture {
     pub fn new(replay: bool, ipc: PathBuf) -> Self {
@@ -397,6 +399,7 @@ impl Capture {
             replay_session: None,
             replay_seconds: 120,
             track_names: vec![],
+            game_folders: false,
             replay_cleanup: Arc::new(RwLock::new(())),
         }
     }
@@ -494,7 +497,14 @@ impl Capture {
         if util::which("ffprobe").is_none() {
             return err("ffprobe is missing. Install FFmpeg to validate saved recordings.");
         }
-        let folder = util::expand(r["output_dir"].as_str().unwrap());
+        let mut folder = util::expand(r["output_dir"].as_str().unwrap());
+        self.game_folders = r["game_folders"] == true;
+        if self.game_folders && !self.replay {
+            // A recording goes in the folder of the game focused when it starts.
+            if let Some(game) = desktop::focused_game().await {
+                folder = folder.join(game);
+            }
+        }
         util::private_dir(&folder)?;
         let folder = fs::canonicalize(folder)?;
         let mut staging = None;
@@ -933,6 +943,18 @@ impl Capture {
             }
             path = Some(output.clone());
             verify(&output, &self.color, self.codec.as_deref()).await?;
+            if self.game_folders {
+                // A clip goes in the folder of the game focused when it is saved.
+                if let (Some(game), Some(parent), Some(name)) =
+                    (desktop::focused_game().await, output.parent(), output.file_name())
+                {
+                    let folder = parent.join(game);
+                    if util::private_dir(&folder).is_ok() && fs::rename(&output, folder.join(name)).is_ok() {
+                        output = folder.join(name);
+                        path = Some(output.clone());
+                    }
+                }
+            }
             write_track_names(&output, &self.track_names);
             Ok::<_, crate::Error>(output)
         })

@@ -106,6 +106,26 @@ class CatalogTests(unittest.TestCase):
             run_add_app(Namespace(target="tool", name=None, remove=True), request)
         self.assertEqual(app_catalog.added(), [])
 
+    def test_games_are_recognized_like_the_rust_controller_does(self):
+        from murmur import games
+        self.assertEqual(games.game_from_paths("/home/u/.local/share/Steam/steamapps/common/Deadlock/game/bin/deadlock"), "Deadlock")
+        self.assertEqual(games.game_from_paths("Z:\\home\\u\\steamapps\\common\\Elden Ring\\Game\\eldenring.exe"), "Elden Ring")
+        self.assertEqual(games.game_from_paths("/home/u/Games/Heroic/Hades/Hades.exe"), "Hades")
+        self.assertEqual(games.game_from_paths("C:\\Program Files\\Epic Games\\Fortnite\\FortniteClient.exe"), "Fortnite")
+        self.assertIsNone(games.game_from_paths("/usr/lib/firefox/firefox"))
+        self.assertEqual(games.game_folder("Half-Life: Alyx"), "Half-Life Alyx")
+        self.assertIsNone(games.game_folder(" ../ "))
+        clip = self.home / "Replay.mkv"
+        clip.write_text("video")
+        with patch("murmur.games.focused_game", return_value="Deadlock"):
+            moved = games.into_game_folder(clip)
+        self.assertEqual((moved.parent.name, moved.read_text()), ("Deadlock", "video"))
+        with patch("murmur.games.focused_game", return_value=None):
+            other = self.home / "Desktop clip.mkv"; other.write_text("x")
+            self.assertEqual(games.into_game_folder(other), other)
+        from murmur.ui import clips
+        self.assertEqual(sorted(c["name"] for c in clips(self.home)), ["Deadlock / Replay.mkv", "Desktop clip.mkv"])
+
 
 if __name__ == "__main__":
     unittest.main()

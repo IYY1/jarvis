@@ -206,6 +206,9 @@ class Replay:
         try:
             path = Path(self._request("save-replay", data=None if seconds is None else {"seconds": seconds}))
             verify_video(path, color=color, codec=codec)
+            if self.config.get("recording", {}).get("game_folders"):
+                from .games import into_game_folder
+                path = into_game_folder(path)   # the game focused when the clip is saved
             write_track_names(path, track_names(self.config.get("replay", {})))
         except RecorderError as exc:
             detail = f"{exc} File retained at {path}." if path is not None else str(exc)

@@ -20,6 +20,8 @@
 - **Video formats**: Recommended (AV1, else HEVC) / Compatible (H.264 GPU),
   each tested on the selected display's GPU with synthetic frames. CPU H.264
   and legacy VA-API remain only for existing configurations.
+- **Folder for each game** (on by default): clips and recordings of a focused
+  Steam, Heroic, Lutris or Wine game go in a folder named after it.
 - **Fixed bitrate by default, matched to resolution and frame rate** until
   you set your own; size control and quality live under Advanced.
 - **Commands & apps** is one page: a short “Say this” list on top, every
