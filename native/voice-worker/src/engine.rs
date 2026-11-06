@@ -800,7 +800,9 @@ impl Engine {
             })
             .unwrap_or_default();
         let spoken: Vec<_> = words.iter().map(|w| w["word"].as_str().unwrap()).collect();
+        crate::trace(serde_json::json!({"step":"wake decoder","result":&result,"audio_seconds":audio.len() as f64 / 32000.0}));
         let Some((position, size)) = self.wake_at(&spoken) else {
+            crate::trace(serde_json::json!({"step":"no wake name","spoken":spoken}));
             return Ok(None);
         };
         let name = &words[position..position + size];
@@ -809,12 +811,14 @@ impl Engine {
             .filter_map(|w| w["conf"].as_f64())
             .any(|c| c < 0.8 * (1.0 - self.sensitivity))
         {
+            crate::trace(serde_json::json!({"step":"wake name too unsure","floor":0.8 * (1.0 - self.sensitivity)}));
             return Ok(None);
         }
         // The command follows in this utterance or after a pause.
         self.prepare_whisper();
         let rest = &words[position + size..];
         self.pending = None;
+        crate::trace(serde_json::json!({"step":"woke","words_after_name":rest.len()}));
         if !rest.is_empty() {
             let text = self.canonical(
                 &rest
@@ -831,6 +835,8 @@ impl Engine {
                 * 2)
             .saturating_sub(start);
             let tail = &audio[(cut - cut % 2).min(audio.len())..];
+            crate::trace(serde_json::json!({"step":"command in the same breath","text":text,"confidence":conf,
+                "tail_seconds":tail.len() as f64 / 32000.0,"accepted":!text.contains("[unk]") && self.matcher.accepts(&text)}));
             if !text.contains("[unk]")
                 && self.matcher.accepts(&text)
                 && conf.is_none_or(|c| c >= 0.6)
@@ -861,6 +867,7 @@ impl Engine {
         strict: Option<Value>,
     ) -> Result<Option<Recognition>> {
         if strict.is_none() && audio.len() < 6400 {
+            crate::trace(serde_json::json!({"step":"too little audio after the name","seconds":audio.len() as f64 / 32000.0}));
             return Ok(None);
         }
         self.command.clear(self.finalize_utterances)?;
@@ -959,6 +966,8 @@ impl Engine {
                         accurate_match = Some(found);
                     }
                 }
+                crate::trace(serde_json::json!({"step":"whisper","text":accurate,"match":accurate_match,
+                    "seconds":audio.len() as f64 / 32000.0,"strict":canonical,"free":heard}));
                 if accurate_match.is_some() || heard_match.is_none() {
                     if !accurate.is_empty() {
                         heard = accurate;
@@ -979,9 +988,11 @@ impl Engine {
                         "vosk"
                     });
             }
+            crate::trace(serde_json::json!({"step":"command","text":recognition.text,"confidence":recognition.confidence}));
             self.mode = None;
             return Ok(Some(recognition));
         }
+        crate::trace(serde_json::json!({"step":"not a command yet","strict":canonical,"heard":heard}));
         let heard = if heard.is_empty() {
             canonical.replace("[unk]", "…").trim().to_owned()
         } else {

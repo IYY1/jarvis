@@ -62,6 +62,21 @@ fn emit(event: Value) -> Result<()> {
     out.flush()?;
     Ok(())
 }
+/// Appends one line to the file named by `JARVIS_VOICE_TRACE`, for diagnosing
+/// recognition. Off unless that variable is set. It records words and decisions,
+/// never audio, so it is for a person looking into their own misheard commands.
+pub(crate) fn trace(event: Value) {
+    use std::sync::{Mutex, OnceLock};
+    static FILE: OnceLock<Option<Mutex<std::fs::File>>> = OnceLock::new();
+    let file = FILE.get_or_init(|| {
+        let path = std::env::var_os("JARVIS_VOICE_TRACE")?;
+        let file = std::fs::OpenOptions::new().create(true).append(true).open(path).ok()?;
+        Some(Mutex::new(file))
+    });
+    if let Some(Ok(mut file)) = file.as_ref().map(Mutex::lock) {
+        let _ = writeln!(file, "{:.3} {event}", worker::now());
+    }
+}
 fn read_line(reader: &mut impl BufRead, limit: usize) -> Result<Option<Vec<u8>>> {
     let mut bytes = vec![];
     (&mut *reader)

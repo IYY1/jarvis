@@ -3,6 +3,7 @@
 import asyncio
 import contextlib
 import io
+import json
 import re
 import unittest
 from unittest.mock import AsyncMock, MagicMock
@@ -59,6 +60,36 @@ class WorkerExitTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("reported: device unavailable", log)
         self.assertIn("exit code 1", log)
         self.assertEqual(self.service.message, "device unavailable")
+
+    async def session_ending(self, *events):
+        service = Service(config.validate({"privacy": {"onboarded": True}}))
+        service.loop = asyncio.get_running_loop()
+        service.start_worker = AsyncMock()
+        service.activation.arm()
+        proc = MagicMock(returncode=0)
+        proc.stdout = asyncio.StreamReader()
+        for event in events:
+            proc.stdout.feed_data((json.dumps(event) + "\n").encode())
+        proc.stdout.feed_eof()
+        proc.wait = AsyncMock(return_value=0)
+        service.worker = proc
+        seen = []
+        service.publish = lambda: seen.append(service.message)
+        await service.read_voice(proc, "wake_word")
+        return seen
+
+    async def test_a_timeout_keeps_what_was_heard_on_screen(self):
+        seen = await self.session_ending({"event": "heard", "text": "open three"}, {"event": "timeout"})
+        self.assertIn("open three", seen[-2])
+        self.assertEqual(seen[-2], seen[1])
+
+    async def test_a_timeout_with_nothing_heard_says_so(self):
+        seen = await self.session_ending({"event": "timeout"})
+        self.assertEqual(seen[0], "No command heard. Try again.")
+
+    async def test_what_was_heard_does_not_linger_into_the_next_session(self):
+        seen = await self.session_ending({"event": "heard", "text": "open"}, {"event": "timeout"}, {"event": "timeout"})
+        self.assertEqual(seen[2], "No command heard. Try again.")
 
     async def test_a_clean_silent_exit_logs_nothing(self):
         # asyncio's debug mode may log slow callbacks here, so look for our own line.

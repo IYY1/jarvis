@@ -311,6 +311,7 @@ class Service:
                   + (f": {detail}" if detail else ""), file=sys.stderr, flush=True)
 
     async def read_voice(self, proc, mode, errors=None):
+        heard = False   # what it heard says more than "no command heard" would
         try:
             while line := await proc.stdout.readline():
                 event = json.loads(line)
@@ -348,8 +349,11 @@ class Service:
                         self.activation.arm() if mode == "wake_word" else self.activation.pause()
                 elif kind == "heard":
                     self.message = f"Heard “{event.get('text', '')}”, which isn't a command I know. Try again."
+                    heard = True
                 elif kind == "timeout":
-                    self.message = "No command heard. Try again."
+                    if not heard:
+                        self.message = "No command heard. Try again."
+                    heard = False
                     self.activation.arm() if mode == "wake_word" else self.activation.pause()
                 elif kind == "dictation":
                     if event.get("state") == "started":

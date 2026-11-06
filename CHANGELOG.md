@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Voice: after a command it couldn't understand, Jarvis stops waiting about 2.5
+  seconds after you stop talking instead of finishing the whole 8-second session,
+  and the status keeps what it heard instead of "No command heard".
+- Voice (Rust worker): `JARVIS_VOICE_TRACE=<file>` writes what each model heard
+  and decided, for diagnosing misheard commands. It records words, never audio.
 - Voice (Rust worker): a pause no longer loses a command. Speech right after the
   wake name starts the command instead of being dropped, and "open", a pause,
   then "spotify" now joins into one command. Replies to a command said in one

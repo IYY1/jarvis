@@ -123,6 +123,9 @@ impl NoiseFloor {
 }
 /// The short quiet wanted after a wake name before listening for a command.
 /// Speech ends it early: that is the command starting, and it must not be lost.
+/// Once a command has been heard and not understood, how long to wait for more
+/// speech. Waiting out the whole session looks like the program stopped listening.
+const RETRY_SECONDS: f64 = 2.5;
 #[derive(Default)]
 struct Settling {
     active: bool,
@@ -266,6 +269,8 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
     } else {
         None
     };
+    let mut session_end = deadline;
+    let mut retrying = false;
     if let Some(e) = &mut engine {
         e.begin(listening)?;
     }
@@ -285,6 +290,7 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
     let mut next_level = 0.0;
     let mut cooldown = 0.0;
     let mut settling = Settling::default();
+    let mut loudest = 0.0_f64;
     let mut last_frame = now();
     let mut pending = [0_u8; FRAME];
     while !STOP.load(Ordering::Relaxed) {
@@ -321,6 +327,7 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
                 cooldown = now() + 1.5;
                 continue;
             }
+            crate::trace(json!({"step":"deadline: session ended without a command"}));
             heard(&mut engine)?;
             if ["test", "once"].contains(&mode.as_str()) {
                 emit(json!({"event":"timeout"}))?;
@@ -400,6 +407,8 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
             } else {
                 None
             };
+            session_end = deadline;
+            retrying = false;
             settling.stop();
             cooldown = 0.0;
             engine
@@ -462,6 +471,12 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
         let gate = noise.gate();
         noise.update(energy);
         let quiet = energy < gate;
+        if !quiet {
+            loudest = loudest.max(energy);
+        } else if loudest > 0.0 {
+            crate::trace(json!({"step":"speech stopped","loudest":loudest,"gate":gate,"listening":listening}));
+            loudest = 0.0;
+        }
         if settling.active {
             if !settling.frame(&pending, quiet) {
                 continue;
@@ -483,13 +498,19 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
         let result = engine.as_mut().unwrap().feed(&pending, quiet)?;
         last_frame = now();
         // What it heard so far is reported at the deadline: until then, the
-        // rest of the command may still be coming.
+        // rest of the command may still be coming. More speech gives it longer.
         let Some(mut result) = result else {
+            if listening && (!quiet || !retrying) && engine.as_ref().is_some_and(|e| e.unmatched.is_some()) {
+                retrying = true;
+                deadline = session_end.map(|end| end.min(now() + RETRY_SECONDS));
+            }
             continue;
         };
         if result.kind == "wake" {
             listening = true;
             deadline = Some(now() + timeout);
+            session_end = deadline;
+            retrying = false;
             settling.start();
             emit(json!({"event":"wake","deadline":deadline}))?;
             let follow = engine.as_mut().unwrap().after_wake();
