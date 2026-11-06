@@ -489,6 +489,31 @@ class Window:
 
         self.submit(run, lambda reply: self.received(reply) if reply.get("ok") else self.disconnected(None))
 
+    def start_recording(self):
+        if not self.online:
+            self.say("Start Jarvis first.", error=True)
+            return
+        try:
+            value = self.settings()
+            value['recording']['configured'] = True
+            config.validate(value)
+        except ValueError as error:
+            self.say(str(error), error=True)
+            return
+        def run():
+            saved = save_config_restarting(value)
+            if not saved.get('ok'):
+                raise ValueError(saved.get('error', 'Could not save recording settings'))
+            started = request('record_start', timeout=20)
+            return saved, started
+        def done(result):
+            saved, started = result
+            self.config = value
+            self.variable('recording', 'configured').set(True)
+            self.received(started)
+            self.say(started.get('error') or started.get('message') or 'Recording started.', error=not started.get('ok'))
+        self.submit(run, done)
+
     def toggle_mute(self):
         if self.status.get("muted", True) and not self.config["privacy"]["onboarded"]:
             self.show("dashboard")
@@ -547,7 +572,7 @@ class Window:
         self.wrapping(ttk.Label(capture, textvariable=self.record_state, style="Row.TLabel", justify="left")).grid(
             row=0, column=0, sticky="ew", pady=(10, 0))
         capture.next_row, capture.after_heading = 1, True
-        self.buttons(capture, [("Start recording", lambda: self.call("record_start"), "Primary.TButton"),
+        self.buttons(capture, [("Start recording", self.start_recording, "Primary.TButton"),
                                ("Stop and save", lambda: self.call("record_stop"))])
         self.line(capture, self.wrapping(ttk.Label(capture, textvariable=self.replay_state, style="Row.TLabel", justify="left")))
         self.buttons(capture, [("Save clip", lambda: self.call("replay_save"), "Primary.TButton"),
@@ -801,7 +826,7 @@ class Window:
                          "recording is saved and continues in a new file, and replay starts over empty.")
         now = self.group(p, "Now")
         self.line(now, self.wrapping(ttk.Label(now, textvariable=self.record_state, style="Row.TLabel", justify="left")))
-        self.buttons(now, [("Start recording", lambda: self.call("record_start"), "Primary.TButton"),
+        self.buttons(now, [("Start recording", self.start_recording, "Primary.TButton"),
                            ("Stop and save", lambda: self.call("record_stop")), ("Open folder", self.open_folder)])
         self.line(now, self.wrapping(ttk.Label(now, textvariable=self.replay_state, style="Row.TLabel", justify="left")))
         self.buttons(now, [("Save clip", lambda: self.call("replay_save"), "Primary.TButton"),
@@ -836,6 +861,7 @@ class Window:
         self.video = VideoSettings(self, picture)
         self.fps = self.variable("recording", "fps")
         self.switch(source, "Folder for each game", "recording", "game_folders")
+        self.switch(source, "Recording sounds", "recording", "sound_feedback")
 
         advanced = self.group(p, "Advanced")
         self.choice(advanced, "Replay storage", "replay", "storage", {"RAM": "ram", "Disk (continuous writes)": "disk"},

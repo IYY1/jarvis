@@ -158,6 +158,18 @@ class SettingsWindowTests(unittest.TestCase):
         self.assertTrue(self.window.video.formats['av1_10bit'])
         self.assertIn('Passed GPU tests', self.window.video.info.get())
 
+    def test_start_recording_saves_reviewed_settings_before_capture(self):
+        self.window.online = True
+        self.window.variable('recording', 'fps').set('240')
+        calls = []
+        with patch('jarvis.windows.ui.save_config_restarting', side_effect=lambda value: calls.append(('save', value)) or {'ok': True}), \
+             patch('jarvis.windows.ui.request', side_effect=lambda op, **kw: calls.append((op, kw)) or {'ok': True}):
+            self.window.start_recording()
+            self.finish()
+        self.assertEqual([c[0] for c in calls], ['save', 'record_start'])
+        self.assertTrue(calls[0][1]['recording']['configured'])
+        self.assertEqual(calls[0][1]['recording']['fps'], 240)
+
     def test_windows_240fps_preset_and_replay_profile_save_independently(self):
         video = self.window.video
         video.formats = {"av1": True, "av1_10bit": True}
