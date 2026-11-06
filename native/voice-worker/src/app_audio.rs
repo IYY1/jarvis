@@ -14,8 +14,9 @@ use crate::Result;
 pub const RATE: u64 = 48000;
 const FRAME_BYTES: usize = 4;
 /// Pad only after this many milliseconds without packets, so ordinary packet
-/// jitter never inserts silence.
-const IDLE_MS: u64 = 100;
+/// jitter never inserts silence. Well under 100 ms: FFmpeg holds video back, and
+/// loses its frames, once it runs that far ahead of the sound.
+const IDLE_MS: u64 = 60;
 
 /// Frames of silence to write so the track covers `elapsed_ms` of wall time.
 pub fn silence_needed(elapsed_ms: u64, written: u64, idle_ms: u64) -> u64 {

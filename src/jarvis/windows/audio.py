@@ -2,10 +2,22 @@
 
 from __future__ import annotations
 import argparse
+from contextlib import contextmanager
 import json
 import queue
 import sys
+import threading
 import time
+
+READY = "ready"   # the first line a capture audio worker prints
+
+
+@contextmanager
+def output_closed(output):
+    try:
+        yield output
+    finally:
+        output.close()
 
 
 def _library():
@@ -101,6 +113,19 @@ def select_device(engine, pa, name="", *, loopback=False):
     return engine.get_device_info_by_index(wasapi["defaultInputDevice"])
 
 
+# FFmpeg holds video back once it runs 100 ms ahead of the sound, and video held
+# back is frames lost for good. Silence must therefore keep arriving well inside
+# that, while a packet merely running late, during real sound, gets more patience.
+SILENCE_TICK_IDLE = 0.05
+SILENCE_TICK_PLAYING = 0.15
+PLAYING_WITHIN = 1.0
+
+
+def silence_wait(seconds_since_sound):
+    """How long to wait for a packet before filling the gap with silence."""
+    return SILENCE_TICK_PLAYING if seconds_since_sound < PLAYING_WITHIN else SILENCE_TICK_IDLE
+
+
 class PCMStream:
     """Bounded callback queue. No disk audio, polling timer, or silent sample loss."""
 
@@ -111,7 +136,7 @@ class PCMStream:
         self.error = None
         self.target_rate, self.target_channels = rate, channels
         self.silence_on_idle = silence_on_idle
-        self.last_samples = time.monotonic()
+        self.last_samples = self.last_sound = time.monotonic()
         self.source_rate = int(device["defaultSampleRate"])
         self.source_channels = min(2, int(device["maxInputChannels"]))
         if self.source_channels < 1:
@@ -143,10 +168,23 @@ class PCMStream:
             stream_callback=callback,
         )
 
+    def discard(self):
+        """Drop what has been captured so far: nobody is listening yet."""
+        if self.error:
+            raise self.error
+        try:
+            while True:
+                self.queue.get_nowait()
+        except queue.Empty:
+            pass
+        self.pending.clear()
+        self.last_samples = time.monotonic()
+
     def read(self, frames, timeout=3):
         op = _audioop()
         size = frames * self.target_channels * 2
-        deadline = time.monotonic() + (0.2 if self.silence_on_idle else timeout)
+        now = time.monotonic()
+        deadline = now + (silence_wait(now - self.last_sound) if self.silence_on_idle else timeout)
         while len(self.pending) < size:
             if self.error:
                 raise self.error
@@ -183,7 +221,7 @@ class PCMStream:
             if channels == 1 and self.target_channels == 2:
                 data = op.tostereo(data, 2, 1, 1)
             self.pending.extend(data)
-            self.last_samples = time.monotonic()
+            self.last_samples = self.last_sound = time.monotonic()
         result = bytes(self.pending[:size])
         del self.pending[:size]
         return result
@@ -193,12 +231,34 @@ class PCMStream:
         self.stream.close()
 
 
+def wait_for_reader(output, streams):
+    """Tell Jarvis the sound is flowing, and keep it fresh until FFmpeg connects.
+
+    FFmpeg stamps the first sound it receives as time zero, and stamps video from
+    the moment capture starts. Sound arriving even half a second after that leaves
+    video permanently "ahead", and FFmpeg then throws most of its frames away.
+    """
+    connecting = threading.Thread(target=output.connect, daemon=True)
+    connecting.start()
+    print(READY, flush=True)
+    while connecting.is_alive():
+        for stream in streams:
+            stream.discard()
+        connecting.join(0.02)
+    if not output.connected:
+        raise RuntimeError("FFmpeg did not open the audio input")
+    for stream in streams:
+        stream.discard()
+    output.write(bytes(3840))  # 20 ms of silence: the sound's clock starts now
+
+
 def mix_to_pipe(config, pipe):
     from .pipes import PipeWriter
 
     pa, op = _library(), _audioop()
     streams = []
-    with PipeWriter(pipe) as output, pa.PyAudio() as engine:
+    output = PipeWriter(pipe)
+    with output_closed(output), pa.PyAudio() as engine:
         try:
             device = config.get("audio_device", "")
             if config.get("system_audio"):
@@ -216,6 +276,7 @@ def mix_to_pipe(config, pipe):
                 streams.append(PCMStream(engine, pa, select_device(engine, pa, name)))
             if not streams:
                 raise RuntimeError("No recording audio source selected")
+            wait_for_reader(output, streams)
             while True:
                 frames = [stream.read(960) for stream in streams]
                 data = (
@@ -240,14 +301,25 @@ def app_audio_to_pipe(program, include, pipe):
     worker = binary_path()
     if worker is None:
         raise RuntimeError("The Windows voice worker is missing; reinstall the complete Jarvis package")
-    with PipeWriter(pipe) as output:
+    output = PipeWriter(pipe)
+    with output_closed(output):
         process = subprocess.Popen([str(worker), "--app-audio"], stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, **child_options())
         try:
             process.stdin.write(json.dumps({"process": program, "include": include}).encode() + b"\n")
             process.stdin.close()
-            while chunk := process.stdout.read(3840):
-                output.write(chunk)
+            chunk = process.stdout.read(3840)   # sound is flowing, or the worker has failed
+            if chunk:
+                connecting = threading.Thread(target=output.connect, daemon=True)
+                connecting.start()
+                print(READY, flush=True)
+                while chunk and connecting.is_alive():
+                    chunk = process.stdout.read(3840)
+            if chunk:
+                connecting.join()
+                output.write(bytes(3840))  # the sound's clock starts now
+                while chunk := process.stdout.read(3840):
+                    output.write(chunk)
             detail = process.stderr.read(4096).decode(errors="replace")
             message = next((json.loads(line).get("message") for line in detail.splitlines()
                             if line.startswith("{")), detail.strip())
@@ -272,10 +344,12 @@ def track_to_pipe(config, pipe):
     from .pipes import PipeWriter
 
     pa = _library()
-    with PipeWriter(pipe) as output, pa.PyAudio() as engine:
+    output = PipeWriter(pipe)
+    with output_closed(output), pa.PyAudio() as engine:
         stream = (PCMStream(engine, pa, select_device(engine, pa, "default_output", loopback=True), silence_on_idle=True)
                   if kind == "game" else PCMStream(engine, pa, select_device(engine, pa, "default_input")))
         try:
+            wait_for_reader(output, [stream])
             while True:
                 output.write(stream.read(960))
         finally:

@@ -67,6 +67,16 @@ def release(obj):
         method(obj, 2, C.c_ulong)(obj)
 
 
+def refresh_rate(name):
+    """The display's current refresh rate in Hz, or 0 when Windows won't say."""
+    try:
+        import win32api
+
+        return int(win32api.EnumDisplaySettings(name, -1).DisplayFrequency)
+    except Exception:
+        return 0
+
+
 def sources():
     # Set before any desktop coordinates are queried, including on scaled and
     # mixed-DPI monitors. This only affects the current Jarvis process.
@@ -164,6 +174,7 @@ def sources():
                                     "vendor": vendor,
                                     "output": output_index,
                                     "hdr_known": hdr_known,
+                                    "refresh": refresh_rate(desc.name),
                                     "colorManagementPreset": "hdr" if hdr else "srgb",
                                     "focused": len(result) == 0,
                                 }

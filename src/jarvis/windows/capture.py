@@ -21,6 +21,10 @@ from ..encoding import replay_fit_seconds, replay_video, with_auto_bitrate
 from . import encoding
 
 
+READY = "ready"   # the first line a capture audio worker prints (windows/audio.py)
+AUDIO_START_SECONDS = 10
+
+
 def audio_sources():
     from .audio import recording_sources
 
@@ -132,6 +136,33 @@ def audio_failure(process, title):
     return f"{track} stopped: {reason}" if reason else f"{track} stopped unexpectedly; check Windows audio permissions"
 
 
+def wait_for_audio(process, title, seconds=AUDIO_START_SECONDS):
+    """Hold FFmpeg back until the audio worker's sound is flowing.
+
+    Sound that starts after video leaves video permanently ahead of it, and FFmpeg
+    then discards most of the frames. Also, the worker's pipe must exist by now.
+    """
+    ready = threading.Event()
+
+    def watch():
+        # A driver may print its own lines first.
+        while line := process.stdout.readline():
+            if line.strip() == READY.encode():
+                ready.set()
+                return
+
+    reader = threading.Thread(target=watch, daemon=True)
+    reader.start()
+    reader.join(seconds)
+    if reader.is_alive():
+        track = f"The {title} track" if title else "Recording audio"
+        raise RecorderError(f"{track} did not start; check Windows audio devices and permissions")
+    if not ready.is_set():
+        process.wait(timeout=5)
+        raise RecorderError(audio_failure(process, title))
+    process.stdout.close()
+
+
 class _Capture:
     replay = False
 
@@ -195,6 +226,7 @@ class _Capture:
         if display is None:
             raise RecorderError("Choose a connected recording display")
         color = capture_color(cfg, display)
+        cfg["fps"] = encoding.capped_fps(cfg["fps"], display)
         cfg = dict(with_auto_bitrate(cfg, display))
         if self.replay:
             cfg.update(
@@ -273,13 +305,15 @@ class _Capture:
                     audio = subprocess.Popen(
                         worker_command("audio", pipe),
                         stdin=subprocess.PIPE,
-                        stdout=subprocess.DEVNULL,
+                        stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
                         **child_options(),
                     )
                     self._audio.append((audio, title))
                     audio.stdin.write(json.dumps(worker_cfg).encode() + b"\n")
                     audio.stdin.close()
+                for audio, title in self._audio:
+                    wait_for_audio(audio, title)
                 self._process = subprocess.Popen(
                     argv,
                     stdin=subprocess.PIPE,

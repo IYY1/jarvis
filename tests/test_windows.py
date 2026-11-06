@@ -370,7 +370,7 @@ class EncoderTests(unittest.TestCase):
         )
         self.assertIn("d3d11va=capture:1", args)
         self.assertIn(
-            "ddagrab=output_idx=2:framerate=30:output_fmt=8bit:allow_fallback=0", args
+            "ddagrab=output_idx=2:framerate=60:output_fmt=8bit:allow_fallback=0", args
         )
         # Frames stay on the GPU, and carry the color they really have, not ddagrab's RGB.
         filters = args[args.index("-vf") + 1]
@@ -448,15 +448,15 @@ class EncoderTests(unittest.TestCase):
                 "sys.stdout.buffer.write(b'PCMDATA!'); sys.stdout.flush()\n"
                 "sys.stderr.write('{\"event\":\"error\",\"message\":\"firefox is not running.\"}\\n')\n"
                 "sys.exit(1)\n")
-            written = []
             pipe = MagicMock()
-            pipe.return_value.__enter__.return_value.write.side_effect = written.append
             with patch("jarvis.native_worker.binary_path", return_value=worker), \
                     patch("jarvis.windows.pipes.PipeWriter", pipe), \
-                    patch("subprocess.Popen", side_effect=lambda argv, **kw: popen([sys.executable, *argv], **kw)):
+                    patch("subprocess.Popen", side_effect=lambda argv, **kw: popen([sys.executable, *argv], **kw)), \
+                    patch("sys.stdout", io.StringIO()) as told:
                 with self.assertRaisesRegex(RuntimeError, "firefox is not running"):
                     audio.track_to_pipe({"track": {"kind": "game", "app": "firefox"}}, r"\\.\pipe\Jarvis-x")
-            self.assertEqual(b"".join(written), b"PCMDATA!")
+            self.assertEqual(told.getvalue(), "ready\n")   # it did flow, then the worker failed
+            pipe.return_value.close.assert_called_once()
             self.assertEqual(json.loads((Path(folder) / "jarvis-voice.py.request").read_text()),
                              {"process": "firefox", "include": False})
 
@@ -472,7 +472,8 @@ class EncoderTests(unittest.TestCase):
         self.cfg.update(codec='av1_10bit', fps=240, resolution='1080')
         self.display.update(width=3840, height=2160)
         args, color, codec = encoding.command(self.cfg, self.display, 'ffmpeg.exe', 'amf')
-        self.assertTrue(any('framerate=240' in x for x in args))
+        self.assertTrue(any('framerate=480' in x for x in args))   # asks for more, keeps 240
+        self.assertTrue(any(x.startswith('fps=240,hwdownload') for x in args))
         filters = args[args.index('-vf') + 1]
         self.assertIn('scale=1920:1080', filters)
         self.assertIn('format=p010le', filters)
@@ -849,7 +850,7 @@ class AudioTests(unittest.TestCase):
         stream.target_channels = target_channels
         stream.source_rate = stream.target_rate = 48000
         stream.silence_on_idle = False
-        stream.last_samples = time.monotonic()
+        stream.last_samples = stream.last_sound = time.monotonic()
         stream.state = None
         stream.pending = bytearray()
         stream.error = None
@@ -928,6 +929,61 @@ class AudioTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(RuntimeError, "no audio"):
                 microphone.read(480)
+
+    def test_capture_asks_for_more_frames_than_it_keeps(self):
+        from jarvis.windows.encoding import capture_rate, capped_fps
+        self.assertEqual(capture_rate(60), 120)
+        self.assertEqual(capture_rate(30), 60)
+        for fps in (61, 144, 165, 240):
+            self.assertEqual(capture_rate(fps), 480)   # 720 and above collapse
+        self.assertEqual(capped_fps(240, {"refresh": 144}), 144)
+        self.assertEqual(capped_fps(165, {"refresh": 240}), 165)
+        self.assertEqual(capped_fps(240, {}), 240)   # unknown: trust the setting
+        self.assertEqual(capped_fps(240, {"refresh": 0}), 240)
+
+    def test_silence_keeps_the_sound_within_ffmpegs_limit(self):
+        # FFmpeg discards video frames once video is 100 ms ahead of the sound.
+        from jarvis.windows.audio import silence_wait
+        self.assertLess(silence_wait(5), 0.1)
+        self.assertGreater(silence_wait(0.1), silence_wait(5))   # a packet merely running late
+
+    def test_discard_drops_what_nobody_is_listening_to(self):
+        stream = self.stream(2, 2)
+        stream.queue.put(b"old")
+        stream.pending.extend(b"old")
+        stream.last_samples = 1
+        stream.discard()
+        self.assertTrue(stream.queue.empty())
+        self.assertEqual(stream.pending, bytearray())
+        self.assertGreater(stream.last_samples, 1)
+
+    def test_reader_gets_sound_at_once_when_it_connects(self):
+        from jarvis.windows.audio import wait_for_reader
+        stream = self.stream(2, 2)
+        output = MagicMock(connected=True)
+        with patch("sys.stdout", io.StringIO()) as told:
+            wait_for_reader(output, [stream])
+        self.assertEqual(told.getvalue(), "ready\n")
+        output.connect.assert_called_once()
+        output.write.assert_called_once_with(bytes(3840))
+
+    def test_ffmpeg_waits_for_the_audio_worker(self):
+        from jarvis.windows.capture import wait_for_audio
+        from jarvis.recorder import RecorderError
+        ready = types.SimpleNamespace(stdout=io.BytesIO(b"ready\n"))
+        wait_for_audio(ready, None)
+        self.assertTrue(ready.stdout.closed)
+
+        failed = types.SimpleNamespace(stdout=io.BytesIO(b""), stderr=io.BytesIO(b"RuntimeError: no device\n"), wait=lambda timeout: 1)
+        with self.assertRaisesRegex(RecorderError, "Recording audio stopped: no device"):
+            wait_for_audio(failed, None)
+
+        class Silent:
+            def readline(self):
+                time.sleep(5)
+                return b""
+        with self.assertRaisesRegex(RecorderError, "The firefox track did not start"):
+            wait_for_audio(types.SimpleNamespace(stdout=Silent()), "firefox", seconds=0.05)
 
 
 if __name__ == "__main__":

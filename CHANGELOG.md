@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Windows: recordings and replays now reach the frame rate you choose. Audio that
+  started after video made FFmpeg discard frames: 60 fps delivered about 40, and
+  165 about 46. Audio is now flowing before capture starts, which also keeps sound
+  and picture together. Fast rates improved too: 165 delivers about 150 new frames
+  a second instead of about 100, and 240 about 200 instead of about 175.
+- Windows: the frame rate is capped at each display's refresh rate, so a 144 Hz
+  display no longer spends encoder time and disk on repeated frames.
 - Windows: recordings and clips on an HDR display are kept instead of failing
   verification, and all captures label their color correctly. FFmpeg was writing
   the RGB labels that screen capture reports, over the ones Jarvis asked for.

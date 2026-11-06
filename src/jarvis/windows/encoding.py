@@ -197,6 +197,24 @@ def select_encoder(cfg, display, codec):
     )
 
 
+def capture_rate(fps):
+    """What to ask the screen grabber for, so ``fps`` new frames really come out.
+
+    ddagrab sleeps between frames, and Windows sleeps coarsely, so asking for exactly
+    144 delivered about 80. Asking for more and letting FFmpeg's fps filter pick
+    evenly gets close. Measured on 144 and 240 Hz displays: 480 was steady, while
+    720 and above collapsed to about 85 new frames a second.
+    """
+    return fps * 2 if fps <= 60 else 480
+
+
+def capped_fps(fps, display):
+    """A display can't show more new frames than its refresh rate; the rest would
+    only be repeats that use the encoder and fill the disk."""
+    refresh = display.get("refresh") or 0
+    return min(fps, refresh) if refresh >= 1 else fps
+
+
 def color_labels(color):
     """The filter that labels frames. FFmpeg takes color details from the frames it
     receives over its own output options, and ddagrab calls its frames full-range RGB."""
@@ -252,7 +270,7 @@ def command(cfg, display, binary, family, *, audio_pipes=()):
         "-f",
         "lavfi",
         "-i",
-        f"ddagrab=output_idx={display['output']}:framerate={fps}:output_fmt={'10bit' if color == 'hdr' else '8bit'}:allow_fallback=0",
+        f"ddagrab=output_idx={display['output']}:framerate={capture_rate(fps)}:output_fmt={'10bit' if color == 'hdr' else '8bit'}:allow_fallback=0",
     ]
     for pipe, _ in audio_pipes:
         args += ["-thread_queue_size", "64", "-f", "s16le", "-ar", "48000", "-ac", "2", "-i", pipe]
@@ -267,9 +285,9 @@ def command(cfg, display, binary, family, *, audio_pipes=()):
     # remains on the requested GPU, with no silent software fallback.
     hardware_frames = not (family in ("qsv", "mf", "cpu") or scaled or (ten_bit and color == "sdr"))
     if hardware_frames:
-        args += ["-vf", color_labels(color)]
+        args += ["-vf", f"fps={fps},{color_labels(color)}"]
     else:
-        filters = ["hwdownload", "format=x2bgr10le" if color == "hdr" else "format=bgra"]
+        filters = [f"fps={fps}", "hwdownload", "format=x2bgr10le" if color == "hdr" else "format=bgra"]
         resize = f"scale={width}:{height}" if scaled else "scale"
         resize += ":" if scaled else "="
         # Name the conversion, so the labels below are true of the pixels.
