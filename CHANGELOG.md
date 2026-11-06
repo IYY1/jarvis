@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Voice (Rust worker): commands can answer about 0.15 seconds after speech stops
+  instead of about 0.7, when Vosk and Whisper independently name the same complete
+  command. A command that could continue, closing an app, and quitting all still
+  wait for the end of speech.
 - Voice: after a command it couldn't understand, Jarvis stops waiting about 2.5
   seconds after you stop talking instead of finishing the whole 8-second session,
   and the status keeps what it heard instead of "No command heard".

@@ -1,5 +1,5 @@
 use crate::inference::{trim, Arabic, Decoder, Model, Text, Transcriber};
-use crate::matching::{phrase, Matcher};
+use crate::matching::{phrase, wording, Matcher};
 use crate::on_demand::{Loader, OnDemand};
 use crate::{NativeConfig, Result};
 use serde::{Deserialize, Serialize};
@@ -110,6 +110,11 @@ pub struct Engine {
     /// when a pause came before "spotify". The next part is tried joined to it.
     held_audio: Vec<u8>,
     held_heard: String,
+    /// Word sequences that are the start of a longer command, like "open steam"
+    /// beside "open steam support center". These must wait for the end of speech.
+    incomplete: HashSet<String>,
+    /// The candidate Whisper already looked at during this utterance.
+    early_tried: Option<String>,
     speech_frames: usize,
     quiet_run: usize,
     pub unsupported: Vec<String>,
@@ -130,6 +135,30 @@ fn supported(model: &Model, phrases: &[String]) -> Vec<String> {
         .collect::<BTreeSet<_>>()
         .into_iter()
         .collect()
+}
+
+/// Quiet that lets a complete command answer early: 4 frames of 30 ms.
+const EARLY_QUIET_FRAMES: usize = 4;
+
+/// Every proper word-prefix of these phrases.
+fn word_prefixes<'a>(phrases: impl Iterator<Item = &'a String>) -> HashSet<String> {
+    let mut prefixes = HashSet::new();
+    for phrase in phrases {
+        let mut end = 0;
+        for word in phrase.split(' ') {
+            end += word.len();
+            if end < phrase.len() {
+                prefixes.insert(phrase[..end].to_owned());
+            }
+            end += 1;
+        }
+    }
+    prefixes
+}
+
+/// Mistakes here cost work or end the program, so these always get the full check.
+fn may_answer_early(intent: &str) -> bool {
+    !intent.starts_with("close_app") && intent != "quit"
 }
 
 /// The most audio kept for joining: the 10 seconds an utterance may last.
@@ -187,6 +216,24 @@ mod held_speech_tests {
         assert_eq!(joined.len(), HELD_AUDIO);
         assert_eq!(joined.len() % 2, 0);
         assert_eq!(joined.last(), Some(&2));
+    }
+
+    #[test]
+    fn a_command_that_can_continue_is_marked_incomplete() {
+        let phrases = ["open steam".to_string(), "open steam support center".to_string()];
+        let prefixes = word_prefixes(phrases.iter());
+        assert!(prefixes.contains("open"));
+        assert!(prefixes.contains("open steam"));
+        assert!(prefixes.contains("open steam support"));
+        assert!(!prefixes.contains("open steam support center"));
+    }
+
+    #[test]
+    fn closing_and_quitting_never_answer_early() {
+        assert!(may_answer_early("open_app:spotify"));
+        assert!(may_answer_early("volume_up"));
+        assert!(!may_answer_early("close_app:spotify"));
+        assert!(!may_answer_early("quit"));
     }
 
     #[test]
@@ -394,6 +441,7 @@ impl Engine {
             }
         }
         let full: Vec<_> = full.into_iter().collect();
+        let incomplete = word_prefixes(full.iter());
         let wake_forms = supported(&model, &native.wake_forms);
         if wake_forms.is_empty() {
             return Err(
@@ -481,6 +529,8 @@ impl Engine {
             command_audio: vec![],
             held_audio: vec![],
             held_heard: String::new(),
+            incomplete,
+            early_tried: None,
             speech_frames: 0,
             quiet_run: 0,
             unsupported,
@@ -546,6 +596,7 @@ impl Engine {
         self.command_audio.clear();
         self.held_audio.clear();
         self.held_heard.clear();
+        self.early_tried = None;
         self.speech_frames = 0;
         self.quiet_run = 0;
         Ok(())
@@ -682,6 +733,11 @@ impl Engine {
             } else {
                 self.quiet_run = 0;
             }
+            if self.time_to_try_early() {
+                if let Some(result) = self.early_command()? {
+                    return Ok(Some(result));
+                }
+            }
             if self.quiet_run == END_OF_SPEECH_FRAMES {
                 if let Some(result) = self.finish_wake()? {
                     return Ok(Some(result));
@@ -702,11 +758,92 @@ impl Engine {
                 self.speech_frames += 1;
                 self.quiet_run = 0;
             }
+            if self.speech_frames >= 8 && self.time_to_try_early() {
+                if let Some(result) = self.early_command()? {
+                    return Ok(Some(result));
+                }
+            }
             if self.speech_frames >= 8 && self.quiet_run >= END_OF_SPEECH_FRAMES {
                 return self.flush();
             }
         }
         Ok(None)
+    }
+    fn time_to_try_early(&self) -> bool {
+        self.quiet_run >= EARLY_QUIET_FRAMES
+            && self.quiet_run < END_OF_SPEECH_FRAMES
+            && (self.quiet_run - EARLY_QUIET_FRAMES).is_multiple_of(2)
+    }
+    /// The complete command Vosk hears so far, with its intent.
+    fn early_candidate(&self) -> Result<Option<(String, String)>> {
+        let waking = self.mode == Some("wake");
+        let partial = if waking { self.wake.partial()? } else { self.command.partial()? };
+        let words: Vec<_> = partial["partial"].as_str().unwrap_or("").split_whitespace().collect();
+        let rest = if waking {
+            let Some((position, size)) = self.wake_at(&words) else {
+                return Ok(None);
+            };
+            &words[position + size..]
+        } else {
+            &words[..]
+        };
+        if rest.is_empty() || rest.contains(&"[unk]") {
+            return Ok(None);
+        }
+        let raw = rest.join(" ");
+        if self.incomplete.contains(&raw) {
+            return Ok(None);
+        }
+        let text = self.canonical(&raw);
+        if !self.matcher.accepts(&text) {
+            return Ok(None);
+        }
+        let plain = wording(&text, &self.matcher.prefixes, &self.matcher.suffixes);
+        let Some(intent) = self.matcher.intent(&plain).filter(|i| may_answer_early(i)) else {
+            return Ok(None);
+        };
+        let intent = intent.to_owned();
+        Ok(Some((text, intent)))
+    }
+    /// Speech has just paused. When Vosk's grammar and Whisper's free hearing
+    /// independently name the same complete command, there is nothing to wait
+    /// for. Anything less falls through to the usual end of speech.
+    fn early_command(&mut self) -> Result<Option<Recognition>> {
+        if self.whisper.is_none() {
+            return Ok(None);
+        }
+        let Some((text, intent)) = self.early_candidate()? else {
+            return Ok(None);
+        };
+        if self.early_tried.as_ref() == Some(&text) {
+            return Ok(None);
+        }
+        self.early_tried = Some(text.clone());
+        let waking = self.mode == Some("wake");
+        let audio = if waking {
+            self.wake_audio.clone()
+        } else {
+            joined_audio(&self.held_audio, &self.command_audio)
+        };
+        let whisper = self.whisper.as_mut().expect("checked above");
+        let heard = spoken(phrase(&whisper.get()?.transcribe(&audio)?));
+        let found = self.matcher.closest(&heard);
+        let agreed = found.as_ref().is_some_and(|(p, _)| self.matcher.intent(p) == Some(intent.as_str()));
+        crate::trace(serde_json::json!({"step":"early check","vosk":text,"whisper":heard,"agreed":agreed,"quiet_frames":self.quiet_run}));
+        if !agreed {
+            return Ok(None);
+        }
+        self.whisper_commands += 1;
+        let mut command = Recognition::new("command", text, found.map(|(_, score)| score));
+        command.recognition_pass = Some("early");
+        self.mode = None;
+        if waking {
+            self.reset()?;
+            self.pending = Some(command);
+            self.mode = None;
+            return Ok(Some(Recognition::new("wake", self.wake_phrase.clone(), None)));
+        }
+        Ok(Some(command))
     }
     /// The speaker stopped after a wake name. Vosk would wait up to a second to
     /// be sure; this is the same pause that ends a command, so finish now.
