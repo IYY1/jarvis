@@ -369,6 +369,7 @@ class Service:
                     self.level = event["level"]
                     self.gate = event.get("gate")
                 elif kind == "error":
+                    print(f"jarvis: voice worker ({mode}) reported: {event['message']}", file=sys.stderr, flush=True)
                     self.activation.error()
                     self.message = event["message"]
                 self.publish()

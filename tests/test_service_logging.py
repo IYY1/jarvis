@@ -28,13 +28,14 @@ class ConnectionCloseTests(unittest.IsolatedAsyncioTestCase):
 
 
 class WorkerExitTests(unittest.IsolatedAsyncioTestCase):
-    async def exits(self, returncode, stderr=b"", mode="wake_word"):
+    async def exits(self, returncode, stderr=b"", mode="wake_word", stdout=b""):
         """Run read_voice for a worker that ends by itself; return what was logged."""
         service = Service(config.validate({"privacy": {"onboarded": True}}))
         service.loop = asyncio.get_running_loop()
         service.start_worker = AsyncMock()   # a finished "once" worker restarts wake listening
         proc = MagicMock(returncode=returncode)
         proc.stdout = asyncio.StreamReader()
+        proc.stdout.feed_data(stdout)
         proc.stdout.feed_eof()
         proc.wait = AsyncMock(return_value=returncode)
         errors = asyncio.StreamReader()
@@ -52,6 +53,12 @@ class WorkerExitTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("0xC0000005", log)
         self.assertIn("no model", log)
         self.assertEqual(self.service.activation.state, "error")
+
+    async def test_an_error_the_worker_reports_is_logged_with_its_exit(self):
+        log = await self.exits(1, stdout=b'{"event":"error","message":"device unavailable"}\n')
+        self.assertIn("reported: device unavailable", log)
+        self.assertIn("exit code 1", log)
+        self.assertEqual(self.service.message, "device unavailable")
 
     async def test_a_clean_silent_exit_logs_nothing(self):
         # asyncio's debug mode may log slow callbacks here, so look for our own line.
