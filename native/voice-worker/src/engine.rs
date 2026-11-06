@@ -106,6 +106,10 @@ pub struct Engine {
     wake_start: usize,
     pending: Option<Recognition>,
     command_audio: Vec<u8>,
+    /// What this session has heard so far without making a command: "open",
+    /// when a pause came before "spotify". The next part is tried joined to it.
+    held_audio: Vec<u8>,
+    held_heard: String,
     speech_frames: usize,
     quiet_run: usize,
     pub unsupported: Vec<String>,
@@ -126,6 +130,71 @@ fn supported(model: &Model, phrases: &[String]) -> Vec<String> {
         .collect::<BTreeSet<_>>()
         .into_iter()
         .collect()
+}
+
+/// The most audio kept for joining: the 10 seconds an utterance may last.
+const HELD_AUDIO: usize = 320000;
+/// Silence that ends speech: 20 frames of 30 ms.
+const END_OF_SPEECH_FRAMES: usize = 20;
+
+/// Older audio first, keeping only the newest `HELD_AUDIO` bytes.
+fn joined_audio(held: &[u8], latest: &[u8]) -> Vec<u8> {
+    let mut joined = Vec::with_capacity(held.len() + latest.len());
+    joined.extend_from_slice(held);
+    joined.extend_from_slice(latest);
+    if joined.len() > HELD_AUDIO {
+        // Whole samples only: an odd cut would turn the rest into noise.
+        let cut = joined.len() - HELD_AUDIO;
+        joined.drain(..cut + cut % 2);
+    }
+    joined
+}
+
+fn joined_text(held: &str, latest: &str) -> String {
+    match (held.is_empty(), latest.is_empty()) {
+        (true, _) => latest.to_owned(),
+        (_, true) => held.to_owned(),
+        _ => format!("{held} {latest}"),
+    }
+}
+
+/// Whisper describes silence and noise in brackets, as "[ silence ]" or
+/// "(wind blowing)". Neither is something the person said.
+fn spoken(transcript: String) -> String {
+    if transcript.starts_with(['[', '(']) {
+        String::new()
+    } else {
+        transcript
+    }
+}
+
+#[cfg(test)]
+mod held_speech_tests {
+    use super::*;
+
+    #[test]
+    fn parts_of_a_command_join_in_the_order_they_were_said() {
+        assert_eq!(joined_audio(&[1, 2], &[3, 4]), vec![1, 2, 3, 4]);
+        assert_eq!(joined_text("open", "spotify"), "open spotify");
+        assert_eq!(joined_text("", "spotify"), "spotify");
+        assert_eq!(joined_text("open", ""), "open");
+    }
+
+    #[test]
+    fn held_audio_is_bounded_and_keeps_whole_samples() {
+        let held = vec![1_u8; HELD_AUDIO - 2];
+        let joined = joined_audio(&held, &[2, 2, 2, 2]);
+        assert_eq!(joined.len(), HELD_AUDIO);
+        assert_eq!(joined.len() % 2, 0);
+        assert_eq!(joined.last(), Some(&2));
+    }
+
+    #[test]
+    fn descriptions_of_silence_are_not_speech() {
+        assert_eq!(spoken("[ silence ]".into()), "");
+        assert_eq!(spoken("(wind blowing)".into()), "");
+        assert_eq!(spoken("open spotify".into()), "open spotify");
+    }
 }
 
 fn text(result: &Value) -> String {
@@ -410,6 +479,8 @@ impl Engine {
             wake_start: 0,
             pending: None,
             command_audio: vec![],
+            held_audio: vec![],
+            held_heard: String::new(),
             speech_frames: 0,
             quiet_run: 0,
             unsupported,
@@ -473,8 +544,19 @@ impl Engine {
         self.wake_audio.clear();
         self.wake_start = self.stream_bytes;
         self.command_audio.clear();
+        self.held_audio.clear();
+        self.held_heard.clear();
         self.speech_frames = 0;
         self.quiet_run = 0;
+        Ok(())
+    }
+    /// Starts listening for the command after a wake name, keeping any part of
+    /// it already spoken in the same breath as the name.
+    pub fn begin_after_wake(&mut self) -> Result<()> {
+        let (audio, heard) = (std::mem::take(&mut self.held_audio), std::mem::take(&mut self.held_heard));
+        self.begin(true)?;
+        self.held_audio = audio;
+        self.held_heard = heard;
         Ok(())
     }
     pub fn begin(&mut self, command: bool) -> Result<()> {
@@ -594,6 +676,18 @@ impl Engine {
         if let Some(result) = self.decode(pcm)? {
             return Ok(Some(result));
         }
+        if self.mode == Some("wake") {
+            if quiet {
+                self.quiet_run += 1;
+            } else {
+                self.quiet_run = 0;
+            }
+            if self.quiet_run == END_OF_SPEECH_FRAMES {
+                if let Some(result) = self.finish_wake()? {
+                    return Ok(Some(result));
+                }
+            }
+        }
         if quiet && self.hangover == 0 && self.mode == Some("wake") {
             // The energy gate is about to stop forwarding quiet frames. Vosk
             // can still have an unfinished [unk] utterance here; retaining it
@@ -608,11 +702,35 @@ impl Engine {
                 self.speech_frames += 1;
                 self.quiet_run = 0;
             }
-            if self.speech_frames >= 8 && self.quiet_run >= 20 {
+            if self.speech_frames >= 8 && self.quiet_run >= END_OF_SPEECH_FRAMES {
                 return self.flush();
             }
         }
         Ok(None)
+    }
+    /// The speaker stopped after a wake name. Vosk would wait up to a second to
+    /// be sure; this is the same pause that ends a command, so finish now.
+    fn finish_wake(&mut self) -> Result<Option<Recognition>> {
+        let partial = self.wake.partial()?;
+        let words: Vec<_> = partial["partial"]
+            .as_str()
+            .unwrap_or("")
+            .split_whitespace()
+            .collect();
+        if self.wake_at(&words).is_none() {
+            return Ok(None);
+        }
+        self.utterance_bytes = 0;
+        let audio = std::mem::take(&mut self.wake_audio);
+        let start = self.wake_start;
+        self.wake_start = self.stream_bytes;
+        let result = self.wake.result(true)?;
+        let recognized = self.wake_result(result, &audio, start)?;
+        if recognized.is_none() {
+            // Too unsure to be a wake name: its words must not start the next one.
+            self.reset()?;
+        }
+        Ok(recognized)
     }
     pub fn flush(&mut self) -> Result<Option<Recognition>> {
         if self.mode != Some("command") || self.command_audio.is_empty() {
@@ -725,7 +843,11 @@ impl Engine {
                 self.pending = self.command_from_audio(tail, None)?;
             }
         }
+        // Part of a command said in this breath is finished after the pause.
+        let (held_audio, held_heard) = (std::mem::take(&mut self.held_audio), std::mem::take(&mut self.held_heard));
         self.reset()?;
+        self.held_audio = held_audio;
+        self.held_heard = held_heard;
         self.mode = None;
         Ok(Some(Recognition::new(
             "wake",
@@ -770,10 +892,18 @@ impl Engine {
             .collect::<Vec<_>>()
             .join(" ");
         self.open_text.clear();
-        let audio = std::mem::take(&mut self.command_audio);
+        let latest = std::mem::take(&mut self.command_audio);
+        let latest_heard = std::mem::take(&mut heard);
+        let earlier = !self.held_heard.is_empty() || !self.held_audio.is_empty();
+        let audio = joined_audio(&self.held_audio, &latest);
+        heard = joined_text(&self.held_heard, &latest_heard);
         self.speech_frames = 0;
         self.quiet_run = 0;
         let mut heard_match = self.matcher.closest(&heard);
+        if heard_match.is_none() && earlier {
+            // Something unrelated, then a whole command: the command still counts.
+            heard_match = self.matcher.closest(&latest_heard);
+        }
         if self.vosk_fast_path
             && self.whisper.is_some()
             && self
@@ -819,8 +949,16 @@ impl Engine {
         if let Some(whisper) = &mut self.whisper {
             if !audio.is_empty() {
                 self.whisper_commands += 1;
-                let accurate = phrase(&whisper.get()?.transcribe(&audio)?);
-                let accurate_match = self.matcher.closest(&accurate);
+                let model = whisper.get()?;
+                let mut accurate = spoken(phrase(&model.transcribe(&audio)?));
+                let mut accurate_match = self.matcher.closest(&accurate);
+                if accurate_match.is_none() && earlier && !latest.is_empty() {
+                    let alone = spoken(phrase(&model.transcribe(&latest)?));
+                    if let Some(found) = self.matcher.closest(&alone) {
+                        accurate = alone;
+                        accurate_match = Some(found);
+                    }
+                }
                 if accurate_match.is_some() || heard_match.is_none() {
                     if !accurate.is_empty() {
                         heard = accurate;
@@ -849,6 +987,9 @@ impl Engine {
         } else {
             heard
         };
+        // Not a command yet. The rest may still be coming, so keep what was said.
+        self.held_audio = audio;
+        self.held_heard = heard.clone();
         self.unmatched = if heard.is_empty() { None } else { Some(heard) };
         Ok(None)
     }

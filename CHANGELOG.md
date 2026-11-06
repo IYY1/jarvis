@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Voice (Rust worker): a pause no longer loses a command. Speech right after the
+  wake name starts the command instead of being dropped, and "open", a pause,
+  then "spotify" now joins into one command. Replies to a command said in one
+  breath come about 0.4 seconds sooner. What was heard but not understood is
+  now reported when the session ends, not mid-sentence.
 - Windows: a tidier window. Home fits on one screen, six sidebar pages use short
   tabs, technical video options fold away, switches replace tick boxes, and the
   title bar matches the window. Memory stays about the same.

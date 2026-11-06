@@ -47,7 +47,8 @@ resident and gates the stronger model's work. The Rust worker starts loading
 Whisper on a background thread when Vosk's in-progress hypothesis contains a
 wake name, and frees it after 60 seconds without a command; the Python worker
 keeps Whisper resident. Say “hey Jarvis” or
-“Jarvis” followed by one command. A 210 ms quiet period after separate activation prevents the wake-phrase
+“Jarvis” followed by one command. In the Rust worker, 600 ms of quiet after a wake name ends the wake phrase, and speech
+starts the command at once, so a command is never dropped for starting early. Otherwise, a 210 ms quiet period after separate activation prevents the wake-phrase
 tail becoming a command. An eight-second default session deadline includes
 that settling period. The configurable maximum is fifteen seconds. A command
 in the same breath is also supported. Audio must finish within the capture
