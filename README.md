@@ -10,6 +10,12 @@ window can close while Jarvis keeps listening in the background.
 
 Jarvis is early software. Recognition depends on your voice, microphone and room.
 
+## What's new in 0.4.1
+
+- Windows now exposes 240 fps, capture presets, resolution limits, independent
+  replay profiles, automatic bitrate, 10-bit SDR, Arabic/dictation controls,
+  and section editing, split/join and undo in Clips.
+
 ## What's new in 0.4.0
 
 - **Redesigned settings**: seven sidebar pages, settings that apply as you change
@@ -106,7 +112,7 @@ then `bash install.sh`.
 
 ### Windows 10/11
 
-Download `Jarvis-0.4.0-Windows-x64-Setup.exe` from the
+Download `Jarvis-0.4.1-Windows-x64-Setup.exe` from the
 [releases page](https://github.com/abdullaho21/jarvis/releases) and run it. It
 installs for your account only, with no administrator rights, downloads or
 restart, and upgrades an earlier Jarvis in place. A portable ZIP is also

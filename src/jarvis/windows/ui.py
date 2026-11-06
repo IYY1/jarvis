@@ -453,6 +453,7 @@ class Window:
                 self.say(str(reply["message"]))
             return
         self.status = status
+        self.voice_controls.status(status)
         self.online = True
         self.offline_card.grid_remove()
         state = status.get("state", "paused")
@@ -487,6 +488,31 @@ class Window:
                 return {}
 
         self.submit(run, lambda reply: self.received(reply) if reply.get("ok") else self.disconnected(None))
+
+    def start_recording(self):
+        if not self.online:
+            self.say("Start Jarvis first.", error=True)
+            return
+        try:
+            value = self.settings()
+            value['recording']['configured'] = True
+            config.validate(value)
+        except ValueError as error:
+            self.say(str(error), error=True)
+            return
+        def run():
+            saved = save_config_restarting(value)
+            if not saved.get('ok'):
+                raise ValueError(saved.get('error', 'Could not save recording settings'))
+            started = request('record_start', timeout=20)
+            return saved, started
+        def done(result):
+            saved, started = result
+            self.config = value
+            self.variable('recording', 'configured').set(True)
+            self.received(started)
+            self.say(started.get('error') or started.get('message') or 'Recording started.', error=not started.get('ok'))
+        self.submit(run, done)
 
     def toggle_mute(self):
         if self.status.get("muted", True) and not self.config["privacy"]["onboarded"]:
@@ -534,13 +560,19 @@ class Window:
         voice.next_row, voice.after_heading = 2, True
         self.buttons(voice, [("Listen now", self.listen, "Primary.TButton"), ("Cancel", lambda: self.call("cancel"))])
 
+        self.arabic_enabled = tk.BooleanVar(value=self.config["recognition"]["language"] == "ar_en")
+        self.line(voice, ttk.Checkbutton(voice, text="Arabic commands and dictation", variable=self.arabic_enabled,
+                                       command=lambda: self.voice_controls.toggle_arabic()))
+        controls = self.buttons(voice, [("Start dictation", lambda: self.voice_controls.toggle(), "Primary.TButton")])
+        self.dictate_button = controls.winfo_children()[0]
+
         capture = self.group(p, "Capture")
         self.record_state = tk.StringVar(value="Not recording")
         self.replay_state = tk.StringVar(value="Replay off")
         self.wrapping(ttk.Label(capture, textvariable=self.record_state, style="Row.TLabel", justify="left")).grid(
             row=0, column=0, sticky="ew", pady=(10, 0))
         capture.next_row, capture.after_heading = 1, True
-        self.buttons(capture, [("Start recording", lambda: self.call("record_start"), "Primary.TButton"),
+        self.buttons(capture, [("Start recording", self.start_recording, "Primary.TButton"),
                                ("Stop and save", lambda: self.call("record_stop"))])
         self.line(capture, self.wrapping(ttk.Label(capture, textvariable=self.replay_state, style="Row.TLabel", justify="left")))
         self.buttons(capture, [("Save clip", lambda: self.call("replay_save"), "Primary.TButton"),
@@ -567,6 +599,9 @@ class Window:
         self.text(wake, "Wake name", "activation", "wake_phrase", detail="Short, and unlike the words in your games.")
         self.wake_aliases = tk.StringVar(value=", ".join(self.config["activation"]["wake_aliases"]))
         self.text(wake, "Other names", variable=self.wake_aliases, detail="Separate with commas; up to eight names in all.")
+
+        from .voice_controls import VoiceControls
+        self.voice_controls = VoiceControls(self, p)
 
         microphone = self.group(p, "Microphone")
         self.mic_choice = ttk.Combobox(microphone, textvariable=self.variable("audio", "device"), width=26)
@@ -791,7 +826,7 @@ class Window:
                          "recording is saved and continues in a new file, and replay starts over empty.")
         now = self.group(p, "Now")
         self.line(now, self.wrapping(ttk.Label(now, textvariable=self.record_state, style="Row.TLabel", justify="left")))
-        self.buttons(now, [("Start recording", lambda: self.call("record_start"), "Primary.TButton"),
+        self.buttons(now, [("Start recording", self.start_recording, "Primary.TButton"),
                            ("Stop and save", lambda: self.call("record_stop")), ("Open folder", self.open_folder)])
         self.line(now, self.wrapping(ttk.Label(now, textvariable=self.replay_state, style="Row.TLabel", justify="left")))
         self.buttons(now, [("Save clip", lambda: self.call("replay_save"), "Primary.TButton"),
@@ -822,24 +857,11 @@ class Window:
         self.switch(source, "Recording: microphone", "recording", "microphone", "The Windows default input.")
 
         picture = self.group(p, "Picture and size")
-        self.choice(picture, "Format", "recording", "codec", {"H.264 · plays everywhere": "h264", "HEVC · smaller files": "hevc",
-                                                            "AV1 · recent GPUs": "av1", "H.264 · CPU compatibility": "libx264"})
-        self.choice(picture, "Encoder", "recording", "encoder", {"Automatic · GPU": "auto", "NVIDIA · NVENC": "nvenc", "AMD · AMF": "amf",
-                                                                "Intel · Quick Sync": "qsv", "CPU · H.264 only": "cpu"})
-        self.fps = tk.DoubleVar(value=self.config["recording"]["fps"])
-        self.fps_label = tk.StringVar()
-        scale = ttk.Frame(picture, style="Card.TFrame", borderwidth=0)
-        ttk.Scale(scale, from_=1, to=60, variable=self.fps, length=220,
-                  command=lambda _: (self.estimate(), self.changed(800))).pack(side="left")
-        ttk.Label(scale, textvariable=self.fps_label, style="Card.TLabel", width=8).pack(side="left", padx=(8, 0))
-        self.row(picture, "Frames per second", scale)
-        self.choice(picture, "Size control", "recording", "rate_control", {"Fixed bitrate · predictable size": "bitrate",
-                                                                           "Consistent quality · variable size": "quality"})
-        self.bitrate_widget = self.number(picture, "Bitrate (Mbps)", "recording", "bitrate_mbps", 1, 100, 1)
-        self.quality_widget = self.choice(picture, "Quality", "recording", "quality_preset",
-                                          {"Medium": "medium", "High": "high", "Very high": "very_high", "Maximum": "ultra"})
-        self.size_label = tk.StringVar()
-        self.line(picture, self.wrapping(ttk.Label(picture, textvariable=self.size_label, style="Caption.TLabel", justify="left")))
+        from .video_settings import VideoSettings
+        self.video = VideoSettings(self, picture)
+        self.fps = self.variable("recording", "fps")
+        self.switch(source, "Folder for each game", "recording", "game_folders")
+        self.switch(source, "Recording sounds", "recording", "sound_feedback")
 
         advanced = self.group(p, "Advanced")
         self.choice(advanced, "Replay storage", "replay", "storage", {"RAM": "ram", "Disk (continuous writes)": "disk"},
@@ -854,18 +876,8 @@ class Window:
         self.estimate()
 
     def estimate(self):
-        self.fps_label.set(str(round(self.fps.get())) + " fps")
-        quality = self.variable("recording", "rate_control").get() == "quality"
-        self.bitrate_widget.configure(state="disabled" if quality else "normal")
-        self.quality_widget.configure(state="readonly" if quality else "disabled")
-        try:
-            budget = int(self.variable("recording", "bitrate_mbps").get())
-            text = f"About {storage_estimate({'bitrate_mbps': budget}):g} MB a minute of video, plus sound. Actual size varies."
-        except ValueError:
-            text = "Enter a whole-number bitrate."
-        if quality:
-            text = "File size varies with motion. Choose a fixed bitrate for a predictable size."
-        self.size_label.set(text)
+        if hasattr(self, "video"):
+            self.video.estimate()
 
     def load_displays(self, result):
         names = [d["name"] for d in result["monitors"]]
@@ -961,13 +973,14 @@ class Window:
                 else raw
             )
         value["activation"]["wake_aliases"] = [name.strip() for name in self.wake_aliases.get().split(",") if name.strip()]
-        value["recording"]["fps"] = round(self.fps.get())
+        value["recording"]["fps"] = round(float(self.fps.get()))
         value["aliases"] = dict(self.aliases)
         value["app_prefixes"] = dict(self.prefixes)
         value["close_words"] = [word.strip() for word in self.close_words.get().split(",") if word.strip()]
         value["replay"]["separate_apps"] = [
             name.strip().removesuffix(".exe") for name in self.separate_app.get().split(",") if name.strip()
         ]
+        value["dictation"]["stop_phrases"] = [p.strip() for p in self.voice_controls.stop_phrases.get().split(",") if p.strip()]
         value["commands"] = dict(self.commands)
         return config.validate(value)
 

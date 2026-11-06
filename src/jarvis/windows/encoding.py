@@ -12,7 +12,6 @@ VENDORS = {0x10DE: "nvenc", 0x1002: "amf", 0x8086: "qsv"}
 
 
 def format_for(cfg, color):
-    # 10-bit SDR is not implemented on Windows yet; those settings record 8-bit.
     name = cfg.get("codec", "libx264").removesuffix("_10bit")
     codec = name if name in ("h264", "hevc", "av1") else "h264"
     return "hevc" if color == "hdr" and codec == "h264" else codec
@@ -48,6 +47,7 @@ def encoder_options(cfg, family, codec):
     q = QUALITY[cfg.get("quality_preset", "very_high")]
     bitrate = str(cfg.get("bitrate_mbps", 8) * 1000000)
     budget = cfg.get("rate_control", "quality") == "bitrate"
+    ten = cfg.get("_ten_bit", False) or cfg.get("codec", "").endswith("_10bit") or cfg.get("color_mode") == "hdr"
     if family == "cpu":
         args = [
             "-c:v",
@@ -111,17 +111,23 @@ def encoder_options(cfg, family, codec):
             "-bufsize",
             str(int(bitrate) * 2),
         ]
+    if ten:
+        if not cfg.get("_hardware_frames"):
+            args += ["-pix_fmt", "p010le"]
+        if codec == "hevc":
+            args += ["-profile:v", "main10"]
     return args
 
 
 @lru_cache(maxsize=32)
-def _probe(binary, stamp, family, codec, adapter, cpu):
+def _probe(binary, stamp, family, codec, adapter, cpu, ten_bit=False):
     # A synthetic black frame verifies the encoder/driver without capturing a
     # screen or opening audio. Presence in -encoders alone is not sufficient.
     cfg = {
         "codec": "libx264" if cpu else codec,
         "encoder": "cpu" if cpu else family,
         "rate_control": "bitrate",
+        "_ten_bit": ten_bit,
     }
     args = [binary, "-hide_banner", "-loglevel", "error"]
     if family == "qsv":
@@ -135,7 +141,7 @@ def _probe(binary, stamp, family, codec, adapter, cpu):
         "-i",
         "color=black:s=128x128:r=1",
         "-vf",
-        "format=nv12",
+        "format=p010le" if ten_bit else "format=nv12",
         "-frames:v",
         "1",
     ]
@@ -160,6 +166,7 @@ def select_encoder(cfg, display, codec):
         raise RecorderError(
             "FFmpeg/ffprobe is missing; reinstall the complete Windows package"
         )
+    ten_bit = cfg.get("codec", "").endswith("_10bit") or capture_color(cfg, display) == "hdr"
     requested = cfg.get("encoder", "auto")
     cpu = cfg.get("codec", "libx264") == "libx264" or requested == "cpu"
     if cpu and codec != "h264":
@@ -181,11 +188,25 @@ def select_encoder(cfg, display, codec):
             codec,
             display["adapter"],
             cpu,
+            ten_bit,
         ):
             return binary, family
     raise RecorderError(
         f"No usable {'CPU H.264' if cpu else codec.upper() + ' GPU'} encoder. Update the graphics driver, select another format, or explicitly choose CPU H.264. No CPU fallback was used."
     )
+
+
+def output_size(cfg, display):
+    from ..encoding import RESOLUTIONS
+    width, height = int(display.get("width") or 1920), int(display.get("height") or 1080)
+    limit = RESOLUTIONS.get(cfg.get("resolution", "native"))
+    if not limit:
+        return width, height
+    max_w, max_h = map(int, limit.split("x"))
+    ratio = min(1.0, max_w / width, max_h / height)
+    if ratio == 1:
+        return width, height
+    return max(2, int(width * ratio) // 2 * 2), max(2, int(height * ratio) // 2 * 2)
 
 
 def command(cfg, display, binary, family, *, audio_pipes=()):
@@ -205,9 +226,9 @@ def command(cfg, display, binary, family, *, audio_pipes=()):
             "Windows could not report the display color mode. Check HDR settings and explicitly choose SDR or HDR."
         )
     codec = format_for(cfg, color)
-    if cfg.get("resolution", "native") != "native":
-        raise RecorderError("Recording at a smaller resolution is not available on Windows yet; "
-                            "choose the display's own resolution.")
+    ten_bit = color == "hdr" or cfg.get("codec", "").endswith("_10bit")
+    width, height = output_size(cfg, display)
+    scaled = (width, height) != (display.get("width", width), display.get("height", height))
     fps = cfg.get("fps", 30)
     args = [
         binary,
@@ -232,26 +253,25 @@ def command(cfg, display, binary, family, *, audio_pipes=()):
         if title:
             args += [f"-metadata:s:a:{index}", f"title={title}"]
     args += ["-c:a", "aac", "-b:a", "160k"] if audio_pipes else ["-an"]
-    # NVIDIA/AMD consume the captured D3D11 frames directly. Compatibility and
-    # QSV use an explicit download/conversion, never an accidental CPU encoder.
-    if family in ("qsv", "mf", "cpu"):
-        if color == "hdr":
-            args += [
-                "-vf",
-                "hwdownload,format=x2bgr10le,scale=in_range=full:out_range=limited:in_color_matrix=bt2020:out_color_matrix=bt2020,format=p010le",
-            ]
-        else:
-            args += [
-                "-vf",
-                "hwdownload,format=bgra,format="
-                + ("yuv420p" if family == "cpu" else "nv12"),
-            ]
+    # Native-size 8-bit NVENC/AMF keep D3D11 frames on the GPU. Scaling and
+    # SDR-to-10-bit conversion explicitly download/process frames; encoding
+    # remains on the requested GPU, with no silent software fallback.
+    if family in ("qsv", "mf", "cpu") or scaled or (ten_bit and color == "sdr"):
+        filters = ["hwdownload", "format=x2bgr10le" if color == "hdr" else "format=bgra"]
+        if scaled or color == "hdr":
+            resize = f"scale={width}:{height}" if scaled else "scale"
+            if color == "hdr":
+                resize += ":" if scaled else "="
+                resize += "in_range=full:out_range=limited:in_color_matrix=bt2020:out_color_matrix=bt2020"
+            filters.append(resize)
+        filters.append("format=" + ("p010le" if ten_bit else "yuv420p" if family == "cpu" else "nv12"))
+        args += ["-vf", ",".join(filters)]
     if family == "qsv":
         args += [
             "-init_hw_device",
             f"qsv=encoder:hw,child_device={display['adapter']},child_device_type=d3d11va",
         ]
-    args += encoder_options(cfg, family, codec)
+    args += encoder_options(dict(cfg, _ten_bit=ten_bit, _hardware_frames="-vf" not in args), family, codec)
     args += ["-g", str(fps), "-bf", "0", "-force_key_frames", "expr:gte(t,n_forced*1)"]
     if color == "hdr":
         args += [
@@ -264,4 +284,5 @@ def command(cfg, display, binary, family, *, audio_pipes=()):
             "-color_range",
             "tv",
         ]
-    return args, color, codec
+    verified_codec = codec + "_10bit" if ten_bit and color == "sdr" else codec
+    return args, color, verified_codec

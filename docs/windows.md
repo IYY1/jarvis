@@ -20,7 +20,7 @@ ignored local `build/deferred-discord/snapshot/` folder for future work. Ordinar
 
 ## Install and use
 
-Download `Jarvis-0.4.0-Windows-x64-Setup.exe` and run it. Setup installs for the
+Download `Jarvis-0.4.1-Windows-x64-Setup.exe` and run it. Setup installs for the
 current Windows account into `%LOCALAPPDATA%\Programs\Jarvis`, needs no
 administrator rights, downloads nothing and never restarts Windows. Its pages:
 welcome (what Setup will and will not do), MIT license, **components** (Jarvis,
@@ -83,6 +83,20 @@ fullscreen mode. Virtual-desktop interfaces vary between Windows builds; failure
 is shown as an actionable command error. Create desktops in Task View first.
 
 ## Recording choices
+
+0.4.1 exposes capture presets including **240 fps**, 1–240 fps manual input,
+resolution limits, automatic bitrate and replay's independent video profile.
+Scaling preserves aspect ratio and never enlarges the source. Scaling and SDR
+10-bit conversion download/process pixels on the CPU while retaining GPU encoding.
+10-bit encoder probes use P010 input; output verification refuses an 8-bit file
+when 10-bit was selected. Actual high-frame-rate capture depends on the GPU,
+display and game; the Windows VM cannot establish GPU capture throughput.
+
+The Voice page includes Arabic model installation, language selection and
+full dictation controls. Clips supports section removal, split, join and undo;
+preview opens the system player. Windows app-audio separation still supports
+one program on Windows 11.
+
 
 Start with **H.264, Automatic GPU, 30 fps, 8 Mbps**. The video budget is about
 60 decimal MB/minute, plus sound/container overhead. The FPS slider supports 1–60.

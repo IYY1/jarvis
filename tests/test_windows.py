@@ -146,6 +146,80 @@ class SettingsWindowTests(unittest.TestCase):
 
 
 
+    def test_windows_gpu_format_button_reports_all_probed_formats(self):
+        display = {'name': self.window.variable('recording', 'monitor').get(), 'width': 2560, 'height': 1440}
+        immediate = lambda **kw: types.SimpleNamespace(start=kw['target'])
+        with patch('jarvis.windows.displays.sources', return_value=[display]), \
+             patch('jarvis.windows.encoding.select_encoder', return_value=('ffmpeg', 'amf')) as probe, \
+             patch('jarvis.windows.video_settings.threading.Thread', side_effect=immediate):
+            self.window.video.test_formats()
+        self.finish()
+        self.assertEqual(len(probe.call_args_list), 5)
+        self.assertTrue(self.window.video.formats['av1_10bit'])
+        self.assertIn('Passed GPU tests', self.window.video.info.get())
+
+    def test_start_recording_saves_reviewed_settings_before_capture(self):
+        self.window.online = True
+        self.window.variable('recording', 'fps').set('240')
+        calls = []
+        with patch('jarvis.windows.ui.save_config_restarting', side_effect=lambda value: calls.append(('save', value)) or {'ok': True}), \
+             patch('jarvis.windows.ui.request', side_effect=lambda op, **kw: calls.append((op, kw)) or {'ok': True}):
+            self.window.start_recording()
+            self.finish()
+        self.assertEqual([c[0] for c in calls], ['save', 'record_start'])
+        self.assertTrue(calls[0][1]['recording']['configured'])
+        self.assertEqual(calls[0][1]['recording']['fps'], 240)
+
+    def test_windows_240fps_preset_and_replay_profile_save_independently(self):
+        video = self.window.video
+        video.formats = {"av1": True, "av1_10bit": True}
+        video.presets['recording'].set('High frame rate · 240 fps')
+        video.apply('recording')
+        self.window.variable('replay', 'own_video').set(True)
+        video.presets['replay'].set('Small files · 1080p')
+        video.apply('replay')
+        self.window.save()
+        self.finish()
+        saved = config.load()
+        self.assertEqual(saved['recording']['fps'], 240)
+        self.assertEqual(saved['recording']['codec'], 'av1')
+        self.assertTrue(saved['recording']['bitrate_auto'])
+        self.assertTrue(saved['replay']['own_video'])
+        self.assertEqual((saved['replay']['fps'], saved['replay']['resolution']), (30, '1080'))
+
+    def test_windows_arabic_dictation_controls_save_and_dispatch(self):
+        self.window.arabic_enabled.set(True)
+        with patch('jarvis.windows.voice_controls.models.arabic_model_ready', return_value=True):
+            self.window.voice_controls.toggle_arabic()
+        self.window.variable('dictation', 'language').set('ar')
+        self.window.voice_controls.stop_phrases.set('stop dictation, وقف الكتابة')
+        self.window.variable('privacy', 'onboarded').set(True)
+        self.window.save()
+        self.finish()
+        saved = config.load()
+        self.assertEqual(saved['recognition']['language'], 'ar_en')
+        self.assertEqual(saved['dictation']['language'], 'ar')
+        self.assertEqual(saved['dictation']['stop_phrases'], ['stop dictation', 'وقف الكتابة'])
+        with patch.object(self.window, 'call') as call:
+            self.window.voice_controls.toggle()
+        call.assert_called_once_with('dictation', action='toggle')
+
+    def test_windows_clip_sections_split_remove_join_and_undo(self):
+        from jarvis.clipedit import Source
+        panel = self.window.clips
+        panel.work = lambda run, done: None
+        source = Source('clip.mkv', 10, {}, [], [0, 2, 4, 6, 8])
+        panel.loaded((source, None))
+        panel.start.set('2'); panel.end.set('4'); panel.change('remove')
+        self.assertAlmostEqual(panel.edit.duration, 8)
+        panel.change('undo')
+        self.assertAlmostEqual(panel.edit.duration, 10)
+        panel.start.set('5'); panel.end.set('10'); panel.change('split')
+        self.assertEqual(len(panel.edit.segments), 2)
+        panel.edit.append(source); panel.edited()
+        self.assertAlmostEqual(panel.edit.duration, 20)
+
+
     def test_a_change_saves_on_its_own_while_the_service_is_off(self):
         self.window.variable("replay", "sound").set(False)
         self.window.variable("replay", "seconds").set("300")
@@ -285,9 +359,21 @@ class EncoderTests(unittest.TestCase):
                          "The firefox track stopped: firefox is not running. Start it before instant replay.")
         self.assertIn("unexpectedly", audio_failure(types.SimpleNamespace(stderr=io.BytesIO(b"")), None))
 
-    def test_ten_bit_settings_record_the_same_family_until_windows_supports_them(self):
-        self.assertEqual(encoding.format_for({"codec": "av1_10bit"}, "sdr"), "av1")
-        self.assertEqual(encoding.format_for({"codec": "hevc_10bit"}, "hdr"), "hevc")
+    def test_240fps_scaled_ten_bit_sdr_is_explicit_and_verified(self):
+        self.cfg.update(codec='av1_10bit', fps=240, resolution='1080')
+        self.display.update(width=3840, height=2160)
+        args, color, codec = encoding.command(self.cfg, self.display, 'ffmpeg.exe', 'amf')
+        self.assertTrue(any('framerate=240' in x for x in args))
+        filters = args[args.index('-vf') + 1]
+        self.assertIn('scale=1920:1080', filters)
+        self.assertIn('format=p010le', filters)
+        self.assertEqual(args[args.index('-pix_fmt') + 1], 'p010le')
+        self.assertEqual((color, codec), ('sdr', 'av1_10bit'))
+        self.assertEqual(args[args.index('-c:v') + 1], 'av1_amf')
+
+    def test_resolution_limits_preserve_portrait_shape_and_never_upscale(self):
+        self.assertEqual(encoding.output_size({'resolution': '1080'}, {'width': 1080, 'height': 1920}), (606, 1080))
+        self.assertEqual(encoding.output_size({'resolution': '2160'}, {'width': 1280, 'height': 720}), (1280, 720))
 
     def test_hdr_promotes_h264_and_refuses_known_sdr_display(self):
         self.cfg["color_mode"] = "hdr"

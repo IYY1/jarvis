@@ -11,6 +11,7 @@ class ClipsPanel:
     def __init__(self, window, page):
         self.window = window
         self.source = None
+        self.edit = None
         self.export = None
         self.loading = False
         self.generation = 0
@@ -41,6 +42,13 @@ class ClipsPanel:
         window.row(editor, "Mix kept tracks into one", ttk.Checkbutton(editor, variable=self.mix),
                    "Leave off to keep the selected tracks separate.")
 
+        cuts = window.group(page, "Sections", "Start/end mark a section in the edited timeline. Preview opens the original in your default player.")
+        window.buttons(cuts, [("Preview in player", self.preview), ("Keep section", lambda: self.change("keep")),
+                              ("Remove section", lambda: self.change("remove"))])
+        window.buttons(cuts, [("Split at start", lambda: self.change("split")), ("Undo", lambda: self.change("undo")),
+                              ("Join clip…", self.join)])
+        self.sections = tk.StringVar(value="")
+        window.line(cuts, ttk.Label(cuts, textvariable=self.sections, style="Caption.TLabel", wraplength=520))
         output = window.group(page, "Export copy")
         self.start, self.end = tk.StringVar(value="0"), tk.StringVar(value="0")
         window.row(output, "Start (seconds)", ttk.Entry(output, textvariable=self.start, width=12))
@@ -113,11 +121,13 @@ class ClipsPanel:
             self.window.say(error, error=True)
             return
         self.source = source
+        self.edit = clipedit.Edit.of(source)
         self.generation += 1
         generation = self.generation
         self.name.set(f"{Path(source.path).name} · {source.duration:.1f} seconds")
         self.start.set("0")
         self.end.set(str(source.duration))
+        self.edited()
         self.progress.set("Checking for silent tracks…" if source.audio else "This clip has no sound tracks.")
         for widget in self.track_box.winfo_children():
             widget.destroy()
@@ -167,9 +177,10 @@ class ClipsPanel:
             return
         try:
             start, end = float(self.start.get()), float(self.end.get())
-            if not 0 <= start < end <= self.source.duration:
+            if not 0 <= start < end <= self.edit.duration:
                 raise ValueError("Start and end must be within the clip, with end after start.")
-            edit = clipedit.Edit.of(self.source)
+            import copy
+            edit = copy.deepcopy(self.edit)
             edit.trim(start, end)
             exporter = clipedit.Export(edit, "fast" if self.mode.get().startswith("Fast") else "exact",
                                        self.selection(), self.mix.get())
@@ -184,6 +195,51 @@ class ClipsPanel:
             self.progress.set("Export stopped." if error else "Saved: " + str(path))
             self.window.say(error if error else "Saved a new copy: " + str(path), error=bool(error))
         self.work(exporter.run, done)
+
+    def preview(self):
+        if self.source:
+            import os
+            os.startfile(self.source.path)
+
+    def edited(self):
+        self.start.set("0")
+        self.end.set(str(self.edit.duration))
+        self.sections.set(f"{len(self.edit.sources)} source clip(s) · {len(self.edit.segments)} section(s) · {self.edit.duration:.2f} seconds")
+
+    def change(self, action):
+        if not self.edit or self.export is not None or self.loading:
+            return
+        try:
+            start, end = float(self.start.get()), float(self.end.get())
+            if action != "undo" and not 0 <= start < end <= self.edit.duration:
+                raise ValueError("Choose a section inside the edited timeline.")
+            if action == "keep": self.edit.trim(start, end)
+            elif action == "remove": self.edit.remove_range(start, end)
+            elif action == "split": self.edit.split(start)
+            elif action == "undo": self.edit.undo()
+            self.edited()
+        except ValueError as error:
+            self.window.say(str(error), error=True)
+
+    def join(self):
+        if not self.edit or self.loading or self.export is not None:
+            return
+        path = filedialog.askopenfilename(parent=self.window.root, title="Join clip at end",
+                filetypes=[("Video clips", "*.mp4 *.mkv *.webm *.mov"), ("All files", "*.*")])
+        if not path: return
+        self.loading = True
+        def done(outcome):
+            self.loading = False
+            source, error = outcome
+            if error:
+                self.window.say(error, error=True)
+                return
+            try:
+                self.edit.append(source)
+                self.edited()
+            except ValueError as error:
+                self.window.say(str(error), error=True)
+        self.work(lambda: clipedit.probe(path), done)
 
     def cancel(self):
         if self.export is not None:
