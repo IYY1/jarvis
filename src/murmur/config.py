@@ -43,8 +43,12 @@ DEFAULTS = {
     # Disk storage is an explicit privacy choice. RAM remains the default.
     # game_audio/microphone mix the default output and input into one track; sound chirps on save.
     # audio_tracks "separate" keeps game, each of separate_apps and the microphone on their own tracks.
+    # own_video: replay records with its own format/fps/resolution/quality below
+    # instead of the recording settings (the default).
     "replay": {"seconds": 120, "autostart": False, "game_audio": True, "microphone": True, "sound": True,
-               "storage": "ram", "max_mb": 256, "buffer_dir": "", "audio_tracks": "mixed", "separate_apps": []},
+               "storage": "ram", "max_mb": 256, "buffer_dir": "", "audio_tracks": "mixed", "separate_apps": [],
+               "own_video": False, "codec": "av1", "fps": 60, "resolution": "native", "rate_control": "quality",
+               "quality_preset": "very_high", "bitrate_mbps": 8},
 }
 # Sections that existed in earlier versions and are now ignored.
 LEGACY_SECTIONS: tuple[str, ...] = ()
@@ -199,8 +203,12 @@ def validate(data: dict) -> dict:
     path = c["replay"]["buffer_dir"]
     if not isinstance(path, str) or len(path) > 4096 or "\0" in path:
         raise ValueError("Invalid replay buffer directory")
-    if not all(isinstance(c["replay"][key], bool) for key in ("autostart", "game_audio", "microphone", "sound")):
+    if not all(isinstance(c["replay"][key], bool) for key in ("autostart", "game_audio", "microphone", "sound", "own_video")):
         raise ValueError("Replay switches must be true or false")
+    from .encoding import GPU_CODECS, REPLAY_VIDEO
+    validate_encoding({key: c["replay"][key] for key in REPLAY_VIDEO})
+    if c["replay"]["codec"] not in GPU_CODECS:
+        raise ValueError("Replay records with a GPU format: choose AV1, HEVC or H.264")
     if c["replay"]["audio_tracks"] not in ("mixed", "separate"):
         raise ValueError("Replay audio tracks must be mixed or separate")
     apps = c["replay"]["separate_apps"]

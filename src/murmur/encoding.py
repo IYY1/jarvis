@@ -14,6 +14,18 @@ QUALITY_PRESETS = ("medium", "high", "very_high", "ultra")
 RESOLUTIONS = {"native": "", "2160": "3840x2160", "1440": "2560x1440", "1080": "1920x1080", "720": "1280x720"}
 
 
+# Video settings replay can keep apart from recording (replay.own_video).
+REPLAY_VIDEO = ("codec", "fps", "resolution", "rate_control", "quality_preset", "bitrate_mbps")
+
+
+def replay_video(config):
+    """The recording section with replay's own video settings, when it has them."""
+    recording, replay = config["recording"], config.get("replay", {})
+    if not replay.get("own_video"):
+        return recording
+    return {**recording, **{key: replay[key] for key in REPLAY_VIDEO}}
+
+
 def validate_encoding(cfg):
     for key, low, high in (("fps", 1, 240), ("quality", 0, 51), ("bitrate_mbps", 1, 500)):
         value = cfg.get(key, {"fps": 30, "quality": 23, "bitrate_mbps": 8}[key])

@@ -19,7 +19,7 @@ if is_windows():
     from .windows.apps import AppRegistry
 else:
     from .apps import AppRegistry
-from .client import socket_path
+from .client import REPLAY_CAPTURE_KEYS, socket_path
 from .commands import REFERENCE, CommandError, Parser, normalize
 if is_windows():
     from .windows.desktop import Desktop as Hyprland
@@ -559,8 +559,7 @@ class Service:
             if self.replay.status()["state"] in ("on", "stopping") and (
                     c["recording"] != self.config["recording"] or any(
                         c["replay"][key] != self.config["replay"][key]
-                        for key in ("seconds", "game_audio", "microphone", "storage", "max_mb", "buffer_dir",
-                                    "audio_tracks", "separate_apps"))):
+                        for key in REPLAY_CAPTURE_KEYS)):
                 raise CommandError("Stop instant replay before changing capture settings")
             was_onboarded = self.config["privacy"]["onboarded"]
             self.config = await asyncio.to_thread(configuration.save, c)

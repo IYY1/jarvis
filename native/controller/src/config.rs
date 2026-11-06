@@ -329,11 +329,37 @@ pub fn validate(data: &Value) -> Result<Value> {
     for key in ["output_dir", "monitor", "audio_device"] {
         text(&r[key], 4096, &format!("recording {key}"))?;
     }
-    for key in ["autostart", "game_audio", "microphone", "sound"] {
+    for key in ["autostart", "game_audio", "microphone", "sound", "own_video"] {
         if !c["replay"][key].is_boolean() {
             return err("Replay switches must be true or false");
         }
     }
+    // Replay's own video settings (used when own_video is on); GPU formats only.
+    let v = &c["replay"];
+    choices(
+        &v["codec"],
+        &crate::capture::GPU_CODECS,
+        "Replay records with a GPU format: choose AV1, HEVC or H.264",
+    )?;
+    for (value, max, message) in [
+        (&v["fps"], 240, "Replay fps must be 1–240"),
+        (&v["bitrate_mbps"], 500, "Replay bitrate must be 1–500 Mbps"),
+    ] {
+        if !value.as_u64().is_some_and(|n| (1..=max).contains(&n)) {
+            return err(message);
+        }
+    }
+    choices(&v["rate_control"], &["quality", "bitrate"], "Choose quality or bitrate control")?;
+    choices(
+        &v["quality_preset"],
+        &["medium", "high", "very_high", "ultra"],
+        "Choose a supported quality preset",
+    )?;
+    choices(
+        &v["resolution"],
+        &crate::capture::RESOLUTIONS.map(|(name, _)| name),
+        "Choose native, 2160, 1440, 1080 or 720 recording resolution",
+    )?;
     choices(
         &c["replay"]["audio_tracks"],
         &["mixed", "separate"],

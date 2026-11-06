@@ -17,6 +17,7 @@ import uuid
 from ..host import child_options, command as worker_command, tool
 from ..recorder import RecorderError, capture_color, verify_video
 from ..replay import write_track_names
+from ..encoding import replay_video
 from . import encoding
 
 
@@ -168,7 +169,7 @@ class _Capture:
             process.terminate()
 
     def _validated(self):
-        cfg = dict(self.config["recording"])
+        cfg = dict(replay_video(self.config) if self.replay else self.config["recording"])
         if not cfg.get("configured"):
             raise RecorderError("Complete and review recording setup first")
         display = next((d for d in sources() if d["name"] == cfg["monitor"]), None)

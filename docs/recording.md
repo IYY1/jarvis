@@ -41,6 +41,17 @@ Review that grant before adding it: it allows the named recorder to capture with
 **Picture & storage → Preset** picks everything at once; **Advanced** under it
 holds each setting. Changing any of them shows the preset as *Custom*.
 
+Recording and instant replay use the same video settings by default. Turn off
+**Replay uses the same video settings** to give replay its own (for example 2K
+120 fps recordings with a lighter 1080p replay); **Settings for** then chooses
+which one the preset and Advanced settings change. They are stored as
+`replay.own_video` plus `replay.codec`, `fps`, `resolution`, `rate_control`,
+`quality_preset` and `bitrate_mbps`; replay always records with a GPU format.
+
+**Saving while capture runs** applies the change at once: a running recording
+is stopped (and saved as its own file) and a new one starts; a running replay
+restarts with an empty history. Only captures whose settings changed restart.
+
 | Preset | Format | Resolution | Frame rate | Size |
 | --- | --- | --- | --- | --- |
 | **Recommended** (default) | AV1 when the display's GPU encodes it, else HEVC, else H.264 | Display's own | 60 fps | Consistent quality, Sharp |

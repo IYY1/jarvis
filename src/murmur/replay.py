@@ -17,7 +17,7 @@ import subprocess
 import threading
 
 from .client import socket_path
-from .encoding import expected_codec
+from .encoding import expected_codec, replay_video
 from .recorder import (RecorderError, _parent_death_prefix, _spawn, capture_color,
                        gpu_video_args, sources, verify_video)
 
@@ -118,7 +118,7 @@ class Replay:
                 backend = shutil.which(BACKEND)
                 if not backend:
                     raise RecorderError("Instant replay needs gpu-screen-recorder. Install it with: sudo pacman -S gpu-screen-recorder")
-                cfg = self.config.get("recording", self.config)
+                cfg = replay_video(self.config) if "recording" in self.config else self.config
                 replay = self.config.get("replay", {})
                 if replay.get("storage", "ram") == "disk":
                     raise RecorderError("Disk replay requires the Rust controller on Linux. Build scripts/build_controller.py and select MURMUR_CONTROLLER=rust.")

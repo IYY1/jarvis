@@ -55,6 +55,48 @@ class EncodingTests(unittest.TestCase):
             args = command(cfg, {}, Path("/fake"), Path("/fake/ipc"))
             self.assertEqual(args[args.index("-f") + 1], "144")
 
+    def test_replay_uses_recording_video_unless_it_has_its_own(self):
+        from murmur.encoding import replay_video
+        same = validate({"recording": {"codec": "av1_10bit", "fps": 60}, "replay": {"fps": 30}})
+        self.assertEqual((replay_video(same)["codec"], replay_video(same)["fps"]), ("av1_10bit", 60))
+        own = validate({"recording": {"codec": "av1_10bit", "fps": 60},
+                        "replay": {"own_video": True, "codec": "hevc", "fps": 120, "resolution": "1080"}})
+        video = replay_video(own)
+        self.assertEqual((video["codec"], video["fps"], video["resolution"], video["monitor"]), ("hevc", 120, "1080", ""))
+        args = command(video, own["replay"], Path("/fake"), Path("/fake/ipc"))
+        self.assertEqual((args[args.index("-k") + 1], args[args.index("-f") + 1], args[args.index("-s") + 1]),
+                         ("hevc", "120", "1920x1080"))
+        with self.assertRaises(ValueError):
+            validate({"replay": {"codec": "libx264"}})  # replay always records on the GPU
+
+    def test_saving_restarts_only_running_captures_whose_settings_changed(self):
+        from murmur import client
+        old = validate({"recording": {"codec": "av1", "fps": 60}})
+        calls = []
+        def fake(op, **payload):
+            calls.append(op)
+            if op == "config":
+                return {"ok": True, "config": old}
+            if op == "status":
+                return {"ok": True, "status": {"recording": {"state": "recording"}, "replay": {"state": "on"}}}
+            return {"ok": True}
+        new = validate({"recording": {"codec": "av1", "fps": 120}})
+        with patch("murmur.client.request", side_effect=fake):
+            result = client.save_config_restarting(new)
+        self.assertEqual(calls, ["config", "status", "record_stop", "replay_stop", "save_config", "record_start", "replay_start"])
+        self.assertIn("a new one started", client.restart_note(result))
+        # Replay-only change with its own settings: only replay restarts.
+        calls.clear()
+        replay_only = validate({"recording": {"codec": "av1", "fps": 60}, "replay": {"own_video": True, "fps": 144}})
+        with patch("murmur.client.request", side_effect=fake):
+            client.save_config_restarting(replay_only)
+        self.assertEqual(calls, ["config", "status", "replay_stop", "save_config", "replay_start"])
+        # Nothing capture-related changed: nothing stops.
+        calls.clear()
+        with patch("murmur.client.request", side_effect=fake):
+            self.assertEqual(client.restart_note(client.save_config_restarting(old)), "")
+        self.assertEqual(calls, ["config", "status", "save_config"])
+
     def test_sdr_gpu_uses_gpu_backend_with_explicit_audio(self):
         for codec in GPU_CODECS:
             cfg = validate({"recording": {"configured": True, "monitor": "DP-1", "codec": codec,

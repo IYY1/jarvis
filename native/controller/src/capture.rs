@@ -111,8 +111,21 @@ fn gpu_args(color: &str, r: &Value) -> Vec<String> {
     }
     args
 }
+/// Video settings replay can keep apart from recording (replay.own_video).
+pub const REPLAY_VIDEO: [&str; 6] = ["codec", "fps", "resolution", "rate_control", "quality_preset", "bitrate_mbps"];
+/// The recording section with replay's own video settings, when it has them.
+pub fn replay_video(cfg: &Value) -> Value {
+    let mut video = cfg["recording"].clone();
+    if cfg["replay"]["own_video"] == true {
+        for key in REPLAY_VIDEO {
+            video[key] = cfg["replay"][key].clone();
+        }
+    }
+    video
+}
 pub fn replay_command(cfg: &Value, ipc: &Path, folder: &Path, color: &str) -> Vec<String> {
-    let r = &cfg["recording"];
+    let video = replay_video(cfg);
+    let r = &video;
     let replay = &cfg["replay"];
     let mut argv = vec![
         "gpu-screen-recorder".into(),
@@ -392,7 +405,12 @@ impl Capture {
             }
             return Ok(self.snapshot());
         }
-        let r = &cfg["recording"];
+        let video = if self.replay {
+            replay_video(cfg)
+        } else {
+            cfg["recording"].clone()
+        };
+        let r = &video;
         if !self.replay && r["configured"] != true {
             return err("Open Recording settings and finish source, audio, folder, and permission setup first.");
         }
@@ -971,6 +989,31 @@ fn timestamp() -> String {
 mod tests {
     use super::*;
     use serde_json::json;
+    #[test]
+    fn replay_uses_recording_video_unless_it_has_its_own() {
+        let mut cfg = json!({
+            "recording": {"monitor":"DP-3","fps":60,"codec":"av1_10bit","resolution":"native",
+                          "rate_control":"quality","quality_preset":"ultra","bitrate_mbps":8},
+            "replay": {"own_video":false,"codec":"hevc","fps":120,"resolution":"1080",
+                       "rate_control":"bitrate","quality_preset":"very_high","bitrate_mbps":40,
+                       "seconds":60,"storage":"ram","game_audio":false,"microphone":false}
+        });
+        let arg = |argv: &[String], flag: &str| {
+            argv.iter().position(|a| a == flag).map(|i| argv[i + 1].clone())
+        };
+        let same = replay_command(&cfg, Path::new("/ipc"), Path::new("/out"), "sdr");
+        assert_eq!(arg(&same, "-k").as_deref(), Some("av1_10bit"));
+        assert_eq!(arg(&same, "-f").as_deref(), Some("60"));
+        assert_eq!(arg(&same, "-s"), None);
+        cfg["replay"]["own_video"] = json!(true);
+        let own = replay_command(&cfg, Path::new("/ipc"), Path::new("/out"), "sdr");
+        assert_eq!(arg(&own, "-k").as_deref(), Some("hevc"));
+        assert_eq!(arg(&own, "-f").as_deref(), Some("120"));
+        assert_eq!(arg(&own, "-s").as_deref(), Some("1920x1080"));
+        assert_eq!(arg(&own, "-q").as_deref(), Some("40000"));
+        assert_eq!(arg(&own, "-w").as_deref(), Some("DP-3"));
+    }
+
     #[test]
     fn separate_tracks_never_overlap_and_mixed_is_unchanged() {
         let mixed = json!({"game_audio":true,"microphone":true,"audio_tracks":"mixed","separate_apps":["Firefox"]});

@@ -61,7 +61,14 @@
     "max_mb": 256,
     "buffer_dir": "",
     "audio_tracks": "mixed",
-    "separate_apps": []
+    "separate_apps": [],
+    "own_video": false,
+    "codec": "av1",
+    "fps": 60,
+    "resolution": "native",
+    "rate_control": "quality",
+    "quality_preset": "very_high",
+    "bitrate_mbps": 8
   },
   "dictation": {
     "language": "auto",

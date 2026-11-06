@@ -20,6 +20,9 @@
 - **Video formats**: Recommended (AV1, else HEVC) / Compatible (H.264 GPU),
   each tested on the selected display's GPU with synthetic frames. CPU H.264
   and legacy VA-API remain only for existing configurations.
+- **Replay's own video settings** (optional; same as recording by default),
+  and **Save applies capture changes at once**: a running recording is saved
+  and restarted, a running replay restarts, instead of “stop it first”.
 - **Capture presets**: Recommended (AV1 where supported), High quality (AV1
   10-bit at the new Maximum quality), High frame rate · 120 fps, Small files ·
   1080p and Compatible · H.264, with format, resolution (display's own, 4K, 2K,

@@ -51,6 +51,52 @@ def request(op: str, timeout: float | None = None, **kwargs) -> dict:
         return response
 
 
+# Replay settings a running replay can't change (services refuse); with any
+# recording setting they make save_config_restarting restart the replay.
+REPLAY_CAPTURE_KEYS = ("seconds", "game_audio", "microphone", "storage", "max_mb", "buffer_dir", "audio_tracks",
+                       "separate_apps", "own_video", "codec", "fps", "resolution", "rate_control",
+                       "quality_preset", "bitrate_mbps")
+
+
+def save_config_restarting(config: dict) -> dict:
+    """Save settings. A running recording or replay whose settings changed is
+    stopped (a recording is saved as its file), then started again with the
+    new settings. The reply lists what was restarted and any start error."""
+    current = request("config")
+    if not current.get("ok"):
+        return current
+    old, status = current["config"], request("status").get("status", {})
+    recording_changed = config["recording"] != old["recording"]
+    restart = []
+    if status.get("recording", {}).get("state") == "recording" and recording_changed:
+        restart.append("record")
+    if status.get("replay", {}).get("state") == "on" and (recording_changed or any(
+            config["replay"].get(key) != old["replay"].get(key) for key in REPLAY_CAPTURE_KEYS)):
+        restart.append("replay")
+    for kind in restart:
+        stopped = request(f"{kind}_stop")
+        if not stopped.get("ok"):
+            return stopped
+    result = request("save_config", config=config)
+    errors = []
+    for kind in restart if result.get("ok") else ():
+        started = request(f"{kind}_start")
+        if not started.get("ok"):
+            errors.append(started.get("error", f"{kind} did not start"))
+    return dict(result, restarted=restart, restart_errors=errors)
+
+
+def restart_note(result: dict) -> str:
+    """What save_config_restarting did, in a sentence ("" when nothing ran)."""
+    parts = {"record": "the recording was saved and a new one started",
+             "replay": "instant replay restarted (its earlier history was cleared)"}
+    done = [parts[kind] for kind in result.get("restarted", [])]
+    note = (" With the new settings, " + " and ".join(done) + ".") if done else ""
+    if result.get("restart_errors"):
+        note += " Could not start again: " + "; ".join(result["restart_errors"])
+    return note
+
+
 def watch(callback, stop_event):
     with connection(None, {"op": "watch"}) as sock:
         with sock.makefile("rb") as f:

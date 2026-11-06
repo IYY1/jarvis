@@ -13,7 +13,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from .. import config
-from ..client import TIMEOUTS, request, watch
+from ..client import TIMEOUTS, request, restart_note, save_config_restarting, watch
 from ..commands import REFERENCE
 from ..encoding import storage_estimate
 
@@ -824,17 +824,18 @@ class Window:
             except (OSError, ValueError):
                 status = {}
             if status.get("ok"):
-                result = request("save_config", config=value, timeout=60)
+                result = save_config_restarting(value)
                 if not result.get("ok"):
                     raise ValueError(result.get("error", "Could not save"))
             else:
                 config.save(value)
+                result = {}
             set_startup(value["startup"])
-            return value
+            return value, restart_note(result)
 
-        def saved(value):
-            self.config = value
-            messagebox.showinfo("Jarvis", "Settings saved.", parent=self.root)
+        def saved(outcome):
+            self.config, note = outcome
+            messagebox.showinfo("Jarvis", "Settings saved." + note, parent=self.root)
 
         self.submit(run, saved)
 

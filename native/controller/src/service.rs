@@ -725,6 +725,13 @@ impl Service {
                             "buffer_dir",
                             "audio_tracks",
                             "separate_apps",
+                            "own_video",
+                            "codec",
+                            "fps",
+                            "resolution",
+                            "rate_control",
+                            "quality_preset",
+                            "bitrate_mbps",
                         ]
                         .iter()
                         .any(|key| c["replay"][key] != self.config["replay"][key]))

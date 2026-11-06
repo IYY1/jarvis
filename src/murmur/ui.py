@@ -29,7 +29,7 @@ else:
 
 from . import client
 from .commands import normalize
-from .encoding import GPU_CODECS, QUALITY_PRESETS, storage_estimate
+from .encoding import GPU_CODECS, QUALITY_PRESETS, REPLAY_VIDEO, storage_estimate
 
 
 def _merge(base: dict, patch: dict) -> dict:
@@ -546,6 +546,15 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
                                           lambda: self.capture_preset.set_selected(self.RECOMMENDED)))
         self.legacy_banner.set_visible(False)
         quality.append(self.legacy_banner)
+        self.replay_same = Gtk.Switch()
+        self.replay_same.set_active(True)
+        self._row(quality, "Replay uses the same video settings", self.replay_same,
+                  "Turn off to give recording and replay their own format, resolution, frame rate and quality, "
+                  "for example 2K 120 fps recordings with a lighter 1080p replay.")
+        self.video_profile = Gtk.DropDown.new_from_strings(["Recording", "Replay"])
+        self._row(quality, "Settings for", self.video_profile, "Which one the preset and Advanced settings below change.")
+        self.video_profile.get_parent().set_visible(False)
+        self._profile, self._profiles = "recording", {}
         self.capture_preset = Gtk.DropDown.new_from_strings([preset[0] for preset in self.PRESETS] + ["Custom"])
         self._row(quality, "Preset", self.capture_preset,
                   "Recommended suits most clips. High quality keeps the most detail in larger files. High frame rate "
@@ -600,6 +609,8 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
                   "Lower values improve quality and increase file size. Your existing value is preserved.")
         body.append(advanced_card)
         self.capture_preset.connect("notify::selected", lambda *_: self._preset_changed())
+        self.replay_same.connect("notify::active", lambda *_: self._same_changed())
+        self.video_profile.connect("notify::selected", lambda *_: self._profile_changed())
         self.monitor.connect("notify::selected", lambda *_: self._probe_formats())
         for control in (self.codec, self.rate_control, self.quality_preset, self.resolution):
             control.connect("notify::selected", lambda *_: self._encoding_changed())
@@ -607,7 +618,9 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.fps.connect("value-changed", lambda *_: self._encoding_changed())
         self.replay_seconds.connect("value-changed", lambda *_: self._encoding_changed())
         body.append(_button("Save recorder settings", self._save_recording, "primary"))
-        body.append(_label("Opening the recorder never starts capture. Stop & save requests a graceful finalization; wait for the saved-file confirmation.", "caption"))
+        body.append(_label("Saving while a recording or instant replay runs applies the new settings at once: the recording "
+                           "so far is saved as its own file and a new one starts, and replay starts over with an empty history. "
+                           "Opening the recorder never starts capture.", "caption"))
 
     def _clips_page(self) -> None:
         from .clips_ui import ClipsPage
@@ -1073,6 +1086,15 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.resolution.set_selected(self.RESOLUTIONS.index(recorder.get("resolution", "native")))
         self._showing = False
         self._show_codec(recorder.get("codec", "libx264"))
+        replay = self.config.get("replay", {})
+        self._profile = "recording"
+        self._profiles = {"replay": {key: replay[key] for key in REPLAY_VIDEO}
+                          if replay.get("own_video") else self._read_video()}
+        self._showing = True
+        self.video_profile.set_selected(0)
+        self.replay_same.set_active(not replay.get("own_video", False))
+        self._showing = False
+        self.video_profile.get_parent().set_visible(not self.replay_same.get_active())
         self._encoding_changed()
         self.startup.set_active(bool(self.config.get("startup", False)))
         onboarded = bool(self.config.get("privacy", {}).get("onboarded", False))
@@ -1353,7 +1375,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
                 merged = _merge(current.get("config", {}), patch)
                 for key in replace_keys:
                     merged[key] = copy.deepcopy(patch[key])
-                result = client.request("save_config", config=merged)
+                result = client.save_config_restarting(merged)
                 if result.get("ok"):
                     result["config"] = merged
                 return result
@@ -1361,6 +1383,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
             if not result.get("ok"):
                 self._notice(str(result.get("error", "Settings could not be saved.")), True)
                 return
+            note = client.restart_note(result)
             self.config = result["config"]
             self._show_language()
             self._render_aliases()
@@ -1371,7 +1394,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
                 self.onboard_button.set_sensitive(False)
                 self.activation.set_selected(1)
             self._set_status({"ok": True, "status": self.status}, validate_grammar=False)
-            self._notice(success)
+            self._notice(success + note, bool(result.get("restart_errors")))
         self._work(save, saved)
 
     def _save_voice(self) -> None:
@@ -1490,30 +1513,32 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         if (self.system_audio.get_active() or self.record_mic.get_active()) and not source:
             self._notice("Choose an explicit recording audio source, or turn audio capture off.", True)
             return
-        codec = self._chosen_codec()
-        if codec in GPU_CODECS and self._formats.get("formats") and not self._formats["formats"].get(codec):
-            self._notice(f"{self.NAMES[codec]} did not pass the encoder test on {self._formats.get('gpu')} (the GPU of "
-                         f"{monitor or 'this display'}). Choose another format.", True)
-            return
+        self._profiles[self._profile] = self._read_video()
+        same = self.replay_same.get_active()
+        video = self._profiles.get("recording") or self._read_video()
+        replay_video = video if same else self._profiles.get("replay", video)
+        if replay_video["codec"] not in GPU_CODECS:
+            replay_video = dict(replay_video, codec=self._preset_codec("best"))
+        for codec in {video["codec"], replay_video["codec"]}:
+            if codec in GPU_CODECS and self._formats.get("formats") and not self._formats["formats"].get(codec):
+                self._notice(f"{self.NAMES[codec]} did not pass the encoder test on {self._formats.get('gpu')} (the GPU of "
+                             f"{monitor or 'this display'}). Choose another format.", True)
+                return
         self._save({"recording": {"output_dir": self.output_dir.get_text().strip(), "monitor": monitor,
             "system_audio": self.system_audio.get_active(), "microphone": self.record_mic.get_active(),
             "configured": self.capture_configured.get_active(), "sound_feedback": self.sound_feedback.get_active(),
             "combined_audio_source": self.combined_audio.get_active(),
             "color_mode": ["auto", "hdr", "sdr"][self.color_mode.get_selected()],
-            "audio_device": source, "fps": int(round(self.fps.get_value())),
-            "rate_control": "bitrate" if self.rate_control.get_selected() == 1 else "quality",
-            "bitrate_mbps": self.bitrate.get_value_as_int(),
-            "quality_preset": QUALITY_PRESETS[self.quality_preset.get_selected()],
-            "codec": codec, "quality": self.quality.get_value_as_int(),
-            "resolution": self.RESOLUTIONS[self.resolution.get_selected()]},
+            "audio_device": source, "quality": self.quality.get_value_as_int(), **video},
             "replay": {"seconds": self.replay_seconds.get_value_as_int(), "autostart": self.replay_autostart.get_active(),
                        "game_audio": self.replay_game.get_active(), "microphone": self.replay_mic.get_active(),
                        "sound": self.replay_sound.get_active(),
                        "storage": "disk" if self.replay_storage.get_selected() == 1 else "ram",
                        "max_mb": self.replay_max_mb.get_value_as_int(), "buffer_dir": self.replay_buffer_dir.get_text().strip(),
                        "audio_tracks": "separate" if self.replay_tracks.get_selected() == 1 else "mixed",
-                       "separate_apps": [a.strip() for a in self.replay_apps.get_text().split(",") if a.strip()]}},
-            "Recorder settings saved. Start recording explicitly, or say “Start recording”.")
+                       "separate_apps": [a.strip() for a in self.replay_apps.get_text().split(",") if a.strip()],
+                       "own_video": not same, **replay_video}},
+            "Recorder settings saved.")
 
     def _replay_tracks_changed(self) -> None:
         for row in self._replay_apps_rows:
@@ -1637,6 +1662,48 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         else:
             self._sync_preset()
 
+    def _read_video(self) -> dict:
+        """The video settings the controls show, keyed like the config."""
+        return {"codec": self._chosen_codec(), "resolution": self.RESOLUTIONS[self.resolution.get_selected()],
+                "fps": int(round(self.fps.get_value())),
+                "rate_control": "bitrate" if self.rate_control.get_selected() == 1 else "quality",
+                "quality_preset": QUALITY_PRESETS[self.quality_preset.get_selected()],
+                "bitrate_mbps": self.bitrate.get_value_as_int()}
+
+    def _write_video(self, video: dict) -> None:
+        codec = video["codec"]
+        if self._profile == "replay" and codec not in GPU_CODECS:
+            codec = self._preset_codec("best")  # replay always records on the GPU
+        self._showing = True
+        self.resolution.set_selected(self.RESOLUTIONS.index(video["resolution"]))
+        self.fps.set_value(video["fps"])
+        self.rate_control.set_selected(1 if video["rate_control"] == "bitrate" else 0)
+        self.quality_preset.set_selected(QUALITY_PRESETS.index(video["quality_preset"]))
+        self.bitrate.set_value(video["bitrate_mbps"])
+        self._showing = False
+        self._show_codec(codec)
+
+    def _profile_changed(self) -> None:
+        """Switch which settings (recording or replay) the controls edit."""
+        new = "replay" if self.video_profile.get_selected() == 1 else "recording"
+        if self._showing or new == self._profile:
+            return
+        self._profiles[self._profile] = self._read_video()
+        self._profile = new
+        self._write_video(self._profiles[new])
+        self._encoding_changed()
+
+    def _same_changed(self) -> None:
+        if self._showing:
+            return
+        same = self.replay_same.get_active()
+        self.video_profile.get_parent().set_visible(not same)
+        if same:
+            self.video_profile.set_selected(0)  # back to editing the shared settings
+        elif self._profile == "recording":
+            self._profiles["replay"] = self._read_video()  # replay starts as a copy
+        self._encoding_changed()
+
     def _chosen_codec(self) -> str:
         index = self.codec.get_selected()
         return self._codec_options[index] if index < len(self._codec_options) else "av1"
@@ -1683,7 +1750,9 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         elif shutil.which("ffmpeg") is None and not formats:
             detail = "FFmpeg is missing, so formats can't be tested. Install ffmpeg."
         else:
-            detail = f"Records {names.get(codec, codec)} · {size.split(' (')[0]} · {fps} fps · {amount}."
+            who = ("Recording and replay record" if self.replay_same.get_active()
+                   else "Replay records" if self._profile == "replay" else "Recording records")
+            detail = f"{who} {names.get(codec, codec)} · {size.split(' (')[0]} · {fps} fps · {amount}."
             if self.capture_preset.get_selected() == self.HIGH:
                 detail += " Files are larger, most of all in fast motion, and a replay keeps fewer seconds in its memory budget."
             elif fps > 60:
