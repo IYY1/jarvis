@@ -113,6 +113,20 @@ class ExportTests(unittest.TestCase):
         self.assertEqual(again.name, "a edit 2.mp4", "an existing export is never overwritten")
         self.assertEqual(self.streams(again)[1], ["video", "audio", "audio"])
 
+    def test_silent_tracks_are_found_in_one_pass(self):
+        from jarvis.clipedit import SILENT_DB, loudness
+        peaks = loudness(self.clip("quiet.mp4", tones=(440, 0, 880)), 3)   # a 0 Hz "tone" is silence
+        self.assertEqual([peak <= SILENT_DB for peak in peaks], [False, True, False])
+        self.assertEqual(loudness(self.folder / "quiet.mp4", 0), [])
+
+    def test_tracks_are_described_like_losslesscut(self):
+        try:
+            from jarvis.clips_ui import describe
+        except (ImportError, ValueError):
+            self.skipTest("GTK is not available")
+        self.assertEqual(describe({"codec_name": "opus", "channels": 2, "sample_rate": "48000"}), "Opus · stereo · 48 kHz")
+        self.assertEqual(describe({"codec_name": "pcm_s16le", "channels": 1}), "PCM_S16LE · mono")
+
     def test_exact_export_converts_and_joins_different_clips(self):
         first, second = probe(self.clip("a.mp4")), probe(self.clip("b.mp4", size="640x360"))
         edit = Edit.of(first)

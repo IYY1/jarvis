@@ -804,7 +804,8 @@ class Window:
         self.switch(replay, "Microphone", "replay", "microphone", "Your voice, from the default input.")
         self.choice(replay, "Sound tracks", "replay", "audio_tracks",
                     {"One mixed track": "mixed", "Separate tracks (Windows 11)": "separate"},
-                    "Separate tracks keep the game, one program and your microphone apart, so you can mute one later.")
+                    "Separate tracks keep the game, one program and your microphone apart, so you can mute one "
+                    "later. Windows can separate one program; on Linux every app gets its own track.")
         self.separate_app = tk.StringVar(value=", ".join(self.config["replay"]["separate_apps"]))
         self.text(replay, "Program on its own track", variable=self.separate_app,
                   detail="Its file name without .exe, for example firefox. Start it before replay.")

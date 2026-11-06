@@ -14,6 +14,16 @@
 - **Three color presets** from Sanzo Wada's *A Dictionary of Color
   Combinations*, two dark and one light (General → Colors), each checked for
   WCAG AA contrast.
+- **Every app on its own replay track**: with Separate tracks, each app playing
+  sound when replay starts, and each app heard before, gets its own track (up to
+  eight), so a clip can keep Discord and mute Firefox. Discord's voice shows as
+  Discord, not “WEBRTC VoiceEngine”. Linux; Windows separates one program.
+- **Clips Sound tracks, LosslessCut-style**: a row per track with its format,
+  Keep, **Only this**, Keep all / Mute all; tracks with no sound in the clip are
+  marked and start off.
+- **Lighter settings window**: closing a clip in the editor now gives its video
+  memory back (about 50 MiB for a 1440p clip), and app rows build their
+  voice-name fields only when asked.
 - **Fixed**: changing Recording sounds (or completing recorder setup) restarted
   a running instant replay and cleared it; those settings no longer restart a
   capture. The voice-model download button also stays hidden now when Arabic

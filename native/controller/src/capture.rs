@@ -158,7 +158,14 @@ pub fn replay_video(cfg: &Value) -> Value {
     video
 }
 /// `video` is replay_video(cfg), with any automatic bitrate already set.
-pub fn replay_command(cfg: &Value, video: &Value, ipc: &Path, folder: &Path, color: &str) -> Vec<String> {
+pub fn replay_command(
+    cfg: &Value,
+    video: &Value,
+    ipc: &Path,
+    folder: &Path,
+    color: &str,
+    apps: &[String],
+) -> Vec<String> {
     let r = video;
     let replay = &cfg["replay"];
     let mut argv = vec![
@@ -181,7 +188,7 @@ pub fn replay_command(cfg: &Value, video: &Value, ipc: &Path, folder: &Path, col
         "no".into(),
     ];
     argv.extend(gpu_args(color, r));
-    for track in audio_tracks(replay) {
+    for track in audio_tracks(replay, apps) {
         argv.extend(["-a".into(), track]);
     }
     argv
@@ -198,7 +205,7 @@ pub fn valid_app_name(name: &str) -> bool {
 }
 
 /// Human names for `audio_tracks`, in the same order.
-pub fn track_names(replay: &Value) -> Vec<String> {
+pub fn track_names(replay: &Value, apps: &[crate::audio_apps::App]) -> Vec<String> {
     let game = replay["game_audio"] == true;
     let mic = replay["microphone"] == true;
     if replay["audio_tracks"] != "separate" {
@@ -209,19 +216,15 @@ pub fn track_names(replay: &Value) -> Vec<String> {
             _ => vec![],
         };
     }
-    let apps: Vec<String> = crate::policy::strings(&replay["separate_apps"])
-        .into_iter()
-        .filter(|a| valid_app_name(a))
-        .collect();
     let mut names = vec![];
     if game {
         names.push(if apps.is_empty() {
             "Game and desktop sound".into()
         } else {
-            "Game and other apps".into()
+            "Everything else".into()
         });
     }
-    names.extend(apps);
+    names.extend(apps.iter().map(|a| a.label.clone()));
     if mic {
         names.push("Microphone".into());
     }
@@ -244,11 +247,11 @@ fn write_track_names(clip: &Path, names: &[String]) {
 /// Replay audio sources, one `-a` value per track.
 ///
 /// Mixed (the default): game sound and microphone share one track. Separate:
-/// "everything except the chosen apps" is one track, each chosen app has its
-/// own, and the microphone has its own. The game track deliberately uses
+/// each app in `apps` (see audio_apps) has its own track, "everything else"
+/// has one, and the microphone has its own. The everything-else track uses
 /// `app-inverse:` rather than `default_output`, which would also contain the
-/// chosen apps and make muting them in a clip impossible.
-pub fn audio_tracks(replay: &Value) -> Vec<String> {
+/// apps and make muting one in a clip impossible.
+pub fn audio_tracks(replay: &Value, apps: &[String]) -> Vec<String> {
     let game = replay["game_audio"] == true;
     let mic = replay["microphone"] == true;
     if replay["audio_tracks"] != "separate" {
@@ -262,10 +265,6 @@ pub fn audio_tracks(replay: &Value) -> Vec<String> {
             vec![mixed.join("|")]
         };
     }
-    let apps: Vec<String> = crate::policy::strings(&replay["separate_apps"])
-        .into_iter()
-        .filter(|a| valid_app_name(a))
-        .collect();
     let mut tracks = vec![];
     if game {
         tracks.push(if apps.is_empty() {
@@ -527,8 +526,14 @@ impl Capture {
                 return err("Disk replay needs gpu-screen-recorder 6.1.5 or newer.");
             }
         }
+        let apps = if self.replay {
+            crate::audio_apps::for_replay(&cfg["replay"]).await
+        } else {
+            vec![]
+        };
         let mut argv = if self.replay {
             util::private_dir(self.ipc.parent().ok_or("Invalid replay socket")?)?;
+            let names: Vec<String> = apps.iter().map(|a| a.name.clone()).collect();
             let buffer = budget.as_ref().and_then(|b| b.disk.as_ref());
             replay_command(
                 cfg,
@@ -536,6 +541,7 @@ impl Capture {
                 &self.ipc,
                 buffer.map(|s| s.path.as_path()).unwrap_or(&folder),
                 &self.color,
+                &names,
             )
         } else {
             if let Some(pid) = orphaned().first() {
@@ -754,7 +760,7 @@ impl Capture {
         );
         self.replay_output = self.replay.then(|| folder.clone());
         self.replay_seconds = cfg["replay"]["seconds"].as_u64().unwrap_or(120);
-        self.track_names = track_names(&cfg["replay"]);
+        self.track_names = track_names(&cfg["replay"], &apps);
         self.replay_session = budget
             .as_ref()
             .and_then(|b| b.disk.as_ref())
@@ -956,6 +962,9 @@ impl Capture {
                 }
             }
             write_track_names(&output, &self.track_names);
+            if self.track_names.len() > 2 {
+                tokio::spawn(crate::audio_apps::note_playing()); // a track of their own next time
+            }
             Ok::<_, crate::Error>(output)
         })
         .await;
@@ -1076,12 +1085,12 @@ mod tests {
         let arg = |argv: &[String], flag: &str| {
             argv.iter().position(|a| a == flag).map(|i| argv[i + 1].clone())
         };
-        let same = replay_command(&cfg, &replay_video(&cfg), Path::new("/ipc"), Path::new("/out"), "sdr");
+        let same = replay_command(&cfg, &replay_video(&cfg), Path::new("/ipc"), Path::new("/out"), "sdr", &[]);
         assert_eq!(arg(&same, "-k").as_deref(), Some("av1_10bit"));
         assert_eq!(arg(&same, "-f").as_deref(), Some("60"));
         assert_eq!(arg(&same, "-s"), None);
         cfg["replay"]["own_video"] = json!(true);
-        let own = replay_command(&cfg, &replay_video(&cfg), Path::new("/ipc"), Path::new("/out"), "sdr");
+        let own = replay_command(&cfg, &replay_video(&cfg), Path::new("/ipc"), Path::new("/out"), "sdr", &[]);
         assert_eq!(arg(&own, "-k").as_deref(), Some("hevc"));
         assert_eq!(arg(&own, "-f").as_deref(), Some("120"));
         assert_eq!(arg(&own, "-s").as_deref(), Some("1920x1080"));
@@ -1091,17 +1100,30 @@ mod tests {
 
     #[test]
     fn separate_tracks_never_overlap_and_mixed_is_unchanged() {
+        let app = |name: &str, label: &str| crate::audio_apps::App {
+            name: name.into(),
+            label: label.into(),
+        };
+        let apps = [app("Firefox", "Firefox"), app("WEBRTC VoiceEngine", "Discord")];
+        let names = ["Firefox".to_string(), "WEBRTC VoiceEngine".to_string()];
         let mixed = json!({"game_audio":true,"microphone":true,"audio_tracks":"mixed","separate_apps":["Firefox"]});
-        assert_eq!(audio_tracks(&mixed), ["default_output|default_input"]);
-        let split = json!({"game_audio":true,"microphone":true,"audio_tracks":"separate","separate_apps":["Firefox","Spotify"]});
+        assert_eq!(audio_tracks(&mixed, &[]), ["default_output|default_input"]);
+        let split = json!({"game_audio":true,"microphone":true,"audio_tracks":"separate","separate_apps":[]});
         assert_eq!(
-            audio_tracks(&split),
-            ["app-inverse:Firefox|app-inverse:Spotify", "app:Firefox", "app:Spotify", "default_input"]
+            audio_tracks(&split, &names),
+            [
+                "app-inverse:Firefox|app-inverse:WEBRTC VoiceEngine",
+                "app:Firefox",
+                "app:WEBRTC VoiceEngine",
+                "default_input"
+            ]
         );
+        assert_eq!(audio_tracks(&split, &[]), ["default_output", "default_input"]);
         let quiet = json!({"game_audio":false,"microphone":false,"audio_tracks":"separate","separate_apps":[]});
-        assert!(audio_tracks(&quiet).is_empty());
+        assert!(audio_tracks(&quiet, &[]).is_empty());
         assert!(!valid_app_name("a|b") && !valid_app_name("app:x") && valid_app_name("Firefox Nightly"));
-        assert_eq!(track_names(&split), ["Game and other apps", "Firefox", "Spotify", "Microphone"]);
-        assert_eq!(track_names(&mixed), ["Game sound and microphone"]);
+        assert_eq!(track_names(&split, &apps), ["Everything else", "Firefox", "Discord", "Microphone"]);
+        assert_eq!(track_names(&split, &[]), ["Game and desktop sound", "Microphone"]);
+        assert_eq!(track_names(&mixed, &[]), ["Game sound and microphone"]);
     }
 }

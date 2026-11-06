@@ -3,6 +3,7 @@
 //! Both the controller and command-line client use these implementations;
 //! importing this library does not start a service or open audio devices.
 pub mod apps;
+pub mod audio_apps;
 pub mod capture;
 pub mod config;
 pub mod desktop;

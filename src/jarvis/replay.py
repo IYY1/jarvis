@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from collections import deque
 import json
+import os
 from pathlib import Path
 import shutil
 import signal
@@ -29,18 +30,110 @@ def valid_app_name(name: str) -> bool:
     return bool(name.strip()) and len(name) <= 64 and all(c.isalnum() or c in " ._-" for c in name)
 
 
-def audio_tracks(replay: dict) -> list[str]:
+# Apps with their own replay track (mirrors audio_apps.rs): the ones named in
+# settings, those playing sound when replay starts and those heard before.
+MAX_APPS = 8
+REMEMBERED = 16
+OWN_STREAMS = ("jarvis-ui", "pw-play", "pw-cat")   # Jarvis's own sound stays in "Everything else"
+
+
+def heard_path() -> Path:
+    state = os.environ.get("XDG_STATE_HOME") or str(Path.home() / ".local/state")
+    return Path(state) / "jarvis" / "heard-apps.json"
+
+
+def heard() -> list[dict]:
+    """Apps heard before, newest first: [{"name", "label"}]."""
+    try:
+        apps = json.loads(heard_path().read_text())["apps"]
+        return [{"name": a["name"], "label": a.get("label") or a["name"]} for a in apps if isinstance(a.get("name"), str)]
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return []
+
+
+def remember(apps: list[dict]) -> None:
+    if not apps:
+        return
+    kept = list(apps) + [a for a in heard() if a["name"].casefold() not in {b["name"].casefold() for b in apps}]
+    path = heard_path()
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        temporary = path.with_name(path.name + ".tmp")
+        temporary.write_text(json.dumps({"apps": kept[:REMEMBERED]}))
+        os.replace(temporary, path)
+    except OSError:
+        pass
+
+
+def label(name: str, program: str | None) -> str:
+    """Discord's voice plays as "WEBRTC VoiceEngine": show the program instead."""
+    lower = name.casefold()
+    if program and program.strip() and ("webrtc" in lower or "voiceengine" in lower):
+        return program.strip()[:1].upper() + program.strip()[1:]
+    return name
+
+
+def _wanted(name: str) -> bool:
+    return valid_app_name(name) and name.casefold() not in OWN_STREAMS
+
+
+def playing() -> list[dict]:
+    """Apps playing sound now, as gpu-screen-recorder lists them. Best effort."""
+    try:
+        listing = subprocess.run([BACKEND, "--list-application-audio"], capture_output=True, text=True, timeout=5)
+        names = [line.strip() for line in listing.stdout.splitlines() if _wanted(line.strip())]
+    except (OSError, subprocess.SubprocessError):
+        return []
+    programs = {}
+    if names:
+        try:
+            dump = json.loads(subprocess.run(["pw-dump"], capture_output=True, text=True, timeout=5).stdout or "[]")
+            for item in dump:
+                props = item.get("info", {}).get("props", {}) if isinstance(item, dict) else {}
+                if props.get("media.class") == "Stream/Output/Audio" and props.get("application.name"):
+                    programs[props["application.name"]] = props.get("application.process.binary")
+        except (OSError, subprocess.SubprocessError, ValueError, AttributeError):
+            pass
+    return [{"name": name, "label": label(name, programs.get(name))} for name in names]
+
+
+def choose(replay: dict, playing_now: list[dict], heard_before: list[dict]) -> list[dict]:
+    """Named first, then playing, then heard before; at most MAX_APPS, each once."""
+    known = {a["name"].casefold(): a["label"] for a in [*playing_now, *heard_before]}
+    named = [{"name": n, "label": known.get(n.casefold(), n)} for n in replay.get("separate_apps", []) if isinstance(n, str)]
+    apps: list[dict] = []
+    for app in [*named, *playing_now, *heard_before]:
+        if len(apps) == MAX_APPS:
+            break
+        if _wanted(app["name"]) and app["name"].casefold() not in {a["name"].casefold() for a in apps}:
+            apps.append(app)
+    return apps
+
+
+def replay_apps(replay: dict) -> list[dict]:
+    """The apps for a replay starting now; apps playing are remembered."""
+    if replay.get("audio_tracks", "mixed") != "separate":
+        return []
+    if not replay.get("game_audio", True):
+        return choose(replay, [], [])   # no desktop sound: only the apps you named
+    now = playing()
+    remember(now)
+    return choose(replay, now, heard())
+
+
+def audio_tracks(replay: dict, apps: list[str] | None = None) -> list[str]:
     """Replay audio sources, one -a value per track; mirrors capture.rs.
 
-    Mixed (default): game sound and microphone share one track. Separate: all
-    apps except the chosen ones, each chosen app, and the microphone get their
-    own tracks. The game track uses app-inverse:, never default_output, which
-    would also contain the chosen apps."""
+    Mixed (default): game sound and microphone share one track. Separate: each
+    app in `apps` (default: the ones named in settings), everything else, and
+    the microphone get their own tracks. Everything else uses app-inverse:,
+    never default_output, which would also contain the apps."""
     game, mic = replay.get("game_audio", True), replay.get("microphone", True)
     if replay.get("audio_tracks", "mixed") != "separate":
         mixed = [name for name, on in (("default_output", game), ("default_input", mic)) if on]
         return ["|".join(mixed)] if mixed else []
-    apps = [a for a in replay.get("separate_apps", []) if valid_app_name(a)]
+    if apps is None:
+        apps = [a for a in replay.get("separate_apps", []) if valid_app_name(a)]
     tracks = []
     if game:
         tracks.append("|".join(f"app-inverse:{a}" for a in apps) if apps else "default_output")
@@ -50,14 +143,15 @@ def audio_tracks(replay: dict) -> list[str]:
     return tracks
 
 
-def track_names(replay: dict) -> list[str]:
+def track_names(replay: dict, apps: list[dict] | None = None) -> list[str]:
     """Human names for audio_tracks, in the same order (mirrors capture.rs)."""
     game, mic = replay.get("game_audio", True), replay.get("microphone", True)
     if replay.get("audio_tracks", "mixed") != "separate":
         return {(True, True): ["Game sound and microphone"], (True, False): ["Game sound"],
                 (False, True): ["Microphone"]}.get((bool(game), bool(mic)), [])
-    apps = [a for a in replay.get("separate_apps", []) if valid_app_name(a)]
-    names = (["Game and other apps" if apps else "Game and desktop sound"] if game else []) + apps
+    if apps is None:
+        apps = [{"name": a, "label": a} for a in replay.get("separate_apps", []) if valid_app_name(a)]
+    names = (["Everything else" if apps else "Game and desktop sound"] if game else []) + [a["label"] for a in apps]
     return names + (["Microphone"] if mic else [])
 
 
@@ -72,11 +166,12 @@ def write_track_names(clip: Path, names: list[str]) -> None:
         pass
 
 
-def command(cfg: dict, replay: dict, folder: Path, ipc: Path, *, color: str = "sdr") -> list[str]:
+def command(cfg: dict, replay: dict, folder: Path, ipc: Path, *, color: str = "sdr",
+            apps: list[str] | None = None) -> list[str]:
     """gpu-screen-recorder replay mode for the configured monitor (see audio_tracks)."""
     argv = [BACKEND, "-w", cfg["monitor"], "-f", str(cfg.get("fps", 30)), "-r", str(replay.get("seconds", 120)),
             "-replay-storage", "ram", "-c", "mp4", "-o", str(folder), "-ipc", str(ipc), "-v", "no"] + gpu_video_args(color, cfg)
-    for track in audio_tracks(replay):
+    for track in audio_tracks(replay, apps):
         argv += ["-a", track]
     return argv
 
@@ -95,6 +190,7 @@ class Replay:
         self._done = threading.Event()
         self._done.set()
         self._status = {"state": "off", "message": "Instant replay is off.", "file": None}
+        self._apps: list[dict] = []   # the apps with their own track in the running replay
 
     def status(self) -> dict:
         with self._lock:
@@ -135,7 +231,9 @@ class Replay:
                 folder = Path(str(cfg.get("output_dir", "~/Videos/Jarvis"))).expanduser().resolve()
                 folder.mkdir(parents=True, exist_ok=True, mode=0o700)
                 self.ipc.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-                argv = command({**cfg, "monitor": monitor}, replay, folder, self.ipc, color=color)
+                self._apps = replay_apps(replay)
+                argv = command({**cfg, "monitor": monitor}, replay, folder, self.ipc, color=color,
+                               apps=[a["name"] for a in self._apps])
                 argv[0] = backend
                 process = _spawn(_parent_death_prefix() + argv, stdin=subprocess.DEVNULL,
                                  stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, start_new_session=True,
@@ -209,7 +307,10 @@ class Replay:
             if self.config.get("recording", {}).get("game_folders"):
                 from .games import into_game_folder
                 path = into_game_folder(path)   # the game focused when the clip is saved
-            write_track_names(path, track_names(self.config.get("replay", {})))
+            names = track_names(self.config.get("replay", {}), self._apps)
+            write_track_names(path, names)
+            if len(names) > 2:
+                threading.Thread(target=lambda: remember(playing()), daemon=True).start()   # their own track next time
         except RecorderError as exc:
             detail = f"{exc} File retained at {path}." if path is not None else str(exc)
             with self._lock:

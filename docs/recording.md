@@ -279,21 +279,34 @@ Instant replay keeps the last seconds of the selected display, plus game sound a
 
 ### Separate sound tracks
 
-**Capture → Instant replay → Sound tracks → Separate tracks** keeps sound apart,
-so you can, for example, play a game while listening to a podcast in Firefox,
-save a replay, and later export it without the podcast in **Clips**:
+**Capture → Instant replay → Sound tracks → Separate tracks** gives each app its
+own track, so you can, for example, play a game with friends on Discord while a
+podcast plays in Firefox, save a replay, and later export it with Discord but
+without the podcast in **Clips**:
 
 | Track | gpu-screen-recorder source | Holds |
 | --- | --- | --- |
-| Game and other apps | `app-inverse:Firefox` | Every app's sound except the apps you listed |
-| Firefox (one track per listed app, up to four) | `app:Firefox` | Only that app |
+| Everything else | `app-inverse:Firefox\|app-inverse:WEBRTC VoiceEngine…` | Every other app's sound, such as a game that started after replay |
+| Firefox, Discord, … (one per app, up to eight) | `app:Firefox`, `app:WEBRTC VoiceEngine` | Only that app |
 | Microphone | `default_input` | Your voice |
 
-The game track deliberately uses `app-inverse:` rather than the default output,
-which would contain the podcast again and make it impossible to remove. Use the
-app name gpu-screen-recorder lists (**Show apps playing sound now** runs
-`gpu-screen-recorder --list-application-audio`). An app that starts playing after
-the replay starts is still captured.
+When replay starts, Jarvis gives a track to the apps you listed under **Always
+separate**, then every app playing sound (`gpu-screen-recorder
+--list-application-audio`), then apps it heard before, newest first, up to eight.
+It remembers the apps it hears in `~/.local/state/jarvis/heard-apps.json`, at
+each start and after each saved clip. An app with a track is captured whenever
+it plays, even if it starts after the replay; an app never heard before lands in
+**Everything else** and gets its own track from the next start. Jarvis's own
+sounds (clip preview, chirps) stay in Everything else. Generic stream names are
+shown as their program: Discord's voice plays as “WEBRTC VoiceEngine” and appears
+as **Discord**.
+
+Everything else deliberately uses `app-inverse:` rather than the default output,
+which would contain the apps again and make it impossible to remove one. Checked
+on 2026-11-06 with gpu-screen-recorder 6.1.6: an app that started two seconds
+after the recording landed on its own track, and a recording with ten tracks
+(eight apps, everything else, microphone) recorded all ten. Windows can leave
+only one program out of the game track, so it separates one program.
 
 Tested 2026-11-05 with gpu-screen-recorder 6.1.6 and named test tones played into
 a silent PipeWire sink, in an audio-only recording and in a real saved replay:

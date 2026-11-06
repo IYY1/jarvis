@@ -21,6 +21,7 @@ from dataclasses import dataclass, field
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import tempfile
 import threading
@@ -81,6 +82,26 @@ def track_names(path: str | Path, count: int) -> list[str]:
     except (OSError, ValueError, KeyError, TypeError):
         pass
     return [f"Audio {i + 1}" for i in range(count)]
+
+
+SILENT_DB = -90.0   # volumedetect reports digital silence as -91 dB
+
+
+def loudness(path: str | Path, count: int, timeout: float = 120) -> list[float | None]:
+    """The loudest moment of each audio track in dB, from one pass that
+    decodes only the sound (a few seconds for a long clip). None: unknown."""
+    if count <= 0:
+        return []
+    graph = ";".join(f"[0:a:{i}]volumedetect[o{i}]" for i in range(count))
+    maps = [arg for i in range(count) for arg in ("-map", f"[o{i}]")]
+    result = subprocess.run(["ffmpeg", "-nostats", "-hide_banner", "-vn", "-i", str(path), "-filter_complex", graph,
+                             *maps, "-f", "null", "-"], capture_output=True, text=True, timeout=timeout)
+    peaks: dict[int, float] = {}
+    for line in result.stderr.splitlines():
+        found = re.search(r"Parsed_volumedetect_(\d+) .*max_volume: (-?[\d.]+|-inf) dB", line)
+        if found:
+            peaks[int(found.group(1))] = float("-inf") if found.group(2) == "-inf" else float(found.group(2))
+    return [peaks.get(i) for i in range(count)]
 
 
 def probe(path: str | Path) -> Source:

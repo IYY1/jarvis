@@ -900,14 +900,17 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.replay_mic = Gtk.Switch()
         self._row(replay, "Microphone", self.replay_mic, "Your voice, from the default input.")
         self.replay_tracks = Gtk.DropDown.new_from_strings(["One mixed track", "Separate tracks"])
-        self._row(replay, "Sound tracks", self.replay_tracks, "Separate tracks let you mute an app or your voice later.",
-                  "One mixed track plays everywhere. Separate tracks keep the game, each app below and your "
-                  "microphone apart, so you can mute a podcast or your voice in Clips. Sound mixed while recording "
-                  "can't be separated afterwards. Linux only; Windows replays keep one track.")
-        self.replay_apps = self._entry("Firefox")
-        self._row(replay, "Apps on their own track", self.replay_apps, "Up to four, separated by commas.",
-                  "Named as gpu-screen-recorder lists them; use Show apps playing sound. The game track then holds "
-                  "everything except these apps, so muting one later leaves the game intact.")
+        self._row(replay, "Sound tracks", self.replay_tracks, "Separate tracks give each app its own, so a clip can "
+                  "keep Discord and mute Firefox.",
+                  "Each app playing sound when replay starts gets its own track, and so does every app Jarvis heard "
+                  "before (up to eight), even when it starts later. An app never heard before goes in “Everything "
+                  "else” and gets its own track from the next start. Your microphone has its own track. One mixed "
+                  "track plays everywhere; sound mixed while recording can't be separated afterwards. Linux; Windows "
+                  "separates one program.")
+        self.replay_apps = self._entry("Spotify")
+        self._row(replay, "Always separate", self.replay_apps, "Optional. Apps that get a track even the first time.",
+                  "Up to four, separated by commas, named as gpu-screen-recorder lists them; use Show apps playing "
+                  "sound. Apps playing sound are found on their own.")
         self.replay_apps_found = self._grow(_label("", "caption"))
         self.replay_apps_found.set_selectable(True)
         self.replay_apps_found.set_valign(Gtk.Align.CENTER)

@@ -168,7 +168,7 @@ class EncoderTests(unittest.TestCase):
         replay = config.validate({"replay": {"audio_tracks": "separate", "separate_apps": ["firefox"]}})["replay"]
         cfg = dict(self.cfg, system_audio=True, microphone=True)
         plan = encoding.audio_plan(cfg, replay, build=22631)
-        self.assertEqual([title for title, _ in plan], ["Game and other apps", "firefox", "Microphone"])
+        self.assertEqual([title for title, _ in plan], ["Everything else", "firefox", "Microphone"])
         self.assertEqual([c["track"] for _, c in plan],
                          [{"kind": "game", "app": "firefox"}, {"kind": "app", "app": "firefox"}, {"kind": "microphone"}])
         pipes = [(rf"\\.\pipe\Jarvis-t-audio{i}", title) for i, (title, _) in enumerate(plan)]

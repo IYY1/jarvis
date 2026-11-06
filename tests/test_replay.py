@@ -360,6 +360,48 @@ class ClipSoundTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(run.call_args_list[0].kwargs["input"]), 2 * len(run.call_args_list[1].kwargs["input"]))
 
 
+class AppTrackTests(unittest.TestCase):
+    """Separate tracks: each app gets its own (mirrors audio_apps.rs)."""
+
+    def setUp(self):
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        state = patch.dict(os.environ, {"XDG_STATE_HOME": folder.name})
+        state.start()
+        self.addCleanup(state.stop)
+
+    def test_named_then_playing_then_heard_each_once_and_never_jarvis(self):
+        from jarvis.replay import MAX_APPS, choose
+        app = lambda name, label=None: {"name": name, "label": label or name}
+        replay = {"audio_tracks": "separate", "game_audio": True, "separate_apps": ["Spotify"]}
+        chosen = choose(replay, [app("Firefox"), app("jarvis-ui"), app("WEBRTC VoiceEngine", "Discord")],
+                        [app("firefox"), app("Deadlock"), app("bad|name")])
+        self.assertEqual([a["name"] for a in chosen], ["Spotify", "Firefox", "WEBRTC VoiceEngine", "Deadlock"])
+        self.assertEqual(len(choose(replay, [app(f"App {i}") for i in range(12)], [])), MAX_APPS)
+
+    def test_tracks_and_names_follow_the_apps(self):
+        from jarvis.replay import audio_tracks, label, track_names
+        replay = {"audio_tracks": "separate", "game_audio": True, "microphone": True, "separate_apps": []}
+        apps = [{"name": "Firefox", "label": "Firefox"}, {"name": "WEBRTC VoiceEngine", "label": "Discord"}]
+        self.assertEqual(audio_tracks(replay, [a["name"] for a in apps]),
+                         ["app-inverse:Firefox|app-inverse:WEBRTC VoiceEngine", "app:Firefox",
+                          "app:WEBRTC VoiceEngine", "default_input"])
+        self.assertEqual(track_names(replay, apps), ["Everything else", "Firefox", "Discord", "Microphone"])
+        self.assertEqual(track_names(replay, []), ["Game and desktop sound", "Microphone"])
+        self.assertEqual((label("WEBRTC VoiceEngine", "Discord"), label("Firefox", "firefox")), ("Discord", "Firefox"))
+
+    def test_apps_playing_are_remembered_for_the_next_start(self):
+        from jarvis import replay as module
+        settings = {"audio_tracks": "separate", "game_audio": True, "separate_apps": []}
+        with patch.object(module, "playing", return_value=[{"name": "Deadlock", "label": "Deadlock"}]):
+            self.assertEqual([a["name"] for a in module.replay_apps(settings)], ["Deadlock"])
+        with patch.object(module, "playing", return_value=[{"name": "Firefox", "label": "Firefox"}]):
+            self.assertEqual([a["name"] for a in module.replay_apps(settings)], ["Firefox", "Deadlock"])
+        self.assertEqual(module.replay_apps(dict(settings, audio_tracks="mixed")), [])
+        self.assertEqual(module.replay_apps(dict(settings, game_audio=False, separate_apps=["Spotify"])),
+                         [{"name": "Spotify", "label": "Spotify"}])
+
+
 class ReplayServiceTests(unittest.IsolatedAsyncioTestCase):
     async def test_saving_replay_settings_while_it_runs_restarts_it(self):
         from jarvis.daemon import Service
