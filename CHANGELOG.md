@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Windows: say so when the replay budget can't hold the chosen length, both
+  when replay starts and when a clip comes out shorter than asked.
+- Service log: timestamp Windows log lines, and record the exit code and last
+  error output of a voice worker that ends unexpectedly.
+- Windows: stop logging a traceback when a client disconnects abruptly.
+- Build: the installer script now builds on Windows, and the lock file accepts
+  the srt archive published on PyPI.
+
 ## 0.4.1 — 2026-11-06
 
 - Windows: expose 1–240 fps, 120/240 fps presets, resolution limits, automatic
