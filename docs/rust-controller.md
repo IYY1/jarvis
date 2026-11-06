@@ -18,11 +18,11 @@ From an editable checkout with Rust 1.91 or newer and the existing local models:
 ```sh
 .venv/bin/python scripts/build_controller.py --test
 .venv/bin/python scripts/build_voice_worker.py --test
-src/murmur/bin/jarvis-controller --check
+src/jarvis/bin/jarvis-controller --check
 ```
 
 The controller build is independent of the neural inference crates and installs
-its executable atomically under `src/murmur/bin/`. `--offline` uses cached Cargo
+its executable atomically under `src/jarvis/bin/`. `--offline` uses cached Cargo
 dependencies. Building never changes settings, starts capture or registers a
 service. `--check` validates settings and resolves the voice model/library paths
 without opening the microphone or starting the socket service.
@@ -30,41 +30,41 @@ without opening the microphone or starting the socket service.
 Stop an existing controller before starting another. Either launch directly:
 
 ```sh
-src/murmur/bin/jarvis-controller
+src/jarvis/bin/jarvis-controller
 ```
 
 or select it through the existing launcher:
 
 ```sh
-MURMUR_CONTROLLER=rust ./run-jarvis daemon
+JARVIS_CONTROLLER=rust ./run-jarvis daemon
 ```
 
 The latter replaces the launcher process with the executable; it does not retain
 a Python parent. Python remains the default for ordinary source installations.
 The standalone executable itself does not require a Python interpreter to run.
 When the [Rust CLI](rust-cli.md) is built, `run-jarvis daemon` launches the Rust
-controller directly. Use `MURMUR_CLI=python` to retain the compatibility launcher
-and its `MURMUR_CONTROLLER` selector.
+controller directly. Use `JARVIS_CLI=python` to retain the compatibility launcher
+and its `JARVIS_CONTROLLER` selector.
 
 For the installed user service, an override can replace `ExecStart`:
 
 ```ini
 [Service]
 ExecStart=
-ExecStart="/absolute/path/to/checkout/src/murmur/bin/jarvis-controller"
-Environment=MURMUR_CONTROLLER=rust
+ExecStart="/absolute/path/to/checkout/src/jarvis/bin/jarvis-controller"
+Environment=JARVIS_CONTROLLER=rust
 ```
 
-Reload the user manager and restart `murmur.service` after installing a reviewed
+Reload the user manager and restart `jarvis.service` after installing a reviewed
 override. Restarting the controller also restarts its voice and replay children.
 Removing this controller override restores the original Python service; a
-separate `MURMUR_VOICE_WORKER=rust` override can remain in place.
+separate `JARVIS_VOICE_WORKER=rust` override can remain in place.
 
 The Rust controller supports the Vosk/Rust worker path. PocketSphinx remains
-available through the Python controller. `MURMUR_CONFIG`, `MURMUR_SOCKET` and
+available through the Python controller. `JARVIS_CONFIG`, `JARVIS_SOCKET` and
 the existing XDG locations are preserved. Standalone deployments can supply
-`MURMUR_VOSK_LIBRARY`, `MURMUR_RUST_VOICE_BINARY`, `MURMUR_PROJECT_ROOT` and
-`MURMUR_UI_PYTHON` explicitly. The normal checkout discovers these locations
+`JARVIS_VOSK_LIBRARY`, `JARVIS_RUST_VOICE_BINARY`, `JARVIS_PROJECT_ROOT` and
+`JARVIS_UI_PYTHON` explicitly. The normal checkout discovers these locations
 without importing a Python package. Model discovery never downloads files.
 
 ## API and ownership
@@ -135,8 +135,8 @@ publication, HDR failures, replay saves and responsiveness during finalization.
 The installed desktop registry also matched all 85 entries in a read-only
 comparison on the development machine.
 
-Supplying the existing `MURMUR_VOSK_MODEL`, `MURMUR_WHISPER_MODEL`,
-`MURMUR_GTCRN_MODEL` and `MURMUR_SPEECH_TEST_RAW` enables an additional test:
+Supplying the existing `JARVIS_VOSK_MODEL`, `JARVIS_WHISPER_MODEL`,
+`JARVIS_GTCRN_MODEL` and `JARVIS_SPEECH_TEST_RAW` enables an additional test:
 the real Rust recognizer/denoiser consumes the public utterance through a paced
 fake microphone and dispatches only a dry-run command. It never opens a real
 audio input. Binary linkage and runtime maps are checked for the absence of

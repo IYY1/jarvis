@@ -2,7 +2,7 @@
 //!
 //! Linux reads `pw-record` and stdin with poll(2). Windows captures the
 //! microphone with WASAPI, which converts to 16 kHz mono itself, and reads
-//! stdin on a thread. `MURMUR_TEST_CAPTURE_FILE` replaces the microphone on
+//! stdin on a thread. `JARVIS_TEST_CAPTURE_FILE` replaces the microphone on
 //! either platform with paced s16le 16 kHz PCM followed by silence, so whole-app
 //! benchmarks can run without a device.
 use crate::Result;
@@ -36,7 +36,7 @@ pub trait Input {
 
 pub fn open(config: &Value, control: bool) -> Result<Box<dyn Input>> {
     let device = config["audio"]["device"].as_str().unwrap_or("").to_owned();
-    if let Some(path) = std::env::var_os("MURMUR_TEST_CAPTURE_FILE") {
+    if let Some(path) = std::env::var_os("JARVIS_TEST_CAPTURE_FILE") {
         let pcm = std::fs::read(path)?;
         return Ok(Box::new(Threaded::start(control, move |tx| {
             replay_file(pcm, tx)

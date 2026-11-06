@@ -1,32 +1,32 @@
 #!/bin/sh
 # Launch Jarvis from this checkout (after the README one-time setup).
-# Works through symlinks, e.g. ln -s "$PWD/run-murmur" ~/.local/bin/murmur
+# Works through symlinks, e.g. ln -s "$PWD/run-jarvis" ~/.local/bin/jarvis
 set -eu
-MURMUR_ROOT=$(dirname -- "$(readlink -f -- "$0")")
-native="$MURMUR_ROOT/src/murmur/bin/jarvis"
-case "${MURMUR_CLI:-auto}" in
+JARVIS_ROOT=$(dirname -- "$(readlink -f -- "$0")")
+native="$JARVIS_ROOT/src/jarvis/bin/jarvis"
+case "${JARVIS_CLI:-auto}" in
     auto|rust)
         if [ -x "$native" ]; then
             exec "$native" "$@"
         fi
-        if [ "${MURMUR_CLI:-auto}" = rust ]; then
+        if [ "${JARVIS_CLI:-auto}" = rust ]; then
             echo "run-jarvis: build the Rust client with scripts/build_cli.py first." >&2
             exit 127
         fi
         ;;
     python) ;;
-    *) echo "run-jarvis: MURMUR_CLI must be auto, rust, or python." >&2; exit 2 ;;
+    *) echo "run-jarvis: JARVIS_CLI must be auto, rust, or python." >&2; exit 2 ;;
 esac
-py="$MURMUR_ROOT/.venv/bin/python"
-rebuild="cd \"$MURMUR_ROOT\" && rm -rf .venv && python3 -m venv --system-site-packages .venv && .venv/bin/python -m pip install -e '.[voice]'"
+py="$JARVIS_ROOT/.venv/bin/python"
+rebuild="cd \"$JARVIS_ROOT\" && rm -rf .venv && python3 -m venv --system-site-packages .venv && .venv/bin/python -m pip install -e '.[voice]'"
 if [ ! -x "$py" ]; then
-    echo "run-jarvis: no virtual environment at $MURMUR_ROOT/.venv. See README 'One-time setup'." >&2
+    echo "run-jarvis: no virtual environment at $JARVIS_ROOT/.venv. See README 'One-time setup'." >&2
     exit 127
 fi
 # A distro Python upgrade leaves the venv's packages under the old version.
-if ! "$py" -c 'import murmur' 2>/dev/null; then
-    echo "run-jarvis: the virtual environment cannot import murmur (often after a Python upgrade). Rebuild it:" >&2
+if ! "$py" -c 'import jarvis' 2>/dev/null; then
+    echo "run-jarvis: the virtual environment cannot import jarvis (often after a Python upgrade). Rebuild it:" >&2
     echo "  $rebuild" >&2
     exit 1
 fi
-exec "$py" -m murmur "$@"
+exec "$py" -m jarvis "$@"

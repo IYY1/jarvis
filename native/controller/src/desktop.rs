@@ -173,3 +173,111 @@ pub async fn devices() -> Result<Value> {
     }
     Ok(json!(result))
 }
+
+/// The game in the focused window, if it is one (mirrors games.py): a Steam
+/// game (a steam_app_<id> window, named from Steam's manifest, or a program
+/// under steamapps/common), a Heroic or Lutris game under ~/Games, or a
+/// Wine/Proton .exe or gamescope window, named by its title. Clips and
+/// recordings of it go into a folder with this name.
+pub async fn focused_game() -> Option<String> {
+    let window = query("activewindow").await.ok()?;
+    let class = window["class"].as_str().unwrap_or("");
+    let title = window["title"].as_str().unwrap_or("");
+    if let Some(name) = class
+        .strip_prefix("steam_app_")
+        .and_then(steam_name)
+        .and_then(|n| game_folder(&n))
+    {
+        return Some(name);
+    }
+    let pid = window["pid"].as_i64().filter(|p| *p > 0)?;
+    let exe = std::fs::read_link(format!("/proc/{pid}/exe"))
+        .map(|p| p.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    let cmdline = std::fs::read(format!("/proc/{pid}/cmdline"))
+        .map(|b| String::from_utf8_lossy(&b).replace('\0', " "))
+        .unwrap_or_default();
+    game_from_paths(&format!("{exe} {cmdline}"))
+        .or_else(|| {
+            let windows_program = cmdline.to_lowercase().contains(".exe");
+            (class.starts_with("steam_app_") || class == "gamescope" || windows_program)
+                .then(|| title.to_owned())
+        })
+        .and_then(|n| game_folder(&n))
+}
+/// A game's folder from a program path: the directory under
+/// steamapps/common, Games/Heroic or Games (Lutris). Wine paths use "\".
+pub fn game_from_paths(text: &str) -> Option<String> {
+    let text = text.replace('\\', "/");
+    ["/steamapps/common/", "/Games/Heroic/", "/Games/"]
+        .iter()
+        .find_map(|marker| {
+            let rest = &text[text.find(marker)? + marker.len()..];
+            let name = rest.split('/').next()?.trim();
+            (!name.is_empty() && rest.contains('/')).then(|| name.to_owned())
+        })
+}
+/// A safe folder name: no path separators or characters Windows rejects,
+/// trimmed, at most 80 characters; None when nothing usable is left.
+pub fn game_folder(name: &str) -> Option<String> {
+    let clean: String = name
+        .chars()
+        .filter(|c| !c.is_control() && !"/\\:*?\"<>|".contains(*c))
+        .collect();
+    let clean = clean.trim().trim_matches('.').trim();
+    let clean: String = clean.chars().take(80).collect();
+    (!clean.trim().is_empty()).then(|| clean.trim().to_owned())
+}
+/// The game's name from Steam's app manifest in any Steam library.
+fn steam_name(id: &str) -> Option<String> {
+    if id.is_empty() || !id.chars().all(|c| c.is_ascii_digit()) {
+        return None;
+    }
+    let home = util::home();
+    let mut libraries: Vec<PathBuf> = [".local/share/Steam", ".steam/steam", ".var/app/com.valvesoftware.Steam/data/Steam"]
+        .iter()
+        .map(|p| home.join(p).join("steamapps"))
+        .collect();
+    for library in libraries.clone() {
+        if let Ok(text) = std::fs::read_to_string(library.join("libraryfolders.vdf")) {
+            libraries.extend(vdf_values(&text, "path").into_iter().map(|p| PathBuf::from(p).join("steamapps")));
+        }
+    }
+    libraries.iter().find_map(|library| {
+        let text = std::fs::read_to_string(library.join(format!("appmanifest_{id}.acf"))).ok()?;
+        vdf_values(&text, "name").into_iter().next()
+    })
+}
+/// Values of `"key"  "value"` lines in a Steam VDF/ACF file.
+fn vdf_values(text: &str, key: &str) -> Vec<String> {
+    text.lines()
+        .filter_map(|line| {
+            let mut parts = line.split('"').filter(|p| !p.trim().is_empty());
+            (parts.next()? == key).then(|| parts.next().map(str::to_owned)).flatten()
+        })
+        .collect()
+}
+
+#[cfg(test)]
+mod game_tests {
+    use super::*;
+    #[test]
+    fn games_are_found_by_their_install_folder() {
+        assert_eq!(
+            game_from_paths("/home/u/.local/share/Steam/steamapps/common/Deadlock/game/bin/linuxsteamrt64/deadlock"),
+            Some("Deadlock".into())
+        );
+        assert_eq!(
+            game_from_paths("Z:\\home\\u\\.steam\\steam\\steamapps\\common\\Elden Ring\\Game\\eldenring.exe"),
+            Some("Elden Ring".into())
+        );
+        assert_eq!(game_from_paths("/home/u/Games/Heroic/Hades/Hades.exe"), Some("Hades".into()));
+        assert_eq!(game_from_paths("/usr/lib/firefox/firefox"), None);
+        assert_eq!(game_folder("Half-Life: Alyx"), Some("Half-Life Alyx".into()));
+        assert_eq!(game_folder(" ../ "), None);
+        assert_eq!(
+            vdf_values("\"AppState\"\n{\n\t\"appid\"\t\t\"1422450\"\n\t\"name\"\t\t\"Deadlock\"\n}", "name"),
+            vec!["Deadlock".to_owned()]
+        );
+    }
+}

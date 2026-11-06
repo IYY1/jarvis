@@ -167,5 +167,5 @@ python scripts/benchmark_kws.py --model-dir "$MODEL" --library "$SHERPA_C_API" -
 
 `MODEL`, `WORK`, `SHERPA_C_API` and `PUBLIC_PCM` designate explicit local
 assets. The benchmark never downloads or installs them. Optional integration
-tests use `MURMUR_KWS_MODEL`, `MURMUR_KWS_LIBRARY` and
-`MURMUR_SPEECH_TEST_RAW`; without those, model tests skip explicitly.
+tests use `JARVIS_KWS_MODEL`, `JARVIS_KWS_LIBRARY` and
+`JARVIS_SPEECH_TEST_RAW`; without those, model tests skip explicitly.

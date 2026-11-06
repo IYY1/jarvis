@@ -10,9 +10,9 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 BINARY = ROOT / "native/kws-probe/target/release/jarvis-kws-probe"
 HANDOFF_BINARY = BINARY.with_name("jarvis-kws-handoff-probe")
-MODEL = os.environ.get("MURMUR_KWS_MODEL")
-LIBRARY = os.environ.get("MURMUR_KWS_LIBRARY")
-FIXTURE = os.environ.get("MURMUR_SPEECH_TEST_RAW")
+MODEL = os.environ.get("JARVIS_KWS_MODEL")
+LIBRARY = os.environ.get("JARVIS_KWS_LIBRARY")
+FIXTURE = os.environ.get("JARVIS_SPEECH_TEST_RAW")
 
 
 @unittest.skipUnless(BINARY.is_file(), "build the optional offline KWS probe")

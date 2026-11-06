@@ -10,7 +10,7 @@ import tempfile
 import unittest
 from unittest.mock import MagicMock, patch
 
-from murmur import process_memory as memory
+from jarvis import process_memory as memory
 from scripts.benchmark_application_memory import summarize
 
 
@@ -59,7 +59,7 @@ class AccountingTests(unittest.TestCase):
         self.assertIsNone(result["pss_bytes"])
 
     def test_doctor_offline_does_not_report_its_own_memory(self):
-        with patch("murmur.client.request", side_effect=ConnectionError("offline")):
+        with patch("jarvis.client.request", side_effect=ConnectionError("offline")):
             self.assertEqual(memory.service_snapshot(), {"complete": False, "error": "offline"})
 
     @unittest.skipUnless(sys.platform == "linux", "Linux procfs")
@@ -80,9 +80,9 @@ class AccountingTests(unittest.TestCase):
         self.assertIsNone(missing["totals"]["rss_bytes"])
 
     def test_service_only_samples_explicit_status_requests(self):
-        from murmur.daemon import Service
-        from murmur.config import DEFAULTS
-        with patch("murmur.daemon.AppRegistry"):
+        from jarvis.daemon import Service
+        from jarvis.config import DEFAULTS
+        with patch("jarvis.daemon.AppRegistry"):
             service = Service(DEFAULTS)
         with patch.object(memory, "snapshot", return_value={"complete": True}) as sample:
             service.status()
@@ -95,7 +95,7 @@ class AccountingTests(unittest.TestCase):
 
 class WindowsWorkingSetFallbackTests(unittest.TestCase):
     def test_retry_counts_private_pages_and_excludes_shareable_single_owner(self):
-        from murmur.windows.process_memory import private_working_set
+        from jarvis.windows.process_memory import private_working_set
         dll = MagicMock()
         calls = []
 
@@ -117,7 +117,7 @@ class WindowsWorkingSetFallbackTests(unittest.TestCase):
         dll.CloseHandle.assert_called_once_with(dll.OpenProcess.return_value)
 
     def test_denied_access_and_query_failure_stay_unavailable(self):
-        from murmur.windows.process_memory import private_working_set
+        from jarvis.windows.process_memory import private_working_set
         dll = MagicMock()
         dll.OpenProcess.return_value = 0
         self.assertIsNone(private_working_set(123, dll))
@@ -130,7 +130,7 @@ class WindowsWorkingSetFallbackTests(unittest.TestCase):
         dll.CloseHandle.assert_called_once_with(9)
 
     def test_oversized_or_inconsistent_working_sets_stay_unavailable(self):
-        from murmur.windows.process_memory import private_working_set
+        from jarvis.windows.process_memory import private_working_set
         for success in (False, True):
             with self.subTest(success=success):
                 dll = MagicMock()
@@ -149,7 +149,7 @@ class WindowsWorkingSetFallbackTests(unittest.TestCase):
 @unittest.skipUnless(sys.platform == "win32", "native Windows APIs")
 class WindowsMemoryTests(unittest.TestCase):
     def test_current_process_counters(self):
-        from murmur.windows.process_memory import processes, memory as measure
+        from jarvis.windows.process_memory import processes, memory as measure
         self.assertIn(os.getpid(), processes())
         counters = measure(os.getpid())
         self.assertGreater(counters["commit_bytes"], 0)
@@ -157,7 +157,7 @@ class WindowsMemoryTests(unittest.TestCase):
             self.assertGreater(counters["private_working_set_bytes"], 0)
 
     def test_legacy_working_set_counts_a_touched_private_allocation(self):
-        from murmur.windows.process_memory import kernel, private_working_set
+        from jarvis.windows.process_memory import kernel, private_working_set
         dll = kernel()
         before = private_working_set(os.getpid(), dll)
         self.assertIsNotNone(before)

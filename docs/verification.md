@@ -85,7 +85,7 @@ Jarvis is MIT licensed; the completed review is described in
 PYTHONPATH=src .venv/bin/python -m compileall -q src scripts
 PYTHONPATH=src .venv/bin/python -m unittest discover -s tests -v
 .venv/bin/python scripts/install_user.py --dry-run --service
-./run-murmur doctor
+./run-jarvis doctor
 .venv/bin/python scripts/check_desktop.py
 ```
 
@@ -96,9 +96,9 @@ curl --fail --location https://raw.githubusercontent.com/cmusphinx/pocketsphinx/
 sha256sum /tmp/goforward.raw
 # f15c60ec54059d8b66e410d0064945a0b0a04ea56e1ddca1958e493c0cf70e71
 PYTHONPATH=src \
-MURMUR_VOSK_MODEL="$HOME/.local/share/murmur/models/vosk-model-small-en-us-0.15" \
-MURMUR_WHISPER_DIR="$HOME/.local/share/murmur/models/sherpa-onnx-whisper-small.en" \
-MURMUR_SPEECH_TEST_RAW=/tmp/goforward.raw \
+JARVIS_VOSK_MODEL="$HOME/.local/share/jarvis/models/vosk-model-small-en-us-0.15" \
+JARVIS_WHISPER_DIR="$HOME/.local/share/jarvis/models/sherpa-onnx-whisper-small.en" \
+JARVIS_SPEECH_TEST_RAW=/tmp/goforward.raw \
   .venv/bin/python -m unittest discover -s tests -v
 .venv/bin/python scripts/check_replay.py /tmp/goforward.raw --wake
 ```

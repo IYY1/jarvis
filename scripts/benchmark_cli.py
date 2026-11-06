@@ -63,11 +63,11 @@ def main():
     args = parser.parse_args()
     if args.pairs < 1 or not 0 < args.idle_seconds <= 30:
         parser.error("Choose at least one pair and 0–30 idle seconds")
-    commands = {"python": [sys.executable, "-m", "murmur"],
+    commands = {"python": [sys.executable, "-m", "jarvis"],
                 "rust": [str(ROOT / "native/cli/target/release/jarvis")]}
     samples = {name: [] for name in commands}
     with tempfile.TemporaryDirectory(prefix="jarvis-cli-bench-") as folder:
-        env = dict(os.environ, MURMUR_SOCKET=str(Path(folder) / "absent.sock"))
+        env = dict(os.environ, JARVIS_SOCKET=str(Path(folder) / "absent.sock"))
         for pair in range(args.pairs):
             for name in (["python", "rust"] if pair % 2 == 0 else ["rust", "python"]):
                 samples[name].append(sample(commands[name], env, args.idle_seconds))

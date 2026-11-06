@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 import time
 
-audio = Path(os.environ["MURMUR_TEST_PCM"]).read_bytes()
+audio = Path(os.environ["JARVIS_TEST_PCM"]).read_bytes()
 audio += bytes((-len(audio)) % 960)
 
 

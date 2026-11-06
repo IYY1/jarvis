@@ -319,8 +319,8 @@ Python is `.venv/bin/python` (3.14). Useful existing assets:
 | Native KWS C API and adjacent ONNX Runtime | `.venv/lib/python3.14/site-packages/sherpa_onnx/lib/libsherpa-onnx-c-api.so` |
 | KWS configs, keyword files and generated cases | `build/memory-plan-kws/` and its `matrix/` directory |
 | Development-only SentencePiece | `build/memory-plan-kws/python/`; use `PYTHONPATH` only for keyword preparation |
-| Vosk small English | `/home/silver/.local/share/murmur/models/vosk-model-small-en-us-0.15` |
-| Whisper small English | `/home/silver/.local/share/murmur/models/sherpa-onnx-whisper-small.en` |
+| Vosk small English | `/home/silver/.local/share/jarvis/models/vosk-model-small-en-us-0.15` |
+| Whisper small English | `/home/silver/.local/share/jarvis/models/sherpa-onnx-whisper-small.en` |
 | Experimental Whisper tiny/base | `build/memory-plan-models/models/sherpa-onnx-whisper-tiny.en/` and `sherpa-onnx-whisper-base.en/` |
 | Workspace-only ORT 1.31 numerical diagnostics | `build/memory-plan-models/python/`; not the KWS inference library or a production dependency |
 
@@ -358,7 +358,7 @@ jarvis-kws-handoff-probe (current owned reader, normal build):
 2f1843d9a6c0224219354c0b39364b9b08b553b33aabd972fad51f5fe3fa4791
 allocation-build/release/jarvis-kws-handoff-probe (current owned reader/counter):
 132fb2b719b9cf1ccb38121a2b1d91c5df0f9baeb72b1a8ca68b89baa497e884
-src/murmur/bin/jarvis-voice (also build/memory-plan-models/jarvis-voice):
+src/jarvis/bin/jarvis-voice (also build/memory-plan-models/jarvis-voice):
 212ff8655e303b55f0a70f902753d0ab6f87031aa3c71cd40306ddf5cf8d9844
 native/whisper-recognizer/target/release/jarvis-whisper:
 8915a1cfb58d7faec35f4409dd7cb1da17b55191f38f511129caf53e06c087b1

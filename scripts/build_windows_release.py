@@ -19,7 +19,8 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = "x86_64-pc-windows-gnu"
-RUST_HELPERS = (("voice-worker", "jarvis-voice"), ("replay-store", "jarvis-replay-store"))
+RUST_HELPERS = (("voice-worker", "jarvis-voice"), ("replay-store", "jarvis-replay-store"),
+                ("text-input", "jarvis-type"))
 
 
 def windows_path(path: Path) -> str:
@@ -100,7 +101,7 @@ def main():
     parser.add_argument("--xvfb", type=Path)
     parser.add_argument("--ffmpeg-tools", type=Path, help="Folder with ffmpeg.exe and ffprobe.exe")
     parser.add_argument("--ffmpeg-source", type=Path)
-    parser.add_argument("--models", type=Path, default=Path.home() / ".local/share/murmur/models")
+    parser.add_argument("--models", type=Path, default=Path.home() / ".local/share/jarvis/models")
     parser.add_argument("--output", type=Path, default=ROOT / "dist/windows")
     parser.add_argument("--cargo", default="cargo")
     parser.add_argument("--offline", action="store_true", help="Use cached Cargo dependencies")
@@ -116,7 +117,7 @@ def main():
     ffmpeg_tools = args.ffmpeg_tools or work / "ffmpeg-tools/bin"
     ffmpeg_source = args.ffmpeg_source or work / "FFmpeg-Corresponding-Source.tar.xz"
     sys.path.insert(0, str(root / "src"))
-    from murmur import __version__ as version
+    from jarvis import __version__ as version
     logs = root / "build/windows-release"
     logs.mkdir(parents=True, exist_ok=True)
     if args.no_voice_worker:
@@ -149,6 +150,8 @@ def main():
                "--replay-store", windows_path(helpers["jarvis-replay-store"])]
     if "jarvis-voice" in helpers:
         command += ["--voice-worker", windows_path(helpers["jarvis-voice"])]
+    if "jarvis-type" in helpers:
+        command += ["--text-helper", windows_path(helpers["jarvis-type"])]
     with Display(xvfb, args.display):
         run(command, env=env, log=logs / "freeze.log", cwd=root)
     setup = output / f"Jarvis-{version}-Windows-x64-Setup.exe"

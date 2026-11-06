@@ -16,8 +16,8 @@ def main():
     args = parser.parse_args()
     bundle = args.bundle.resolve()
     sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-    from murmur import __version__, config
-    from murmur.client import request
+    from jarvis import __version__, config
+    from jarvis.client import request
     import win32con
     import win32gui
     import win32process
@@ -29,11 +29,11 @@ def main():
         config.save(config.load(cfg), cfg)
         env = dict(
             os.environ,
-            MURMUR_CONFIG=str(cfg),
-            MURMUR_ENDPOINT=str(folder / "run/control.json"),
-            MURMUR_DRY_RUN="1",
+            JARVIS_CONFIG=str(cfg),
+            JARVIS_ENDPOINT=str(folder / "run/control.json"),
+            JARVIS_DRY_RUN="1",
         )
-        os.environ["MURMUR_ENDPOINT"] = env["MURMUR_ENDPOINT"]
+        os.environ["JARVIS_ENDPOINT"] = env["JARVIS_ENDPOINT"]
 
         def run(*arguments):
             result = subprocess.run(
@@ -69,12 +69,12 @@ def main():
             try:
                 deadline = time.monotonic() + 15
                 while (
-                    not Path(env["MURMUR_ENDPOINT"]).exists()
+                    not Path(env["JARVIS_ENDPOINT"]).exists()
                     and service.poll() is None
                     and time.monotonic() < deadline
                 ):
                     time.sleep(0.05)
-                if not Path(env["MURMUR_ENDPOINT"]).exists():
+                if not Path(env["JARVIS_ENDPOINT"]).exists():
                     output.seek(0)
                     raise AssertionError(output.read())
                 status = request("status")["status"]
@@ -102,7 +102,7 @@ def main():
             [str(console), "--internal", "voice"],
             input=json.dumps(payload) + "\n",
             text=True,
-            env=dict(env, MURMUR_OWNER_PID=str(os.getpid())),
+            env=dict(env, JARVIS_OWNER_PID=str(os.getpid())),
             capture_output=True,
             timeout=15,
         )
@@ -126,7 +126,7 @@ def main():
                 else:
                     time.sleep(0.05)
             assert hwnd, "Frozen settings window did not open"
-            assert not Path(env["MURMUR_ENDPOINT"]).exists(), (
+            assert not Path(env["JARVIS_ENDPOINT"]).exists(), (
                 "Opening Settings unexpectedly started the service"
             )
             win32gui.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)

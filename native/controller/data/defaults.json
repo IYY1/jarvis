@@ -18,7 +18,8 @@
     "closest_match": true,
     "accurate": true,
     "noise_suppression": false,
-    "speech_model": "light"
+    "speech_model": "light",
+    "language": "en"
   },
   "privacy": {
     "onboarded": false
@@ -31,7 +32,7 @@
   ],
   "startup": false,
   "recording": {
-    "output_dir": "~/Videos/Murmur",
+    "output_dir": "~/Videos/Jarvis",
     "monitor": "",
     "system_audio": false,
     "microphone": false,
@@ -44,7 +45,10 @@
     "combined_audio_source": false,
     "sound_feedback": false,
     "vaapi_device": "/dev/dri/renderD128",
-    "rate_control": "quality",
+    "resolution": "native",
+    "bitrate_auto": true,
+    "game_folders": true,
+    "rate_control": "bitrate",
     "bitrate_mbps": 8,
     "quality_preset": "very_high",
     "encoder": "auto"
@@ -57,6 +61,26 @@
     "sound": true,
     "storage": "ram",
     "max_mb": 256,
-    "buffer_dir": ""
+    "buffer_dir": "",
+    "audio_tracks": "mixed",
+    "separate_apps": [],
+    "own_video": false,
+    "codec": "av1",
+    "fps": 60,
+    "resolution": "native",
+    "rate_control": "bitrate",
+    "quality_preset": "very_high",
+    "bitrate_mbps": 8,
+    "bitrate_auto": true
+  },
+  "dictation": {
+    "language": "auto",
+    "idle_seconds": 3,
+    "max_minutes": 10,
+    "stop_phrases": [
+      "stop dictation",
+      "وقف الكتابة"
+    ],
+    "keyboard_fallback": true
   }
 }

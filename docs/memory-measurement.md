@@ -187,7 +187,7 @@ a memory-growth slope or meet the combined 400 MiB command target.
 ```sh
 .venv/bin/python scripts/benchmark_load_cycles.py \
   --fixture /path/to/goforward.raw \
-  --arm fixed=src/murmur/bin/jarvis-voice --cycles 3 --no-room-noise \
+  --arm fixed=src/jarvis/bin/jarvis-voice --cycles 3 --no-room-noise \
   --output docs/benchmarks/load-cycles-wake.local.json
 ```
 
@@ -358,7 +358,7 @@ with their memory and latency measured together. No production default changed.
 
 ```sh
 .venv/bin/python scripts/benchmark_memory_soak.py \
-  --binary src/murmur/bin/jarvis-voice --fixture /path/to/goforward.raw \
+  --binary src/jarvis/bin/jarvis-voice --fixture /path/to/goforward.raw \
   --hours 24 --runs 3 --warmup-hours 1 --windows 3 --tolerance 1 \
   --output docs/benchmarks/soak.local.json
 ```

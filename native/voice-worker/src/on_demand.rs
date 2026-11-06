@@ -15,7 +15,7 @@ const TRIM_EVERY: Duration = Duration::from_secs(10);
 enum Slot<T> {
     Empty,
     Loading(JoinHandle<std::result::Result<T, String>>),
-    Ready(T, Instant),
+    Ready(Arc<T>, Instant),
 }
 
 pub struct OnDemand<T> {
@@ -65,10 +65,18 @@ impl<T: Send + 'static> OnDemand<T> {
     }
     /// The loaded value, waiting for a background load or loading it here.
     pub fn get(&mut self) -> Result<&T> {
+        Ok(self.value()?)
+    }
+    /// The loaded value for another thread. Release waits until that thread
+    /// drops its handle, because the weights stay alive while it is shared.
+    pub fn shared(&mut self) -> Result<Arc<T>> {
+        Ok(self.value()?.clone())
+    }
+    fn value(&mut self) -> Result<&Arc<T>> {
         self.collect(true)?;
         if matches!(self.slot, Slot::Empty) {
             self.loads += 1;
-            self.slot = Slot::Ready((self.load)()?, Instant::now());
+            self.slot = Slot::Ready(Arc::new((self.load)()?), Instant::now());
         }
         if let Slot::Ready(value, used) = &mut self.slot {
             *used = Instant::now();
@@ -111,7 +119,7 @@ impl<T: Send + 'static> OnDemand<T> {
             let value = handle
                 .join()
                 .map_err(|_| "Whisper loader stopped unexpectedly")??;
-            self.slot = Slot::Ready(value, Instant::now());
+            self.slot = Slot::Ready(Arc::new(value), Instant::now());
         }
         Ok(())
     }

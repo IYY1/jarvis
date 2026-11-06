@@ -44,7 +44,7 @@ def digest(path):
 def reference(folder, name, fixture):
     import sherpa_onnx
     paths = files(folder, name)
-    provider = "cpu:" + str(ROOT / "src/murmur/onnx-cpu.conf")
+    provider = "cpu:" + str(ROOT / "src/jarvis/onnx-cpu.conf")
     recognizer = sherpa_onnx.OfflineRecognizer.from_whisper(
         paths["encoder"], paths["decoder"], paths["tokens"], language="en", num_threads=8, provider=provider)
     cases = []

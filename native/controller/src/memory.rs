@@ -133,7 +133,12 @@ mod tests {
     }
     #[test]
     fn live_self_and_missing_root() {
-        let own = snapshot(std::process::id());
+        // Other tests run in parallel and start short-lived children; one that
+        // exits mid-walk honestly makes a snapshot incomplete, so retry.
+        let own = (0..20)
+            .map(|_| snapshot(std::process::id()))
+            .find(|s| s["complete"] == true)
+            .unwrap_or_else(|| snapshot(std::process::id()));
         assert_eq!(own["complete"], true);
         assert!(own["totals"]["rss_bytes"].as_u64().unwrap() > 0);
         let absent = snapshot(u32::MAX);

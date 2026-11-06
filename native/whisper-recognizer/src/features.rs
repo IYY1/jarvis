@@ -64,8 +64,9 @@ impl Features {
         // The outer PCM boundary enforces 0.2 seconds. GTCRN rounds its output
         // down to a 256-sample hop, so its shortest valid result is 3072.
         ensure!(
-            (256..=160000).contains(&samples.len()),
-            "Expected 256–160000 audio samples"
+            // 20 s plus the 10 s of zero frames below fills Whisper's 30 s window.
+            (256..=320000).contains(&samples.len()),
+            "Expected 256–320000 audio samples"
         );
         ensure!(samples.iter().all(|x| x.is_finite()), "Non-finite audio");
         // Read the reference's silence padding virtually, and write directly
@@ -142,7 +143,8 @@ mod tests {
         let features = Features::default();
         assert!(features.compute(&[0.0; 3072]).is_ok());
         assert!(features.compute(&[]).is_err());
-        assert!(features.compute(&vec![0.0; 160001]).is_err());
+        assert!(features.compute(&vec![0.0; 320000]).is_ok());
+        assert!(features.compute(&vec![0.0; 320001]).is_err());
         assert!(features.compute(&[f32::NAN; 3200]).is_err());
     }
 }

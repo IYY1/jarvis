@@ -23,9 +23,9 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 from benchmark_transcriber import variants
-from murmur.commands import Parser
-from murmur.config import DEFAULTS
-from murmur.native_worker import prepare
+from jarvis.commands import Parser
+from jarvis.config import DEFAULTS
+from jarvis.native_worker import prepare
 
 
 def response(process):
@@ -41,7 +41,7 @@ def response(process):
 def rust_run(fixture: bytes, repeats: int, denoise: bool, threads: int, binary: Path | None = None):
     config = copy.deepcopy(DEFAULTS)
     config["recognition"]["noise_suppression"] = denoise
-    with patch.dict(os.environ, MURMUR_VOICE_WORKER="rust"):
+    with patch.dict(os.environ, JARVIS_VOICE_WORKER="rust"):
         argv, payload, env = prepare(config, "once", Parser().grammar([]))
     payload["native"]["threads"] = threads
     if binary is not None:
@@ -95,7 +95,7 @@ def worker_run(worker: str, fixture: Path, repeats: int, denoise: bool, binary: 
     config["recognition"]["noise_suppression"] = denoise
     config["activation"]["wake_phrase"] = "go forward"
     grammar = Parser({"ten meters": "start recording"}).grammar(["firefox", "steam", "stremio"])
-    with patch.dict(os.environ, MURMUR_VOICE_WORKER=worker):
+    with patch.dict(os.environ, JARVIS_VOICE_WORKER=worker):
         argv, payload, env = prepare(config, "wake_word", grammar)
     if binary is not None:
         if worker != "rust":

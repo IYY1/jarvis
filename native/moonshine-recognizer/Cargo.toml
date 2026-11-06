@@ -1,0 +1,21 @@
+[package]
+name = "jarvis-moonshine"
+version = "0.3.1"
+edition = "2021"
+rust-version = "1.91"
+license = "MIT"
+description = "Arabic speech recognition with Moonshine Streaming Tiny on tract kernels"
+
+[dependencies]
+tract-onnx = { version = "=0.23.9", default-features = false }
+serde_json = "1"
+libc = "0.2"
+
+[[bin]]
+name = "jarvis-moonshine"
+path = "src/main.rs"
+
+[profile.release]
+lto = false
+codegen-units = 16
+strip = "debuginfo"

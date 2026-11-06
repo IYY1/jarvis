@@ -4,6 +4,9 @@ Start with the root [README](../README.md) for installation and everyday use.
 
 | Document | Purpose |
 | --- | --- |
+| [Arabic speech](arabic.md) | Najdi-focused model comparison, chosen engine, Arabic commands and evidence limits |
+| [Dictation](dictation.md) | Typing speech into other apps, safety rules and per-platform input methods |
+| [Clips editor](clips.md) | Trim/join/export, Fast vs Exact, player findings and the LosslessCut decision |
 | [Architecture](architecture.md) | Process ownership, voice path, bounds and trust boundaries |
 | [Performance](performance.md) | Current CPU/RAM measurements and reproduction |
 | [Memory and background check](memory-background.md) | Allocator comparison and live background verification |

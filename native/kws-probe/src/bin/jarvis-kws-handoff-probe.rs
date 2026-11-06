@@ -137,13 +137,13 @@ impl Process {
         let mut command = Command::new(binary);
         command
             .args(args)
-            .env("MURMUR_OWNER_PID", std::process::id().to_string());
+            .env("JARVIS_OWNER_PID", std::process::id().to_string());
         // Attribution harness only: vary the parent's cache independently of
         // identical detector/voice child settings. Absent means normal inheritance.
-        if let Some(tunables) = std::env::var_os("MURMUR_KWS_CHILD_GLIBC_TUNABLES") {
+        if let Some(tunables) = std::env::var_os("JARVIS_KWS_CHILD_GLIBC_TUNABLES") {
             command
                 .env("GLIBC_TUNABLES", tunables)
-                .env_remove("MURMUR_KWS_CHILD_GLIBC_TUNABLES");
+                .env_remove("JARVIS_KWS_CHILD_GLIBC_TUNABLES");
         }
         let mut child = command
             .stdin(Stdio::piped())

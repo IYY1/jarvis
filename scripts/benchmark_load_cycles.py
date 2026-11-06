@@ -30,9 +30,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 from benchmark_whisper_on_demand import rss_mib, trailing_silence, whisper_threads
-from murmur.commands import Parser
-from murmur.config import DEFAULTS
-from murmur.native_worker import prepare
+from jarvis.commands import Parser
+from jarvis.config import DEFAULTS
+from jarvis.native_worker import prepare
 
 CAPTURE = """#!/usr/bin/env python3
 import array, os, random, time
@@ -79,7 +79,7 @@ def session(binary: Path, fixture: Path, idle: float | None, cycles: int, speech
     config["recognition"].update(accurate=True, noise_suppression=True)
     config["activation"]["wake_phrase"] = "go forward"
     grammar = Parser({"ten meters": "start recording"}).grammar(["firefox", "steam", "stremio"])
-    with patch.dict(os.environ, MURMUR_VOICE_WORKER="rust"):
+    with patch.dict(os.environ, JARVIS_VOICE_WORKER="rust"):
         _argv, payload, env = prepare(config, "wake_word", grammar)
     payload["native"]["vosk_fast_path"] = fast_path
     payload["native"]["vosk_finalize_utterances"] = finalize_utterances

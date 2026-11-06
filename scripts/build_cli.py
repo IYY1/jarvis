@@ -8,7 +8,7 @@ else:
 
 def main():
     build(__doc__, [("cli", "jarvis")],
-          "run-jarvis now uses the native CLI. MURMUR_CLI=python selects the compatibility client.")
+          "run-jarvis now uses the native CLI. JARVIS_CLI=python selects the compatibility client.")
 
 
 if __name__ == "__main__":

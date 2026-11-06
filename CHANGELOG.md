@@ -2,6 +2,75 @@
 
 ## Unreleased
 
+- **Arabic commands and dictation** (Voice → Language → Arabic and English),
+  using Moonshine Streaming Tiny Arabic (MIT) on Jarvis's Rust/tract runtime.
+  Ten models were compared on Saudi TV speech; it was the most accurate
+  permissively licensed one (Najdi WER 52% vs 85–93% for multilingual Whisper
+  base/tiny). Install with `jarvis install-model --arabic` ([details](docs/arabic.md)).
+- **Dictation**: “Jarvis, listen to me”, `jarvis dictate`, Ctrl+D or the new
+  buttons type speech into the focused field through the Wayland input method
+  (password fields refused) with a virtual-keyboard fallback; a top-of-screen
+  bar has Stop/Cancel; focus changes stop typing ([details](docs/dictation.md)).
+- **Clips editor**: trim, cut, split, join, choose or mix audio tracks, Fast
+  (keyframe) or Exact (re-encoded, HDR kept) export to a new file
+  ([details](docs/clips.md)).
+- **Separate replay sound tracks**: `replay.audio_tracks: "separate"` keeps the
+  game, each app in `replay.separate_apps` and the microphone on their own
+  tracks, verified on saved replays.
+- **Video formats**: Recommended (AV1, else HEVC) / Compatible (H.264 GPU),
+  each tested on the selected display's GPU with synthetic frames. CPU H.264
+  and legacy VA-API remain only for existing configurations.
+- **Murmur is now Jarvis everywhere**: the Python package (`python -m jarvis`),
+  settings (`~/.config/jarvis`), models and data (`~/.local/share/jarvis`), the
+  default videos folder (`~/Videos/Jarvis`), `Jarvis_…` file names, `JARVIS_…`
+  environment variables, the `jarvis.service` user service and the
+  `org.jarvis.Controller` launcher. The first `jarvis` command or service start
+  moves the old folders (a rename, nothing is copied), updates settings that
+  name them, and replaces the old launcher, service and its overrides;
+  existing recordings keep their names.
+- **Folder for each game** (on by default): clips and recordings of a focused
+  Steam, Heroic, Lutris or Wine game go in a folder named after it.
+- **Fixed bitrate by default, matched to resolution and frame rate** until
+  you set your own; size control and quality live under Advanced.
+- **Commands & apps** is one page: a short “Say this” list on top, every
+  phrase and your shortcuts folded away.
+- **Close Jarvis** by voice (“close yourself”, “quit Jarvis”, سكّر نفسك) or the
+  Quit Jarvis button; a running recording is saved first.
+- **Clips: mute tracks** with one switch per track.
+- **Dictation stops 3 seconds after you stop talking** (was 20).
+- Recorder setup moved to Advanced; Start recording completes it.
+- **Settings survive updates**: values a new version rejects are reset one by
+  one instead of stopping the service; the original and the previous
+  version's settings are kept in `backups/`. **Export/import** with
+  `jarvis settings` or Overview → Your settings.
+- **Replay's own video settings** (optional; same as recording by default),
+  and **Save applies capture changes at once**: a running recording is saved
+  and restarted, a running replay restarts, instead of “stop it first”.
+- **Capture presets**: Recommended (AV1 where supported), High quality (AV1
+  10-bit at the new Maximum quality), High frame rate · 120 fps, Small files ·
+  1080p and Compatible · H.264, with format, resolution (display's own, 4K, 2K,
+  1080p, 720p), frame rate (up to 240 fps) and bitrate (up to 500 Mbps) under
+  Advanced.
+- **Arabic switch**: **Turn on Arabic** on Overview and `jarvis language`.
+- **Dictation language follows the phrase**: اسمعني dictates Arabic, “listen”
+  English; the Start dictation button no longer locks onto Jarvis's own window.
+- **Dictation**: “Jarvis, listen” starts it too, and text that can't be typed
+  (no text field, focus moved, an app without text input) is put on the
+  clipboard so Ctrl+V pastes it; password-field text never is.
+- **Separate replay tracks on Windows 11**: the game, one program and the
+  microphone on their own tracks through Windows process loopback. Not yet run
+  on Windows; Windows 10 is refused with a message.
+- **Add programs**: `jarvis add-app` (Linux and Windows) and **Add program…**
+  on Windows, which suggests portable programs it finds and hides installers.
+- **AV1 10-bit and HEVC 10-bit for SDR** (Choose a format…): no banding in dark
+  scenes and gradients, at nearly the size of 8-bit; saved files are verified
+  as 10-bit ([details](docs/recording.md)).
+- **Apps**: Snap apps are discovered; installers and uninstallers are hidden;
+  duplicate native/Flatpak entries show once; AppImages and portable programs
+  can be added as normal launcher entries.
+- **Settings window**: practical Overview (voice, dictation, capture state and
+  the latest action), direct page names, and advanced capture settings folded away.
+
 - **Clip a length**: “clip the last 25 seconds”, “clip last 2 minutes” or
   “save the last minute” saves only the end of the replay buffer (1–59
   seconds or 1–30 minutes); “clip that” still saves all of it.

@@ -2,7 +2,7 @@
 // The command stays running: it shows "off" while the service is stopped and
 // reconnects by itself, so restart-interval is only a fallback.
 {
-  "custom/murmur": {
+  "custom/jarvis": {
     "exec": "/absolute/path/to/checkout/run-jarvis waybar",
     "return-type": "json",
     "restart-interval": 5,

@@ -1,3 +1,5 @@
+mod app_audio;
+mod dictation;
 mod engine;
 mod history;
 mod inference;
@@ -22,6 +24,13 @@ struct NativeConfig {
     whisper: Option<WhisperFiles>,
     denoiser: Option<String>,
     threads: i32,
+    /// Arabic model directory (Moonshine Streaming Tiny Arabic). With it,
+    /// commands may be spoken in Arabic as well as English.
+    #[serde(default)]
+    arabic: Option<String>,
+    /// Language dictation transcribes: "ar" (with the Arabic model) or "en".
+    #[serde(default)]
+    dictation_language: Option<String>,
     /// Load Whisper on wake and release it after this many idle seconds.
     /// Absent: load it at startup and keep it for the worker's lifetime.
     #[serde(default)]
@@ -279,6 +288,7 @@ fn run() -> Result<()> {
         ![
             "--transcribe",
             "--engine",
+            "--app-audio",
             "--decoder-history",
             "--match",
             "--version",
@@ -287,7 +297,7 @@ fn run() -> Result<()> {
     }) || args.len() > 1
     {
         return Err(
-            "Use --transcribe, --engine, --decoder-history, --match, --version, or no arguments for microphone worker"
+            "Use --transcribe, --engine, --decoder-history, --match, --app-audio, --version, or no arguments for microphone worker"
                 .into(),
         );
     }
@@ -301,6 +311,10 @@ fn run() -> Result<()> {
     }
     worker::bind_parent()?;
     let mut reader = BufReader::new(std::io::stdin());
+    if args.first().is_some_and(|a| a == "--app-audio") {
+        let request = read_line(&mut reader, 4096)?.ok_or("Application audio request required")?;
+        return app_audio::run(&serde_json::from_slice(&request)?);
+    }
     if args.first().is_some_and(|a| a == "--match") {
         return policy(&mut reader);
     }
@@ -332,6 +346,11 @@ fn run() -> Result<()> {
 }
 fn main() {
     if let Err(error) = run() {
+        if std::env::args().nth(1).as_deref() == Some("--app-audio") {
+            // stdout carries the audio stream in this mode.
+            eprintln!("{}", json!({"event":"error","message":error.to_string()}));
+            std::process::exit(1);
+        }
         let _ = emit(json!({"event":"error","message":error.to_string()}));
         std::process::exit(1);
     }

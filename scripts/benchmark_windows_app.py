@@ -3,8 +3,8 @@
 
 Runs on Windows against an installed (or extracted) Jarvis folder. The service
 is started with an isolated config and endpoint, consent pre-granted and
-MURMUR_DRY_RUN=1, so recognized commands are parsed but never dispatched.
-MURMUR_TEST_CAPTURE_FILE replaces the microphone with a generated timeline:
+JARVIS_DRY_RUN=1, so recognized commands are parsed but never dispatched.
+JARVIS_TEST_CAPTURE_FILE replaces the microphone with a generated timeline:
 
   settle silence -> N x (public "go forward ten meters" fixture + gap) -> long idle
 
@@ -70,8 +70,8 @@ def main():
                         help="Command model setting for builds that support it (0.3.1+)")
     args = parser.parse_args()
     sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-    from murmur import config
-    from murmur.process_memory import snapshot
+    from jarvis import config
+    from jarvis.process_memory import snapshot
 
     fixture = args.fixture.read_bytes()
     if hashlib.sha256(fixture).hexdigest() != FIXTURE_SHA256:
@@ -85,10 +85,10 @@ def main():
                            "recognition": {"speech_model": args.speech_model}})
     cfg["privacy"]["onboarded"] = True
     config.save(cfg, work / "config.json")
-    env = dict(os.environ, MURMUR_CONFIG=str(work / "config.json"), MURMUR_ENDPOINT=str(work / "run/control.json"),
-               MURMUR_DRY_RUN="1", MURMUR_TEST_CAPTURE_FILE=str(work / "capture.raw"))
-    os.environ.update(MURMUR_ENDPOINT=env["MURMUR_ENDPOINT"], MURMUR_CONFIG=env["MURMUR_CONFIG"])
-    from murmur.client import request, watch
+    env = dict(os.environ, JARVIS_CONFIG=str(work / "config.json"), JARVIS_ENDPOINT=str(work / "run/control.json"),
+               JARVIS_DRY_RUN="1", JARVIS_TEST_CAPTURE_FILE=str(work / "capture.raw"))
+    os.environ.update(JARVIS_ENDPOINT=env["JARVIS_ENDPOINT"], JARVIS_CONFIG=env["JARVIS_CONFIG"])
+    from jarvis.client import request, watch
 
     console = args.app / "JarvisConsole.exe"
     log = (work / "daemon.log").open("wb")

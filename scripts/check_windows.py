@@ -20,11 +20,11 @@ def main():
     parser.add_argument("--tools", type=Path, required=True)
     options = parser.parse_args()
     sys.path[:0] = [str(ROOT / "src"), str(ROOT)]
-    from murmur import config
-    from murmur.windows import system
-    from murmur.windows.pipes import SegmentReader
-    from murmur.windows.capture import ReplayBuffer
-    from murmur.windows.displays import OutputDesc, OutputDesc1, AdapterDesc1
+    from jarvis import config
+    from jarvis.windows import system
+    from jarvis.windows.pipes import SegmentReader
+    from jarvis.windows.capture import ReplayBuffer
+    from jarvis.windows.displays import OutputDesc, OutputDesc1, AdapterDesc1
     import ctypes
 
     print(
@@ -130,14 +130,14 @@ def main():
         config.save(config.load(cfg), cfg)
         env = dict(
             os.environ,
-            MURMUR_ENDPOINT=str(endpoint),
-            MURMUR_CONFIG=str(cfg),
-            MURMUR_DRY_RUN="1",
+            JARVIS_ENDPOINT=str(endpoint),
+            JARVIS_CONFIG=str(cfg),
+            JARVIS_DRY_RUN="1",
             PYTHONPATH=str(ROOT / "src"),
         )
         with (folder / "daemon.log").open("w+") as log:
             proc = subprocess.Popen(
-                [sys.executable, "-m", "murmur", "--internal", "daemon"],
+                [sys.executable, "-m", "jarvis", "--internal", "daemon"],
                 env=env,
                 stdout=log,
                 stderr=log,
@@ -153,8 +153,8 @@ def main():
                 if not endpoint.exists():
                     log.seek(0)
                     raise AssertionError(log.read())
-                os.environ["MURMUR_ENDPOINT"] = str(endpoint)
-                from murmur.client import request
+                os.environ["JARVIS_ENDPOINT"] = str(endpoint)
+                from jarvis.client import request
 
                 status = request("status")["status"]
                 assert not status["microphone_open"]

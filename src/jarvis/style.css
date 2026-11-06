@@ -1,0 +1,85 @@
+/* GTK4 native theme. Relative text sizes follow the desktop's text scaling.
+   Spacing: 4 8 12 16 24 32 px. Type: 0.8 0.95 1 1.1 1.5 1.9 em; weights 600 700 800. */
+@define-color bg #14111b;
+@define-color surface #1a1623;
+@define-color card #1f1a2b;
+@define-color inset #110e17;
+@define-color control #2b2440;
+@define-color control-hover #372e52;
+@define-color control-active #433862;
+@define-color line #342c47;
+@define-color line-strong #594d77;
+@define-color text #f3effa;
+@define-color text-muted #c3bbd5;
+@define-color text-disabled #8b819f;
+@define-color disabled #231e2f;
+@define-color accent #c3adff;
+@define-color accent-hover #d5c6ff;
+@define-color on-accent #1c1133;
+@define-color selected #382a5c;
+/* Gold marks live states only: listening, working, recording. */
+@define-color gold #e9c46a;
+@define-color gold-soft #3a3019;
+@define-color on-gold #2a1f05;
+@define-color focus #f0d68a;
+@define-color error-bg #3b1d27;
+@define-color error-text #ffc6d1;
+
+window.jarvis { background: @bg; color: @text; }
+.jarvis headerbar { background: @surface; border-bottom: 1px solid @line; min-height: 56px; }
+.jarvis windowcontrols button { background: transparent; border-color: transparent; padding: 4px; min-width: 24px; min-height: 24px; border-radius: 999px; }
+.jarvis windowcontrols button:hover { background: @control; }
+.jarvis .brand { font-size: 1.1em; font-weight: 800; letter-spacing: 3px; color: @text; }
+.jarvis .rail { background: @surface; padding: 24px 16px; border-right: 1px solid @line; }
+.jarvis stacksidebar { background: transparent; }
+.jarvis stacksidebar row { padding: 12px; margin: 4px 0; border-radius: 8px; font-weight: 600; color: @text-muted; }
+.jarvis stacksidebar row:hover { background: @control; color: @text; }
+.jarvis stacksidebar row:selected { background: @selected; color: @accent-hover; }
+.jarvis .page { background: @bg; padding: 32px; }
+.jarvis .page-title { font-size: 1.9em; font-weight: 700; letter-spacing: -0.7px; color: @text; }
+.jarvis .subtitle { color: @text-muted; font-size: 1.1em; }
+.jarvis .card { background: @card; border: 1px solid @line; border-radius: 12px; padding: 24px; }
+.jarvis .section-title { font-size: 1.1em; font-weight: 700; color: @text; }
+.jarvis .state-title { font-size: 1.5em; font-weight: 700; color: @text; }
+.jarvis .state-title.active { color: @gold; }
+.jarvis .state-title.error { color: @error-text; }
+.jarvis .pill { padding: 4px 12px; border-radius: 999px; font-size: 0.95em; font-weight: 600; background: @control; color: @text-muted; border: 1px solid @line-strong; }
+.jarvis .pill.idle { background: @selected; color: @accent-hover; border-color: @selected; }
+.jarvis .pill.listening, .jarvis .pill.dictating { background: @gold; color: @on-gold; border-color: @gold; }
+.jarvis .pill.processing, .jarvis .pill.replay { background: @gold-soft; color: @gold; border-color: @gold; }
+.jarvis .pill.error, .jarvis .pill.offline { background: @error-bg; color: @error-text; border-color: @error-bg; }
+.jarvis expander-widget title { padding: 4px 0; }
+.jarvis expander-widget title > expander { margin-right: 8px; color: @text-muted; }
+.jarvis expander-widget title:hover .section-title { color: @accent-hover; }
+.jarvis .caption { color: @text-muted; font-size: 0.95em; }
+.jarvis .eyebrow { color: @accent; font-size: 0.8em; font-weight: 800; letter-spacing: 1.4px; }
+.jarvis .row-title { font-weight: 600; color: @text; }
+.jarvis .example { font-size: 1.1em; font-weight: 600; color: @text; }
+.jarvis .notice { background: @surface; color: @text-muted; border-top: 1px solid @line; padding: 12px 24px; font-size: 0.95em; }
+.jarvis .notice.error { background: @error-bg; color: @error-text; }
+.jarvis button { background: @control; color: @text; border: 1px solid @line-strong; border-radius: 8px; padding: 8px 16px; min-height: 24px; font-weight: 600; box-shadow: none; }
+.jarvis button:hover { background: @control-hover; }
+.jarvis button:active { background: @control-active; }
+.jarvis button.primary { background: @accent; color: @on-accent; border-color: @accent; }
+.jarvis button.primary:hover { background: @accent-hover; }
+.jarvis button.mute { border-color: @text-disabled; }
+.jarvis button:disabled, .jarvis button.primary:disabled { background: @disabled; color: @text-disabled; border-color: @line; }
+.jarvis entry, .jarvis searchentry, .jarvis spinbutton, .jarvis dropdown { background: @inset; color: @text; border: 1px solid @line-strong; border-radius: 8px; min-height: 36px; }
+.jarvis entry:focus-within, .jarvis searchentry:focus-within, .jarvis spinbutton:focus-within { border-color: @accent; }
+.jarvis entry:disabled, .jarvis spinbutton:disabled { background: @disabled; color: @text-disabled; }
+.jarvis entry { padding: 4px 8px; }
+.jarvis dropdown button { background: @control; }
+.jarvis popover contents { background: @card; color: @text; border: 1px solid @line; }
+.jarvis .app-row { padding: 12px 16px; border: 1px solid @line; border-radius: 8px; background: @card; }
+.jarvis switch { min-width: 44px; min-height: 24px; padding: 2px; border: 1px solid @line-strong; border-radius: 999px; background: @control; }
+.jarvis switch:checked { background: @accent; border-color: @accent; }
+.jarvis switch slider { min-width: 20px; min-height: 20px; margin: 0; border: none; border-radius: 999px; background: @text; box-shadow: none; }
+.jarvis switch:checked slider { background: @on-accent; }
+.jarvis switch:disabled { background: @disabled; border-color: @line; }
+.jarvis switch:disabled slider { background: @text-disabled; }
+.jarvis check { min-width: 16px; min-height: 16px; border: 1px solid @line-strong; border-radius: 4px; background: @inset; color: @on-accent; }
+.jarvis check:checked { background: @accent; border-color: @accent; }
+.jarvis levelbar trough { min-height: 8px; background: @inset; border: 1px solid @line; border-radius: 4px; }
+.jarvis levelbar block.filled { background: @accent; border-color: @accent; border-radius: 4px; }
+.jarvis :focus-visible { outline: 2px solid @focus; outline-offset: 3px; }
+/* GTK gets no timers, infinite animations or custom frame callbacks from this UI. */

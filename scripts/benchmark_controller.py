@@ -21,7 +21,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from murmur.config import DEFAULTS
+from jarvis.config import DEFAULTS
 
 
 def request(path, op):
@@ -58,8 +58,8 @@ def sample(engine, binary, seconds, requests):
         cfg["recording"]["output_dir"] = str(root / "unused-video")
         config = root / "config.json"; config.write_text(json.dumps(cfg))
         path = root / "ipc/control.sock"
-        env = dict(os.environ, MURMUR_CONFIG=str(config), MURMUR_SOCKET=str(path), MURMUR_CONTROLLER="python", MURMUR_DRY_RUN="1")
-        argv = [sys.executable, "-m", "murmur", "daemon"] if engine == "python" else [str(binary)]
+        env = dict(os.environ, JARVIS_CONFIG=str(config), JARVIS_SOCKET=str(path), JARVIS_CONTROLLER="python", JARVIS_DRY_RUN="1")
+        argv = [sys.executable, "-m", "jarvis", "daemon"] if engine == "python" else [str(binary)]
         with (root / "stderr").open("w+") as errors:
             started = time.perf_counter()
             process = subprocess.Popen(argv, env=env, stdout=subprocess.DEVNULL, stderr=errors)
@@ -101,7 +101,7 @@ def sample(engine, binary, seconds, requests):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--binary", type=Path, default=ROOT / "src/murmur/bin/jarvis-controller")
+    parser.add_argument("--binary", type=Path, default=ROOT / "src/jarvis/bin/jarvis-controller")
     parser.add_argument("--seconds", type=float, default=3)
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument("--requests", type=int, default=100)

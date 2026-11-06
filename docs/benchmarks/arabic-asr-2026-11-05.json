@@ -1,0 +1,509 @@
+{
+ "date": "2026-11-05",
+ "machine": "AMD Ryzen 7 7800X3D, 4 inference threads, CPU only; live Jarvis service and a game running at the same time, so timings are indicative",
+ "runtime": "sherpa-onnx 1.13.8 (int8 where published), vosk 0.3.45, transformers 5.22.1 + torch 2.15 CPU (fp32) for the two Hugging Face checkpoints",
+ "audio": {
+  "sada_*": "SADA test split (MohamedRashad/SADA22, CC BY-NC-SA 4.0), seeded random sample of 2–12 s single-speaker clips: 60 Najdi, 15 Hijazi, 15 Khaliji; scored against cleaned_text",
+  "fleurs_egyptian": "FLEURS ar_eg dev, 20 seeded clips (CC BY 4.0); may be in some models' training data",
+  "csfleurs_ar_en": "CS-FLEURS read/test Arabic-English code-switched speech, 25 seeded clips ≤14 s (CC BY-NC 4.0)"
+ },
+ "scoring": "WER/CER % after removing diacritics/tatweel, unifying alef forms, ta marbuta->ha, alef maqsura->ya, removing punctuation, lowercasing Latin. English words written in Arabic script count as errors.",
+ "caveats": [
+  "moonshine-base-ar (sherpa) returned empty text for clips longer than about 9.3 s: 2 of 60 Najdi, 13 of 20 FLEURS and 18 of 25 CS-FLEURS clips, so its FLEURS/CS-FLEURS scores are not comparable",
+  "zipformer-streaming-ar-en scored 13.9 WER on FLEURS but 70.6 on Najdi; FLEURS is likely in its training data",
+  "peak_rss_mib includes each runtime (torch is large); not comparable to Jarvis's Rust/tract memory",
+  "synthetic Arabic command speech (Piper espeak voices) was unintelligible to every model (2–8 of 60 understood) and was discarded as evidence",
+  "no recordings of the user's own Najdi commands were available"
+ ],
+ "models": {
+  "whisper-tiny": {
+   "label": "whisper-tiny",
+   "kind": "whisper",
+   "name": "tiny",
+   "license": "MIT (OpenAI weights)",
+   "scores": {
+    "sada_najdi": {
+     "wer": 93.1,
+     "cer": 60.75,
+     "clips": 60
+    },
+    "sada_hijazi": {
+     "wer": 91.87,
+     "cer": 63.55,
+     "clips": 15
+    },
+    "sada_khaliji": {
+     "wer": 102.94,
+     "cer": 66.31,
+     "clips": 15
+    },
+    "fleurs_egyptian": {
+     "wer": 67.45,
+     "cer": 28.43,
+     "clips": 20
+    },
+    "csfleurs_ar_en": {
+     "wer": 80.32,
+     "cer": 50.93,
+     "clips": 25
+    }
+   },
+   "rtf": 0.042,
+   "cpu_rtf": 0.1491,
+   "peak_rss_mib": 450.5,
+   "load_seconds": 0.22,
+   "disk_mib": 243.9
+  },
+  "whisper-base": {
+   "label": "whisper-base",
+   "kind": "whisper",
+   "name": "base",
+   "license": "MIT (OpenAI weights)",
+   "scores": {
+    "sada_najdi": {
+     "wer": 85.07,
+     "cer": 51.65,
+     "clips": 60
+    },
+    "sada_hijazi": {
+     "wer": 84.21,
+     "cer": 53.14,
+     "clips": 15
+    },
+    "sada_khaliji": {
+     "wer": 84.12,
+     "cer": 52.96,
+     "clips": 15
+    },
+    "fleurs_egyptian": {
+     "wer": 51.44,
+     "cer": 16.07,
+     "clips": 20
+    },
+    "csfleurs_ar_en": {
+     "wer": 74.43,
+     "cer": 52.8,
+     "clips": 25
+    }
+   },
+   "rtf": 0.0729,
+   "cpu_rtf": 0.2693,
+   "peak_rss_mib": 580.4,
+   "load_seconds": 0.37,
+   "disk_mib": 431.3
+  },
+  "moonshine-base-ar": {
+   "label": "moonshine-base-ar",
+   "kind": "moonshine-v2",
+   "license": "Moonshine Community License (non-commercial)",
+   "scores": {
+    "sada_najdi": {
+     "wer": 47.99,
+     "cer": 25.46,
+     "clips": 60
+    },
+    "sada_hijazi": {
+     "wer": 56.46,
+     "cer": 39.41,
+     "clips": 15
+    },
+    "sada_khaliji": {
+     "wer": 72.94,
+     "cer": 42.03,
+     "clips": 15
+    },
+    "fleurs_egyptian": {
+     "wer": 77.17,
+     "cer": 75.87,
+     "clips": 20
+    },
+    "csfleurs_ar_en": {
+     "wer": 102.26,
+     "cer": 92.5,
+     "clips": 25
+    }
+   },
+   "rtf": 0.015,
+   "cpu_rtf": 0.0752,
+   "peak_rss_mib": 372.0,
+   "load_seconds": 0.39,
+   "disk_mib": 134.8
+  },
+  "qwen3-asr-0.6b": {
+   "label": "qwen3-asr-0.6b",
+   "kind": "qwen3",
+   "license": "Apache-2.0 (upstream Qwen)",
+   "scores": {
+    "sada_najdi": {
+     "wer": 58.43,
+     "cer": 25.5,
+     "clips": 60
+    },
+    "sada_hijazi": {
+     "wer": 55.98,
+     "cer": 25.8,
+     "clips": 15
+    },
+    "sada_khaliji": {
+     "wer": 60.59,
+     "cer": 27.62,
+     "clips": 15
+    },
+    "fleurs_egyptian": {
+     "wer": 23.36,
+     "cer": 7.74,
+     "clips": 20
+    },
+    "csfleurs_ar_en": {
+     "wer": 45.02,
+     "cer": 37.97,
+     "clips": 25
+    }
+   },
+   "rtf": 0.1607,
+   "cpu_rtf": 0.6244,
+   "peak_rss_mib": 2450.5,
+   "load_seconds": 1.8,
+   "disk_mib": 941.3
+  },
+  "omnilingual-300m-ctc": {
+   "label": "omnilingual-300m-ctc",
+   "kind": "omnilingual",
+   "license": "Apache-2.0",
+   "scores": {
+    "sada_najdi": {
+     "wer": 64.21,
+     "cer": 27.54,
+     "clips": 60
+    },
+    "sada_hijazi": {
+     "wer": 58.85,
+     "cer": 22.49,
+     "clips": 15
+    },
+    "sada_khaliji": {
+     "wer": 62.35,
+     "cer": 27.01,
+     "clips": 15
+    },
+    "fleurs_egyptian": {
+     "wer": 16.01,
+     "cer": 3.55,
+     "clips": 20
+    },
+    "csfleurs_ar_en": {
+     "wer": 40.27,
+     "cer": 23.28,
+     "clips": 25
+    }
+   },
+   "rtf": 0.0637,
+   "cpu_rtf": 0.2516,
+   "peak_rss_mib": 1022.8,
+   "load_seconds": 0.6,
+   "disk_mib": 349.0
+  },
+  "zipformer-streaming-ar-en": {
+   "label": "zipformer-streaming-ar-en",
+   "kind": "zipformer-streaming",
+   "license": "Apache-2.0 (PengChengStarling)",
+   "scores": {
+    "sada_najdi": {
+     "wer": 70.63,
+     "cer": 57.32,
+     "clips": 60
+    },
+    "sada_hijazi": {
+     "wer": 71.77,
+     "cer": 59.05,
+     "clips": 15
+    },
+    "sada_khaliji": {
+     "wer": 76.47,
+     "cer": 61.31,
+     "clips": 15
+    },
+    "fleurs_egyptian": {
+     "wer": 13.91,
+     "cer": 8.38,
+     "clips": 20
+    },
+    "csfleurs_ar_en": {
+     "wer": 28.28,
+     "cer": 24.69,
+     "clips": 25
+    }
+   },
+   "rtf": 0.0665,
+   "cpu_rtf": 0.5775,
+   "peak_rss_mib": 521.9,
+   "load_seconds": 1.79,
+   "disk_mib": 323.6
+  },
+  "vosk-ar-mgb2": {
+   "label": "vosk-ar-mgb2",
+   "kind": "vosk",
+   "license": "Apache-2.0",
+   "scores": {
+    "sada_najdi": {
+     "wer": 68.7,
+     "cer": 47.98,
+     "clips": 60
+    },
+    "sada_hijazi": {
+     "wer": 67.46,
+     "cer": 48.76,
+     "clips": 15
+    },
+    "sada_khaliji": {
+     "wer": 76.47,
+     "cer": 57.06,
+     "clips": 15
+    },
+    "fleurs_egyptian": {
+     "wer": 15.75,
+     "cer": 6.45,
+     "clips": 20
+    },
+    "csfleurs_ar_en": {
+     "wer": 42.08,
+     "cer": 40.79,
+     "clips": 25
+    }
+   },
+   "rtf": 0.3639,
+   "cpu_rtf": 0.3571,
+   "peak_rss_mib": 779.5,
+   "load_seconds": 0.5,
+   "disk_mib": 665.9
+  },
+  "whisper-small": {
+   "label": "whisper-small",
+   "kind": "whisper",
+   "name": "small",
+   "license": "MIT (OpenAI weights)",
+   "scores": {
+    "sada_najdi": {
+     "wer": 74.0,
+     "cer": 42.06,
+     "clips": 60
+    },
+    "sada_hijazi": {
+     "wer": 66.03,
+     "cer": 34.67,
+     "clips": 15
+    },
+    "sada_khaliji": {
+     "wer": 80.59,
+     "cer": 50.23,
+     "clips": 15
+    },
+    "fleurs_egyptian": {
+     "wer": 26.77,
+     "cer": 8.17,
+     "clips": 20
+    },
+    "csfleurs_ar_en": {
+     "wer": 43.67,
+     "cer": 32.61,
+     "clips": 25
+    }
+   },
+   "rtf": 0.2313,
+   "cpu_rtf": 0.8906,
+   "peak_rss_mib": 1216.9,
+   "load_seconds": 0.76,
+   "disk_mib": 1281.9
+  },
+  "moonshine-streaming-tiny-ar": {
+   "label": "moonshine-streaming-tiny-ar",
+   "kind": "hf-moonshine",
+   "license": "MIT (model card)",
+   "precision": "fp32",
+   "scores": {
+    "sada_najdi": {
+     "wer": 52.17,
+     "cer": 27.01,
+     "clips": 60
+    },
+    "sada_hijazi": {
+     "wer": 47.85,
+     "cer": 23.55,
+     "clips": 15
+    },
+    "sada_khaliji": {
+     "wer": 72.35,
+     "cer": 42.64,
+     "clips": 15
+    },
+    "fleurs_egyptian": {
+     "wer": 7.87,
+     "cer": 2.15,
+     "clips": 20
+    },
+    "csfleurs_ar_en": {
+     "wer": 38.01,
+     "cer": 30.79,
+     "clips": 25
+    }
+   },
+   "rtf": 0.0218,
+   "cpu_rtf": 0.085,
+   "peak_rss_mib": 559.9,
+   "load_seconds": 2.0,
+   "disk_mib": 103.8
+  },
+  "voho-saudi-whisper-small": {
+   "label": "voho-saudi-whisper-small",
+   "kind": "hf-whisper",
+   "license": "CC BY-NC-SA 4.0",
+   "precision": "fp32",
+   "scores": {
+    "sada_najdi": {
+     "wer": 35.15,
+     "cer": 15.5,
+     "clips": 60
+    },
+    "sada_hijazi": {
+     "wer": 40.19,
+     "cer": 16.09,
+     "clips": 15
+    },
+    "sada_khaliji": {
+     "wer": 41.18,
+     "cer": 17.45,
+     "clips": 15
+    },
+    "fleurs_egyptian": {
+     "wer": 29.66,
+     "cer": 9.03,
+     "clips": 20
+    },
+    "csfleurs_ar_en": {
+     "wer": 51.13,
+     "cer": 39.97,
+     "clips": 25
+    }
+   },
+   "rtf": 0.4019,
+   "cpu_rtf": 1.4285,
+   "peak_rss_mib": 1555.5,
+   "load_seconds": 1.89,
+   "disk_mib": 927.6
+  }
+ },
+ "jarvis_rust_moonshine": {
+  "note": "Jarvis's Rust/tract recognizer on the exported moonshine-streaming-tiny-ar graphs (fp32), same clips",
+  "identical_to_transformers": "135/135",
+  "scores": {
+   "csfleurs_ar_en": {
+    "wer": 38.01,
+    "cer": 30.79
+   },
+   "fleurs_egyptian": {
+    "wer": 7.87,
+    "cer": 2.15
+   },
+   "sada_hijazi": {
+    "wer": 47.85,
+    "cer": 23.55
+   },
+   "sada_khaliji": {
+    "wer": 72.35,
+    "cer": 42.64
+   },
+   "sada_najdi": {
+    "wer": 52.17,
+    "cer": 27.01
+   }
+  },
+  "rtf": 0.0489,
+  "load_seconds": 0.224671544,
+  "peak_rss_mib": 237.51171875,
+  "threads": "tract default"
+ },
+ "jarvis_rust_whisper_multilingual": {
+  "tiny": {
+   "load_seconds": 0.318840337,
+   "ready_rss": 81.94921875,
+   "peak_rss": 157.81640625,
+   "sada_najdi": {
+    "wer": 92.62,
+    "cer": 59.98
+   },
+   "sada_najdi_langs": {
+    "ar": 56,
+    "en": 4
+   },
+   "csfleurs_ar_en": {
+    "wer": 76.7,
+    "cer": 52.89
+   },
+   "csfleurs_ar_en_langs": {
+    "ar": 24,
+    "en": 1
+   },
+   "mean_seconds": 0.163
+  },
+  "base": {
+   "load_seconds": 0.639292185,
+   "ready_rss": 125.2578125,
+   "peak_rss": 226.38671875,
+   "sada_najdi": {
+    "wer": 84.27,
+    "cer": 49.9
+   },
+   "sada_najdi_langs": {
+    "ar": 57,
+    "en": 3
+   },
+   "csfleurs_ar_en": {
+    "wer": 65.16,
+    "cer": 46.98
+   },
+   "csfleurs_ar_en_langs": {
+    "ar": 25
+   },
+   "mean_seconds": 0.334
+  },
+  "small": {
+   "load_seconds": 1.315113895,
+   "ready_rss": 310.49609375,
+   "peak_rss": 484.046875,
+   "sada_najdi": {
+    "wer": 68.54,
+    "cer": 36.07
+   },
+   "sada_najdi_langs": {
+    "ar": 59,
+    "en": 1
+   },
+   "csfleurs_ar_en": {
+    "wer": 43.44,
+    "cer": 32.2
+   },
+   "csfleurs_ar_en_langs": {
+    "ar": 25
+   },
+   "mean_seconds": 0.877
+  }
+ },
+ "separate_replay_tracks": {
+  "recorder": "gpu-screen-recorder 6.1.6, audio-only and real replay on DP-5 (H.264), tones from named PipeWire clients on a null sink",
+  "layout": [
+   "app-inverse:JarvisToneBrowser",
+   "app:JarvisToneBrowser"
+  ],
+  "saved_replay": {
+   "track1_everything_except_browser": {
+    "game_tone_db": -7.7,
+    "browser_tone_db": -35.5
+   },
+   "track2_browser": {
+    "browser_tone_db": -8.3,
+    "game_tone_db": -49.5
+   }
+  },
+  "notes": "Residual levels do not follow the beep timing (spectral spill of the 0.1 s bursts), so no measurable leakage. Both audio streams start at 0.000 s; inter-app offsets were not resolvable by this test. MP4 replays do not keep track titles."
+ }
+}

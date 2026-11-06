@@ -8,7 +8,7 @@ All recognition uses the CPU. Optional GTCRN enhancement remains off by default.
 
 `./run-jarvis install-model` downloads the configured artifacts, verifies their
 SHA-256 values and extracts only required files. Model specifications, URLs,
-sizes and hashes are in `src/murmur/models.py`. Models are not vendored.
+sizes and hashes are in `src/jarvis/models.py`. Models are not vendored.
 
 The Python worker keeps Whisper resident so commands do not reload hundreds of
 megabytes of weights. The Rust worker instead loads it when a wake name is heard

@@ -14,7 +14,7 @@ def main():
     build(__doc__, [("gtcrn-denoiser", "jarvis-denoise"),
                     ("whisper-recognizer", "jarvis-whisper"),
                     ("voice-worker", "jarvis-voice")],
-          "Rust is preferred when available on Linux; MURMUR_VOICE_WORKER=python selects compatibility mode.")
+          "Rust is preferred when available on Linux; JARVIS_VOICE_WORKER=python selects compatibility mode.")
 
 
 if __name__ == "__main__":

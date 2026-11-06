@@ -38,8 +38,8 @@ test, then on Windows 10.
 `scripts/benchmark_windows_app.py` runs on Windows against an extracted
 portable build. It starts the service (`JarvisConsole.exe --internal daemon`)
 with an isolated config and endpoint, consent pre-granted and
-`MURMUR_DRY_RUN=1`, so commands are parsed but never dispatched.
-`MURMUR_TEST_CAPTURE_FILE` replaces the microphone with a generated timeline:
+`JARVIS_DRY_RUN=1`, so commands are parsed but never dispatched.
+`JARVIS_TEST_CAPTURE_FILE` replaces the microphone with a generated timeline:
 40 s of silence, then ten repetitions of the public “go forward ten meters”
 fixture (SHA-256 `f15c60ec…0e71`) each followed by 12 s of silence, then 300 s
 of silence. “go forward” is the wake phrase and “ten meters” a command shortcut.
@@ -48,7 +48,7 @@ measurement-only change is [windows-baseline-capture.patch](benchmarks/windows-b
 and is not part of any release.
 
 Every 0.25 s the harness sums the **service process tree** (service, voice
-worker and any helper) with `murmur.process_memory`:
+worker and any helper) with `jarvis.process_memory`:
 
 - **Private working set**: resident pages that cannot be shared, so DLL code
   mapped by other processes is not counted. This is the primary RAM metric.

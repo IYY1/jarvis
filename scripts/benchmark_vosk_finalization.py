@@ -27,16 +27,16 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "scripts")]
 from benchmark_whisper_on_demand import session
-from murmur.commands import Parser
-from murmur.config import validate
-from murmur.native_worker import prepare
+from jarvis.commands import Parser
+from jarvis.config import validate
+from jarvis.native_worker import prepare
 
 
 def engine_probe(binary, fixture, finalize, cycles, background_repeats):
     config = validate({"recognition": {"accurate": False, "noise_suppression": False},
                        "activation": {"wake_phrase": "go forward"}})
     grammar = Parser({"ten meters": "start recording", "go forward ten meters": "start recording"}).grammar(["firefox", "steam", "stremio"])
-    with patch.dict(os.environ, MURMUR_VOICE_WORKER="rust"):
+    with patch.dict(os.environ, JARVIS_VOICE_WORKER="rust"):
         _, payload, env = prepare(config, "wake_word", grammar)
     payload["native"]["vosk_finalize_utterances"] = finalize
     payload["native"]["vosk_fast_path"] = False

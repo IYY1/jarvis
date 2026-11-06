@@ -65,7 +65,8 @@ async fn connection(
             .send(service::Message::Request(payload, reply))
             .await
             .map_err(|_| "Service is stopping")?;
-        let response = timeout(Duration::from_secs(60), rx).await??;
+        // A save that restarts capture waits for a recording to be finalized.
+        let response = timeout(Duration::from_secs(120), rx).await??;
         write_json(&mut write, &response).await?;
         Ok::<_, Error>(())
     }
@@ -117,7 +118,7 @@ async fn request(service: &mut service::Service, payload: Value, reply: service:
                     } else {
                         "disable".into()
                     },
-                    "murmur.service".into(),
+                    "jarvis.service".into(),
                 ],
                 5,
             )
@@ -129,6 +130,42 @@ async fn request(service: &mut service::Service, payload: Value, reply: service:
                 .await;
         });
         return;
+    }
+    if op == "save_config" {
+        if let Ok((config, restart)) = service.restarts_for(&payload["config"]) {
+            if !restart.is_empty() {
+                // Stopping can take seconds (a recording is finalized), so it
+                // runs beside the state actor: stop, save, start again.
+                let (recording, replay) = (service.recording.clone(), service.replay.clone());
+                let events = service.events.clone();
+                tokio::spawn(async move {
+                    let capture = |kind: &str| if kind == "record" { recording.clone() } else { replay.clone() };
+                    for kind in &restart {
+                        if let Err(e) = capture(kind).lock().await.stop().await {
+                            let _ = reply.send(json!({"ok":false,"error":format!("Could not stop to apply the settings: {e}")}));
+                            return;
+                        }
+                    }
+                    let (saved, rx) = oneshot::channel();
+                    if events.send(service::Message::Request(payload, saved)).await.is_err() {
+                        return;
+                    }
+                    let Ok(mut response) = rx.await else { return };
+                    let mut errors = vec![];
+                    if response["ok"] == true {
+                        for kind in &restart {
+                            if let Err(e) = capture(kind).lock().await.start(&config).await {
+                                errors.push(e.to_string());
+                            }
+                        }
+                    }
+                    response["restarted"] = json!(restart);
+                    response["restart_errors"] = json!(errors);
+                    let _ = reply.send(response);
+                });
+                return;
+            }
+        }
     }
     if matches!(op, "devices" | "recording_devices" | "monitors") {
         // External servers can be slow. Discovery stays outside the state actor
@@ -170,6 +207,11 @@ async fn message(service: &mut service::Service, message: service::Message) {
         Message::StartupDone(enabled, result, reply) => {
             let _ = reply.send(response(service.startup_done(enabled, result)));
         }
+        Message::Typed {
+            session,
+            text,
+            result,
+        } => service.typed(session, text, result).await,
         Message::ActionDone {
             result,
             reply,
@@ -186,6 +228,8 @@ async fn message(service: &mut service::Service, message: service::Message) {
 }
 
 async fn serve() -> Result<()> {
+    config::migrate_from_old_name();
+    config::note_version(env!("CARGO_PKG_VERSION"));
     let config = config::load()?;
     let path = jarvis_controller::ipc::socket_path();
     let parent = path.parent().ok_or("Invalid IPC socket path")?;
@@ -200,7 +244,7 @@ async fn serve() -> Result<()> {
         .mode(0o600)
         .open(parent.join("service.lock"))?;
     if unsafe { libc::flock(lock.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } != 0 {
-        return err("Murmur service is already running");
+        return err("Jarvis service is already running");
     }
     if path.exists() {
         fs::remove_file(&path)?;
@@ -231,7 +275,12 @@ async fn serve() -> Result<()> {
         tokio::select! { biased;
             _ = terminate.recv() => break,
             _ = interrupt.recv() => break,
-            Some(event) = messages.recv() => message(&mut service, event).await,
+            Some(event) = messages.recv() => {
+                message(&mut service, event).await;
+                if service.quit {
+                    break;  // “close yourself”: shutdown below finishes captures first
+                }
+            }
             Ok(()) = service.recording_updates.changed() => service.capture_changed(),
             Ok(()) = service.replay_updates.changed() => service.capture_changed(),
             accepted = listener.accept() => {

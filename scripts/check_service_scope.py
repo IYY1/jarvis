@@ -2,7 +2,7 @@
 """Explicit transient user-service lifecycle test, with no UI/audio/capture.
 
 Starts a temporary sleeping fixture in its own scope through the same launch
-helper as Murmur. Stops only the temporary parent service and verifies the
+helper as Jarvis. Stops only the temporary parent service and verifies the
 launched fixture survived; then terminates that fixture and cleans the unit.
 No persistent service files or enablement are written.
 """
@@ -22,20 +22,20 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--output", type=Path)
     args = p.parse_args()
-    unit = "murmur-scope-check-" + uuid.uuid4().hex[:12]
+    unit = "jarvis-scope-check-" + uuid.uuid4().hex[:12]
     child_pid = None
     root = Path(__file__).resolve().parents[1]
-    with tempfile.TemporaryDirectory(prefix="murmur-scope-") as temp:
+    with tempfile.TemporaryDirectory(prefix="jarvis-scope-") as temp:
         base = Path(temp)
         child = base / "child.py"
         marker = base / "child.pid"
         child.write_text("import os,time\nfrom pathlib import Path\nPath(" + repr(str(marker)) + ").write_text(str(os.getpid()))\ntime.sleep(60)\n")
         parent = base / "parent.py"
-        parent.write_text("import subprocess,sys\nfrom murmur.desktop_process import desktop_argv\nsubprocess.run(desktop_argv([sys.executable," + repr(str(child)) + "]))\n")
+        parent.write_text("import subprocess,sys\nfrom jarvis.desktop_process import desktop_argv\nsubprocess.run(desktop_argv([sys.executable," + repr(str(child)) + "]))\n")
         try:
             subprocess.run(["systemd-run", "--user", "--quiet", "--collect", "--expand-environment=no",
                             "--unit=" + unit, "--property=Type=exec", "--property=KillMode=mixed",
-                            "--setenv=MURMUR_MANAGED_SERVICE=1", "--setenv=PYTHONPATH=" + str(root / "src"),
+                            "--setenv=JARVIS_MANAGED_SERVICE=1", "--setenv=PYTHONPATH=" + str(root / "src"),
                             "--", sys.executable, str(parent)], check=True, timeout=5)
             until = time.monotonic() + 8
             while not marker.exists():

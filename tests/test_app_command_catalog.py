@@ -8,9 +8,9 @@ import types
 import unittest
 from unittest.mock import patch
 
-from murmur import config
-from murmur.apps import AppRegistry
-from murmur.commands import Parser, match_candidates
+from jarvis import config
+from jarvis.apps import AppRegistry
+from jarvis.commands import Parser, match_candidates
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -102,7 +102,7 @@ class ApplicationCatalogTests(unittest.TestCase):
 
 class CatalogPaginationTests(unittest.TestCase):
     def test_all_entries_are_browsable_and_searchable_with_only_thirty_cards(self):
-        tree=ast.parse((ROOT/'src/murmur/ui.py').read_text())
+        tree=ast.parse((ROOT/'src/jarvis/ui.py').read_text())
         methods={'_render_commands','_filter_commands','_change_command_page','_render_command_page'}
         cls=next(n for n in tree.body if isinstance(n,ast.ClassDef) and any(isinstance(m,ast.FunctionDef) and m.name=='_render_commands' for m in n.body))
         module=ast.Module(body=[n for n in cls.body if isinstance(n,ast.FunctionDef) and n.name in methods],type_ignores=[])

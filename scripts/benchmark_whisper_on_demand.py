@@ -27,10 +27,10 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from murmur.commands import Parser
-from murmur.config import DEFAULTS
-from murmur.native_worker import prepare
-from murmur.process_memory import linux_memory
+from jarvis.commands import Parser
+from jarvis.config import DEFAULTS
+from jarvis.native_worker import prepare
+from jarvis.process_memory import linux_memory
 
 CAPTURE = """#!/usr/bin/env python3
 import os, time
@@ -83,7 +83,7 @@ def session(binary: Path, fixture: Path, idle: float | None, lead: float, gap: f
     config["recognition"].update(accurate=True, noise_suppression=denoise, closest_match=free_decoder)
     config["activation"]["wake_phrase"] = "go forward"
     grammar = Parser({"ten meters": "start recording"}).grammar(["firefox", "steam", "stremio"])
-    with patch.dict(os.environ, MURMUR_VOICE_WORKER="rust"):
+    with patch.dict(os.environ, JARVIS_VOICE_WORKER="rust"):
         _argv, payload, env = prepare(config, "wake_word", grammar)
     payload["native"]["vosk_fast_path"] = fast_path
     payload["native"]["vosk_finalize_utterances"] = finalize_utterances

@@ -12,7 +12,7 @@ hashes. Private audio, full events and drivers remain under ignored
 
 ## Fixed protocol
 
-Use the existing `murmur.speech.SpeechEngine` at sensitivity 0.5, with its
+Use the existing `jarvis.speech.SpeechEngine` at sensitivity 0.5, with its
 unchanged native VAD and keyword threshold 1e-20. Feed raw 16 kHz mono s16le
 PCM in 30 ms frames; no external energy gate or denoising. The Jarvis search
 uses primary `jarvis` plus alias `hey jarvis`, which enables the adapter's

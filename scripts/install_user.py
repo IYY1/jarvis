@@ -28,16 +28,21 @@ def main():
     p.add_argument("--replace", action="store_true", help="Replace existing Jarvis-owned launcher/unit files")
     p.add_argument("--dry-run", action="store_true", help="Show proposed files without writing")
     a = p.parse_args()
+    if not a.dry_run:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+        from jarvis.migrate import from_old_name
+        for moved in from_old_name():   # files an install under the old name left
+            print(f"Moved {moved}")
     # Preserve venv interpreter path; resolving its symlink would lose installed dependencies.
     interpreter = str(Path(sys.executable).absolute())
     data = Path(os.environ.get("XDG_DATA_HOME", str(Path.home() / ".local/share")))
     config = Path(os.environ.get("XDG_CONFIG_HOME", str(Path.home() / ".config")))
-    files = {data / "applications/org.murmur.Controller.desktop": f'''[Desktop Entry]
+    files = {data / "applications/org.jarvis.Controller.desktop": f'''[Desktop Entry]
 Type=Application
 Name=Jarvis
 GenericName=Local voice controller
 Comment=Control Hyprland by voice and configure screen recording
-Exec={desktop_quote(interpreter)} -m murmur ui
+Exec={desktop_quote(interpreter)} -m jarvis ui
 Icon=audio-input-microphone
 Terminal=false
 Categories=Utility;Accessibility;
@@ -47,10 +52,10 @@ Actions=Recorder;
 
 [Desktop Action Recorder]
 Name=Open recorder
-Exec={desktop_quote(interpreter)} -m murmur ui --page recording
+Exec={desktop_quote(interpreter)} -m jarvis ui --page recording
 '''}
     if a.service:
-        files[config / "systemd/user/murmur.service"] = f'''[Unit]
+        files[config / "systemd/user/jarvis.service"] = f'''[Unit]
 Description=Jarvis local voice controller
 Documentation={(Path(__file__).resolve().parents[1] / 'README.md').as_uri().replace('%', '%%')}
 After=graphical-session.target pipewire.service
@@ -58,8 +63,8 @@ PartOf=graphical-session.target
 
 [Service]
 Type=simple
-Environment=MURMUR_MANAGED_SERVICE=1
-ExecStart={systemd_quote(interpreter)} -m murmur daemon
+Environment=JARVIS_MANAGED_SERVICE=1
+ExecStart={systemd_quote(interpreter)} -m jarvis daemon
 Restart=on-failure
 RestartSec=3
 TimeoutStopSec=25

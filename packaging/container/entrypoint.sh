@@ -10,7 +10,7 @@ export CARGO_TARGET_DIR=${CARGO_TARGET_DIR:-/tmp/jarvis-target}
 tests() {
   # Work on a clean copy so host-built binaries and target/ folders are ignored.
   rm -rf /tmp/work && mkdir /tmp/work
-  tar -C /src --exclude='./native/*/target' --exclude=./src/murmur/bin --exclude=./build --exclude=./dist \
+  tar -C /src --exclude='./native/*/target' --exclude=./src/jarvis/bin --exclude=./build --exclude=./dist \
     --exclude=./.venv --exclude='*/__pycache__' -cf - . | tar -C /tmp/work -xf -
   cd /tmp/work
   unset CARGO_TARGET_DIR

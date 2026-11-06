@@ -8,7 +8,7 @@
   (paced test audio, dry-run dispatch), start-at-sign-in, service restart and
   uninstall, then writes one JSON report. Nothing here uses Python or a
   developer tool; the voice check injects the public fixture instead of a
-  microphone (MURMUR_TEST_CAPTURE_FILE) and never dispatches actions.
+  microphone (JARVIS_TEST_CAPTURE_FILE) and never dispatches actions.
 #>
 param(
   [Parameter(Mandatory)] [string] $Previous,
@@ -139,10 +139,10 @@ if ($Phase -in 'all', 'install') {
   $voiceConfig = [ordered]@{ privacy = @{ onboarded = $true }; activation = @{ wake_phrase = 'go forward' };
                     commands = @{ 'ten meters' = 'start recording' } }
   [IO.File]::WriteAllText((Join-Path $work 'config.json'), ($voiceConfig | ConvertTo-Json -Depth 8))
-  $env:MURMUR_CONFIG = Join-Path $work 'config.json'
-  $env:MURMUR_ENDPOINT = Join-Path $work 'run\control.json'
-  $env:MURMUR_DRY_RUN = '1'
-  $env:MURMUR_TEST_CAPTURE_FILE = Join-Path $work 'capture.raw'
+  $env:JARVIS_CONFIG = Join-Path $work 'config.json'
+  $env:JARVIS_ENDPOINT = Join-Path $work 'run\control.json'
+  $env:JARVIS_DRY_RUN = '1'
+  $env:JARVIS_TEST_CAPTURE_FILE = Join-Path $work 'capture.raw'
   $service = Start-Process $console -ArgumentList '--internal', 'daemon' -PassThru -WindowStyle Hidden
   Check 'voice: worker opens and reaches idle' { Wait-Until { $s = Service-Status; $s.microphone_open -and $s.state -eq 'idle' } 90 }
   Check 'voice: wake + command recognized and dispatched (dry run)' { Wait-Until { (Service-Status).message -like 'Dry run: *' } 60 }
@@ -159,7 +159,7 @@ if ($Phase -in 'all', 'install') {
     Console @('shutdown') | Out-Null
     Wait-Until { -not (Get-Process -Id $service.Id -ErrorAction SilentlyContinue) -and -not (Get-Process jarvis-voice -ErrorAction SilentlyContinue) } 30
   }
-  Remove-Item Env:MURMUR_CONFIG, Env:MURMUR_ENDPOINT, Env:MURMUR_DRY_RUN, Env:MURMUR_TEST_CAPTURE_FILE
+  Remove-Item Env:JARVIS_CONFIG, Env:JARVIS_ENDPOINT, Env:JARVIS_DRY_RUN, Env:JARVIS_TEST_CAPTURE_FILE
   Remove-Item -Recurse -Force $work
 
   Check 'startup: on writes Run entry and setting' {

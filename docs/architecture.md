@@ -19,7 +19,7 @@ The optional [Rust CLI](rust-cli.md) shares the controller's library for
 configuration, policy and local integration. It handles controls, aliases,
 Waybar events, diagnostics and setup directly. Building it makes `run-jarvis`
 prefer the native executable; its `daemon` command runs the Rust controller.
-`MURMUR_CLI=python` retains access to the Python launcher and controller selector.
+`JARVIS_CLI=python` retains access to the Python launcher and controller selector.
 The `ui` command replaces the client with the separate Python/GTK window.
 
 ```mermaid
@@ -113,7 +113,7 @@ Name ambiguity across desktop entries is an error until an alias resolves it.
 The Unix socket is 0600 in an owned 0700 directory, and Linux peer credentials
 restrict clients to the same user. JSON does not expose an arbitrary command
 dispatcher. Same-user processes are trusted to configure/control Jarvis.
-The optional developer `MURMUR_DRY_RUN=1` parses actions and returns feedback
+The optional developer `JARVIS_DRY_RUN=1` parses actions and returns feedback
 without dispatching them; benchmark scripts use it.
 
 The installed systemd unit marks its managed-service context. App/GIO and UI
@@ -152,7 +152,7 @@ beside `libvosk.dll`): it captures the microphone with shared-mode WASAPI,
 which converts to 16 kHz mono itself, reads control lines on a thread, and
 loads Whisper on demand exactly as on Linux. The Windows service and settings
 never import an inference library. See [Windows memory](windows-memory.md).
-`MURMUR_VOICE_WORKER=rust` or `python` explicitly selects either implementation. Paths and command-to-intent candidates are prepared without
+`JARVIS_VOICE_WORKER=rust` or `python` explicitly selects either implementation. Paths and command-to-intent candidates are prepared without
 importing speech libraries in the daemon. See [Rust worker](rust-voice.md) for
 build instructions, model parity, measured memory savings and prototype limits.
 Whisper and GTCRN computation in this worker now uses Rust/tract kernels and

@@ -3,20 +3,20 @@ use crate::{
     policy::{normalize, Parser},
     util, Result,
 };
-use serde_json::Value;
+use serde_json::{json, Value};
 use std::{collections::HashSet, env, fs, path::PathBuf};
 
 pub fn defaults() -> Value {
     serde_json::from_str(include_str!("../data/defaults.json")).unwrap()
 }
 pub fn path() -> PathBuf {
-    env::var_os("MURMUR_CONFIG")
+    env::var_os("JARVIS_CONFIG")
         .map(PathBuf::from)
         .unwrap_or_else(|| {
             env::var_os("XDG_CONFIG_HOME")
                 .map(PathBuf::from)
                 .unwrap_or_else(|| util::home().join(".config"))
-                .join("murmur/config.json")
+                .join("jarvis/config.json")
         })
 }
 fn merge(base: &mut Value, patch: &Value) {
@@ -99,6 +99,7 @@ pub fn validate(data: &Value) -> Result<Value> {
         "replay",
         "aliases",
         "commands",
+        "dictation",
     ] {
         if !c[section].is_object() {
             return err(format!("{section} must be an object"));
@@ -118,6 +119,39 @@ pub fn validate(data: &Value) -> Result<Value> {
         &["small", "light"],
         "Speech model must be small or light",
     )?;
+    choices(
+        &n["language"],
+        &["en", "ar_en"],
+        "Recognition language must be en (English) or ar_en (Arabic and English)",
+    )?;
+    let d = &c["dictation"];
+    choices(
+        &d["language"],
+        &["auto", "ar", "en"],
+        "Dictation language must be auto, ar or en",
+    )?;
+    if !d["idle_seconds"]
+        .as_f64()
+        .is_some_and(|v| (2.0..=300.0).contains(&v))
+        || !d["max_minutes"]
+            .as_f64()
+            .is_some_and(|v| (1.0..=60.0).contains(&v))
+        || !d["keyboard_fallback"].is_boolean()
+    {
+        return err("Dictation needs 5–300 idle seconds, 1–60 minutes and a true/false keyboard fallback");
+    }
+    let stops = d["stop_phrases"]
+        .as_array()
+        .filter(|a| a.len() <= 8)
+        .ok_or("Use up to eight dictation stop phrases")?;
+    for phrase in stops {
+        let ok = phrase.as_str().is_some_and(|s| {
+            s.chars().count() <= 40 && !normalize(s).unwrap_or_default().is_empty()
+        });
+        if !ok {
+            return err("Dictation stop phrases must be short words");
+        }
+    }
     for value in [
         &n["closest_match"],
         &n["accurate"],
@@ -222,13 +256,13 @@ pub fn validate(data: &Value) -> Result<Value> {
         "Capture color mode must be auto, hdr or sdr",
     )?;
     for (value, min, max, message) in [
-        (&r["fps"], 1, 60, "Recording fps must be 1–60"),
+        (&r["fps"], 1, 240, "Recording fps must be 1–240"),
         (&r["quality"], 0, 51, "Recording quality must be CRF 0–51"),
         (
             &r["bitrate_mbps"],
             1,
-            100,
-            "Recording bitrate must be 1–100 Mbps",
+            500,
+            "Recording bitrate must be 1–500 Mbps",
         ),
         (
             &c["replay"]["seconds"],
@@ -243,7 +277,15 @@ pub fn validate(data: &Value) -> Result<Value> {
     }
     choices(
         &r["codec"],
-        &["libx264", "h264_vaapi", "h264", "hevc", "av1"],
+        &[
+            "libx264",
+            "h264_vaapi",
+            "h264",
+            "hevc",
+            "av1",
+            "hevc_10bit",
+            "av1_10bit",
+        ],
         "Choose H.264, HEVC or AV1 recording encoding",
     )?;
     choices(
@@ -265,8 +307,19 @@ pub fn validate(data: &Value) -> Result<Value> {
     )?;
     choices(
         &r["quality_preset"],
-        &["medium", "high", "very_high"],
+        &["medium", "high", "very_high", "ultra"],
         "Choose a supported quality preset",
+    )?;
+    if !r["bitrate_auto"].is_boolean() {
+        return err("Automatic bitrate must be true or false");
+    }
+    if !r["game_folders"].is_boolean() {
+        return err("Game folders must be true or false");
+    }
+    choices(
+        &r["resolution"],
+        &crate::capture::RESOLUTIONS.map(|(name, _)| name),
+        "Choose native, 2160, 1440, 1080 or 720 recording resolution",
     )?;
     choices(
         &r["encoder"],
@@ -282,9 +335,49 @@ pub fn validate(data: &Value) -> Result<Value> {
     for key in ["output_dir", "monitor", "audio_device"] {
         text(&r[key], 4096, &format!("recording {key}"))?;
     }
-    for key in ["autostart", "game_audio", "microphone", "sound"] {
+    for key in ["autostart", "game_audio", "microphone", "sound", "own_video", "bitrate_auto"] {
         if !c["replay"][key].is_boolean() {
             return err("Replay switches must be true or false");
+        }
+    }
+    // Replay's own video settings (used when own_video is on); GPU formats only.
+    let v = &c["replay"];
+    choices(
+        &v["codec"],
+        &crate::capture::GPU_CODECS,
+        "Replay records with a GPU format: choose AV1, HEVC or H.264",
+    )?;
+    for (value, max, message) in [
+        (&v["fps"], 240, "Replay fps must be 1–240"),
+        (&v["bitrate_mbps"], 500, "Replay bitrate must be 1–500 Mbps"),
+    ] {
+        if !value.as_u64().is_some_and(|n| (1..=max).contains(&n)) {
+            return err(message);
+        }
+    }
+    choices(&v["rate_control"], &["quality", "bitrate"], "Choose quality or bitrate control")?;
+    choices(
+        &v["quality_preset"],
+        &["medium", "high", "very_high", "ultra"],
+        "Choose a supported quality preset",
+    )?;
+    choices(
+        &v["resolution"],
+        &crate::capture::RESOLUTIONS.map(|(name, _)| name),
+        "Choose native, 2160, 1440, 1080 or 720 recording resolution",
+    )?;
+    choices(
+        &c["replay"]["audio_tracks"],
+        &["mixed", "separate"],
+        "Replay audio tracks must be mixed or separate",
+    )?;
+    let apps = c["replay"]["separate_apps"]
+        .as_array()
+        .filter(|a| a.len() <= 4)
+        .ok_or("Choose up to four apps for their own replay tracks")?;
+    for app in apps {
+        if !app.as_str().is_some_and(crate::capture::valid_app_name) {
+            return err("App audio names may use letters, digits, spaces, dots, dashes and underscores");
         }
     }
     if r["system_audio"] == true
@@ -317,6 +410,149 @@ pub fn validate(data: &Value) -> Result<Value> {
     }
     Ok(c)
 }
+/// Earlier copies of the settings: before a repair, an import, or the first
+/// start of another version. The newest ten are kept.
+pub fn backups_dir() -> PathBuf {
+    path().with_file_name("backups")
+}
+/// Copies the settings file to backups/config-<label>.json. Best effort.
+pub fn backup(label: &str) -> Option<PathBuf> {
+    let source = path();
+    if !source.is_file() {
+        return None;
+    }
+    let dir = backups_dir();
+    util::private_dir(&dir).ok()?;
+    let target = dir.join(format!("config-{label}.json"));
+    fs::copy(&source, &target).ok()?;
+    let mut copies: Vec<_> = fs::read_dir(&dir)
+        .ok()?
+        .filter_map(|e| e.ok())
+        .filter(|e| e.file_name().to_string_lossy().starts_with("config-"))
+        .filter_map(|e| Some((e.metadata().ok()?.modified().ok()?, e.path())))
+        .collect();
+    copies.sort();
+    for (_, old) in copies.iter().rev().skip(10) {
+        let _ = fs::remove_file(old);
+    }
+    Some(target)
+}
+/// On the first start of a different version, keeps the settings the
+/// previous one wrote (backups/config-from-<version>.json).
+pub fn note_version(version: &str) {
+    let stamp = path().with_file_name(".version");
+    let previous = fs::read_to_string(&stamp).unwrap_or_default();
+    let previous = previous.trim();
+    if previous != version {
+        backup(&format!(
+            "from-{}",
+            if previous.is_empty() { "earlier" } else { previous }
+        ));
+        let _ = util::atomic_write(&stamp, version.as_bytes());
+    }
+}
+/// Settings another Jarvis version wrote can hold a value this one rejects
+/// (a changed range or a renamed choice). Keeps every value that still
+/// validates and resets only the others; returns them as "section.name".
+pub fn repair(data: &Value) -> (Value, Vec<String>) {
+    let mut pending: Vec<(String, Option<String>, Value)> = vec![];
+    if let (Some(map), Value::Object(order)) = (data.as_object(), defaults()) {
+        // Defaults order puts aliases before app_prefixes, which refer to them.
+        for section in order.keys() {
+            match map.get(section) {
+                Some(Value::Object(fields)) if !fields.is_empty() => pending.extend(
+                    fields
+                        .iter()
+                        .map(|(name, v)| (section.clone(), Some(name.clone()), v.clone())),
+                ),
+                Some(value) => pending.push((section.clone(), None, value.clone())),
+                None => {}
+            }
+        }
+    }
+    let mut kept = Value::Object(Default::default());
+    // A value can depend on another (two audio sources need the combined
+    // source), so retry the rejected ones while more are being accepted.
+    for _ in 0..3 {
+        let before = pending.len();
+        pending.retain(|(section, name, value)| {
+            let mut trial = kept.clone();
+            match name {
+                Some(name) => trial[section.as_str()][name.as_str()] = value.clone(),
+                None => trial[section.as_str()] = value.clone(),
+            }
+            if validate(&trial).is_ok() {
+                kept = trial;
+                false
+            } else {
+                true
+            }
+        });
+        if pending.len() == before {
+            break;
+        }
+    }
+    let reset = pending
+        .into_iter()
+        .map(|(section, name, _)| name.map_or(section.clone(), |n| format!("{section}.{n}")))
+        .collect();
+    (validate(&kept).unwrap_or_else(|_| defaults()), reset)
+}
+/// One-time move from the old name (mirrors migrate.py, which also renames the
+/// launcher and user service): the settings and data folders, and the videos
+/// folder the settings name, then settings that point at them. Skipped when
+/// JARVIS_CONFIG chooses the settings file, and when Jarvis folders exist.
+pub fn migrate_from_old_name() {
+    if env::var_os("JARVIS_CONFIG").is_some() {
+        return;
+    }
+    let old = concat!("mur", "mur"); // spelled apart so a code rename leaves it
+    let home = util::home();
+    let config_home = env::var_os("XDG_CONFIG_HOME").map_or(home.join(".config"), PathBuf::from);
+    let data_home = env::var_os("XDG_DATA_HOME").map_or(home.join(".local/share"), PathBuf::from);
+    let mut moves = vec![];
+    for (from, to) in [
+        (config_home.join(old), config_home.join("jarvis")),
+        (data_home.join(old), data_home.join("jarvis")),
+    ] {
+        if from.is_dir() && !from.is_symlink() && !to.exists() && fs::rename(&from, &to).is_ok() {
+            moves.push((from, to));
+        }
+    }
+    let settings = config_home.join("jarvis/config.json");
+    let Ok(mut data) = fs::read(&settings).map_err(|_| ()).and_then(|b| serde_json::from_slice::<Value>(&b).map_err(|_| ())) else {
+        return;
+    };
+    let expand = |value: &str| value.strip_prefix('~').map_or(PathBuf::from(value), |rest| home.join(rest.trim_start_matches('/')));
+    let output = expand(data["recording"]["output_dir"].as_str().unwrap_or(""));
+    let mut videos_old = String::from(old);
+    videos_old[..1].make_ascii_uppercase();
+    if output.file_name().is_some_and(|n| n == videos_old.as_str()) {
+        let to = output.with_file_name("Jarvis");
+        if output.is_dir() && !to.exists() && fs::rename(&output, &to).is_ok() {
+            moves.push((output, to));
+        }
+    }
+    let mut changed = false;
+    for (section, key) in [("recording", "output_dir"), ("recognition", "model_path"), ("replay", "buffer_dir")] {
+        let Some(value) = data[section][key].as_str().map(str::to_owned) else { continue };
+        let expanded = expand(&value);
+        for (from, to) in &moves {
+            if let Ok(rest) = expanded.strip_prefix(from) {
+                let moved = to.join(rest).to_string_lossy().into_owned();
+                let home = home.to_string_lossy();
+                data[section][key] = json!(if value.starts_with('~') { moved.replacen(home.as_ref(), "~", 1) } else { moved });
+                changed = true;
+            }
+        }
+    }
+    if changed {
+        if let Ok(mut bytes) = serde_json::to_vec(&data) {
+            bytes.push(b'\n');
+            let _ = util::atomic_write(&settings, &bytes);
+        }
+    }
+}
 pub fn load() -> Result<Value> {
     let path = path();
     if !path.exists() {
@@ -325,7 +561,15 @@ pub fn load() -> Result<Value> {
     if fs::metadata(&path)?.len() > 65536 {
         return err("Configuration exceeds 64 KiB");
     }
-    let mut data: Value = serde_json::from_slice(&fs::read(path)?)?;
+    let stamp = crate::capture::timestamp();
+    let mut data: Value = match serde_json::from_slice(&fs::read(&path)?) {
+        Ok(data) => data,
+        Err(e) => {
+            let kept = backup(&format!("unreadable-{stamp}"));
+            eprintln!("jarvis: settings file is not valid JSON ({e}); starting from defaults, original kept at {kept:?}");
+            return save(&defaults());
+        }
+    };
     let keys = unknown(&data);
     if !keys.is_empty() {
         eprintln!("jarvis: ignoring unknown settings: {}", keys.join(", "));
@@ -339,7 +583,18 @@ pub fn load() -> Result<Value> {
             map.remove(&key);
         }
     }
-    validate(&data)
+    match validate(&data) {
+        Ok(c) => Ok(c),
+        Err(e) => {
+            let (c, reset) = repair(&data);
+            let kept = backup(&format!("before-repair-{stamp}"));
+            eprintln!(
+                "jarvis: some settings are not valid in this version ({e}); reset {} and kept the rest; original at {kept:?}",
+                reset.join(", ")
+            );
+            save(&c)
+        }
+    }
 }
 pub fn save(data: &Value) -> Result<Value> {
     let c = validate(data)?;
@@ -347,4 +602,34 @@ pub fn save(data: &Value) -> Result<Value> {
     bytes.push(b'\n');
     util::atomic_write(&path(), &bytes)?;
     Ok(c)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+    #[test]
+    fn repair_keeps_valid_settings_and_resets_only_rejected_ones() {
+        // Written by another version: fps above this version's range and a
+        // removed quality preset; everything else must survive.
+        let old = json!({
+            "activation": {"wake_phrase": "alfred"},
+            "aliases": {"streamio": "com.stremio.Stremio.desktop"},
+            "app_prefixes": {"streamio": "watch"},
+            "recording": {"fps": 999, "quality_preset": "insane", "codec": "av1",
+                          "system_audio": true, "microphone": true,
+                          "audio_device": "combined", "combined_audio_source": true},
+            "replay": {"seconds": 300}
+        });
+        assert!(validate(&old).is_err());
+        let (fixed, reset) = repair(&old);
+        assert_eq!(reset, vec!["recording.fps", "recording.quality_preset"]);
+        assert_eq!(fixed["activation"]["wake_phrase"], "alfred");
+        assert_eq!(fixed["app_prefixes"]["streamio"], "watch");
+        assert_eq!(fixed["recording"]["codec"], "av1");
+        // Accepted once the combined source it depends on is in.
+        assert_eq!(fixed["recording"]["microphone"], true);
+        assert_eq!(fixed["recording"]["fps"], defaults()["recording"]["fps"]);
+        assert_eq!(fixed["replay"]["seconds"], 300);
+    }
 }

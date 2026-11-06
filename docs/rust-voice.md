@@ -15,8 +15,8 @@ targets the resident voice worker, the largest Jarvis process in the audit.
 
 Linux prefers the Rust worker when its executable, Vosk library and model are
 available. Windows, PocketSphinx and installations without these native assets
-use Python. `MURMUR_VOICE_WORKER=rust` forces Rust and reports missing assets;
-`MURMUR_VOICE_WORKER=python` forces the compatibility worker. Rust supports Vosk
+use Python. `JARVIS_VOICE_WORKER=rust` forces Rust and reports missing assets;
+`JARVIS_VOICE_WORKER=python` forces the compatibility worker. Rust supports Vosk
 and the current default Whisper model; it does not port PocketSphinx. General recognition quality still
 needs evaluation across speakers and environments.
 GTCRN is noise suppression, and does not isolate one speaker from other voices.
@@ -31,7 +31,7 @@ stable Rust toolchain (1.91 or later) with Cargo, then build:
 ```
 
 The script uses each crate's `Cargo.lock`, runs Rust tests, and installs the
-voice worker and standalone Whisper/GTCRN binaries under `src/murmur/bin/`.
+voice worker and standalone Whisper/GTCRN binaries under `src/jarvis/bin/`.
 Cargo needs network access on its first build; `--offline` uses cached crates.
 It does not require sherpa-onnx or download models. Vosk's existing installed
 shared library and model are discovered for wake detection at runtime.
@@ -39,15 +39,15 @@ shared library and model are discovered for wake detection at runtime.
 Stop an existing daemon before starting a second one. For a foreground daemon:
 
 ```sh
-MURMUR_VOICE_WORKER=rust ./run-jarvis daemon
+JARVIS_VOICE_WORKER=rust ./run-jarvis daemon
 ```
 
 To use the existing systemd service, add this environment entry through
-`systemctl --user edit murmur.service`, then restart that service:
+`systemctl --user edit jarvis.service`, then restart that service:
 
 ```ini
 [Service]
-Environment=MURMUR_VOICE_WORKER=rust
+Environment=JARVIS_VOICE_WORKER=rust
 ```
 
 The environment must belong to the daemon that starts the worker. Setting it
@@ -111,8 +111,8 @@ The scripts do not download it or use a microphone:
 .venv/bin/python scripts/benchmark_rust_voice.py --fixture /tmp/goforward.raw
 .venv/bin/python scripts/benchmark_rust_voice.py --fixture /tmp/goforward.raw --denoise
 .venv/bin/python scripts/benchmark_rust_voice.py --fixture /tmp/goforward.raw --full-worker
-MURMUR_VOSK_MODEL="$HOME/.local/share/murmur/models/vosk-model-small-en-us-0.15" \
-MURMUR_SPEECH_TEST_RAW=/tmp/goforward.raw \
+JARVIS_VOSK_MODEL="$HOME/.local/share/jarvis/models/vosk-model-small-en-us-0.15" \
+JARVIS_SPEECH_TEST_RAW=/tmp/goforward.raw \
   .venv/bin/python -m unittest tests.test_rust_voice -v
 ```
 

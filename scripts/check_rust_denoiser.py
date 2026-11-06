@@ -22,7 +22,7 @@ import time
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 from benchmark_transcriber import variants
-from murmur.models import denoiser_path
+from jarvis.models import denoiser_path
 
 
 def memory():

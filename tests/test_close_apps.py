@@ -7,10 +7,10 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, call, patch
 
-from murmur import config
-from murmur.actions import Dispatcher
-from murmur.commands import CommandError, GrammarMatcher, Intent, Parser, REFERENCE, closest_match, match_candidates
-from murmur.hyprland import Hyprland
+from jarvis import config
+from jarvis.actions import Dispatcher
+from jarvis.commands import CommandError, GrammarMatcher, Intent, Parser, REFERENCE, closest_match, match_candidates
+from jarvis.hyprland import Hyprland
 
 
 class CloseCommandTests(unittest.TestCase):
@@ -88,14 +88,14 @@ class CloseCommandTests(unittest.TestCase):
         self.assertEqual(Hyprland._commands("close_address", "0xabc"), {
             "legacy": ["closewindow", "address:0xabc"],
             "lua": ['hl.dsp.window.close({ window = "address:0xabc" })']})
-        with patch("murmur.hyprland.subprocess.run") as run:
+        with patch("jarvis.hyprland.subprocess.run") as run:
             for target in (None, "", "activewindow", "0x", "0x1; quit", "0x1\"", 1, True):
                 with self.assertRaises(CommandError):
                     Hyprland().dispatch("close_address", target)
             run.assert_not_called()
 
     def test_windows_posts_wm_close_to_the_matched_window_without_foreground_changes(self):
-        from murmur.windows.desktop import Desktop
+        from jarvis.windows.desktop import Desktop
         gui = types.SimpleNamespace(IsWindow=MagicMock(return_value=True), PostMessage=MagicMock(),
                                     GetForegroundWindow=MagicMock())
         constants = types.SimpleNamespace(WM_CLOSE=16)
@@ -150,7 +150,7 @@ class NativeCloseCommandTests(unittest.TestCase):
         from tests.test_rust_controller import Harness
         windows = [{"address": "0x1", "class": "firefox"}, {"address": "0x2", "initialClass": "firefox"},
                    {"address": "0x3", "class": "code"}, {"address": "0x1", "class": "firefox"}]
-        h = Harness(dry_run=False, MURMUR_TEST_CLIENTS=json.dumps(windows))
+        h = Harness(dry_run=False, JARVIS_TEST_CLIENTS=json.dumps(windows))
         self.addCleanup(h.close)
         apps = h.root / "data/applications"
         apps.mkdir(parents=True)

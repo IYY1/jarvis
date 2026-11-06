@@ -11,15 +11,16 @@ import os
 from pathlib import Path
 import tempfile
 import threading
+import types
 import unittest
 from unittest.mock import MagicMock, patch
 
-from murmur import cli, client, config
-from murmur.apps import App, AppRegistry
-from murmur.commands import (APP_VERBS, POLITE_SUFFIXES, REFERENCE, CommandError,
+from jarvis import cli, client, config
+from jarvis.apps import App, AppRegistry
+from jarvis.commands import (APP_VERBS, POLITE_SUFFIXES, REFERENCE, CommandError,
                              GrammarMatcher, Intent, Parser, normalize)
-from murmur.hyprland import Hyprland, volume
-from murmur.recorder import Recorder
+from jarvis.hyprland import Hyprland, volume
+from jarvis.recorder import Recorder
 
 
 def matcher_for(grammar: dict) -> GrammarMatcher:
@@ -35,10 +36,14 @@ class GrammarParserConsistencyTests(unittest.TestCase):
         self.matcher = matcher_for(self.grammar)
 
     def test_every_documented_example_is_speakable_and_parses(self):
+        from jarvis.phrases import has_arabic
         for example in (e for entry in REFERENCE for e in entry["examples"]):
             with self.subTest(example=example):
                 text = normalize(example)
-                self.assertTrue(self.matcher.accepts(text), f"{example!r} is shown in Commands but not in the grammar")
+                # Arabic is heard by the Arabic model, never the English Vosk
+                # grammar; it must still parse to a supported command.
+                if not has_arabic(text):
+                    self.assertTrue(self.matcher.accepts(text), f"{example!r} is shown in Commands but not in the grammar")
                 self.parser.parse(text)
 
     def test_everything_the_grammar_allows_parses(self):
@@ -133,18 +138,18 @@ class RecorderOwnershipTests(unittest.TestCase):
             seen["argv"], seen["thread"] = argv, threading.current_thread().name
             Path(argv[argv.index("--file") + 1]).write_bytes(b"x")
             return Child()
-        with patch("murmur.recorder.shutil.which", side_effect=lambda x: "/usr/bin/" + x), \
-                patch("murmur.recorder.sources", return_value=[{"name": "DP-1"}]), \
-                patch("murmur.recorder.orphaned_recorders", return_value=[]), \
-                patch("murmur.recorder.subprocess.Popen", side_effect=spawn), \
-                patch("murmur.recorder._query", return_value=json.dumps({"streams": []})):
+        with patch("jarvis.recorder.shutil.which", side_effect=lambda x: "/usr/bin/" + x), \
+                patch("jarvis.recorder.sources", return_value=[{"name": "DP-1"}]), \
+                patch("jarvis.recorder.orphaned_recorders", return_value=[]), \
+                patch("jarvis.recorder.subprocess.Popen", side_effect=spawn), \
+                patch("jarvis.recorder._query", return_value=json.dumps({"streams": []})):
             Recorder(self.config).start()
         self.assertEqual(seen["argv"][:4], ["/usr/bin/setpriv", "--pdeathsig", "INT", "--"])
         self.assertEqual(seen["argv"][4], "/usr/bin/wf-recorder")
-        self.assertTrue(seen["thread"].startswith("murmur-recorder-spawn"))
+        self.assertTrue(seen["thread"].startswith("jarvis-recorder-spawn"))
 
     def test_running_orphan_blocks_a_second_capture(self):
-        with patch("murmur.recorder.orphaned_recorders", return_value=[4242]):
+        with patch("jarvis.recorder.orphaned_recorders", return_value=[4242]):
             recorder = Recorder(self.config)
             recorder.inspect_previous()
             self.assertEqual(recorder.status()["state"], "error")
@@ -153,7 +158,7 @@ class RecorderOwnershipTests(unittest.TestCase):
                 recorder.start()
 
     def test_leftover_partial_files_are_reported(self):
-        partial = Path(self.directory.name) / ".Murmur_2026-10-20_10-00-00_abc.part.mkv"
+        partial = Path(self.directory.name) / ".Jarvis_2026-10-20_10-00-00_abc.part.mkv"
         partial.write_bytes(b"x")
         recorder = Recorder(self.config)
         recorder.inspect_previous(orphans=[])
@@ -187,9 +192,100 @@ class ConfigValidationTests(unittest.TestCase):
             config.save(loaded, path)
             self.assertNotIn("comand_timeout", json.loads(path.read_text())["activation"])
 
+    def test_settings_another_version_wrote_are_repaired_and_backed_up(self):
+        old = {"activation": {"wake_phrase": "alfred"},
+               "aliases": {"streamio": "com.stremio.Stremio.desktop"}, "app_prefixes": {"streamio": "watch"},
+               "recording": {"fps": 999, "quality_preset": "insane", "codec": "av1", "system_audio": True,
+                             "microphone": True, "audio_device": "combined", "combined_audio_source": True},
+               "replay": {"seconds": 300}}
+        fixed, reset = config.repair(old)
+        self.assertEqual(reset, ["recording.fps", "recording.quality_preset"])   # same as config.rs
+        self.assertEqual((fixed["app_prefixes"]["streamio"], fixed["recording"]["microphone"], fixed["replay"]["seconds"]),
+                         ("watch", True, 300))
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "config.json"
+            path.write_text(json.dumps(old))
+            with patch("sys.stderr"):
+                loaded = config.load(path)
+            self.assertEqual((loaded["activation"]["wake_phrase"], loaded["recording"]["fps"]), ("alfred", 30))
+            self.assertEqual(json.loads(path.read_text())["recording"]["fps"], 30)   # repaired on disk
+            [kept] = (Path(folder) / "backups").glob("config-before-repair-*.json")
+            self.assertEqual(json.loads(kept.read_text())["recording"]["fps"], 999)
+            path.write_text("{not json")
+            with patch("sys.stderr"):
+                self.assertEqual(config.load(path), config.validate({}))
+            self.assertEqual(len(list((Path(folder) / "backups").glob("config-unreadable-*.json"))), 1)
+            config.note_version("9.9.9", path)
+            config.note_version("9.9.9", path)
+            self.assertEqual(len(list((Path(folder) / "backups").glob("config-from-*.json"))), 1)
+
+    def test_settings_export_and_import_round_trip(self):
+        from jarvis import settings_file
+        with tempfile.TemporaryDirectory() as folder:
+            live = Path(folder) / "config.json"
+            config.save(config.validate({"activation": {"wake_phrase": "alfred"}, "recording": {"fps": 120}}), live)
+            exported = Path(folder) / "export.json"
+            with patch.dict(os.environ, {"JARVIS_CONFIG": str(live)}), \
+                    patch("jarvis.client.request", side_effect=ConnectionError("service off")):
+                settings_file.export_settings(exported)
+                self.assertEqual(oct(exported.stat().st_mode & 0o777), "0o600")
+                config.save(config.validate({}), live)
+                data = json.loads(exported.read_text())
+                data["recording"]["quality_preset"] = "insane"   # as if a newer version wrote it
+                exported.write_text(json.dumps(data))
+                message = settings_file.import_settings(exported)
+            restored = json.loads(live.read_text())
+            self.assertEqual((restored["activation"]["wake_phrase"], restored["recording"]["fps"]), ("alfred", 120))
+            self.assertIn("recording.quality_preset", message)
+            self.assertEqual(len(list((Path(folder) / "backups").glob("config-before-import-*.json"))), 1)
+
+    def test_old_name_folders_launcher_and_service_move_to_jarvis(self):
+        from jarvis import migrate
+        old = migrate.OLD
+        with tempfile.TemporaryDirectory() as folder:
+            home = Path(folder)
+            (home / f".config/{old}").mkdir(parents=True)
+            (home / f".config/{old}/config.json").write_text(json.dumps({
+                "recording": {"output_dir": f"~/Videos/{old.title()}"},
+                "recognition": {"model_path": str(home / f".local/share/{old}/models/vosk")}}))
+            (home / f".local/share/{old}/models").mkdir(parents=True)
+            (home / f"Videos/{old.title()}/Deadlock").mkdir(parents=True)
+            (home / f"Videos/{old.title()}/Deadlock/clip.mp4").write_text("video")
+            (home / ".local/share/applications").mkdir(parents=True)
+            (home / f".local/share/applications/org.{old}.Controller.desktop").write_text(f"Exec=python -m {old} ui\n")
+            (home / ".config/systemd/user").mkdir(parents=True)
+            (home / f".config/systemd/user/{old}.service").write_text(f"ExecStart=python -m {old} daemon\n")
+            (home / f".config/systemd/user/{old}.service.d").mkdir()
+            (home / f".config/systemd/user/{old}.service.d/95-rust.conf").write_text(
+                f"ExecStart=/x/src/{old}/bin/jarvis-controller\nEnvironment={old.upper()}_CONTROLLER=rust\n")
+            calls = []
+            def systemctl(argv, **_):
+                calls.append(argv[2:])
+                return types.SimpleNamespace(stdout="enabled\n" if argv[2] == "is-enabled" else "")
+            env = {"HOME": str(home), "XDG_CONFIG_HOME": str(home / ".config"), "XDG_DATA_HOME": str(home / ".local/share")}
+            with patch.dict(os.environ, env), patch("pathlib.Path.home", return_value=home), \
+                    patch("jarvis.migrate.subprocess.run", side_effect=systemctl):
+                done = migrate.from_old_name()
+                self.assertEqual(migrate.from_old_name(), [])   # once
+            self.assertEqual(len(done), 6)
+            self.assertEqual((home / ".config/systemd/user/jarvis.service.d/95-rust.conf").read_text(),
+                             "ExecStart=/x/src/jarvis/bin/jarvis-controller\nEnvironment=JARVIS_CONTROLLER=rust\n")
+            self.assertFalse((home / f".config/systemd/user/{old}.service.d").exists())
+            self.assertFalse((home / f".config/{old}").exists())
+            settings = json.loads((home / ".config/jarvis/config.json").read_text())
+            self.assertEqual(settings["recording"]["output_dir"], "~/Videos/Jarvis")
+            self.assertEqual(settings["recognition"]["model_path"], str(home / ".local/share/jarvis/models/vosk"))
+            self.assertEqual((home / "Videos/Jarvis/Deadlock/clip.mp4").read_text(), "video")
+            self.assertEqual((home / ".local/share/applications/org.jarvis.Controller.desktop").read_text(), "Exec=python -m jarvis ui\n")
+            self.assertEqual((home / ".config/systemd/user/jarvis.service").read_text(), "ExecStart=python -m jarvis daemon\n")
+            self.assertIn(["enable", "jarvis.service"], calls)
+            self.assertIn(["disable", f"{old}.service"], calls)
+
     def test_recorder_limits_match_config(self):
-        with self.assertRaises(ValueError):
-            config.validate({"recording": {"fps": 90}})
+        self.assertEqual(config.validate({"recording": {"fps": 240, "bitrate_mbps": 500}})["recording"]["fps"], 240)
+        for bad in ({"fps": 241}, {"bitrate_mbps": 501}, {"resolution": "1600"}):
+            with self.assertRaises(ValueError):
+                config.validate({"recording": bad})
         with self.assertRaises(ValueError):
             config.validate({"recording": {"vaapi_device": "/etc/passwd"}})
 
@@ -198,8 +294,8 @@ class VolumeTests(unittest.TestCase):
     """M3: mute and unmute set an explicit state instead of toggling."""
 
     def test_explicit_mute_state(self):
-        with patch("murmur.hyprland.shutil.which", return_value="/usr/bin/wpctl"), \
-                patch("murmur.hyprland.subprocess.run", return_value=MagicMock(returncode=0)) as run:
+        with patch("jarvis.hyprland.shutil.which", return_value="/usr/bin/wpctl"), \
+                patch("jarvis.hyprland.subprocess.run", return_value=MagicMock(returncode=0)) as run:
             volume("volume_mute")
             volume("volume_unmute")
         self.assertEqual(run.call_args_list[0].args[0], ["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "1"])
@@ -240,8 +336,8 @@ class ServiceResilienceTests(unittest.IsolatedAsyncioTestCase):
     """H4/M2: voice failures are shown in the status instead of killing the service."""
 
     async def test_background_task_failure_is_reported(self):
-        from murmur.daemon import Service
-        with patch("murmur.daemon.AppRegistry", return_value=MagicMock(index={})):
+        from jarvis.daemon import Service
+        with patch("jarvis.daemon.AppRegistry", return_value=MagicMock(index={})):
             service = Service({"privacy": {"onboarded": True}, "activation": {"mode": "push_to_talk"}})
         service.loop = asyncio.get_running_loop()
         async def broken():
@@ -255,21 +351,31 @@ class ServiceResilienceTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(service.activation.state, "error")
         self.assertIn("microphone missing", service.message)
 
+    async def test_close_yourself_stops_the_service(self):
+        from jarvis.daemon import Service
+        with patch("jarvis.daemon.AppRegistry", return_value=MagicMock(index={})):
+            service = Service({"privacy": {"onboarded": True}, "activation": {"mode": "push_to_talk"}})
+        for phrase in ("close yourself", "quit jarvis", "سكّر نفسك"):
+            service.stopping.clear()
+            result = await service.execute(phrase)
+            self.assertTrue(result["ok"], phrase)
+            self.assertTrue(service.stopping.is_set(), phrase)
+
     async def test_service_starts_even_if_voice_cannot(self):
-        from murmur import daemon
+        from jarvis import daemon
         with tempfile.TemporaryDirectory() as directory:
             directory = Path(directory)
             (directory / "run").mkdir(mode=0o700)
             config.save({"privacy": {"onboarded": True}}, directory / "config.json")
-            env = {"MURMUR_CONFIG": str(directory / "config.json"),
-                   "MURMUR_SOCKET": str(directory / "run" / "control.sock")}
+            env = {"JARVIS_CONFIG": str(directory / "config.json"),
+                   "JARVIS_SOCKET": str(directory / "run" / "control.sock")}
             with patch.dict(os.environ, env), \
-                    patch("murmur.daemon.AppRegistry", return_value=MagicMock(index={})), \
-                    patch("murmur.daemon.Recorder.inspect_previous"), \
+                    patch("jarvis.daemon.AppRegistry", return_value=MagicMock(index={})), \
+                    patch("jarvis.daemon.Recorder.inspect_previous"), \
                     patch.object(daemon.Service, "start_worker", side_effect=CommandError("grammar too large")):
                 server = asyncio.create_task(daemon.serve())
                 for _ in range(100):
-                    if Path(env["MURMUR_SOCKET"]).is_socket():
+                    if Path(env["JARVIS_SOCKET"]).is_socket():
                         break
                     await asyncio.sleep(0.02)
                 status = await asyncio.to_thread(client.request, "status")
@@ -280,20 +386,20 @@ class ServiceResilienceTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_shutdown_ends_open_status_subscriptions(self):
         """Settings and Waybar keep a watch open; stopping must not wait for them."""
-        from murmur import daemon
+        from jarvis import daemon
         import threading
         with tempfile.TemporaryDirectory() as directory:
             directory = Path(directory)
             (directory / "run").mkdir(mode=0o700)
             config.save({}, directory / "config.json")
-            env = {"MURMUR_CONFIG": str(directory / "config.json"),
-                   "MURMUR_SOCKET": str(directory / "run" / "control.sock")}
+            env = {"JARVIS_CONFIG": str(directory / "config.json"),
+                   "JARVIS_SOCKET": str(directory / "run" / "control.sock")}
             with patch.dict(os.environ, env), \
-                    patch("murmur.daemon.AppRegistry", return_value=MagicMock(index={})), \
-                    patch("murmur.daemon.Recorder.inspect_previous"):
+                    patch("jarvis.daemon.AppRegistry", return_value=MagicMock(index={})), \
+                    patch("jarvis.daemon.Recorder.inspect_previous"):
                 server = asyncio.create_task(daemon.serve())
                 for _ in range(100):
-                    if Path(env["MURMUR_SOCKET"]).is_socket():
+                    if Path(env["JARVIS_SOCKET"]).is_socket():
                         break
                     await asyncio.sleep(0.02)
                 seen, ended, stop = [], threading.Event(), threading.Event()
@@ -316,7 +422,7 @@ class DecoderGrammarTests(unittest.TestCase):
     """H1 with the real decoder: the optional-word grammar compiles and decodes."""
 
     def test_grammar_compiles_and_reports_unpronounceable_apps(self):
-        from murmur.speech import SpeechEngine
+        from jarvis.speech import SpeechEngine
         engine = SpeechEngine(Parser().grammar(["firefox", "stremio"]), "hey desktop")
         self.assertIn("firefox", engine.apps)
         self.assertIn("open stremio", engine.unsupported_phrases)
@@ -326,10 +432,10 @@ class DecoderGrammarTests(unittest.TestCase):
     def test_upstream_fixture_through_polite_grammar(self):
         """Regression: optional trailing words made the decoder end on a stray
         'for' and drop this real recording, so the grammar offers prefixes only."""
-        path = os.environ.get("MURMUR_SPEECH_TEST_RAW")
+        path = os.environ.get("JARVIS_SPEECH_TEST_RAW")
         if not path:
-            self.skipTest("set MURMUR_SPEECH_TEST_RAW to upstream goforward.raw (not bundled)")
-        from murmur.speech import SpeechEngine
+            self.skipTest("set JARVIS_SPEECH_TEST_RAW to upstream goforward.raw (not bundled)")
+        from jarvis.speech import SpeechEngine
         grammar = Parser().grammar(["firefox"])
         grammar["phrases"] = ["go forward ten meters"]
         engine = SpeechEngine(grammar)

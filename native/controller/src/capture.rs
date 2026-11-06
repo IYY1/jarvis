@@ -39,20 +39,33 @@ pub fn color(cfg: &Value, monitor: &Value) -> Result<&'static str> {
         "sdr"
     })
 }
+/// Formats GPU Screen Recorder encodes. The 10-bit ones record SDR without
+/// banding; HDR capture is always 10-bit whichever family is chosen.
+pub const GPU_CODECS: [&str; 5] = ["h264", "hevc", "av1", "hevc_10bit", "av1_10bit"];
+const TEN_BIT: [&str; 4] = ["yuv420p10le", "p010le", "p010be", "yuv420p10be"];
+/// recording.resolution: the largest output size; smaller displays are never
+/// scaled up, larger ones are scaled down keeping their aspect ratio.
+pub const RESOLUTIONS: [(&str, &str); 5] = [
+    ("native", ""),
+    ("2160", "3840x2160"),
+    ("1440", "2560x1440"),
+    ("1080", "1920x1080"),
+    ("720", "1280x720"),
+];
 fn gpu_args(color: &str, r: &Value) -> Vec<String> {
     let codec = match r["codec"].as_str().unwrap_or("libx264") {
-        "av1" => {
+        c @ ("av1" | "av1_10bit") => {
             if color == "hdr" {
                 "av1_hdr"
             } else {
-                "av1"
+                c
             }
         }
-        "hevc" => {
+        c @ ("hevc" | "hevc_10bit") => {
             if color == "hdr" {
                 "hevc_hdr"
             } else {
-                "hevc"
+                c
             }
         }
         _ => {
@@ -74,6 +87,13 @@ fn gpu_args(color: &str, r: &Value) -> Vec<String> {
     .into_iter()
     .map(str::to_owned)
     .collect();
+    let size = RESOLUTIONS
+        .iter()
+        .find(|(name, _)| r["resolution"] == *name)
+        .map_or("", |(_, size)| size);
+    if !size.is_empty() {
+        args.extend(["-s".into(), size.into()]);
+    }
     if r["rate_control"] == "bitrate" {
         args.extend([
             "-bm".into(),
@@ -91,8 +111,55 @@ fn gpu_args(color: &str, r: &Value) -> Vec<String> {
     }
     args
 }
-pub fn replay_command(cfg: &Value, ipc: &Path, folder: &Path, color: &str) -> Vec<String> {
-    let r = &cfg["recording"];
+/// Video settings replay can keep apart from recording (replay.own_video).
+pub const REPLAY_VIDEO: [&str; 7] = [
+    "codec",
+    "fps",
+    "resolution",
+    "rate_control",
+    "quality_preset",
+    "bitrate_mbps",
+    "bitrate_auto",
+];
+/// The fixed bitrate (Mbps) used while `bitrate_auto` is on: it follows the
+/// output size (the display's, or the resolution limit) and frame rate, at
+/// about 0.075 bits per pixel for AV1/HEVC and 0.11 for H.264 (mirrors
+/// encoding.py). 2K at 60 fps in AV1 is about 17 Mbps.
+pub fn auto_bitrate(video: &Value, display: &Value) -> u64 {
+    let mut width = display["width"].as_f64().unwrap_or(1920.0);
+    let mut height = display["height"].as_f64().unwrap_or(1080.0);
+    let limit = RESOLUTIONS
+        .iter()
+        .find(|(name, _)| video["resolution"] == *name)
+        .and_then(|(_, size)| size.split_once('x'))
+        .and_then(|(w, h)| Some((w.parse::<f64>().ok()?, h.parse::<f64>().ok()?)));
+    if let Some((w, h)) = limit {
+        let scale = (w / width).min(h / height).min(1.0);
+        width *= scale;
+        height *= scale;
+    }
+    let fps = video["fps"].as_f64().unwrap_or(60.0);
+    let codec = video["codec"].as_str().unwrap_or("");
+    let bits_per_pixel = if ["h264", "libx264", "h264_vaapi"].contains(&codec) {
+        0.11
+    } else {
+        0.075
+    };
+    ((width * height * fps * bits_per_pixel / 1e6).round() as u64).clamp(4, 500)
+}
+/// The recording section with replay's own video settings, when it has them.
+pub fn replay_video(cfg: &Value) -> Value {
+    let mut video = cfg["recording"].clone();
+    if cfg["replay"]["own_video"] == true {
+        for key in REPLAY_VIDEO {
+            video[key] = cfg["replay"][key].clone();
+        }
+    }
+    video
+}
+/// `video` is replay_video(cfg), with any automatic bitrate already set.
+pub fn replay_command(cfg: &Value, video: &Value, ipc: &Path, folder: &Path, color: &str) -> Vec<String> {
+    let r = video;
     let replay = &cfg["replay"];
     let mut argv = vec![
         "gpu-screen-recorder".into(),
@@ -114,17 +181,107 @@ pub fn replay_command(cfg: &Value, ipc: &Path, folder: &Path, color: &str) -> Ve
         "no".into(),
     ];
     argv.extend(gpu_args(color, r));
-    let mut sources = vec![];
-    if replay["game_audio"] == true {
-        sources.push("default_output");
-    }
-    if replay["microphone"] == true {
-        sources.push("default_input");
-    }
-    if !sources.is_empty() {
-        argv.extend(["-a".into(), sources.join("|")]);
+    for track in audio_tracks(replay) {
+        argv.extend(["-a".into(), track]);
     }
     argv
+}
+
+/// An application name gpu-screen-recorder can match (`app:NAME`). The
+/// recorder's source syntax uses `|` and `:`, so neither may appear.
+pub fn valid_app_name(name: &str) -> bool {
+    !name.trim().is_empty()
+        && name.chars().count() <= 64
+        && name
+            .chars()
+            .all(|c| c.is_alphanumeric() || " ._-".contains(c))
+}
+
+/// Human names for `audio_tracks`, in the same order.
+pub fn track_names(replay: &Value) -> Vec<String> {
+    let game = replay["game_audio"] == true;
+    let mic = replay["microphone"] == true;
+    if replay["audio_tracks"] != "separate" {
+        return match (game, mic) {
+            (true, true) => vec!["Game sound and microphone".into()],
+            (true, false) => vec!["Game sound".into()],
+            (false, true) => vec!["Microphone".into()],
+            _ => vec![],
+        };
+    }
+    let apps: Vec<String> = crate::policy::strings(&replay["separate_apps"])
+        .into_iter()
+        .filter(|a| valid_app_name(a))
+        .collect();
+    let mut names = vec![];
+    if game {
+        names.push(if apps.is_empty() {
+            "Game and desktop sound".into()
+        } else {
+            "Game and other apps".into()
+        });
+    }
+    names.extend(apps);
+    if mic {
+        names.push("Microphone".into());
+    }
+    names
+}
+
+/// MP4 replays lose gpu-screen-recorder's track titles, so the names go in a
+/// small hidden file beside the clip (`.NAME.tracks.json`). Best effort: a
+/// missing file only means the editor shows "Audio 1", "Audio 2"….
+fn write_track_names(clip: &Path, names: &[String]) {
+    if names.len() < 2 {
+        return;
+    }
+    if let (Some(dir), Some(name)) = (clip.parent(), clip.file_name()) {
+        let sidecar = dir.join(format!(".{}.tracks.json", name.to_string_lossy()));
+        let _ = std::fs::write(sidecar, json!({"tracks":names}).to_string());
+    }
+}
+
+/// Replay audio sources, one `-a` value per track.
+///
+/// Mixed (the default): game sound and microphone share one track. Separate:
+/// "everything except the chosen apps" is one track, each chosen app has its
+/// own, and the microphone has its own. The game track deliberately uses
+/// `app-inverse:` rather than `default_output`, which would also contain the
+/// chosen apps and make muting them in a clip impossible.
+pub fn audio_tracks(replay: &Value) -> Vec<String> {
+    let game = replay["game_audio"] == true;
+    let mic = replay["microphone"] == true;
+    if replay["audio_tracks"] != "separate" {
+        let mixed: Vec<&str> = [(game, "default_output"), (mic, "default_input")]
+            .into_iter()
+            .filter_map(|(on, source)| on.then_some(source))
+            .collect();
+        return if mixed.is_empty() {
+            vec![]
+        } else {
+            vec![mixed.join("|")]
+        };
+    }
+    let apps: Vec<String> = crate::policy::strings(&replay["separate_apps"])
+        .into_iter()
+        .filter(|a| valid_app_name(a))
+        .collect();
+    let mut tracks = vec![];
+    if game {
+        tracks.push(if apps.is_empty() {
+            "default_output".into()
+        } else {
+            apps.iter()
+                .map(|a| format!("app-inverse:{a}"))
+                .collect::<Vec<_>>()
+                .join("|")
+        });
+    }
+    tracks.extend(apps.iter().map(|a| format!("app:{a}")));
+    if mic {
+        tracks.push("default_input".into());
+    }
+    tracks
 }
 pub fn orphaned() -> Vec<u32> {
     let mut result = vec![];
@@ -155,7 +312,7 @@ pub fn orphaned() -> Vec<u32> {
         }) && argv.iter().any(|s| {
             Path::new(s)
                 .file_name()
-                .is_some_and(|n| n.to_string_lossy().starts_with(".Murmur_"))
+                .is_some_and(|n| n.to_string_lossy().starts_with(".Jarvis_"))
         }) {
             result.push(pid);
         }
@@ -181,14 +338,21 @@ pub async fn verify(path: &Path, color: &str, codec: Option<&str>) -> Result<()>
         return err("The output contains no valid video stream.");
     }
     if let Some(codec) = codec {
-        if !video.iter().any(|s| s["codec_name"] == codec) {
-            return err(format!("Video format verification failed: expected {codec}. Check GPU and driver support for the selected format."));
+        let name = codec.trim_end_matches("_10bit");
+        if !video.iter().any(|s| s["codec_name"] == name) {
+            return err(format!("Video format verification failed: expected {name}. Check GPU and driver support for the selected format."));
+        }
+        if codec.ends_with("_10bit")
+            && !video
+                .iter()
+                .any(|s| TEN_BIT.contains(&s["pix_fmt"].as_str().unwrap_or("")))
+        {
+            return err(format!("Video format verification failed: expected 10-bit {name}. Check GPU and driver support for the selected format."));
         }
     }
     if color == "hdr"
         && !video.iter().any(|s| {
-            ["yuv420p10le", "p010le", "p010be", "yuv420p10be"]
-                .contains(&s["pix_fmt"].as_str().unwrap_or(""))
+            TEN_BIT.contains(&s["pix_fmt"].as_str().unwrap_or(""))
                 && s["color_transfer"] == "smpte2084"
                 && s["color_primaries"] == "bt2020"
                 && s["color_space"] == "bt2020nc"
@@ -211,6 +375,10 @@ pub struct Capture {
     replay_session: Option<PathBuf>,
     replay_seconds: u64,
     replay_cleanup: Arc<RwLock<()>>,
+    /// Names of the replay's audio tracks, in file order, for the clip editor.
+    track_names: Vec<String>,
+    /// recording.game_folders: clips of a focused game go in a folder named after it.
+    game_folders: bool,
 }
 impl Capture {
     pub fn new(replay: bool, ipc: PathBuf) -> Self {
@@ -230,6 +398,8 @@ impl Capture {
             replay_output: None,
             replay_session: None,
             replay_seconds: 120,
+            track_names: vec![],
+            game_folders: false,
             replay_cleanup: Arc::new(RwLock::new(())),
         }
     }
@@ -254,15 +424,15 @@ impl Capture {
             .filter(|p| {
                 p.file_name().is_some_and(|s| {
                     let s = s.to_string_lossy();
-                    s.starts_with(".Murmur_") && s.ends_with(".part.mkv")
+                    s.starts_with(".Jarvis_") && s.ends_with(".part.mkv")
                 })
             })
             .collect();
         partials.sort();
         if let Some(pid) = orphans.first() {
-            self.set("error",format!("A recorder from an earlier Murmur session is still running (PID {pid}). Stop it with: kill -INT {pid}. Its partial file stays in the output folder."),None);
+            self.set("error",format!("A recorder from an earlier Jarvis session is still running (PID {pid}). Stop it with: kill -INT {pid}. Its partial file stays in the output folder."),None);
         } else if !partials.is_empty() {
-            self.set("idle",format!("Found {} unfinished recording(s) from an earlier session in {} (.Murmur_*.part.mkv). See docs/recording.md for recovery.",partials.len(),folder.display()),partials.first().map(PathBuf::as_path));
+            self.set("idle",format!("Found {} unfinished recording(s) from an earlier session in {} (.Jarvis_*.part.mkv). See docs/recording.md for recovery.",partials.len(),folder.display()),partials.first().map(PathBuf::as_path));
         }
     }
     async fn start_inner(&mut self, cfg: &Value) -> Result<Value> {
@@ -272,11 +442,15 @@ impl Capture {
             }
             return Ok(self.snapshot());
         }
-        let r = &cfg["recording"];
-        if !self.replay && r["configured"] != true {
+        let mut video = if self.replay {
+            replay_video(cfg)
+        } else {
+            cfg["recording"].clone()
+        };
+        if !self.replay && video["configured"] != true {
             return err("Open Recording settings and finish source, audio, folder, and permission setup first.");
         }
-        let monitor = r["monitor"].as_str().unwrap().trim();
+        let monitor = video["monitor"].as_str().unwrap().trim().to_owned();
         if monitor.is_empty() {
             return err("Choose a display in Recording settings first.");
         }
@@ -285,12 +459,17 @@ impl Capture {
             .as_array()
             .unwrap()
             .iter()
-            .find(|m| m["name"] == monitor)
+            .find(|m| m["name"] == monitor.as_str())
             .ok_or("Capture source is unavailable. Choose a connected monitor.")?;
+        if video["bitrate_auto"] == true {
+            video["bitrate_mbps"] = json!(auto_bitrate(&video, display));
+        }
+        let r = &video;
+        let monitor = monitor.as_str();
         self.color = color(r, display)?.into();
         self.codec = r["codec"]
             .as_str()
-            .filter(|c| ["h264", "hevc", "av1"].contains(c))
+            .filter(|c| GPU_CODECS.contains(c))
             .map(|c| {
                 if c == "h264" && self.color == "hdr" {
                     "hevc"
@@ -301,7 +480,10 @@ impl Capture {
             });
         let gpu = self.replay
             || self.color == "hdr"
-            || ["h264", "hevc", "av1"].contains(&r["codec"].as_str().unwrap_or(""));
+            || GPU_CODECS.contains(&r["codec"].as_str().unwrap_or(""));
+        if !gpu && r["resolution"].as_str().is_some_and(|s| s != "native") {
+            return err("The legacy CPU/VA-API recorder records the display's own resolution only. Choose a GPU format or the display's resolution.");
+        }
         let backend = if gpu {
             "gpu-screen-recorder"
         } else {
@@ -315,7 +497,14 @@ impl Capture {
         if util::which("ffprobe").is_none() {
             return err("ffprobe is missing. Install FFmpeg to validate saved recordings.");
         }
-        let folder = util::expand(r["output_dir"].as_str().unwrap());
+        let mut folder = util::expand(r["output_dir"].as_str().unwrap());
+        self.game_folders = r["game_folders"] == true;
+        if self.game_folders && !self.replay {
+            // A recording goes in the folder of the game focused when it starts.
+            if let Some(game) = desktop::focused_game().await {
+                folder = folder.join(game);
+            }
+        }
         util::private_dir(&folder)?;
         let folder = fs::canonicalize(folder)?;
         let mut staging = None;
@@ -343,13 +532,14 @@ impl Capture {
             let buffer = budget.as_ref().and_then(|b| b.disk.as_ref());
             replay_command(
                 cfg,
+                r,
                 &self.ipc,
                 buffer.map(|s| s.path.as_path()).unwrap_or(&folder),
                 &self.color,
             )
         } else {
             if let Some(pid) = orphaned().first() {
-                return err(format!("A recorder from an earlier Murmur session is still running (PID {pid}). Stop it with: kill -INT {pid}"));
+                return err(format!("A recorder from an earlier Jarvis session is still running (PID {pid}). Stop it with: kill -INT {pid}"));
             }
             let mut args = if gpu {
                 let mut a = vec![
@@ -458,8 +648,8 @@ impl Capture {
                 std::process::id(),
                 util::now().to_bits()
             );
-            let output = folder.join(format!("Murmur_{tag}.mkv"));
-            let partial = folder.join(format!(".Murmur_{tag}.part.mkv"));
+            let output = folder.join(format!("Jarvis_{tag}.mkv"));
+            let partial = folder.join(format!(".Jarvis_{tag}.part.mkv"));
             fs::OpenOptions::new()
                 .write(true)
                 .create_new(true)
@@ -564,6 +754,7 @@ impl Capture {
         );
         self.replay_output = self.replay.then(|| folder.clone());
         self.replay_seconds = cfg["replay"]["seconds"].as_u64().unwrap_or(120);
+        self.track_names = track_names(&cfg["replay"]);
         self.replay_session = budget
             .as_ref()
             .and_then(|b| b.disk.as_ref())
@@ -752,6 +943,19 @@ impl Capture {
             }
             path = Some(output.clone());
             verify(&output, &self.color, self.codec.as_deref()).await?;
+            if self.game_folders {
+                // A clip goes in the folder of the game focused when it is saved.
+                if let (Some(game), Some(parent), Some(name)) =
+                    (desktop::focused_game().await, output.parent(), output.file_name())
+                {
+                    let folder = parent.join(game);
+                    if util::private_dir(&folder).is_ok() && fs::rename(&output, folder.join(name)).is_ok() {
+                        output = folder.join(name);
+                        path = Some(output.clone());
+                    }
+                }
+            }
+            write_track_names(&output, &self.track_names);
             Ok::<_, crate::Error>(output)
         })
         .await;
@@ -824,7 +1028,7 @@ pub fn duration(seconds: u64) -> String {
         (m, s) => format!("{m} min {s} s"),
     }
 }
-fn timestamp() -> String {
+pub(crate) fn timestamp() -> String {
     let time = unsafe { libc::time(std::ptr::null_mut()) };
     let mut tm = std::mem::MaybeUninit::<libc::tm>::uninit();
     if unsafe { libc::localtime_r(&time, tm.as_mut_ptr()) }.is_null() {
@@ -840,4 +1044,64 @@ fn timestamp() -> String {
         tm.tm_min,
         tm.tm_sec
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+    #[test]
+    fn automatic_bitrate_follows_output_size_frame_rate_and_format() {
+        let display = json!({"width":2560,"height":1440});
+        let video = |codec: &str, fps: u64, resolution: &str| {
+            json!({"codec":codec,"fps":fps,"resolution":resolution})
+        };
+        assert_eq!(auto_bitrate(&video("av1", 60, "native"), &display), 17);
+        assert_eq!(auto_bitrate(&video("av1", 120, "native"), &display), 33);
+        assert_eq!(auto_bitrate(&video("av1", 60, "1080"), &display), 9);
+        assert_eq!(auto_bitrate(&video("av1", 60, "2160"), &display), 17); // never scaled up
+        assert_eq!(auto_bitrate(&video("h264", 60, "native"), &display), 24);
+        assert_eq!(auto_bitrate(&video("av1", 30, "720"), &display), 4); // floor
+        assert_eq!(auto_bitrate(&video("av1", 60, "native"), &json!({"width":3840,"height":2160})), 37);
+    }
+    #[test]
+    fn replay_uses_recording_video_unless_it_has_its_own() {
+        let mut cfg = json!({
+            "recording": {"monitor":"DP-3","fps":60,"codec":"av1_10bit","resolution":"native",
+                          "rate_control":"quality","quality_preset":"ultra","bitrate_mbps":8},
+            "replay": {"own_video":false,"codec":"hevc","fps":120,"resolution":"1080",
+                       "rate_control":"bitrate","quality_preset":"very_high","bitrate_mbps":40,
+                       "seconds":60,"storage":"ram","game_audio":false,"microphone":false}
+        });
+        let arg = |argv: &[String], flag: &str| {
+            argv.iter().position(|a| a == flag).map(|i| argv[i + 1].clone())
+        };
+        let same = replay_command(&cfg, &replay_video(&cfg), Path::new("/ipc"), Path::new("/out"), "sdr");
+        assert_eq!(arg(&same, "-k").as_deref(), Some("av1_10bit"));
+        assert_eq!(arg(&same, "-f").as_deref(), Some("60"));
+        assert_eq!(arg(&same, "-s"), None);
+        cfg["replay"]["own_video"] = json!(true);
+        let own = replay_command(&cfg, &replay_video(&cfg), Path::new("/ipc"), Path::new("/out"), "sdr");
+        assert_eq!(arg(&own, "-k").as_deref(), Some("hevc"));
+        assert_eq!(arg(&own, "-f").as_deref(), Some("120"));
+        assert_eq!(arg(&own, "-s").as_deref(), Some("1920x1080"));
+        assert_eq!(arg(&own, "-q").as_deref(), Some("40000"));
+        assert_eq!(arg(&own, "-w").as_deref(), Some("DP-3"));
+    }
+
+    #[test]
+    fn separate_tracks_never_overlap_and_mixed_is_unchanged() {
+        let mixed = json!({"game_audio":true,"microphone":true,"audio_tracks":"mixed","separate_apps":["Firefox"]});
+        assert_eq!(audio_tracks(&mixed), ["default_output|default_input"]);
+        let split = json!({"game_audio":true,"microphone":true,"audio_tracks":"separate","separate_apps":["Firefox","Spotify"]});
+        assert_eq!(
+            audio_tracks(&split),
+            ["app-inverse:Firefox|app-inverse:Spotify", "app:Firefox", "app:Spotify", "default_input"]
+        );
+        let quiet = json!({"game_audio":false,"microphone":false,"audio_tracks":"separate","separate_apps":[]});
+        assert!(audio_tracks(&quiet).is_empty());
+        assert!(!valid_app_name("a|b") && !valid_app_name("app:x") && valid_app_name("Firefox Nightly"));
+        assert_eq!(track_names(&split), ["Game and other apps", "Firefox", "Spotify", "Microphone"]);
+        assert_eq!(track_names(&mixed), ["Game sound and microphone"]);
+    }
 }

@@ -1,4 +1,5 @@
 use crate::{
+    dictation::Dictation,
     emit,
     engine::{Engine, Recognition},
     input::{self, FRAME},
@@ -13,7 +14,7 @@ extern "C" fn stop(_: libc::c_int) {
     STOP.store(true, Ordering::Relaxed);
 }
 fn expected_owner(actual: u32) -> Result<u32> {
-    Ok(std::env::var("MURMUR_OWNER_PID")
+    Ok(std::env::var("JARVIS_OWNER_PID")
         .ok()
         .map(|s| s.parse())
         .transpose()?
@@ -45,7 +46,7 @@ pub fn bind_parent() -> Result<()> {
     use windows::Win32::System::Threading::{
         OpenProcess, WaitForSingleObject, INFINITE, PROCESS_SYNCHRONIZE,
     };
-    let Ok(owner) = std::env::var("MURMUR_OWNER_PID") else {
+    let Ok(owner) = std::env::var("JARVIS_OWNER_PID") else {
         return Ok(());
     };
     let owner = expected_owner(owner.parse()?)?;
@@ -130,6 +131,34 @@ fn heard(engine: &mut Option<Engine>) -> Result<()> {
     }
     Ok(())
 }
+fn dictated(results: Vec<std::result::Result<crate::inference::Text, String>>) -> Result<()> {
+    for result in results {
+        match result {
+            Ok(t) if !t.text.is_empty() => {
+                emit(json!({"event":"dictation_text","text":t.text,"language":t.language}))?
+            }
+            Ok(_) => {}
+            Err(e) => emit(json!({"event":"dictation_error","message":e}))?,
+        }
+    }
+    Ok(())
+}
+/// Ends dictation: "stop" transcribes what was already said, "cancel"
+/// discards it. Waiting for the last segment blocks capture briefly; the
+/// worker then returns to waiting for the wake phrase.
+fn end_dictation(dictation: &mut Option<Dictation>, reason: &str) -> Result<()> {
+    let Some(mut d) = dictation.take() else {
+        return Ok(());
+    };
+    let dropped = d.dropped;
+    if reason == "cancel" {
+        drop(d);
+    } else {
+        d.cut();
+        dictated(d.finish())?;
+    }
+    emit(json!({"event":"dictation","state":"stopped","reason":reason,"dropped":dropped}))
+}
 fn command(result: &Recognition, captured_at: f64) -> Result<()> {
     let mut message = serde_json::to_value(result)?;
     message["event"] = json!("command");
@@ -146,9 +175,18 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
     if config["privacy"]["onboarded"].as_bool() != Some(true) {
         return Err("Complete microphone consent in Settings first".into());
     }
-    if !["wake_word", "once", "test"].contains(&mode.as_str()) {
+    if !["wake_word", "once", "test", "dictation"].contains(&mode.as_str()) {
         return Err("Invalid worker mode".into());
     }
+    let dictation_idle = config["dictation"]["idle_seconds"]
+        .as_f64()
+        .unwrap_or(20.0)
+        .clamp(5.0, 300.0);
+    let dictation_limit = config["dictation"]["max_minutes"]
+        .as_f64()
+        .unwrap_or(10.0)
+        .clamp(1.0, 60.0)
+        * 60.0;
     let timeout = config["activation"]["command_timeout"]
         .as_f64()
         .filter(|v| v.is_finite() && (2.0..=15.0).contains(v))
@@ -166,7 +204,22 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
         return Ok(());
     }
     let mut input = input::open(&config, mode == "wake_word")?;
-    let mut control_open = mode == "wake_word";
+    let mut control_open = mode == "wake_word" || mode == "dictation";
+    let mut dictation: Option<Dictation> = None;
+    let mut dictation_deadline = 0.0;
+    let begin_dictation = |engine: &mut Option<Engine>,
+                           dictation: &mut Option<Dictation>,
+                           deadline: &mut f64,
+                           language: Option<&str>|
+     -> Result<()> {
+        let model = engine
+            .as_mut()
+            .ok_or("Dictation requires a recognition engine")?
+            .dictation_model(language)?;
+        *dictation = Some(Dictation::start(model)?);
+        *deadline = now() + dictation_limit;
+        emit(json!({"event":"dictation","state":"started","idle_seconds":dictation_idle,"max_seconds":dictation_limit}))
+    };
     let mut listening = mode == "once";
     let mut deadline = if ["test", "once"].contains(&mode.as_str()) {
         Some(now() + if mode == "test" { 15.0 } else { timeout })
@@ -177,6 +230,9 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
         e.begin(listening)?;
     }
     ready(engine.as_ref(), listening, deadline)?;
+    if mode == "dictation" {
+        begin_dictation(&mut engine, &mut dictation, &mut dictation_deadline, None)?;
+    }
     let minimum = config["audio"]["vad_rms"]
         .as_f64()
         .filter(|v| v.is_finite() && (0.0001..=0.5).contains(v))
@@ -241,6 +297,9 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
         let next = deadline.map_or(last_frame + 3.0, |d| d.min(last_frame + 3.0));
         let wait = if controls.contains(&b'\n') {
             Duration::ZERO
+        } else if dictation.as_ref().is_some_and(Dictation::pending) {
+            // Collect finished segments promptly even between frames.
+            Duration::from_millis(50)
         } else {
             Duration::from_secs_f64((next - now()).clamp(0.0, 3.0))
         };
@@ -255,6 +314,48 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
         }
         while let Some(end) = controls.iter().position(|&b| b == b'\n') {
             let line = controls.drain(..=end).collect::<Vec<_>>();
+            // "dictate", or "dictate ar" / "dictate en" from the starting phrase.
+            let dictate = match &line[..] {
+                b"dictate\n" => Some(None),
+                b"dictate ar\n" => Some(Some("ar")),
+                b"dictate en\n" => Some(Some("en")),
+                _ => None,
+            };
+            match &line[..] {
+                _ if dictate.is_some() => {
+                    if dictation.is_none() {
+                        listening = false;
+                        deadline = None;
+                        if let Err(e) = begin_dictation(
+                            &mut engine,
+                            &mut dictation,
+                            &mut dictation_deadline,
+                            dictate.flatten(),
+                        ) {
+                            emit(json!({"event":"dictation_error","message":e.to_string()}))?;
+                            emit(json!({"event":"dictation","state":"stopped","reason":"error","dropped":0}))?;
+                            engine.as_mut().unwrap().begin(false)?;
+                        }
+                    }
+                    continue;
+                }
+                b"dictate_stop\n" | b"cancel\n" if dictation.is_some() => {
+                    end_dictation(
+                        &mut dictation,
+                        if line == b"cancel\n" { "cancel" } else { "stop" },
+                    )?;
+                    if mode == "dictation" {
+                        return Ok(());
+                    }
+                    last_frame = now();
+                    engine.as_mut().unwrap().begin(false)?;
+                    ready(engine.as_ref(), false, None)?;
+                    continue;
+                }
+                b"dictate_stop\n" => continue,
+                _ => {}
+            }
+            end_dictation(&mut dictation, "cancel")?;
             listening = line == b"listen\n";
             deadline = if listening {
                 Some(now() + timeout)
@@ -272,6 +373,9 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
         }
         if controls.len() > 4096 {
             return Err("Voice control line exceeds 4096 bytes".into());
+        }
+        if let Some(d) = &mut dictation {
+            dictated(d.poll())?;
         }
         if !arrived.audio {
             continue;
@@ -296,6 +400,24 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
             continue;
         }
         engine.as_mut().unwrap().maintain()?;
+        if let Some(d) = &mut dictation {
+            let energy = rms(&pending);
+            let quiet = energy < noise.gate();
+            noise.update(energy);
+            d.feed(&pending, quiet);
+            dictated(d.poll())?;
+            let idle = d.silent_frames as f64 * 0.03 >= dictation_idle && !d.pending();
+            if idle || now() >= dictation_deadline {
+                end_dictation(&mut dictation, if idle { "idle" } else { "limit" })?;
+                if mode == "dictation" {
+                    return Ok(());
+                }
+                last_frame = now();
+                engine.as_mut().unwrap().begin(false)?;
+                ready(engine.as_ref(), false, None)?;
+            }
+            continue;
+        }
         if now() < cooldown {
             continue;
         }

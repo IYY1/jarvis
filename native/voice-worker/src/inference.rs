@@ -145,6 +145,20 @@ pub struct Transcriber {
     recognizer: Recognizer,
     denoiser: Option<Denoiser>,
 }
+/// A transcript and the language of the model that produced it.
+pub struct Text {
+    pub text: String,
+    pub language: &'static str,
+}
+fn samples(pcm: &[u8]) -> Vec<f32> {
+    // No Python float objects or intermediate lists. PCM values are exact
+    // multiples of 2^-15, so f32 conversion matches the Python binding.
+    pcm.as_chunks::<2>()
+        .0
+        .iter()
+        .map(|s| i16::from_le_bytes([s[0], s[1]]) as f32 / 32768.0)
+        .collect()
+}
 impl Transcriber {
     pub fn new(config: &NativeConfig) -> Result<Self> {
         let files = config
@@ -155,6 +169,9 @@ impl Transcriber {
     }
     pub fn load(files: &WhisperFiles, denoiser: Option<&str>, threads: usize) -> Result<Self> {
         let recognizer = Recognizer::load(&files.encoder, &files.decoder, &files.tokens, threads)?;
+        if recognizer.multilingual() {
+            return Err("Commands use an English Whisper model; Arabic uses the Arabic model".into());
+        }
         let denoiser = if let Some(path) = denoiser {
             Some(Denoiser::load(path)?)
         } else {
@@ -167,25 +184,53 @@ impl Transcriber {
         })
     }
     pub fn transcribe(&self, pcm: &[u8]) -> Result<String> {
-        if pcm.len() < 6400 {
-            return Ok(String::new());
-        }
         if pcm.len() > 320000 {
             return Err("Command audio exceeds ten seconds".into());
         }
-        // No Python float objects or intermediate lists. PCM values are exact
-        // multiples of 2^-15, so f32 conversion matches the Python binding.
-        let mut samples: Vec<f32> = pcm
-            .as_chunks::<2>()
-            .0
-            .iter()
-            .map(|s| i16::from_le_bytes([s[0], s[1]]) as f32 / 32768.0)
-            .collect();
+        self.recognize(pcm)
+    }
+    /// Dictated speech, up to 20 seconds per segment.
+    pub fn dictate(&self, pcm: &[u8]) -> Result<Text> {
+        if pcm.len() > 640000 {
+            return Err("Dictation segment exceeds twenty seconds".into());
+        }
+        Ok(Text {
+            text: self.recognize(pcm)?,
+            language: "en",
+        })
+    }
+    fn recognize(&self, pcm: &[u8]) -> Result<String> {
+        if pcm.len() < 6400 {
+            return Ok(String::new());
+        }
+        let mut samples = samples(pcm);
         if let Some(denoiser) = &self.denoiser {
             samples = denoiser.process(&samples)?;
         }
         let text = self.recognizer.transcribe(&samples)?;
         drop(samples);
+        trim();
+        Ok(text)
+    }
+}
+
+/// Arabic speech (Moonshine Streaming Tiny Arabic). Najdi, Hijazi and other
+/// dialects are transcribed as spoken; English words inside Arabic speech
+/// usually come out in Arabic script.
+pub struct Arabic {
+    recognizer: jarvis_moonshine::Recognizer,
+}
+impl Arabic {
+    pub fn load(directory: &str) -> Result<Self> {
+        let recognizer = jarvis_moonshine::Recognizer::load(directory)?;
+        trim();
+        Ok(Self { recognizer })
+    }
+    pub fn transcribe(&self, pcm: &[u8]) -> Result<String> {
+        if pcm.len() > 640000 {
+            return Err("Arabic audio exceeds twenty seconds".into());
+        }
+        let text = self.recognizer.transcribe(&samples(pcm))?;
         trim();
         Ok(text)
     }

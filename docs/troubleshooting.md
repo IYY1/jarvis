@@ -1,21 +1,21 @@
 # Troubleshooting
 
-Run `./run-murmur doctor` inside the Hyprland session. It performs read-only
+Run `./run-jarvis doctor` inside the Hyprland session. It performs read-only
 dependency checks, never opens input and never starts recording. A binary's
 presence is not proof of capture permission or working recognition.
 
 | Symptom | What to check |
 | --- | --- |
-| No service connection | Choose Start service or start the installed user service. Check `systemctl --user status murmur.service` and `journalctl --user -u murmur.service -n 50`. A lock prevents two daemons. |
-| “IPC directory must be owned by you” | The runtime `murmur` directory must be owned by your user with 0700 mode. Do not use a shared directory or run as root. Tests can set `MURMUR_SOCKET` to a private temporary directory. |
+| No service connection | Choose Start service or start the installed user service. Check `systemctl --user status jarvis.service` and `journalctl --user -u jarvis.service -n 50`. A lock prevents two daemons. |
+| “IPC directory must be owned by you” | The runtime `jarvis` directory must be owned by your user with 0700 mode. Do not use a shared directory or run as root. Tests can set `JARVIS_SOCKET` to a private temporary directory. |
 | Hyprland/PipeWire unavailable | Run in the actual graphical session, not a restricted build sandbox. Import the session environment to systemd as shown in README. Check `hyprctl version`, `wpctl status`, `pw-dump`. |
-| Everything broke after a system update | A Python minor upgrade orphans the venv. `./run-murmur` prints the rebuild command; see README “One-time setup”. |
+| Everything broke after a system update | A Python minor upgrade orphans the venv. `./run-jarvis` prints the rebuild command; see README “One-time setup”. |
 | Waybar shows “off” | The service is not running. The module reconnects by itself once it starts. |
-| GTK/PyGObject missing | Install distro packages, then recreate/use a `--system-site-packages` venv. `murmur daemon` does not require GTK. |
+| GTK/PyGObject missing | Install distro packages, then recreate/use a `--system-site-packages` venv. `jarvis daemon` does not require GTK. |
 | PocketSphinx missing | Use `.venv/bin/python -m pip install -e '.[voice]'`. A source build may need a compiler, CMake and Ninja. No GPU SDK is required. |
 | Microphone paused | Complete consent; choose Resume/Unmute. Push-to-talk standby intentionally has closed input until Listen once. Stop listening mutes voice until explicitly resumed; a restart follows saved consent/mode. |
 | No level movement | Refresh/select the input node, save, then explicitly start the 15 second input test. Check PipeWire source mute/permissions. A failed stream enters error; use Resume after repairing it. |
-| Missed wake | Check the Voice page says “Recognizer: Vosk (improved)”; if not, run `./run-murmur install-model`. Say “hey Jarvis” (or just “Jarvis”) at the start. Run the microphone test: speech should clearly exceed the energy threshold (default 0.005); lower it if your mic is quiet. |
+| Missed wake | Check the Voice page says “Recognizer: Vosk (improved)”; if not, run `./run-jarvis install-model`. Say “hey Jarvis” (or just “Jarvis”) at the start. Run the microphone test: speech should clearly exceed the energy threshold (default 0.005); lower it if your mic is quiet. |
 | Command rejected | Check dictionary/alias warning, command timeout and score threshold. A score is an uncalibrated posterior. Reduce it cautiously after testing; high score alone does not prevent false matches. |
 | App name never works | Add a pronounceable exact alias, e.g. “stream video” for Stremio. New apps are discovered on service start, settings save, or when the settings window opens/reconnects. The app must have a visible XDG desktop entry. |
 | Ambiguous app | Select a distinct alias mapped to its desktop ID. Repeated windows of one app are focused by most recent focus history. |

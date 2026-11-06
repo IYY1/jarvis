@@ -10,6 +10,25 @@ window can close while Jarvis keeps listening in the background.
 
 Jarvis is early software. Recognition depends on your voice, microphone and room.
 
+## What's new (unreleased)
+
+- **Arabic, with Najdi and Saudi speech first**: choose Voice → Language →
+  Arabic and English for Arabic commands (افتح فايرفوكس، علّ الصوت، كلّبها) and
+  Arabic dictation, using a local 118 MB model. Chosen by testing ten models
+  on Saudi speech ([details](docs/arabic.md)).
+- **Dictation**: “Jarvis, listen to me” types what you say into the focused
+  text field, in Arabic or English, without pressing Enter and never into a
+  password field ([details](docs/dictation.md)).
+- **Clips editor**: trim, cut, split and join clips, pick audio tracks, and
+  export a copy; the original never changes ([details](docs/clips.md)).
+- **Separate sound tracks for replays**: keep the game, Firefox (or any app) and
+  your microphone apart, then mute one when exporting a clip.
+- **Simpler video formats**: Recommended / Compatible, tested on your
+  display's own GPU. CPU H.264 is kept only for setups that already use it.
+- **Add any app**: AppImages and portable programs can be added in Apps, or
+  with `jarvis add-app PATH --name NAME`. Jarvis suggests ones it finds on the
+  desktop, in Downloads and in portable-app folders.
+
 ## What's new in 0.3.1
 
 - **Lighter by default**: commands now use Whisper tiny.en, which halves the
@@ -118,7 +137,7 @@ an existing installation before using `--replace`. Keep the checkout and venv
 where they are. Optional Rust parts are described under [Development](#development).
 
 After a system Python upgrade, rebuild the venv;
-`MURMUR_CLI=python ./run-jarvis doctor` reports the mismatch.
+`JARVIS_CLI=python ./run-jarvis doctor` reports the mismatch.
 
 ### First run
 
@@ -141,7 +160,9 @@ fallback recognizes less accurately.
 | Volume | “turn the volume down”, “mute volume”, “turn the sound back on” |
 | Recording | “start recording”, “stop recording”, “open the video recorder” |
 | Instant replay | “clip that”, “clip the last 25 seconds”, “clip the last 2 minutes”, “save replay”, “start replay”, “stop replay” |
-| Voice control | “cancel”, “stop listening” |
+| Dictation | “listen”, “listen to me”, “start dictation”, “stop dictation” |
+| Voice control | “cancel”, “stop listening”, “close yourself” / “quit Jarvis” (closes Jarvis; a recording is saved first) |
+| Arabic (Arabic and English setting) | “افتح فايرفوكس”, “سكّر ديسكورد”, “علّ الصوت”, “روح لمساحة العمل الثالثة”, “احفظ آخر ثلاثين ثانية”, “اسمعني” |
 
 **Applications → Close words** changes the word that closes an app (for
 example “quit Firefox”, or several words such as “close, quit”).
@@ -154,6 +175,39 @@ jarvis alias streamio stremio
 jarvis alias
 jarvis alias streamio --remove
 ```
+
+### Your settings across updates
+
+Updates keep your settings. A setting a new version can't use (a changed range
+or a renamed choice) is reset on its own and every other setting is kept; the
+original file is copied to `~/.config/jarvis/backups/` first, and so are the
+settings of the previous version on the first start of a new one. To back up or
+move your settings, use **Overview → Your settings**, or:
+
+```sh
+jarvis settings export ~/jarvis-settings.json
+jarvis settings import ~/jarvis-settings.json
+jarvis settings backups
+```
+
+Importing also repairs settings from another version and keeps a backup of the
+current ones; a running recording or replay restarts if its settings changed.
+
+Switch Arabic on or off with **Turn on Arabic** on Overview, or
+`jarvis language arabic` / `jarvis language english`.
+
+Programs your launcher doesn't list (an AppImage, a portable `.exe`) can be
+added first, then named:
+
+```sh
+jarvis add-app ~/Applications/Obsidian.AppImage --name Obsidian
+jarvis add-app
+jarvis add-app Obsidian --remove
+```
+
+On Windows, **Applications → Add program…** lists portable programs found on
+the desktop, in Downloads and in `Apps`, `Portable` and `PortableApps` folders,
+and adds the chosen one as a Start menu shortcut in a Jarvis folder.
 
 Each voice name has a **Launch word**, initially `open`. Change it to `watch`
 for “Alfred, watch video”, or clear it for “Jarvis, Firefox”. A `the` after the
@@ -171,11 +225,11 @@ start that target (for example with uwsm) and export its environment:
 
 ```sh
 systemctl --user import-environment WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP XDG_RUNTIME_DIR
-systemctl --user start murmur.service
+systemctl --user start jarvis.service
 ```
 
 `./run-jarvis daemon` runs the service in the foreground; run one at a time.
-The service, package and storage paths keep the earlier name Murmur, so older
+The service, package and storage paths keep the earlier name Jarvis, so older
 settings, models and recordings still work. Optional [Waybar](examples/waybar.jsonc)
 and [Hyprland](examples/hyprland.conf) examples are never installed automatically.
 
@@ -208,9 +262,9 @@ Python:
 
 | Part | Build | Notes |
 | --- | --- | --- |
-| [Voice worker](docs/rust-voice.md) (Whisper and noise suppression) | `scripts/build_voice_worker.py` | `MURMUR_VOICE_WORKER=python` selects Python |
-| [Command-line client](docs/rust-cli.md) | `scripts/build_cli.py --test` | `MURMUR_CLI=python` selects Python |
-| [Background controller](docs/rust-controller.md) | `scripts/build_controller.py` | Opt in with `MURMUR_CONTROLLER=rust` |
+| [Voice worker](docs/rust-voice.md) (Whisper and noise suppression) | `scripts/build_voice_worker.py` | `JARVIS_VOICE_WORKER=python` selects Python |
+| [Command-line client](docs/rust-cli.md) | `scripts/build_cli.py --test` | `JARVIS_CLI=python` selects Python |
+| [Background controller](docs/rust-controller.md) | `scripts/build_controller.py` | Opt in with `JARVIS_CONTROLLER=rust` |
 
 The settings window and the Windows service use Python; Windows releases
 ship only the Rust voice worker. Tests and checks:
@@ -232,7 +286,7 @@ parts it touches, restart the service and try the change with your own voice:
 python scripts/build_controller.py --offline
 python scripts/build_voice_worker.py --offline
 python scripts/build_cli.py --offline
-systemctl --user restart murmur
+systemctl --user restart jarvis
 ./run-jarvis status
 ```
 
@@ -241,7 +295,7 @@ Push only after the restarted service runs the new build and the change works.
 ## Project layout
 
 ```text
-src/murmur/       Voice engine, service, desktop adapters and GTK UI
+src/jarvis/       Voice engine, service, desktop adapters and GTK UI
 native/           Rust voice worker, Whisper, denoiser, controller and CLI
 tests/            Policy, lifecycle, model and regression tests
 scripts/          Installer, build scripts, integration checks and benchmarks

@@ -1,6 +1,7 @@
 """Windows policies run on Linux too; no live audio, desktop actions or services."""
 
 import importlib.util
+import io
 import json
 from pathlib import Path
 import queue
@@ -12,12 +13,12 @@ import types
 import unittest
 from unittest.mock import MagicMock, patch
 
-from murmur import config, host
-from murmur.recorder import RecorderError
-from murmur.windows import encoding, transport
-from murmur.windows.audio import PCMStream, select_device
-from murmur.windows.apps import WindowsApp
-from murmur.windows.capture import Replay, ReplayBuffer
+from jarvis import config, host
+from jarvis.recorder import RecorderError
+from jarvis.windows import encoding, transport
+from jarvis.windows.audio import PCMStream, select_device
+from jarvis.windows.apps import WindowsApp
+from jarvis.windows.capture import Replay, ReplayBuffer
 
 try:
     import tkinter  # noqa: F401  (the Windows settings window needs Tk)
@@ -29,7 +30,7 @@ except ImportError:
 @unittest.skipUnless(TK, "Tk is not installed")
 class WindowRequestTests(unittest.TestCase):
     def test_requests_keep_the_client_per_operation_timeouts(self):
-        from murmur.windows.ui import Window
+        from jarvis.windows.ui import Window
         expected = {"execute": 45, "record_start": 20, "status": 15,
                     "record_stop": 60, "save_config": 60}
         for op, timeout in expected.items():
@@ -37,7 +38,7 @@ class WindowRequestTests(unittest.TestCase):
                 runs = []
                 window = types.SimpleNamespace(submit=lambda run, callback: runs.append(run), received=None)
                 Window.call(window, op)
-                with patch("murmur.windows.ui.request", return_value={"ok": True}) as request:
+                with patch("jarvis.windows.ui.request", return_value={"ok": True}) as request:
                     runs[0]()
                 self.assertEqual(request.call_args.kwargs["timeout"], timeout)
 
@@ -81,11 +82,77 @@ class EncoderTests(unittest.TestCase):
             self.display,
             "ffmpeg.exe",
             "amf",
-            audio_pipe=r"\\.\pipe\Jarvis-test",
+            audio_pipes=[(r"\\.\pipe\Jarvis-test", None)],
         )
         self.assertIn("s16le", args)
         self.assertIn("aac", args)
         self.assertEqual(args.count("-i"), 2)
+        self.assertNotIn("-metadata:s:a:0", args)
+
+    def test_separate_replay_tracks_get_their_own_inputs_and_titles(self):
+        replay = config.validate({"replay": {"audio_tracks": "separate", "separate_apps": ["firefox"]}})["replay"]
+        cfg = dict(self.cfg, system_audio=True, microphone=True)
+        plan = encoding.audio_plan(cfg, replay, build=22631)
+        self.assertEqual([title for title, _ in plan], ["Game and other apps", "firefox", "Microphone"])
+        self.assertEqual([c["track"] for _, c in plan],
+                         [{"kind": "game", "app": "firefox"}, {"kind": "app", "app": "firefox"}, {"kind": "microphone"}])
+        pipes = [(rf"\\.\pipe\Jarvis-t-audio{i}", title) for i, (title, _) in enumerate(plan)]
+        args, _, _ = encoding.command(self.cfg, self.display, "ffmpeg.exe", "amf", audio_pipes=pipes)
+        self.assertEqual(args.count("-i"), 4)
+        for i in range(3):
+            self.assertIn(f"{i + 1}:a:0", args)
+        self.assertEqual(args[args.index("-metadata:s:a:1") + 1], "title=firefox")
+        # Without a program, the game track is all system sound.
+        alone = dict(replay, separate_apps=[])
+        self.assertEqual(encoding.audio_plan(cfg, alone, build=22631)[0][1]["track"], {"kind": "game", "app": ""})
+        # Mixed replays and recordings keep one input with the existing mix.
+        self.assertEqual(encoding.audio_plan(cfg, dict(replay, audio_tracks="mixed"), build=19045), [(None, cfg)])
+        self.assertEqual(encoding.audio_plan(cfg), [(None, cfg)])
+
+    def test_separate_tracks_refuse_windows_10_and_several_programs(self):
+        replay = config.validate({"replay": {"audio_tracks": "separate", "separate_apps": ["firefox"]}})["replay"]
+        with self.assertRaisesRegex(RecorderError, "Windows 11"):
+            encoding.audio_plan(self.cfg, replay, build=19045)
+        with self.assertRaisesRegex(RecorderError, "one program"):
+            encoding.audio_plan(self.cfg, dict(replay, separate_apps=["firefox", "spotify"]), build=22631)
+
+    def test_app_audio_is_relayed_and_its_error_reported(self):
+        from jarvis.windows import audio
+        import subprocess
+        import sys
+        popen = subprocess.Popen
+        with tempfile.TemporaryDirectory() as folder:
+            # A Python stand-in for jarvis-voice.exe, so this runs on Linux and Windows.
+            worker = Path(folder) / "jarvis-voice.py"
+            worker.write_text(
+                "import sys\n"
+                "open(sys.argv[0] + '.request', 'w').write(sys.stdin.readline())\n"
+                "sys.stdout.buffer.write(b'PCMDATA!'); sys.stdout.flush()\n"
+                "sys.stderr.write('{\"event\":\"error\",\"message\":\"firefox is not running.\"}\\n')\n"
+                "sys.exit(1)\n")
+            written = []
+            pipe = MagicMock()
+            pipe.return_value.__enter__.return_value.write.side_effect = written.append
+            with patch("jarvis.native_worker.binary_path", return_value=worker), \
+                    patch("jarvis.windows.pipes.PipeWriter", pipe), \
+                    patch("subprocess.Popen", side_effect=lambda argv, **kw: popen([sys.executable, *argv], **kw)):
+                with self.assertRaisesRegex(RuntimeError, "firefox is not running"):
+                    audio.track_to_pipe({"track": {"kind": "game", "app": "firefox"}}, r"\\.\pipe\Jarvis-x")
+            self.assertEqual(b"".join(written), b"PCMDATA!")
+            self.assertEqual(json.loads((Path(folder) / "jarvis-voice.py.request").read_text()),
+                             {"process": "firefox", "include": False})
+
+    def test_audio_failure_names_the_track_and_reason(self):
+        from jarvis.windows.capture import audio_failure
+        process = types.SimpleNamespace(stderr=io.BytesIO(
+            b"Traceback ...\nRuntimeError: firefox is not running. Start it before instant replay.\n"))
+        self.assertEqual(audio_failure(process, "firefox"),
+                         "The firefox track stopped: firefox is not running. Start it before instant replay.")
+        self.assertIn("unexpectedly", audio_failure(types.SimpleNamespace(stderr=io.BytesIO(b"")), None))
+
+    def test_ten_bit_settings_record_the_same_family_until_windows_supports_them(self):
+        self.assertEqual(encoding.format_for({"codec": "av1_10bit"}, "sdr"), "av1")
+        self.assertEqual(encoding.format_for({"codec": "hevc_10bit"}, "hdr"), "hevc")
 
     def test_hdr_promotes_h264_and_refuses_known_sdr_display(self):
         self.cfg["color_mode"] = "hdr"
@@ -206,9 +273,9 @@ class ReplaySaveTests(unittest.TestCase):
                 Path(argv[-1]).write_bytes(b'completed clip retained for inspection')
                 return types.SimpleNamespace(returncode=0)
 
-            with patch('murmur.windows.capture.tool', return_value='fake-ffmpeg'), \
-                    patch('murmur.windows.capture.subprocess.run', side_effect=remux), \
-                    patch('murmur.windows.capture.verify_video', side_effect=RecorderError('invalid HDR metadata')):
+            with patch('jarvis.windows.capture.tool', return_value='fake-ffmpeg'), \
+                    patch('jarvis.windows.capture.subprocess.run', side_effect=remux), \
+                    patch('jarvis.windows.capture.verify_video', side_effect=RecorderError('invalid HDR metadata')):
                 with self.assertRaisesRegex(RecorderError, 'invalid HDR metadata'):
                     capture.save()
             status = capture.status()
@@ -320,8 +387,8 @@ class HostTests(unittest.TestCase):
     def test_discord_moderation_is_absent_from_shipped_source(self):
         root = Path(__file__).resolve().parents[1]
         for file in (
-            "src/murmur/discord_control.py",
-            "src/murmur/discord_commands.py",
+            "src/jarvis/discord_control.py",
+            "src/jarvis/discord_commands.py",
             "native/controller/src/discord.rs",
         ):
             self.assertFalse((root / file).exists())
@@ -332,18 +399,18 @@ class StartupTests(unittest.TestCase):
     """Setup's start-at-sign-in component uses the same entry and setting as Settings."""
 
     def test_running_service_applies_the_change_itself(self):
-        from murmur.windows import startup
-        with patch("murmur.client.request", return_value={"ok": True}) as request, \
+        from jarvis.windows import startup
+        with patch("jarvis.client.request", return_value={"ok": True}) as request, \
                 patch.object(startup, "set_startup") as registry:
             self.assertEqual(startup.configure_startup(True), {"ok": True, "startup": True})
         request.assert_called_once_with("set_startup", enabled=True, timeout=5)
         registry.assert_not_called()
 
     def test_stopped_service_updates_run_entry_and_saved_setting(self):
-        from murmur.windows import startup
+        from jarvis.windows import startup
         with tempfile.TemporaryDirectory() as directory, \
-                patch.dict("os.environ", MURMUR_CONFIG=str(Path(directory) / "config.json")), \
-                patch("murmur.client.request", side_effect=ConnectionRefusedError), \
+                patch.dict("os.environ", JARVIS_CONFIG=str(Path(directory) / "config.json")), \
+                patch("jarvis.client.request", side_effect=ConnectionRefusedError), \
                 patch.object(startup, "set_startup") as registry:
             startup.configure_startup(True)
             self.assertTrue(config.load()["startup"])
@@ -352,8 +419,8 @@ class StartupTests(unittest.TestCase):
         self.assertEqual([c.args for c in registry.call_args_list], [(True,), (False,)])
 
     def test_service_refusal_is_reported(self):
-        from murmur.windows import startup
-        with patch("murmur.client.request", return_value={"ok": False, "error": "nope"}), \
+        from jarvis.windows import startup
+        with patch("jarvis.client.request", return_value={"ok": False, "error": "nope"}), \
                 patch.object(startup, "set_startup") as registry:
             with self.assertRaisesRegex(RuntimeError, "nope"):
                 startup.configure_startup(False)
@@ -434,15 +501,15 @@ class AudioTests(unittest.TestCase):
         stream.silence_on_idle = True
         stream.last_samples = 10
         with (
-            patch("murmur.windows.audio._audioop", return_value=object()),
-            patch("murmur.windows.audio.time.monotonic", return_value=10.2),
+            patch("jarvis.windows.audio._audioop", return_value=object()),
+            patch("jarvis.windows.audio.time.monotonic", return_value=10.2),
             patch.object(stream.queue, "get", side_effect=queue.Empty),
         ):
             self.assertEqual(stream.read(960), bytes(960 * 4))
         self.assertEqual(len(stream.pending), (9600 - 960) * 4)
         microphone = self.stream(1, 1)
         with (
-            patch("murmur.windows.audio._audioop", return_value=object()),
+            patch("jarvis.windows.audio._audioop", return_value=object()),
             patch.object(microphone.queue, "get", side_effect=queue.Empty),
         ):
             with self.assertRaisesRegex(RuntimeError, "no audio"):

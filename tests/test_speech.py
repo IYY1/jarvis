@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 import unittest
 
-from murmur.speech import Recognition, SpeechEngine, normalize_phrase
+from jarvis.speech import Recognition, SpeechEngine, normalize_phrase
 
 
 class SpeechContractTests(unittest.TestCase):
@@ -18,7 +18,7 @@ class SpeechContractTests(unittest.TestCase):
         self.assertIsNone(SpeechEngine._posterior(2))
 
     def test_serializable_result(self):
-        self.assertEqual(Recognition('wake', 'hey murmur', None).to_dict()['kind'], 'wake')
+        self.assertEqual(Recognition('wake', 'hey jarvis', None).to_dict()['kind'], 'wake')
 
 
 @unittest.skipUnless(importlib.util.find_spec('pocketsphinx'), 'optional voice dependency is not installed')
@@ -67,9 +67,9 @@ class PocketSphinxIntegrationTests(unittest.TestCase):
         self.assertIsNone(self.engine._mode)
 
     def test_upstream_keyword_fixture_if_provided(self):
-        path = os.environ.get('MURMUR_SPEECH_TEST_RAW')
+        path = os.environ.get('JARVIS_SPEECH_TEST_RAW')
         if not path:
-            self.skipTest('set MURMUR_SPEECH_TEST_RAW to upstream goforward.raw (not bundled)')
+            self.skipTest('set JARVIS_SPEECH_TEST_RAW to upstream goforward.raw (not bundled)')
         engine = SpeechEngine(['open firefox'], 'go forward', 0.5)
         engine.begin_wake()
         pcm = Path(path).read_bytes() + bytes(32000)
@@ -80,9 +80,9 @@ class PocketSphinxIntegrationTests(unittest.TestCase):
         engine.close()
 
     def test_wake_then_valid_command_survives_unmatched_tail(self):
-        path = os.environ.get('MURMUR_SPEECH_TEST_RAW')
+        path = os.environ.get('JARVIS_SPEECH_TEST_RAW')
         if not path:
-            self.skipTest('set MURMUR_SPEECH_TEST_RAW to upstream goforward.raw (not bundled)')
+            self.skipTest('set JARVIS_SPEECH_TEST_RAW to upstream goforward.raw (not bundled)')
         engine = SpeechEngine(['open firefox', 'go forward ten meters'], 'go forward', 0.5)
         engine.begin_wake()
         utterance = Path(path).read_bytes() + bytes(32000)
@@ -99,9 +99,9 @@ class PocketSphinxIntegrationTests(unittest.TestCase):
         engine.close()
 
     def test_keyword_search_restarts_after_unmatched_utterance(self):
-        path = os.environ.get('MURMUR_SPEECH_TEST_RAW')
+        path = os.environ.get('JARVIS_SPEECH_TEST_RAW')
         if not path:
-            self.skipTest('set MURMUR_SPEECH_TEST_RAW to upstream goforward.raw (not bundled)')
+            self.skipTest('set JARVIS_SPEECH_TEST_RAW to upstream goforward.raw (not bundled)')
         engine = SpeechEngine(['open firefox'], 'go forward', 0.5)
         engine.begin_wake()
         raw = Path(path).read_bytes()
@@ -112,9 +112,9 @@ class PocketSphinxIntegrationTests(unittest.TestCase):
         engine.close()
 
     def test_upstream_speech_fixture_if_provided(self):
-        path = os.environ.get('MURMUR_SPEECH_TEST_RAW')
+        path = os.environ.get('JARVIS_SPEECH_TEST_RAW')
         if not path:
-            self.skipTest('set MURMUR_SPEECH_TEST_RAW to upstream goforward.raw (not bundled)')
+            self.skipTest('set JARVIS_SPEECH_TEST_RAW to upstream goforward.raw (not bundled)')
         pcm = Path(path).read_bytes() + bytes(32000)
         self.engine.begin_command()
         events = [result for offset in range(0, len(pcm) - self.engine.frame_bytes + 1,

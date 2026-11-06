@@ -43,7 +43,7 @@ controller process remained running during that initial switch. The switch
 replaces the unsaved RAM history; it does not save a clip.
 
 The buffer is under the private local data directory
-`~/.local/share/murmur/replay-buffer/`, using an owned `0700` session directory.
+`~/.local/share/jarvis/replay-buffer/`, using an owned `0700` session directory.
 Disk mode continuously writes unsaved video and the enabled game/microphone
 tracks. Stop removes the live session; crash leftovers are cleaned at the
 next replay start. Normal filesystem deletion is not secure erasure. Encoded

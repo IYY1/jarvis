@@ -6,11 +6,11 @@ import json
 import unittest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from murmur.config import DEFAULTS
-from murmur.daemon import Service
-from murmur.speech import Recognition
-from murmur.state import Activation
-from murmur.voice import run
+from jarvis.config import DEFAULTS
+from jarvis.daemon import Service
+from jarvis.speech import Recognition
+from jarvis.state import Activation
+from jarvis.voice import run
 
 
 class CaptureDeadlineTests(unittest.TestCase):
@@ -55,13 +55,13 @@ class WorkerDeadlineTests(unittest.TestCase):
         selector.select.side_effect = frame
         capture = MagicMock()
         capture.stderr = io.BytesIO()
-        with patch("murmur.voice._parent_death"), patch("murmur.voice.signal.signal"), \
-                patch("murmur.voice.make_engine", return_value=engine), \
-                patch("murmur.voice.subprocess.Popen", return_value=capture), \
-                patch("murmur.voice.selectors.DefaultSelector", return_value=selector), \
-                patch("murmur.voice.os.read", return_value=bytes(960)), \
-                patch("murmur.voice.time.monotonic", side_effect=lambda: clock[0]), \
-                patch("murmur.voice.emit") as emit:
+        with patch("jarvis.voice._parent_death"), patch("jarvis.voice.signal.signal"), \
+                patch("jarvis.voice.make_engine", return_value=engine), \
+                patch("jarvis.voice.subprocess.Popen", return_value=capture), \
+                patch("jarvis.voice.selectors.DefaultSelector", return_value=selector), \
+                patch("jarvis.voice.os.read", return_value=bytes(960)), \
+                patch("jarvis.voice.time.monotonic", side_effect=lambda: clock[0]), \
+                patch("jarvis.voice.emit") as emit:
             run(config, "once", [])
         messages = [call.kwargs for call in emit.call_args_list]
         self.assertFalse(any(message.get("event") == "error" for message in messages))
@@ -119,13 +119,13 @@ class WorkerControlTests(unittest.TestCase):
                         raise SystemExit(0)
                     return [(keys[name], 1) for name in order]
                 selector.select.side_effect = select
-                with patch("murmur.voice._parent_death"), patch("murmur.voice.signal.signal"), \
-                        patch("murmur.voice.make_engine", return_value=engine), \
-                        patch("murmur.voice.subprocess.Popen", return_value=capture), \
-                        patch("murmur.voice.selectors.DefaultSelector", return_value=selector), \
-                        patch("murmur.voice.os.read", side_effect=lambda fd, _size: lines.pop(0) if fd == 0 else bytes(960)), \
-                        patch("murmur.voice.time.monotonic", return_value=100.0), \
-                        patch("murmur.voice.emit") as emit, self.assertRaises(SystemExit):
+                with patch("jarvis.voice._parent_death"), patch("jarvis.voice.signal.signal"), \
+                        patch("jarvis.voice.make_engine", return_value=engine), \
+                        patch("jarvis.voice.subprocess.Popen", return_value=capture), \
+                        patch("jarvis.voice.selectors.DefaultSelector", return_value=selector), \
+                        patch("jarvis.voice.os.read", side_effect=lambda fd, _size: lines.pop(0) if fd == 0 else bytes(960)), \
+                        patch("jarvis.voice.time.monotonic", return_value=100.0), \
+                        patch("jarvis.voice.emit") as emit, self.assertRaises(SystemExit):
                     run(config, "wake_word", [])
                 self.assertEqual([c.kwargs["listening"] for c in emit.call_args_list
                                   if c.kwargs.get("event") == "ready"], [False, True, False])
@@ -146,13 +146,13 @@ class WorkerControlTests(unittest.TestCase):
         selector.select.side_effect = select
         capture = MagicMock()
         capture.stderr = io.BytesIO()
-        with patch("murmur.voice._parent_death"), patch("murmur.voice.signal.signal"), \
-                patch("murmur.voice.make_engine", return_value=engine) as make_engine, \
-                patch("murmur.voice.subprocess.Popen", return_value=capture) as popen, \
-                patch("murmur.voice.selectors.DefaultSelector", return_value=selector), \
-                patch("murmur.voice.os.read", side_effect=lambda fd, _size: lines.pop(0) if fd == 0 else bytes(960)), \
-                patch("murmur.voice.time.monotonic", return_value=100.0), \
-                patch("murmur.voice.emit") as emit, self.assertRaises(SystemExit):
+        with patch("jarvis.voice._parent_death"), patch("jarvis.voice.signal.signal"), \
+                patch("jarvis.voice.make_engine", return_value=engine) as make_engine, \
+                patch("jarvis.voice.subprocess.Popen", return_value=capture) as popen, \
+                patch("jarvis.voice.selectors.DefaultSelector", return_value=selector), \
+                patch("jarvis.voice.os.read", side_effect=lambda fd, _size: lines.pop(0) if fd == 0 else bytes(960)), \
+                patch("jarvis.voice.time.monotonic", return_value=100.0), \
+                patch("jarvis.voice.emit") as emit, self.assertRaises(SystemExit):
             run(config, "wake_word", [])
         make_engine.assert_called_once()
         popen.assert_called_once()
@@ -166,7 +166,7 @@ class WorkerControlTests(unittest.TestCase):
 
 class BackgroundDeliveryTests(unittest.IsolatedAsyncioTestCase):
     async def test_service_dispatches_bounded_late_result_without_a_ui_watcher(self):
-        with patch("murmur.daemon.AppRegistry", return_value=MagicMock(index={})):
+        with patch("jarvis.daemon.AppRegistry", return_value=MagicMock(index={})):
             service = Service({"privacy": {"onboarded": True}})
         service.activation.clock = lambda: 109.0
         worker = MagicMock()

@@ -123,7 +123,7 @@ six runs were the expected `ten meters`. Raw results:
 
 ### Live service check
 
-After `murmur.service` was restarted on the staged binaries, a sampler read the
+After `jarvis.service` was restarted on the staged binaries, a sampler read the
 live voice worker four times a second. The noise-suppression setting was on.
 The wake phrase was followed by speech that was not a known command, and
 Whisper transcribed it. Whisper was released 71 seconds after loading: 60
@@ -259,7 +259,7 @@ All 45 commands were the expected `ten meters`.
 Save the existing worker before building, then run the sequential comparison:
 
 ```sh
-cp src/murmur/bin/jarvis-voice /tmp/jarvis-voice-before
+cp src/jarvis/bin/jarvis-voice /tmp/jarvis-voice-before
 .venv/bin/python scripts/build_voice_worker.py --test --offline
 .venv/bin/python scripts/benchmark_whisper_on_demand.py \
   --fixture build/refactor-review/goforward.raw \
@@ -285,6 +285,6 @@ reproduces the missed wakes:
 ```sh
 .venv/bin/python scripts/benchmark_load_cycles.py \
   --fixture build/refactor-review/goforward.raw \
-  --arm current=src/murmur/bin/jarvis-voice \
-  --resident resident=src/murmur/bin/jarvis-voice --cycles 15
+  --arm current=src/jarvis/bin/jarvis-voice \
+  --resident resident=src/jarvis/bin/jarvis-voice --cycles 15
 ```

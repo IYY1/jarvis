@@ -35,10 +35,10 @@ pub async fn install(service: bool, replace: bool, dry_run: bool) -> Result<()> 
     let config = env::var_os("XDG_CONFIG_HOME")
         .map(PathBuf::from)
         .unwrap_or_else(|| util::home().join(".config"));
-    let mut files=vec![(data.join("applications/org.murmur.Controller.desktop"),format!("[Desktop Entry]\nType=Application\nName=Jarvis\nGenericName=Local voice controller\nComment=Control Hyprland by voice and configure screen recording\nExec={cli} ui\nIcon=audio-input-microphone\nTerminal=false\nCategories=Utility;Accessibility;\nKeywords=voice;Hyprland;microphone;recording;jarvis;assistant;\nStartupNotify=true\nActions=Recorder;\n\n[Desktop Action Recorder]\nName=Open recorder\nExec={cli} ui --page recording\n"))];
+    let mut files=vec![(data.join("applications/org.jarvis.Controller.desktop"),format!("[Desktop Entry]\nType=Application\nName=Jarvis\nGenericName=Local voice controller\nComment=Control Hyprland by voice and configure screen recording\nExec={cli} ui\nIcon=audio-input-microphone\nTerminal=false\nCategories=Utility;Accessibility;\nKeywords=voice;Hyprland;microphone;recording;jarvis;assistant;\nStartupNotify=true\nActions=Recorder;\n\n[Desktop Action Recorder]\nName=Open recorder\nExec={cli} ui --page recording\n"))];
     if service {
         let controller = quote(&crate::controller()?.to_string_lossy(), false)?;
-        files.push((config.join("systemd/user/murmur.service"),format!("[Unit]\nDescription=Jarvis local voice controller\nAfter=graphical-session.target pipewire.service\nPartOf=graphical-session.target\n\n[Service]\nType=simple\nEnvironment=MURMUR_MANAGED_SERVICE=1\nExecStart={controller}\nRestart=on-failure\nRestartSec=3\nTimeoutStopSec=25\nKillMode=mixed\nUMask=0077\n\n[Install]\nWantedBy=graphical-session.target\n")));
+        files.push((config.join("systemd/user/jarvis.service"),format!("[Unit]\nDescription=Jarvis local voice controller\nAfter=graphical-session.target pipewire.service\nPartOf=graphical-session.target\n\n[Service]\nType=simple\nEnvironment=JARVIS_MANAGED_SERVICE=1\nExecStart={controller}\nRestart=on-failure\nRestartSec=3\nTimeoutStopSec=25\nKillMode=mixed\nUMask=0077\n\n[Install]\nWantedBy=graphical-session.target\n")));
     }
     for (path, content) in &files {
         if fs::symlink_metadata(path).is_ok() {
@@ -81,7 +81,7 @@ pub async fn install(service: bool, replace: bool, dry_run: bool) -> Result<()> 
         }
     );
     if voice::project_root().is_none() {
-        eprintln!("Keep the native binaries at their installed paths. The settings window requires MURMUR_UI_PYTHON or Python/GTK on PATH.");
+        eprintln!("Keep the native binaries at their installed paths. The settings window requires JARVIS_UI_PYTHON or Python/GTK on PATH.");
     }
     Ok(())
 }

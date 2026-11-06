@@ -4,15 +4,15 @@ Jarvis uses Python and GTK4 through PyGObject. There is no browser runtime in th
 
 ![Actual GTK4 window, connected to an isolated service with microphone consent disabled](ui-preview.png)
 
-The desktop entry opens **Overview**. Its **Open recorder** action opens the Recorder page without starting capture. On every page the header shows the microphone state (Connecting, Mic off, Waiting for wake word, Listening, Working, Needs attention, Offline) beside **Mute microphone**, plus a **Replay on** pill while instant replay keeps its buffer; gold marks the live states. The eight pages provide:
+The desktop entry opens **Overview**. Its **Open recorder** action opens the Capture page without starting capture. On every page the header shows the microphone state (Connecting, Mic off, Waiting for wake word, Listening, Working, Dictating, Needs attention, Offline) beside **Mute microphone**, plus a **Replay on** pill while instant replay keeps its buffer; gold marks the live states. The seven pages:
 
-- **Overview:** pushed voice/recording status, immediate voice microphone mute, one bounded command session and privacy setup guidance.
-- **Commands:** searchable supported actions with examples, and custom phrase mappings to validated built-in commands.
-- **Applications:** installed desktop entries, search, and application aliases mapped to desktop IDs. A maximum of 30 results is rendered until search narrows the list.
-- **Recorder:** explicit start/stop, an **Instant replay** card (state, Save replay, Start/Stop, replay length, Game sound, Microphone, Clip sound, Start with Jarvis), saved-file/error feedback, display selection, output folder, audio-source discovery and setup acknowledgement. **Color / HDR** applies to recording and replay: Automatic detects HDR at start; Preserve HDR uses AV1 or HEVC 10-bit; SDR requires display HDR off. HDR displays are marked in the display list, and capture messages show HDR/SDR. The **Picture & storage** card offers an FPS slider, GPU AV1/HEVC/H.264 or legacy H.264 encoders, quality presets, bitrate budgets, storage/replay estimates and Small/Balanced/Smooth presets. Numeric legacy H.264 tuning stays collapsed. Audio capture requires an explicit source; the current backend supports one source at a time. A combined source must be configured outside Jarvis and explicitly enabled in Recorder before both audio flags can be selected.
-- **Clips:** saved replays and recordings, newest first, with an in-window player (created on the first Play, released on Close player or when leaving the page), **Open in your player** and **Show in folder**.
-- **Voice & microphone:** activation mode (hands-free or push-to-talk) and wake phrase, microphone discovery with an opt-in level test, and recognizer status. Recognition switches, sensitivity, command score and timeout, and the speech energy threshold sit in the collapsed **Fine-tuning** section.
-- **Privacy & startup:** first-use consent describing the resident wake recognizer, and enable/disable for the optional installed user service.
+- **Overview:** voice state and message, Listen once, Start/Stop dictation (with any text that could not be typed and a Copy button), recording and replay state with the sound each keeps, Save replay / Start recording / Clips, the most recent action or error, and a few phrases to try.
+- **Voice:** activation and wake names; Language (English, or Arabic and English with the Arabic model status and download); Dictation (start/stop, language, stop phrases, quiet timeout, keyboard fallback, shortcut instructions); microphone and level test; recognizer; Fine-tuning folded away.
+- **Commands:** searchable supported actions in English and Arabic, and custom phrase mappings.
+- **Apps:** installed apps (duplicates such as Flatpak copies shown once), voice names, adding AppImages or portable programs, close words.
+- **Capture:** recording status, Instant replay (length, sound, separate tracks and per-app tracks), capture source, Picture & storage (Recommended / Compatible / Choose, with formats tested on the display's GPU), and **Advanced capture settings** for replay storage, audio routing, exact formats and legacy tuning.
+- **Clips:** a compact library and the clip editor ([clips](clips.md)).
+- **Privacy:** first-use consent and start at login.
 
 ## Privacy and microphone lifecycle
 
@@ -30,6 +30,7 @@ All controls are native GTK widgets. Keyboard focus is visible, form controls ha
 | --- | --- |
 | Ctrl+M | Mute/unmute voice input; first-use consent is still required |
 | Ctrl+Space | Listen once; cancel an active command session |
+| Ctrl+D | Start or stop dictation |
 | Ctrl+K | Open command reference |
 | Ctrl+W | Close settings |
 
@@ -50,7 +51,7 @@ On 20 October 2026, GTK 4.24.1/PyGObject construction succeeded for all six page
 - voice and recorder settings round trips;
 - adding and removing a command shortcut, preserving unrelated configuration;
 - command search filtering and page construction;
-- a second `murmur ui --page recording` request routing an existing window to Recorder in an isolated session bus;
+- a second `jarvis ui --page recording` request routing an existing window to Recorder in an isolated session bus;
 - microphone remaining muted and `microphone_open=false` throughout the checks.
 
 A final native-display construction smoke, with IPC disabled and no window presented, also verified the sound-feedback save field and combined-source acknowledgement gating both audio flags. No microphone or recorder calls were made. A further native widget check with explicit status fixtures verified that model-loading events leave speech support unconfirmed, readiness repairs initially incorrect app flags, dictionary limitations and the Stremio alias hint appear, and repeated level-only events do not rebuild application widgets.
@@ -62,9 +63,9 @@ For a construction smoke check without accessing audio, start a temporary `gtk4-
 ```sh
 GDK_BACKEND=broadway BROADWAY_DISPLAY=:18 PYTHONPATH=src python - <<'PY'
 from gi.repository import GLib
-from murmur.ui import Gtk, JarvisWindow
+from jarvis.ui import Gtk, JarvisWindow
 assert Gtk.init_check()
-app = Gtk.Application(application_id="org.murmur.ConstructionCheck")
+app = Gtk.Application(application_id="org.jarvis.ConstructionCheck")
 app.register(None)
 window = JarvisWindow(app)
 assert window.stack.get_pages().get_n_items() == 8

@@ -2,7 +2,7 @@
 
 Jarvis uses `gpu-screen-recorder` for GPU H.264, HEVC and AV1 recording, HDR and instant replay. Existing H.264 CPU/legacy VA-API settings continue to use `wf-recorder` for SDR. Opening recording settings and starting capture are separate actions. The start action launches no window, portal, region selector, or terminal; it names the configured monitor explicitly and disconnects standard input. A compositor permission prompt is still possible if permission has not been established. Complete and test setup outside a game first.
 
-The desktop controls are the normal route. For integration checks with the daemon already running, use `murmur ui --page recording` to open setup, `murmur record start` to capture, and `murmur record stop` to save. `murmur config` shows the current settings. In a source checkout, prefix the equivalent invocations with `PYTHONPATH=src .venv/bin/python -m murmur`.
+The desktop controls are the normal route. For integration checks with the daemon already running, use `jarvis ui --page recording` to open setup, `jarvis record start` to capture, and `jarvis record stop` to save. `jarvis config` shows the current settings. In a source checkout, prefix the equivalent invocations with `PYTHONPATH=src .venv/bin/python -m jarvis`.
 
 ## Backend choice and limits
 
@@ -22,7 +22,7 @@ The installed wf-recorder help/man page and [upstream usage](https://github.com/
 2. Choose an output folder with sufficient space. Jarvis creates it when capture starts, reserves each new file with mode `0600`, and does not overwrite recordings.
 3. Select no audio, microphone, or system audio. Audio is off by default. For microphone, select the Pulse source name of the input. For system audio, choose the output sink's `.monitor` source. PipeWire systems normally provide these through `pipewire-pulse` and `pactl`.
 4. To record both, create/review your own combined audio source before gaming, select it explicitly, and set `combined_audio_source: true`. That routing is outside this initial release. Selecting both without this acknowledgment fails safely; it does not silently omit either input.
-5. Choose a format, size control and frame rate under **Picture & storage**. Start with 30 fps. Hardware AV1 is an efficient option on supported recent GPUs; choose H.264 for broad sharing compatibility. Test the chosen GPU format and driver before gaming.
+5. Choose a **Preset** under **Picture & storage** (Recommended is AV1 at 60 fps where the GPU supports it); **Advanced** holds the exact format, resolution, frame rate and bitrate. Test a short recording before gaming.
 6. Check compositor capture permission, make a short test clip, and play it back. Confirm that it shows the intended screen and audio, produces no permission prompt on a second capture, and leaves focus on the game. Then mark recording setup complete (`configured: true`). This flag records your setup acknowledgment; it does not grant permissions or prove future sessions will remain permitted.
 
 [Hyprland's permission documentation](https://wiki.hypr.land/configuring/core/advanced-configuration/permissions/) describes screencopy allow/ask/deny rules. In current Lua configuration, an explicit grant looks like:
@@ -35,17 +35,116 @@ Review that grant before adding it: it allows the named recorder to capture with
 
 ## Simple picture and storage controls
 
-The Recorder page provides a 1–60 FPS slider, five encoder paths, three GPU quality levels and an optional video bitrate budget (1–100 Mbps). These settings also apply to instant replay. There are no profile, GOP, B-frame or lookahead controls to configure.
+**Capture → Picture & storage** offers three choices; the exact list is under
+**Advanced capture settings**. These settings also apply to instant replay.
 
-| Format | Use when | Backend |
-| --- | --- | --- |
-| AV1 GPU | Smaller files at comparable quality, with a recent GPU and compatible player/editor | GPU Screen Recorder |
-| HEVC GPU | Efficient storage with HEVC-aware tools | GPU Screen Recorder |
-| H.264 GPU | Easy sharing and editing across devices | GPU Screen Recorder |
-| H.264 CPU | Keep the existing compatible software path | wf-recorder, two x264 threads, ultrafast |
-| H.264 VA-API (legacy) | Keep an existing tested render-device setup | wf-recorder |
+**Picture & storage → Preset** picks everything at once; **Advanced** under it
+holds each setting. Changing any of them shows the preset as *Custom*.
 
-The [OBS format guide](https://obsproject.com/kb/audio-video-formats-guide) ranks available hardware encoders AV1, then HEVC, then H.264 for high-quality local recording and explains the compatibility tradeoffs. That is a practical starting point, not a guarantee for every GPU generation or scene. Software AV1 can be CPU intensive, so Jarvis offers GPU AV1 and never silently falls back to CPU encoding. An FFmpeg codec listing does not prove hardware support. New GPU choices are checked against the codec reported by `ffprobe` before a file is reported saved.
+Recording and instant replay use the same video settings by default. Turn off
+**Replay uses the same video settings** to give replay its own (for example 2K
+120 fps recordings with a lighter 1080p replay); **Settings for** then chooses
+which one the preset and Advanced settings change. They are stored as
+`replay.own_video` plus `replay.codec`, `fps`, `resolution`, `rate_control`,
+`quality_preset` and `bitrate_mbps`; replay always records with a GPU format.
+
+**Saving while capture runs** applies the change at once: the service stops a
+running recording (saved as its own file) and starts a new one, and restarts a
+running replay with an empty history. Only captures whose settings changed
+restart. The service does this itself, so it works from any settings window,
+including one opened before an update, and the save reply lists what restarted.
+
+| Preset | Format | Resolution | Frame rate | Size |
+| --- | --- | --- | --- | --- |
+| **Recommended** (default) | AV1 when the display's GPU encodes it, else HEVC, else H.264 | Display's own | 60 fps | Consistent quality, Sharp |
+| **High quality** | AV1 10-bit (HEVC 10-bit without AV1) | Display's own | 60 fps | Consistent quality, **Maximum** |
+| **High frame rate · 120 fps** | as Recommended | Display's own | 120 fps | Consistent quality, Sharp |
+| **Small files · 1080p** | as Recommended | 1080p at most | 30 fps | Fixed 8 Mbps |
+| **Compatible · H.264** | H.264 | Display's own | 60 fps | Consistent quality, Sharp |
+
+**Folder for each game** (`recording.game_folders`, on by default): a
+recording goes in a folder named after the game focused when it starts, and a
+saved replay clip after the game focused when it is saved, for example
+`Videos/…/Deadlock/Replay_….mp4`. Steam games are named from Steam's own
+manifest (Proton windows are `steam_app_<id>`) or their `steamapps/common`
+folder; Heroic and Lutris games from their `~/Games` folder; other Wine `.exe`
+and gamescope windows by their title. On Windows: programs under
+`steamapps\common`, `Epic Games` or `GOG Galaxy\Games`. Anything else stays in
+the main folder, and Clips lists both.
+
+**Fixed bitrate is the default, and it follows the picture.** With **Match
+resolution and frame rate** on (`bitrate_auto`, the default), the bitrate is
+set when capture starts from the output size, frame rate and format: about
+0.075 bits per pixel for AV1/HEVC and 0.11 for H.264, between 4 and 500 Mbps.
+2K at 60 fps in AV1 is about 17 Mbps, 2K at 120 fps 33, 1080p at 60 fps 9, 4K at
+60 fps 37. Turning the switch off keeps the bitrate you type.
+
+**Advanced** settings: format (AV1 10-bit, AV1, HEVC 10-bit, HEVC, H.264, and a
+legacy encoder only if already in use), **resolution** (the display's own, or at
+most 4K, 2K, 1080p or 720p: `recording.resolution` is `native`, `2160`, `1440`,
+`1080` or `720`, passed as GPU Screen Recorder's `-s` output-size limit, which
+scales down keeping the aspect ratio and never scales up), **frames per second**
+(1–240), size control, quality (Compact, Balanced, Sharp, Maximum) and bitrate
+(1–500 Mbps). On this machine a 3-second capture on DP-3 (2560×1440, 180 Hz)
+at 120 fps with a 1080p limit came out as AV1 1920×1080 at 120 fps (341 frames
+in 2.89 s). The game has to reach a frame rate for the recording to show it.
+Windows does not offer a smaller resolution yet, and the legacy CPU/VA-API
+recorder records the display's own size only.
+
+**Why there is no format above AV1.** For live capture on the GPU, AV1 is the
+best format any current graphics card encodes. Its successor AV2 got its first
+encoder in 2026 and no GPU encodes it in hardware yet; H.266/VVC has no GPU
+encoder either. Truly lossless formats (FFV1, x264 lossless, ProRes) run on the
+CPU: at 1440p60 they would compete with the game for every core and write
+hundreds of megabits per second. High quality therefore raises the quality
+setting instead of changing the format: GPU Screen Recorder's `ultra` preset
+(`recording.quality_preset: "ultra"`, shown as **Maximum**), which its authors
+describe as more than most recordings need. On this machine (RX 9070, AV1
+10-bit, 2560×1440, a mostly still desktop) 3 seconds took 869 KiB at Maximum
+versus 699 KiB at Sharp; fast game scenes grow more. A replay keeps fewer
+seconds within the same memory budget.
+
+**AV1 10-bit** (`recording.codec: "av1_10bit"`) has the highest quality ceiling
+for SDR: 10 bits per channel remove the banding 8-bit leaves in dark scenes,
+skies and gradients, even at high bitrates, and files are only slightly larger
+than 8-bit AV1. It runs on the GPU's video encoder like the other GPU formats,
+so it costs games about the same. The tradeoff is playback: older phones and
+GPUs and some editors can't decode 10-bit AV1. `hevc_10bit` is the same idea
+for GPUs without AV1 (on this machine, DP-5's integrated GPU). Each is offered
+only when its 10-bit encoder test passes, and saved files are checked for a
+10-bit pixel format. On HDR displays both use the HDR path below. Windows does
+not record 10-bit SDR yet; these settings record the 8-bit format of the same
+family there.
+
+HDR always uses AV1 or HEVC 10-bit. VP9 is not offered: neither AMD nor NVIDIA
+GPUs encode it in hardware (only some Intel GPUs do), and AV1 does the same job
+better. H.264 on the CPU (wf-recorder, two x264 threads) and the legacy VA-API
+wf-recorder path are no longer offered for new setups. Configurations that
+already use them keep working unchanged and show a banner suggesting the
+recommended format; nothing changes until you save.
+
+**Formats are tested, not assumed.** For the chosen display, Jarvis finds the
+GPU it is connected to (`/sys/class/drm/cardN-<output>`) and encodes 15
+synthetic frames per format with FFmpeg (VA-API on AMD/Intel, NVENC on NVIDIA);
+nothing is captured from the screen. On the development machine (2026-11-05):
+
+| Display | GPU | H.264 | HEVC (10-bit) | AV1 (10-bit) | VP9 |
+| --- | --- | --- | --- | --- | --- |
+| DP-1/2/3 | RX 9070 | ✓ | ✓ (✓) | ✓ (✓) | ✗ |
+| DP-4/5/6 | Raphael iGPU | ✓ | ✓ (✓) | ✗ (✗) | ✗ |
+
+`gpu-screen-recorder --info` describes only the first GPU (here the iGPU), and
+`ffmpeg -encoders` only what was compiled in, so neither decides. Saving a
+format that failed the test is refused with the reason. A failure at capture
+start is still reported as an error; there is never a silent CPU fallback.
+NVENC probing is implemented but was not run (no NVIDIA GPU here). On Windows
+the existing synthetic-frame probe in `windows/encoding.py` selects AMF, NVENC
+or QSV.
+
+The [OBS format guide](https://obsproject.com/kb/audio-video-formats-guide)
+ranks hardware AV1, then HEVC, then H.264 for local recording quality, and
+explains the compatibility tradeoffs: HEVC lacks support in some browsers and
+free editors; AV1 needs recent hardware or software decoding.
 
 **Consistent quality** lets bitrate and file size vary with content. GPU Compact / Balanced / Sharp map to the backend's `medium` / `high` / `very_high` QP presets. The legacy numeric H.264 value remains under advanced tuning. Existing configurations retain their encoder, CRF/QP and default GPU quality behavior.
 
@@ -68,7 +167,7 @@ Example: `recording.codec: "av1"`, `fps: 30`, `rate_control: "bitrate"`, `bitrat
   "recording": {
     "configured": false,
     "monitor": "DP-5",
-    "output_dir": "~/Videos/Murmur",
+    "output_dir": "~/Videos/Jarvis",
     "system_audio": false,
     "microphone": false,
     "audio_device": "",
@@ -113,11 +212,11 @@ The status changes to `recording` once the backend has started; the message accu
 
 Stop sends SIGINT to the owned child, waits for completion, verifies a nonempty video stream using `ffprobe`, flushes the file, then atomically publishes a final `.mkv` name without overwriting another file. Only then does it report **Saved recording**. This is structural validation, not an exhaustive decode or content/privacy check. If the backend hangs, bounded termination follows and the partial file stays marked as partial. Keep the daemon's normal shutdown handler and user service enabled so owned recordings receive a graceful stop. A forced process or machine shutdown cannot guarantee a final trailer.
 
-Crashes and failed finalization retain nonempty hidden `.Murmur_*.part.mkv` files and show the path. Empty partials are removed. Jarvis does not automatically publish them as successful clips or restart capture after a crash. To inspect/recover a retained partial, preserve the original and try:
+Crashes and failed finalization retain nonempty hidden `.Jarvis_*.part.mkv` files and show the path. Empty partials are removed. Jarvis does not automatically publish them as successful clips or restart capture after a crash. To inspect/recover a retained partial, preserve the original and try:
 
 ```sh
-ffprobe -v error -show_streams '/absolute/path/.Murmur_example.part.mkv'
-ffmpeg -n -i '/absolute/path/.Murmur_example.part.mkv' -map 0 -c copy '/absolute/path/recovered.mkv'
+ffprobe -v error -show_streams '/absolute/path/.Jarvis_example.part.mkv'
+ffmpeg -n -i '/absolute/path/.Jarvis_example.part.mkv' -map 0 -c copy '/absolute/path/recovered.mkv'
 ```
 
 Matroska often permits recovery of completed clusters, but recovery is not guaranteed. `-n` prevents an existing recovery file being overwritten. Play the recovery and check the end of the video before deleting the partial. Opening settings does not recover or delete files.
@@ -171,12 +270,58 @@ Instant replay keeps the last seconds of the selected display, plus game sound a
 - **Off until you start it:** the Recorder page's **Start replay**, “start replay”, or `jarvis replay start`. **Start with Jarvis** turns it on whenever the service starts. The header shows **Replay on** and Waybar shows ⟲ while the buffer runs.
 - **Save:** “clip that”, “save that”, “save replay”, the **Save replay** button or `jarvis replay save` writes the whole buffer to the recordings folder as an MP4 and checks it with `ffprobe`. Say a length to keep only the end of it: “clip the last 25 seconds”, “clip last 25 seconds”, “save the last 2 minutes”, “clip the last minute” (1–59 seconds or 1–30 minutes; a length longer than the buffer saves all of it). RAM mode writes no video before Save; disk mode writes unsaved buffers continuously.
 - **Stop:** “stop replay”, the button, `jarvis replay stop`, service shutdown or a service crash (parent-death SIGINT) end the child and discard the buffer.
-- **Sound:** **Game sound** records the default output (everything you hear) and **Microphone** the default input; both are on by default and mixed into one track. They follow your PipeWire default devices.
+- **Sound:** **Game sound** records the default output (everything you hear) and **Microphone** the default input; both are on by default and mixed into one track unless you choose [separate tracks](#separate-sound-tracks). They follow your PipeWire default devices.
 - **Clip sound:** a short rising chirp confirms each saved clip and a low tone reports a failed save; **Clip sound** turns it off.
 - **Settings:** replay length is 10–1800 seconds (30 minutes; default 120). In RAM mode the recorder holds the whole buffer in memory, so a 20-minute replay of fast game footage can take several GB; use disk storage for long replays. Replay uses the Recorder display, color mode and folder. Stop replay before changing capture settings, storage, buffer directory or budget; they apply when the buffer starts. Clip sound and Start with Jarvis can change while replay runs.
 - **Watch:** the **Clips** page lists saved replays and recordings, newest first, and plays them in the window. Playing MP4 there needs `gst-plugins-good` (`sudo pacman -S gst-plugins-good`); **Open in your player** works without it. The player is created on the first Play and released when you close it or leave the page.
 - **Cost (measured 2026-10-21, gpu-screen-recorder 6.1.4, 2560×1440 at 30 fps, H.264 on the GPU):** the recorder used 48 MiB PSS (115 MiB RSS) and 0.7% of one CPU core while buffering a mostly still desktop; a save took 0.09 s. The buffered video adds to that and grows with motion, resolution and frame rate: the still desktop produced about 0.33 MB/s (≈40 MB per two minutes); fast game footage needs several times more.
 - **Permissions:** monitor capture goes through gpu-screen-recorder's privileged KMS helper (`gsr-kms-server`) installed by the package. Review that before enabling replay.
+
+### Separate sound tracks
+
+**Capture → Instant replay → Sound tracks → Separate tracks** keeps sound apart,
+so you can, for example, play a game while listening to a podcast in Firefox,
+save a replay, and later export it without the podcast in **Clips**:
+
+| Track | gpu-screen-recorder source | Holds |
+| --- | --- | --- |
+| Game and other apps | `app-inverse:Firefox` | Every app's sound except the apps you listed |
+| Firefox (one track per listed app, up to four) | `app:Firefox` | Only that app |
+| Microphone | `default_input` | Your voice |
+
+The game track deliberately uses `app-inverse:` rather than the default output,
+which would contain the podcast again and make it impossible to remove. Use the
+app name gpu-screen-recorder lists (**Show apps playing sound now** runs
+`gpu-screen-recorder --list-application-audio`). An app that starts playing after
+the replay starts is still captured.
+
+Tested 2026-11-05 with gpu-screen-recorder 6.1.6 and named test tones played into
+a silent PipeWire sink, in an audio-only recording and in a real saved replay:
+the Firefox track held its tone at −8 dB with the game tone 41 dB lower, and
+the game track held the game tone with the Firefox tone 28 dB lower. Neither
+residue follows the beep timing (it is spectral spill from the test bursts), so
+no leakage was measurable. Both tracks start at the same timestamp; offsets
+between apps were below what this test resolves. MP4 replays lose the
+recorder's track names, so Jarvis stores them in a hidden `.NAME.tracks.json`
+beside the clip (the editor falls back to “Audio 1”, “Audio 2”).
+
+Limits: sound that was already mixed can't be separated afterwards. Players
+other than Jarvis's editor usually play only the first track. Recordings (not
+replays) keep their single explicit audio source.
+
+**Windows (Windows 11 only, not yet run on Windows).** Per-app capture uses
+Windows' process-loopback API, which Microsoft documents for build 20348 and
+later, so Windows 11, not Windows 10 22H2
+([AUDIOCLIENT_ACTIVATION_TYPE](https://learn.microsoft.com/en-us/windows/win32/api/audioclientactivationparams/ne-audioclientactivationparams-audioclient_activation_type)).
+Replay → Sound tracks → *Separate tracks* records three tracks: everything
+except the chosen program, that program alone (`jarvis-voice --app-audio`
+captures each one, filling silent gaps so tracks stay in step with the video)
+and the microphone. Name the program by its file name without `.exe` (for
+example `firefox`) and start it before replay; its whole process tree is
+captured, so browser tabs count. Windows can leave out only one process tree,
+so one program can have its own track. On Windows 10 Jarvis refuses separate
+tracks with a message and keeps the mixed default. This path is
+compile-checked and unit-tested on Linux, but has not run on Windows 11.
 
 ### Replay storage and privacy
 
@@ -190,8 +335,8 @@ snapshots and SSD behavior can retain data. A deleted buffer is not a saved clip
 `replay.storage` is `ram` or `disk`; `replay.max_mb` is a 64–16384 MiB budget
 (default 256; Linux disk mode needs at least 512, see below); `replay.buffer_dir`
 is an optional **dedicated private directory**.
-The default Linux path is `$XDG_DATA_HOME/murmur/replay-buffer` or
-`~/.local/share/murmur/replay-buffer`. Linux requires an owned private directory
+The default Linux path is `$XDG_DATA_HOME/jarvis/replay-buffer` or
+`~/.local/share/jarvis/replay-buffer`. Linux requires an owned private directory
 and creates files under a `0700` session directory with a private child umask.
 It refuses tmpfs and ramfs, including this development machine's `/tmp`.
 Choose an actual disk; moving video into RAM-backed temporary files saves no RAM.

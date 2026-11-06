@@ -1,3 +1,3 @@
-from murmur.entry import main
+from jarvis.entry import main
 
 raise SystemExit(main())

@@ -27,7 +27,7 @@ def build(description, targets, completion):
     crate, binary = targets[-1]
     source = root / "native" / crate / "target/release" / binary
     subprocess.run([str(source), "--version"], check=True)
-    destination = root / "src/murmur/bin"
+    destination = root / "src/jarvis/bin"
     destination.mkdir(exist_ok=True)
     for crate, binary in targets:
         source = root / "native" / crate / "target/release" / binary
