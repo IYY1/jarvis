@@ -17,7 +17,7 @@ import uuid
 from ..host import child_options, command as worker_command, tool
 from ..recorder import RecorderError, capture_color, verify_video
 from ..replay import write_track_names
-from ..encoding import replay_video, with_auto_bitrate
+from ..encoding import replay_fit_seconds, replay_video, with_auto_bitrate
 from . import encoding
 
 
@@ -31,6 +31,25 @@ def sources():
     from .displays import sources as discover
 
     return discover()
+
+
+def replay_budget_warning(cfg, replay, audio_tracks):
+    """Status text when the budget can't hold the chosen length at this bitrate."""
+    fit = replay_fit_seconds(cfg, replay["max_mb"], audio_tracks)
+    if fit is None or fit >= replay["seconds"]:
+        return ""
+    return (f" · About {fit} of {replay['seconds']} seconds fit in this budget;"
+            " raise the budget or lower the bitrate")
+
+
+def replay_shortfall_warning(wanted, retained, captured):
+    """Status text when a clip lost history to the budget rather than to warm-up.
+
+    Two seconds of margin: more segments can arrive while a save prepares its files.
+    """
+    if retained >= wanted or captured <= wanted + 2:
+        return ""
+    return f" · The budget kept only {retained} of {wanted} seconds; raise it or lower the bitrate"
 
 
 class ReplayBuffer:
@@ -272,7 +291,8 @@ class _Capture:
                 self._set(
                     "on" if self.replay else "recording",
                     f"{'Replay' if self.replay else 'Recorder'} running · {self._codec.upper()} · {self._color.upper()} · {family}"
-                    + (f" · {self.config['replay']['storage']} · {self.config['replay']['max_mb']} MiB budget" if self.replay else ""),
+                    + (f" · {self.config['replay']['storage']} · {self.config['replay']['max_mb']} MiB budget"
+                       + replay_budget_warning(cfg, self.config["replay"], len(plan)) if self.replay else ""),
                     partial,
                 )
                 threading.Thread(
@@ -425,6 +445,7 @@ class Replay(_Capture):
                     self._codec,
                 )
                 titles = [title for _, title in self._audio if title]
+            length = self.config["replay"]["seconds"]
             # Wait for the current independent segment so the requested moment
             # is included. This may add up to one second of later video.
             tag = (
@@ -435,6 +456,7 @@ class Replay(_Capture):
             partial = folder / f".Jarvis_replay_{tag}.part.mkv"
             final = folder / f"Replay_{tag}.mkv"
             with buffer.files(after=time.monotonic(), timeout=2) as paths:
+                captured = buffer.next
                 if seconds is not None:
                     # One-second segments, plus the one finishing at the request.
                     paths = paths[-(seconds + 1):]
@@ -491,7 +513,9 @@ class Replay(_Capture):
             else:
                 self._set(
                     "on" if self._process is not None and not self._requested else "off",
-                    f"Saved replay: {final.name} · {len(paths)} seconds retained ({self.config['replay']['max_mb']} MiB {self.config['replay']['storage']} budget)",
+                    f"Saved replay: {final.name} · {len(paths)} seconds retained ({self.config['replay']['max_mb']} MiB {self.config['replay']['storage']} budget)"
+                    + replay_shortfall_warning(
+                        min(seconds or length, length), len(paths), captured),
                     final,
                 )
             return self.status()

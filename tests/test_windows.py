@@ -19,7 +19,7 @@ from jarvis.recorder import RecorderError
 from jarvis.windows import encoding, transport
 from jarvis.windows.audio import PCMStream, select_device
 from jarvis.windows.apps import WindowsApp
-from jarvis.windows.capture import Replay, ReplayBuffer
+from jarvis.windows.capture import Replay, ReplayBuffer, replay_budget_warning
 
 try:
     import tkinter  # noqa: F401  (the Windows settings window needs Tk)
@@ -503,6 +503,57 @@ class ReplaySaveTests(unittest.TestCase):
             self.assertIsNotNone(status['file'])
             self.assertEqual(Path(status['file']).read_bytes(), b'completed clip retained for inspection')
             self.assertIn('retained', status['message'])
+
+    def saved(self, folder, segments, captured, seconds=None, length=120):
+        """Save a fake replay; return its status message."""
+        root = Path(folder)
+        paths = [root / f'segment-{index:04d}.mkv' for index in range(segments)]
+        for path in paths:
+            path.write_bytes(b'segment')
+        settings = config.validate({'replay': {'seconds': length}, 'recording': {'game_folders': False}})
+        capture = Replay(settings)
+        capture._buffer, capture._folder, capture._process = MagicMock(next=captured), root, MagicMock()
+        capture._buffer.files.return_value.__enter__.return_value = tuple(paths)
+
+        def remux(argv, **kwargs):
+            Path(argv[-1]).write_bytes(b'clip')
+            return types.SimpleNamespace(returncode=0)
+
+        with patch('jarvis.windows.capture.tool', return_value='fake-ffmpeg'), \
+                patch('jarvis.windows.capture.subprocess.run', side_effect=remux), \
+                patch('jarvis.windows.capture.verify_video'), \
+                patch('jarvis.windows.capture.write_track_names'):
+            return capture.save(seconds)['message']
+
+    def test_a_clip_the_budget_shortened_says_so(self):
+        with tempfile.TemporaryDirectory() as folder:
+            self.assertIn('kept only 47 of 120 seconds', self.saved(folder, 47, captured=300))
+
+    def test_full_clips_and_warm_up_do_not_warn_about_the_budget(self):
+        for segments, captured, seconds in ((120, 300, None), (47, 47, None), (31, 300, 30)):
+            with self.subTest(segments=segments, captured=captured, seconds=seconds), \
+                    tempfile.TemporaryDirectory() as folder:
+                self.assertNotIn('kept only', self.saved(folder, segments, captured, seconds))
+
+    def test_a_requested_length_is_judged_against_that_length(self):
+        with tempfile.TemporaryDirectory() as folder:
+            self.assertIn('kept only 47 of 60 seconds', self.saved(folder, 47, captured=300, seconds=60))
+
+
+class ReplayBudgetWarningTests(unittest.TestCase):
+    replay = {'max_mb': 256, 'seconds': 120}
+
+    def test_a_budget_too_small_for_the_length_is_reported_at_start(self):
+        warning = replay_budget_warning({'rate_control': 'bitrate', 'bitrate_mbps': 46}, self.replay, 2)
+        self.assertIn('About 46 of 120 seconds', warning)
+
+    def test_a_budget_that_fits_is_silent(self):
+        for mbps, replay in ((8, self.replay), (17, {'max_mb': 512, 'seconds': 120})):
+            with self.subTest(mbps=mbps):
+                self.assertEqual(replay_budget_warning({'rate_control': 'bitrate', 'bitrate_mbps': mbps}, replay, 2), '')
+
+    def test_quality_rate_control_makes_no_prediction(self):
+        self.assertEqual(replay_budget_warning({'rate_control': 'quality', 'bitrate_mbps': 500}, self.replay, 2), '')
 
 
 class TransportTests(unittest.TestCase):

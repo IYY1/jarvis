@@ -99,3 +99,15 @@ def gpu_video_args(color, cfg=None):
 def storage_estimate(cfg, seconds=60):
     """Decimal video MB; audio/container overhead and rate-control variation excluded."""
     return cfg.get("bitrate_mbps", 8) * seconds / 8
+
+
+def replay_fit_seconds(cfg, max_mb, audio_tracks=0):
+    """Seconds a replay budget (MiB) holds at this bitrate, with 160 kb/s per audio track.
+
+    None for quality-based rate control, whose size can't be predicted. Container
+    overhead and rate-control variation are excluded.
+    """
+    if cfg.get("rate_control") != "bitrate":
+        return None
+    mbps = cfg.get("bitrate_mbps", 8) + 0.16 * audio_tracks
+    return int(max_mb * 1024**2 * 8 / (mbps * 1e6))
