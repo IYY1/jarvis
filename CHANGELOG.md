@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Windows: a tidier window. Home fits on one screen, six sidebar pages use short
+  tabs, technical video options fold away, switches replace tick boxes, and the
+  title bar matches the window. Memory stays about the same.
+- Windows: the Capture page says whether the replay budget holds the chosen
+  length, and the app list fills itself when first opened.
 - Windows: say so when the replay budget can't hold the chosen length, both
   when replay starts and when a clip comes out shorter than asked.
 - Service log: timestamp Windows log lines, and record the exit code and last

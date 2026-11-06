@@ -98,12 +98,14 @@ class Home:
         self.record_text, actions = self.tile(row, 0, GLYPH_RECORD, "Recording")
         self.record_button = ttk.Button(actions, text="Start", width=8, command=self.toggle_recording)
         self.record_button.pack(side="left", padx=(0, 6))
+        self.record_buttons = [self.record_button]
         ttk.Button(actions, text="Folder", width=8, command=w.open_folder).pack(side="left")
 
         self.replay_text, actions = self.tile(row, 1, GLYPH_REPLAY, "Instant replay")
         self.replay_button = ttk.Button(actions, text="Start", width=8, command=self.replay_action)
         self.replay_button.pack(side="left", padx=(0, 6))
         self.replay_stop = ttk.Button(actions, text="Stop", width=8, command=lambda: w.call("replay_stop"))
+        self.replay_buttons, self.replay_stops = [self.replay_button], [self.replay_stop]
 
         self.dictation_text, actions = self.tile(row, 2, GLYPH_DICTATE, "Dictation")
         w.dictate_button = ttk.Button(actions, text="Start dictation", command=lambda: w.voice_controls.toggle())
@@ -180,16 +182,19 @@ class Home:
     def show_recording(self, recording):
         state = recording.get("state", "idle")
         running = state == "recording"
-        self.record_button.configure(text="Stop" if running else "Start", style="Danger.TButton" if running else "TButton",
-                                     state="disabled" if state == "stopping" else "normal")
+        for button in self.record_buttons:
+            button.configure(text="Stop" if running else "Start", style="Danger.TButton" if running else "TButton",
+                             state="disabled" if state == "stopping" else "normal")
         message = str(recording.get("message") or "")
         self.record_text.set(message if state == "error" else {"recording": "Recording your screen.", "stopping": "Finishing the file…"}
                              .get(state, "Not recording."))
 
     def show_replay(self, replay):
         on = replay.get("state") == "on"
-        self.replay_button.configure(text="Save clip" if on else "Start", style="Primary.TButton" if on else "TButton")
-        self.replay_stop.pack(side="left") if on else self.replay_stop.pack_forget()
+        for button in self.replay_buttons:
+            button.configure(text="Save clip" if on else "Start", style="Primary.TButton" if on else "TButton")
+        for stop in self.replay_stops:
+            stop.pack(side="left", padx=(0, 8)) if on else stop.pack_forget()
         message = str(replay.get("message") or "")
         seconds = self.window.config["replay"]["seconds"]
         length = f"{seconds // 60} minutes" if seconds % 60 == 0 and seconds >= 120 else f"{seconds} seconds"

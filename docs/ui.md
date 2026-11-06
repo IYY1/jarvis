@@ -18,7 +18,16 @@ A sidebar with icons holds seven pages. The desktop entry opens **Home**; its **
 
 Each setting is one row: a name, one line saying what it does, and the control. Where more is worth knowing (HDR, separate tracks, password fields), an ⓘ button opens the details, so the page stays short. Content is centered at a readable width in a wide window; button rows wrap and long choices end in “…” on a narrow one (the window is at least 800 × 540).
 
-The Windows window has the same pages, plus **Diagnostics**, the same apply-as-you-change saving and the same colors. Voice names, shortcuts and close words are edited as lists there too; shortcuts are no longer raw JSON.
+The Windows window keeps the same apply-as-you-change saving, but is laid out differently, so that what you use most is in front of you. Its sidebar holds six pages, with status, **Mute** and the menu always in the same corner:
+
+- **Home** fits on one screen: the voice state with the one action that fits it, a tile each for recording, instant replay and dictation whose buttons follow their state, quick settings, and phrases to try.
+- **Voice** has tabs for the wake word and microphone, language, dictation, and fine-tuning.
+- **Apps & commands** has tabs for apps, which load when first opened, what you can say, and your shortcuts.
+- **Capture** has tabs for recording, instant replay, and picture and size. A preset is enough; the format, bitrate and encoder are folded under **Show all options**. The replay tab says whether the budget holds the chosen length at the current bitrate.
+- **Clips** has tabs for the library, sound, and editing and export. Opening a clip moves to its sound.
+- **Settings** has tabs for general settings, privacy and diagnostics.
+
+It adds the neutral **Graphite** colors, and is its default for anyone who hasn't chosen colors. Its rounded controls are small opaque pictures drawn once by `windows/look.py`. Pictures are large enough that ttk needs few tiles to fill a card, because each tile is drawn separately. Text wraps only on a page that can be seen: a hidden page has no width of its own, and its text and size would otherwise chase each other forever.
 
 ## Settings apply as they change
 

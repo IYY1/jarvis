@@ -3,7 +3,7 @@ import threading
 import tkinter as tk
 from tkinter import ttk
 
-from ..encoding import REPLAY_VIDEO, storage_estimate, auto_bitrate
+from ..encoding import REPLAY_VIDEO, replay_fit_seconds, storage_estimate, auto_bitrate
 
 PRESETS = {
     "Recommended": ("best", "native", 60, "bitrate", "very_high"),
@@ -20,7 +20,7 @@ class VideoSettings:
         self.window, self.formats, self.panels, self.presets = window, {}, {}, {}
         self.applying = False
         self.testing = False
-        self.display = {"width": 1920, "height": 1080}
+        self.display = {"width": window.root.winfo_screenwidth(), "height": window.root.winfo_screenheight()}
         window.switch(card, "Replay has its own video settings", "replay", "own_video",
                       "Off: replay uses recording settings. On: edit the Replay profile below.")
         self.profile = tk.StringVar(value="Recording")
@@ -28,8 +28,7 @@ class VideoSettings:
         picker.bind("<<ComboboxSelected>>", lambda _: self.show())
         window.row(card, "Settings for", picker)
         self.holder = ttk.Frame(card, style="Card.TFrame")
-        window.line(card, self.holder)
-        self.holder.pack_configure(fill="x", expand=True)
+        window.wide(card, self.holder)
         self.holder.columnconfigure(0, weight=1)
         for section in ("recording", "replay"):
             p = ttk.Frame(self.holder, style="Card.TFrame")
@@ -41,7 +40,11 @@ class VideoSettings:
             self.presets[section] = preset
             pick = ttk.Combobox(p, values=(*PRESETS, "Custom"), textvariable=preset, state="readonly", width=29)
             pick.bind("<<ComboboxSelected>>", lambda _, section=section: self.apply(section))
-            window.row(p, "Preset", pick)
+            window.row(p, "Preset", pick, "Pick one and you're done. Every detail is below if you want it.")
+            more = ttk.Frame(p, style="Card.TFrame")
+            more.columnconfigure(0, weight=1)
+            more.next_row = 0
+            p = self.details(p, more)
             window.choice(p, "Format", section, "codec", {
                 "H.264 · easy sharing": "h264", "HEVC": "hevc", "AV1": "av1",
                 "HEVC 10-bit · SDR": "hevc_10bit", "AV1 10-bit · SDR": "av1_10bit",
@@ -56,13 +59,44 @@ class VideoSettings:
             window.choice(p, "Quality", section, "quality_preset", {"Compact": "medium", "Balanced": "high", "Sharp": "very_high", "Maximum": "ultra"})
             for key in REPLAY_VIDEO:
                 window.variable(section, key).trace_add("write", lambda *_, section=section: self.edited(section))
-        window.choice(card, "Encoder", "recording", "encoder", {"Automatic · GPU": "auto", "NVIDIA · NVENC": "nvenc", "AMD · AMF": "amf", "Intel · Quick Sync": "qsv", "CPU · H.264 only": "cpu"})
-        self.info = tk.StringVar(value="Test formats on the display's GPU before choosing AV1 or 10-bit.")
-        window.line(card, ttk.Label(card, textvariable=self.info, style="Caption.TLabel", wraplength=520))
-        window.buttons(card, [("Test GPU formats", self.test_formats)])
+            self.match(section)
         self.summary = tk.StringVar()
-        window.line(card, ttk.Label(card, textvariable=self.summary, style="Caption.TLabel", wraplength=520))
+        window.line(card, ttk.Label(card, textvariable=self.summary, style="Row.TLabel", wraplength=640))
+        self.toggle = window.buttons(card, [("Show all options", self.fold)]).winfo_children()[0]
+        more = ttk.Frame(card, style="Card.TFrame")
+        more.columnconfigure(0, weight=1)
+        more.next_row = 0
+        self.details(card, more)
+        window.choice(more, "Encoder", "recording", "encoder", {"Automatic · GPU": "auto", "NVIDIA · NVENC": "nvenc", "AMD · AMF": "amf", "Intel · Quick Sync": "qsv", "CPU · H.264 only": "cpu"})
+        self.info = tk.StringVar(value="Test formats on the display's GPU before choosing AV1 or 10-bit.")
+        window.line(more, ttk.Label(more, textvariable=self.info, style="Caption.TLabel", wraplength=640))
+        window.buttons(more, [("Test GPU formats", self.test_formats)])
         self.show()
+
+    def details(self, parent, frame):
+        """Technical options, folded away until asked for."""
+        self.folds = getattr(self, "folds", []) + [frame]
+        frame.grid(row=parent.next_row, column=0, columnspan=2, sticky="ew")
+        parent.next_row += 1
+        frame.grid_remove()
+        return frame
+
+    def fold(self):
+        opening = not self.folds[0].winfo_manager() or not self.folds[0].grid_info()
+        for frame in self.folds:
+            frame.grid() if opening else frame.grid_remove()
+        self.toggle.configure(text="Hide options" if opening else "Show all options")
+
+    def match(self, section):
+        """Name the preset the saved settings already are, instead of calling them Custom."""
+        v = self.window.variable
+        for name, (kind, resolution, fps, rate, quality) in PRESETS.items():
+            codec = str(v(section, "codec").get())
+            codecs = {"best": ("av1", "hevc", "h264"), "ten": ("av1_10bit", "hevc_10bit")}.get(kind, (kind,))
+            if (codec in codecs and str(v(section, "resolution").get()) == resolution and int(float(v(section, "fps").get())) == fps
+                    and v(section, "rate_control").get() == rate and bool(v(section, "bitrate_auto").get())):
+                self.presets[section].set(name)
+                return
 
     def show(self):
         key = self.profile.get().lower()
@@ -104,8 +138,26 @@ class VideoSettings:
             cfg['fps'], cfg['bitrate_mbps'] = int(float(cfg['fps'])), int(float(cfg['bitrate_mbps']))
             mbps = auto_bitrate(cfg, self.display['width'], self.display['height']) if cfg['bitrate_auto'] else cfg['bitrate_mbps']
             self.summary.set(f"{section.capitalize()}: {cfg['fps']} fps · {mbps} Mbps · about {storage_estimate({'bitrate_mbps': mbps}):g} MB/min of video. Quality mode varies.")
+            self.show_replay_fit()
         except (ValueError, TypeError, tk.TclError):
             self.summary.set("Enter valid whole-number frame rate and bitrate values.")
+
+    def show_replay_fit(self):
+        """How much replay the budget really holds, at the settings replay will use."""
+        window = self.window
+        v = window.variable
+        section = "replay" if v("replay", "own_video").get() else "recording"
+        cfg = {key: v(section, key).get() for key in REPLAY_VIDEO}
+        cfg["fps"], cfg["bitrate_mbps"] = int(float(cfg["fps"])), int(float(cfg["bitrate_mbps"]))
+        if cfg["bitrate_auto"]:
+            cfg["bitrate_mbps"] = auto_bitrate(cfg, self.display["width"], self.display["height"])
+        tracks = bool(v("replay", "game_audio").get()) + bool(v("replay", "microphone").get())
+        seconds, budget = int(float(v("replay", "seconds").get())), int(float(v("replay", "max_mb").get()))
+        fit = replay_fit_seconds(cfg, budget, tracks)
+        window.replay_fit.set(
+            "Its size can't be predicted in Consistent quality mode." if fit is None else
+            f"At {cfg['bitrate_mbps']} Mbps the budget holds the full {seconds} seconds." if fit >= seconds else
+            f"At {cfg['bitrate_mbps']} Mbps only about {fit} of {seconds} seconds fit. Raise the budget or lower the bitrate.")
 
     def test_formats(self):
         if self.testing:

@@ -82,7 +82,8 @@ class SettingsWindowTests(unittest.TestCase):
         for key, _title in NAVIGATION:
             self.window.show(key)
             self.assertEqual(self.window.current, key)
-        for old, new in (("activation", "voice"), ("replay", "recording"), ("privacy", "general"), ("nope", "dashboard")):
+        for old, new in (("activation", "voice"), ("replay", "recording"), ("privacy", "general"), ("nope", "dashboard"),
+                         ("applications", "commands"), ("diagnostics", "general")):
             self.window.show(old)
             self.assertEqual(self.window.current, new)
 
@@ -121,6 +122,51 @@ class SettingsWindowTests(unittest.TestCase):
         self.window.received(self.status())
         self.assertFalse(self.window.config["privacy"]["onboarded"])
         self.assertTrue(self.window.onboard_card.winfo_children()[0].cget("text"), "the heading lives inside the card")
+
+    def test_hidden_pages_do_not_wrap_their_text(self):
+        # A hidden page has no width of its own: wrapping there never settles.
+        label = next(item for item in self.window.wrapped if not item.winfo_viewable())
+        before = label.cget("wraplength")
+        self.window.wrap(label)
+        self.assertEqual(label.cget("wraplength"), before)
+
+    def test_technical_video_options_stay_folded_until_asked_for(self):
+        video = self.window.video
+        self.assertTrue(all(not frame.grid_info() for frame in video.folds))
+        video.fold()
+        self.assertTrue(all(frame.grid_info() for frame in video.folds))
+        self.assertEqual(video.toggle.cget("text"), "Hide options")
+        video.fold()
+        self.assertTrue(all(not frame.grid_info() for frame in video.folds))
+
+    def test_saved_settings_name_their_preset(self):
+        video, variable = self.window.video, self.window.variable
+        for key, value in dict(codec="av1", resolution="native", fps=120, rate_control="bitrate", bitrate_auto=True).items():
+            variable("recording", key).set(value)
+        video.match("recording")
+        self.assertEqual(video.presets["recording"].get(), "High frame rate · 120 fps")
+
+    def test_replay_page_says_whether_the_budget_holds_the_length(self):
+        video, variable = self.window.video, self.window.variable
+        video.display = {"width": 2560, "height": 1440}
+        for key, value in dict(codec="av1", fps=165, rate_control="bitrate", bitrate_auto=True).items():
+            variable("recording", key).set(value)
+        variable("replay", "own_video").set(False)
+        variable("replay", "seconds").set("120")
+        variable("replay", "max_mb").set("256")
+        video.show_replay_fit()
+        self.assertIn("only about 46 of 120 seconds", self.window.replay_fit.get())
+        variable("replay", "max_mb").set("2048")
+        video.show_replay_fit()
+        self.assertIn("holds the full 120 seconds", self.window.replay_fit.get())
+
+    def test_the_app_list_loads_itself_once_when_first_opened(self):
+        self.window.online = True
+        with patch.object(self.window, "call") as call:
+            self.window.show("commands")
+            self.window.show("dashboard")
+            self.window.show("commands")
+        call.assert_called_once_with("apps", self.window.show_apps)
 
     def test_changing_colors_redraws_without_errors(self):
         from jarvis import palettes

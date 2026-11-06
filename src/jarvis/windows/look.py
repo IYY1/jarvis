@@ -137,6 +137,8 @@ def apply(style, root, r):
             ("Danger.TButton", r["error-bg"], r["error-bg"], r["card"], r["error-text"]),
             ("Header.TButton", r["control"], r["control-hover"], r["surface"], None),
             ("Muted.TButton", r["live-soft"], r["live-soft"], r["surface"], r["live"]),
+            ("Tab.TButton", r["bg"], r["control"], r["bg"], None),
+            ("TabOn.TButton", r["control"], r["control"], r["bg"], None),
             ("Nav.TButton", r["surface"], r["control"], r["surface"], None),
             ("NavOn.TButton", r["selected"], r["selected"], r["surface"], None)):
         _boxed(style, shapes, name, "Button", button, fill, under, hover=hover, disabled=r["disabled"],

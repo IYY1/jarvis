@@ -19,8 +19,8 @@ class ClipsPanel:
         self.touched = set()
         self.files = []
         self.scanning = False
-        window.subtitle(page, "Keep the sound you want and export a new copy. The original is never changed.")
-        library = window.group(page, "Clips", "Open a saved recording or replay. Already mixed sound cannot be separated.")
+        self.tabs = window.tabs(page, [("library", "Library"), ("sound", "Sound"), ("edit", "Edit and export")])
+        library = window.group(self.tabs["library"], "Clips", "Open a saved recording or replay. Already mixed sound cannot be separated.")
         window.buttons(library, [("Open clip…", self.choose), ("Refresh recordings", self.refresh),
                                  ("Open recordings folder", window.open_folder)])
         self.library = ttk.Treeview(library, columns=("file",), show="headings", height=5, selectmode="browse")
@@ -31,7 +31,7 @@ class ClipsPanel:
         self.library.bind("<Return>", self.open_selected)
         window.buttons(library, [("Open selected", self.open_selected)])
 
-        editor = window.group(page, "Sound tracks", "Separate tracks must be enabled before capture. Windows 11 separates one program from the rest of system sound.")
+        editor = window.group(self.tabs["sound"], "Sound tracks", "Separate tracks must be enabled before capture. Windows 11 separates one program from the rest of system sound.")
         self.name = tk.StringVar(value="Open a clip to choose its tracks.")
         window.line(editor, ttk.Label(editor, textvariable=self.name, style="Card.TLabel", wraplength=520))
         window.buttons(editor, [("Keep all", lambda: self.keep_all(True)), ("Mute all", lambda: self.keep_all(False))])
@@ -42,14 +42,14 @@ class ClipsPanel:
         window.row(editor, "Mix kept tracks into one", ttk.Checkbutton(editor, variable=self.mix),
                    "Leave off to keep the selected tracks separate.")
 
-        cuts = window.group(page, "Sections", "Start/end mark a section in the edited timeline. Preview opens the original in your default player.")
+        cuts = window.group(self.tabs["edit"], "Sections", "Start/end mark a section in the edited timeline. Preview opens the original in your default player.")
         window.buttons(cuts, [("Preview in player", self.preview), ("Keep section", lambda: self.change("keep")),
                               ("Remove section", lambda: self.change("remove"))])
         window.buttons(cuts, [("Split at start", lambda: self.change("split")), ("Undo", lambda: self.change("undo")),
                               ("Join clip…", self.join)])
         self.sections = tk.StringVar(value="")
         window.line(cuts, ttk.Label(cuts, textvariable=self.sections, style="Caption.TLabel", wraplength=520))
-        output = window.group(page, "Export copy")
+        output = window.group(self.tabs["edit"], "Export copy", "The original is never changed.")
         self.start, self.end = tk.StringVar(value="0"), tk.StringVar(value="0")
         window.row(output, "Start (seconds)", ttk.Entry(output, textvariable=self.start, width=12))
         window.row(output, "End (seconds)", ttk.Entry(output, textvariable=self.end, width=12))
@@ -128,6 +128,7 @@ class ClipsPanel:
         self.start.set("0")
         self.end.set(str(source.duration))
         self.edited()
+        self.tabs.show("sound")
         self.progress.set("Checking for silent tracks…" if source.audio else "This clip has no sound tracks.")
         for widget in self.track_box.winfo_children():
             widget.destroy()

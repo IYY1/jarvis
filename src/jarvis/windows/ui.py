@@ -27,10 +27,10 @@ from . import look
 from .home import Home
 
 # Sidebar order: (page, title).
-NAVIGATION = [("dashboard", "Home"), ("voice", "Voice"), ("commands", "Commands"),
-              ("applications", "Apps"), ("recording", "Capture"), ("clips", "Clips"), ("general", "General"),
-              ("diagnostics", "Diagnostics")]
-PAGE_ALIASES = {"activation": "voice", "replay": "recording", "privacy": "general"}   # older links
+NAVIGATION = [("dashboard", "Home"), ("voice", "Voice"), ("commands", "Apps & commands"),
+              ("recording", "Capture"), ("clips", "Clips"), ("general", "Settings")]
+PAGE_ALIASES = {"activation": "voice", "replay": "recording", "privacy": "general",   # older links
+                "applications": "commands", "diagnostics": "general"}
 
 PRIVACY_FACTS = [
     ("Everything stays on this computer", "Speech is recognized locally. No account, cloud service or API key."),
@@ -41,6 +41,34 @@ PRIVACY_FACTS = [
     ("Mute is one click away", "Use Mute at the top of this window, or Ctrl+M. Closing this window keeps Jarvis "
                                "in the notification area; Quit Jarvis stops it."),
 ]
+
+
+class Tabs:
+    """Short sections of one page, one shown at a time."""
+
+    def __init__(self, window, bar, holder, items):
+        self.window, self.frames, self.buttons = window, {}, {}
+        for key, label in items:
+            frame = ttk.Frame(holder)
+            frame.columnconfigure(0, weight=1)
+            frame.next_row = 0
+            frame.grid(row=0, column=0, sticky="new")
+            self.frames[key] = frame
+            self.buttons[key] = ttk.Button(bar, text=label, style="Tab.TButton", width=0, command=lambda key=key: self.show(key))
+            self.buttons[key].pack(side="left", padx=(0, 4))
+        self.show(items[0][0])
+
+    def __getitem__(self, key):
+        return self.frames[key]
+
+    def show(self, key):
+        for name, frame in self.frames.items():
+            frame.grid() if name == key else frame.grid_remove()
+            self.buttons[name].configure(style="TabOn.TButton" if name == key else "Tab.TButton")
+        current = getattr(self.window, "current", None)
+        if current in self.window.canvases:
+            self.window.canvases[current].yview_moveto(0)
+        self.window.root.after_idle(self.window.rewrap)
 
 
 class Window:
@@ -60,12 +88,15 @@ class Window:
         self.status = {}
         self.palette = palettes.chosen("graphite")
         self.shapes = None
+        self.apps_loaded = False
+        self.wrapped = []          # labels that wrap to their width
         root.title("Jarvis")
         root.geometry(f"{min(1060, root.winfo_screenwidth() - 60)}x{min(680, root.winfo_screenheight() - 80)}")
         root.minsize(860, 540)
         self.style = ttk.Style(root)
         self.family = "Segoe UI" if os.name == "nt" else tkfont.nametofont("TkDefaultFont").actual("family")
         self.apply_theme()
+        root.bind("<Map>", lambda event: self.color_title_bar() if event.widget is root else None, add="+")
 
         body = ttk.Frame(root)
         body.pack(fill="both", expand=True)
@@ -131,6 +162,8 @@ class Window:
         buttons = {"TButton": (r["control"], r["text"], r["line-strong"], r["control-hover"]),
                    "Primary.TButton": (r["accent"], r["on-accent"], r["accent"], r["accent-hover"]),
                    "Danger.TButton": (r["error-bg"], r["error-text"], r["error-text"], r["error-bg"]),
+                   "Tab.TButton": (r["bg"], r["text-muted"], r["bg"], r["control"]),
+                   "TabOn.TButton": (r["control"], r["text"], r["control"], r["control"]),
                    "Nav.TButton": (r["surface"], r["text-muted"], r["surface"], r["control"]),
                    "NavOn.TButton": (r["selected"], r["text"], r["selected"], r["selected"]),
                    "Header.TButton": (r["control"], r["text"], r["line-strong"], r["control-hover"]),
@@ -183,7 +216,8 @@ class Window:
         self.logo = look.image(self.root, look.logo_png(44, r["surface"], r["accent"], r["text"]))
         self.icon = look.image(self.root, look.logo_png(32, r["surface"], r["accent"], r["text"]))
         self.root.iconphoto(True, self.icon)
-        self.root.after(0, look.title_bar, self.root, r["surface"], r["text"], palettes.ALL_PRESETS[self.palette]["dark"])
+        if self.root.winfo_ismapped():
+            self.color_title_bar()
         if hasattr(self, "logo_label"):
             self.logo_label.configure(image=self.logo)
         if hasattr(self, "home"):
@@ -193,6 +227,10 @@ class Window:
                 widget.configure(**{option: r[role] for option, role in options.items()})
             except tk.TclError:
                 pass   # destroyed
+
+    def color_title_bar(self):
+        r = palettes.roles(self.palette)
+        look.title_bar(self.root, r["surface"], r["text"], palettes.ALL_PRESETS[self.palette]["dark"])
 
     def choose_palette(self, name):
         if self.loading or name == self.palette:
@@ -271,6 +309,15 @@ class Window:
         inner.next_row = 1
         return inner
 
+    def tabs(self, page, items):
+        bar = ttk.Frame(page)
+        bar.grid(row=page.next_row, column=0, sticky="w", pady=(10, 0))
+        holder = ttk.Frame(page)
+        holder.grid(row=page.next_row + 1, column=0, sticky="ew")
+        holder.columnconfigure(0, weight=1)
+        page.next_row += 2
+        return Tabs(self, bar, holder, items)
+
     def subtitle(self, page, text):
         self.wrapping(ttk.Label(page, text=text, style="Subtitle.TLabel", justify="left")).grid(
             row=page.next_row, column=0, sticky="ew", pady=(4, 8))
@@ -284,15 +331,34 @@ class Window:
             self.nav[name].configure(style="NavOn.TButton" if name == key else "Nav.TButton")
         self.pages[key].pack(fill="both", expand=True)
         self.current = key
+        self.root.after_idle(self.rewrap)
+        if key == "commands" and self.online and not self.apps_loaded:
+            self.apps_loaded = True   # the list stays empty otherwise, until someone finds Refresh
+            self.call("apps", self.show_apps)
 
     def scroll(self, event):
         if not isinstance(event.widget, (ttk.Combobox, ttk.Treeview, tk.Text, ttk.Spinbox)):
             self.canvases[self.current].yview_scroll(-int(event.delta / 120), "units")
 
     def wrapping(self, label):
-        """A label that wraps to its width."""
-        label.bind("<Configure>", lambda event: label.configure(wraplength=max(200, event.width - 4)))
+        """A label that wraps to its width, once it can be seen.
+
+        A hidden page has no width of its own: its text and its size would chase
+        each other forever. Showing a page or a tab wraps its text again.
+        """
+        self.wrapped.append(label)
+        label.bind("<Configure>", lambda _: self.wrap(label))
         return label
+
+    def wrap(self, label):
+        if label.winfo_viewable():
+            width = max(200, label.winfo_width() - 4)
+            if width != label.cget("wraplength"):
+                label.configure(wraplength=width)
+
+    def rewrap(self):
+        for label in self.wrapped:
+            self.wrap(label)
 
     def group(self, page, title, note=""):
         """A titled card of setting rows; returns the card."""
@@ -324,6 +390,13 @@ class Window:
                 item.pack(in_=holder, side="left", padx=(0, 8))
                 item.lift(holder)   # made before its holder: raise it, or Tk draws it underneath
         return holder
+
+    def wide(self, card, widget):
+        """One widget across the whole card. Packing it through a holder hangs Tk inside a hidden tab."""
+        self.divider(card)
+        widget.grid(row=card.next_row, column=0, columnspan=2, sticky="ew", pady=10)
+        card.next_row += 1
+        return widget
 
     def divider(self, card):
         if card.next_row and not getattr(card, "after_heading", False):
@@ -491,18 +564,20 @@ class Window:
         self.home.update(status)
         state = status.get("state", "paused")
         muted = bool(status.get("muted", True))
-        pills = {"paused": ("Muted", "Pill.TLabel"), "idle": ("Waiting for wake word", "PillCalm.TLabel"),
+        pills = {"paused": ("Muted", "Pill.TLabel"), "idle": ("Ready", "PillCalm.TLabel"),
                  "listening": ("Listening", "PillLive.TLabel"), "processing": ("Working", "PillLive.TLabel"),
                  "dictating": ("Dictating", "PillLive.TLabel"), "error": ("Needs attention", "PillOff.TLabel")}
         text, style = pills.get(state, (state.capitalize(), "Pill.TLabel"))
         self.pill.configure(text=text, style=style)
-        wake = str(self.config["activation"].get("wake_phrase", "jarvis")).capitalize()
+        wake = str(self.config["activation"].get("wake_phrase", "jarvis")).title()
         titles = {"paused": "Microphone muted", "idle": f"Waiting for “{wake}”", "listening": "Listening…",
                   "processing": "Working on it", "dictating": "Dictating", "error": "Voice needs attention"}
         self.voice_state.set(titles.get(state, state.capitalize()))
         self.voice_title.configure(style="Live.TLabel" if state in ("listening", "processing", "dictating") else "State.TLabel")
-        self.voice_message.set(("Microphone open · " if status.get("microphone_open") else "Microphone closed · ")
-                               + str(status.get("message", "")))
+        message = str(status.get("message", ""))
+        if state == "idle" and message.startswith("Waiting for"):
+            message = "say its name, then a command"   # the title says the rest
+        self.voice_message.set(("Microphone on · " if status.get("microphone_open") else "Microphone off · ") + message)
         self.mute_button.configure(text="Unmute" if muted else "Mute", style="Muted.TButton" if muted else "Header.TButton")
         recording, replay = status.get("recording", {}), status.get("replay", {})
         self.record_state.set(str(recording.get("message") or "Not recording"))
@@ -577,8 +652,9 @@ class Window:
         self.save(success="Microphone allowed. The wake word is on.")
 
     def build_voice(self, p):
-        self.subtitle(p, "Wake word, microphone and recognition. Everything is recognized on this computer.")
-        wake = self.group(p, "Wake word")
+        tabs = self.tabs(p, [("wake", "Wake word"), ("language", "Language"), ("dictation", "Dictation"),
+                             ("tuning", "Fine-tuning")])
+        wake = self.group(tabs["wake"], "Wake word")
         self.choice(wake, "Listen", "activation", "mode", {"When I say the wake word": "wake_word", "Only when I press Listen": "push_to_talk"},
                     "The wake word keeps the microphone open while unmuted; push to talk opens it for one command.")
         self.text(wake, "Wake name", "activation", "wake_phrase", detail="Short, and unlike the words in your games.")
@@ -586,20 +662,19 @@ class Window:
         self.text(wake, "Other names", variable=self.wake_aliases, detail="Separate with commas; up to eight names in all.")
 
         from .voice_controls import VoiceControls
-        self.voice_controls = VoiceControls(self, p)
+        self.voice_controls = VoiceControls(self, tabs["language"], tabs["dictation"])
 
-        microphone = self.group(p, "Microphone")
+        microphone = self.group(tabs["wake"], "Microphone")
         self.mic_choice = ttk.Combobox(microphone, textvariable=self.variable("audio", "device"), width=26)
         self.mic_choice.bind("<<ComboboxSelected>>", lambda _: self.changed(300))
         self.mic_choice.bind("<Return>", lambda _: self.changed(0))
         self.mic_choice.bind("<FocusOut>", lambda _: self.changed(0))
-        self.row(microphone, "Input", self.mic_choice, "Empty uses your Windows default input. Refresh to list inputs.")
+        self.row(microphone, "Input", self.mic_choice, "Empty uses your Windows default input.")
         self.buttons(microphone, [("Refresh inputs", lambda: self.call("devices", self.load_inputs)),
                                   ("Test microphone", lambda: self.call("mic_test", enabled=True)),
                                   ("End test", lambda: self.call("mic_test", enabled=False))])
-        self.line(microphone, "A microphone test runs for at most 15 seconds.", caption=True)
 
-        recognition = self.group(p, "Recognition")
+        recognition = self.group(tabs["tuning"], "Recognition")
         self.switch(recognition, "Accurate command model", "recognition", "accurate", "Whisper, offline. Off saves memory.")
         self.choice(recognition, "Command model", "recognition", "speech_model",
                     {"Small (most accurate)": "small", "Light (less memory)": "light"}, "Light uses about half the memory.")
@@ -607,7 +682,7 @@ class Window:
         self.switch(recognition, "Noise suppression", "recognition", "noise_suppression", "For steady noise such as fans; experimental.")
         self.switch(recognition, "Ignore background sound", "audio", "adaptive_gate", "Only a voice close to the microphone counts.")
 
-        tuning = self.group(p, "Fine-tuning", "The defaults suit most rooms. Change one at a time, then test with your own voice.")
+        tuning = self.group(tabs["tuning"], "Fine-tuning", "The defaults suit most rooms. Change one at a time, then test with your own voice.")
         self.number(tuning, "Longest command (seconds)", "activation", "command_timeout", 2, 15, 1)
         self.number(tuning, "Wake sensitivity", "activation", "sensitivity", 0, 1, 0.05, "Higher hears quieter wake names, but triggers more often.")
         self.number(tuning, "Minimum command score", "activation", "confidence", 0, 1, 0.05, "Lower accepts more, including mistakes.")
@@ -617,27 +692,26 @@ class Window:
         self.say(f"Found {len(result['devices'])} inputs. Pick one from the Input list.")
 
     def build_commands(self, p):
-        self.subtitle(p, "What you can say after your wake name, and shortcuts of your own.")
-        say = self.group(p, "Say this")
+        tabs = self.tabs(p, [("apps", "Apps"), ("say", "What you can say"), ("shortcuts", "Your shortcuts")])
+        self.build_applications(tabs["apps"])
+        say = self.group(tabs["say"], "Say this", "After your wake name.")
         for group in REFERENCE:
             self.row(say, group["title"], ttk.Label(say, text=" · ".join(f"“{e}”" for e in group["examples"][:2]), style="Caption.TLabel"))
-        custom = self.group(p, "Your shortcuts", "Map a phrase of your own to a built-in command. Shell commands are never run.")
+        custom = self.group(tabs["shortcuts"], "Your shortcuts", "Map a phrase of your own to a built-in command. Shell commands are never run.")
         self.commands = dict(self.config["commands"])
-        self.shortcut_tree = ttk.Treeview(custom, columns=("phrase", "command"), show="headings", height=5)
+        self.shortcut_tree = ttk.Treeview(custom, columns=("phrase", "command"), show="headings", height=4)
         self.shortcut_tree.heading("phrase", text="You say")
         self.shortcut_tree.heading("command", text="Jarvis runs")
-        self.line(custom, self.shortcut_tree)
-        self.shortcut_tree.pack_configure(fill="x", expand=True)
+        self.wide(custom, self.shortcut_tree)
         self.new_phrase, self.new_command = tk.StringVar(), tk.StringVar()
         self.line(custom, ttk.Label(custom, text="You say", style="Card.TLabel"), ttk.Entry(custom, textvariable=self.new_phrase, width=20),
                   ttk.Label(custom, text="Jarvis runs", style="Card.TLabel"), ttk.Entry(custom, textvariable=self.new_command, width=20))
         self.buttons(custom, [("Add shortcut", self.add_shortcut, "Primary.TButton"), ("Remove selected", self.remove_shortcut)])
         self.show_shortcuts()
-        apps = self.group(p, "Every app", "Open and close phrases for every installed app.")
-        self.application_commands = self.tk_widget(tk.Text(apps, height=12, wrap="word", state="disabled", relief="flat",
+        apps = self.group(tabs["say"], "Every app", "Open and close phrases for every installed app.")
+        self.application_commands = self.tk_widget(tk.Text(apps, height=8, wrap="word", state="disabled", relief="flat",
                                                            borderwidth=0), background="inset", foreground="text")
-        self.line(apps, self.application_commands)
-        self.application_commands.pack_configure(fill="x", expand=True)
+        self.wide(apps, self.application_commands)
 
     def show_shortcuts(self):
         self.shortcut_tree.delete(*self.shortcut_tree.get_children())
@@ -669,17 +743,14 @@ class Window:
         self.application_commands.configure(state="disabled")
 
     def build_applications(self, p):
-        self.subtitle(p, "Apps you can open, focus or close by voice. Give them names that are easy to say, or add "
-                         "programs Windows doesn't list.")
         apps = self.group(p, "Installed apps", "Select an app, type the name you'll say, then Add voice name. The "
                           "launch word goes before the name; clear it to say only the name.")
         self.app_filter = tk.StringVar()
         self.app_filter.trace_add("write", lambda *_: self.filter_apps())
         self.text(apps, "Search", variable=self.app_filter)
-        self.apps_tree = ttk.Treeview(apps, columns=("name", "id"), displaycolumns=("name",), show="headings", height=8)
+        self.apps_tree = ttk.Treeview(apps, columns=("name", "id"), displaycolumns=("name",), show="headings", height=6)
         self.apps_tree.heading("name", text="App")
-        self.line(apps, self.apps_tree)
-        self.apps_tree.pack_configure(fill="x", expand=True)
+        self.wide(apps, self.apps_tree)
         self.app_alias = tk.StringVar()
         self.launch_word = tk.StringVar(value="open")
         self.line(apps, ttk.Label(apps, text="Launch word", style="Card.TLabel"), ttk.Entry(apps, textvariable=self.launch_word, width=10),
@@ -690,11 +761,10 @@ class Window:
         self.prefixes = copy.deepcopy(self.config["app_prefixes"])
         self.app_names, self.all_apps = {}, []
         names = self.group(p, "Your voice names", "Removing a name keeps the app installed.")
-        self.alias_tree = ttk.Treeview(names, columns=("voice", "app"), show="headings", height=6)
+        self.alias_tree = ttk.Treeview(names, columns=("voice", "app"), show="headings", height=4)
         self.alias_tree.heading("voice", text="Say this")
         self.alias_tree.heading("app", text="App")
-        self.line(names, self.alias_tree)
-        self.alias_tree.pack_configure(fill="x", expand=True)
+        self.wide(names, self.alias_tree)
         self.alias_tree.bind("<<TreeviewSelect>>", self.select_alias)
         self.buttons(names, [("Remove selected", self.remove_alias)])
         self.refresh_aliases()
@@ -807,57 +877,61 @@ class Window:
         self.save(success="Removed.")
 
     def build_recording(self, p):
-        self.subtitle(p, "Recording, instant replay and the sound they keep. Changes apply right away: a running "
-                         "recording is saved and continues in a new file, and replay starts over empty.")
-        now = self.group(p, "Now")
-        self.line(now, self.wrapping(ttk.Label(now, textvariable=self.record_state, style="Row.TLabel", justify="left")))
-        self.buttons(now, [("Start recording", self.start_recording, "Primary.TButton"),
-                           ("Stop and save", lambda: self.call("record_stop")), ("Open folder", self.open_folder)])
-        self.line(now, self.wrapping(ttk.Label(now, textvariable=self.replay_state, style="Row.TLabel", justify="left")))
-        self.buttons(now, [("Save clip", lambda: self.call("replay_save"), "Primary.TButton"),
-                           ("Start replay", lambda: self.call("replay_start")), ("Stop replay", lambda: self.call("replay_stop"))])
+        tabs = self.tabs(p, [("recording", "Recording"), ("replay", "Instant replay"), ("picture", "Picture and size")])
 
-        replay = self.group(p, "Instant replay", "Keeps the last moments of the display below, ready to save as a clip. "
-                            "Saving finishes the current second, so a clip can run up to one second longer.")
-        self.number(replay, "Length (seconds)", "replay", "seconds", 10, 1800, 10, "Up to 1800 (30 minutes).")
-        self.switch(replay, "Game sound", "replay", "game_audio", "Everything you hear, from the default output.")
-        self.switch(replay, "Microphone", "replay", "microphone", "Your voice, from the default input.")
-        self.choice(replay, "Sound tracks", "replay", "audio_tracks",
-                    {"One mixed track": "mixed", "Separate tracks (Windows 11)": "separate"},
-                    "Separate tracks keep the game, one program and your microphone apart, so you can mute one "
-                    "later. Windows can separate one program; on Linux every app gets its own track.")
-        self.separate_app = tk.StringVar(value=", ".join(self.config["replay"]["separate_apps"]))
-        self.text(replay, "Program on its own track", variable=self.separate_app,
-                  detail="Its file name without .exe, for example firefox. Start it before replay.")
-        self.switch(replay, "Clip sound", "replay", "sound", "A short chirp when a clip is saved.")
-        self.switch(replay, "Start with Jarvis", "replay", "autostart", "Turn replay on whenever Jarvis starts.")
+        now = self.group(tabs["recording"], "Now")
+        self.wide(now, self.wrapping(ttk.Label(now, textvariable=self.record_state, style="Row.TLabel", justify="left")))
+        controls = self.buttons(now, [("Start", self.home.toggle_recording), ("Folder", self.open_folder)])
+        self.home.record_buttons.append(controls.winfo_children()[0])
 
-        source = self.group(p, "Source and files")
+        source = self.group(tabs["recording"], "Source and files", "Changes apply right away: a running recording is saved and continues in a new file.")
         self.display_choice = self.choice(source, "Display", "recording", "monitor", {self.config["recording"]["monitor"] or "Primary display":
                                                                                      self.config["recording"]["monitor"]})
         self.choice(source, "Color", "recording", "color_mode", {"Automatic": "auto", "SDR": "sdr", "HDR": "hdr"})
         self.text(source, "Save to", "recording", "output_dir")
         self.buttons(source, [("Refresh displays", lambda: self.call("monitors", self.load_displays)), ("Choose folder…", self.browse)])
-        self.switch(source, "Recording: system sound", "recording", "system_audio", "The Windows default output.")
-        self.switch(source, "Recording: microphone", "recording", "microphone", "The Windows default input.")
+        self.switch(source, "System sound", "recording", "system_audio", "The Windows default output.")
+        self.switch(source, "Microphone", "recording", "microphone", "The Windows default input.")
+        self.switch(source, "Folder for each game", "recording", "game_folders")
+        self.switch(source, "Recording sounds", "recording", "sound_feedback")
+        self.switch(source, "Voice commands can start recordings", "recording", "configured", "Turns on after your first recording.")
 
-        picture = self.group(p, "Picture and size")
+        now = self.group(tabs["replay"], "Now")
+        self.wide(now, self.wrapping(ttk.Label(now, textvariable=self.replay_state, style="Row.TLabel", justify="left")))
+        controls = self.buttons(now, [("Start", self.home.replay_action), ("Stop", lambda: self.call("replay_stop"))])
+        self.home.replay_buttons.append(controls.winfo_children()[0])
+        self.home.replay_stops.append(controls.winfo_children()[1])
+
+        replay = self.group(tabs["replay"], "What it keeps", "The last moments of your display, ready to save as a clip. Changing these starts replay over, empty.")
+        self.number(replay, "Length (seconds)", "replay", "seconds", 10, 1800, 10, "Up to 1800 (30 minutes).")
+        self.number(replay, "Budget (MiB)", "replay", "max_mb", 64, 16384, 64, "The most it may hold; older seconds go first.")
+        self.replay_fit = tk.StringVar()
+        self.wide(replay, self.wrapping(ttk.Label(replay, textvariable=self.replay_fit, style="Caption.TLabel", justify="left")))
+        self.switch(replay, "Game sound", "replay", "game_audio", "Everything you hear, from the default output.")
+        self.switch(replay, "Microphone", "replay", "microphone", "Your voice, from the default input.")
+        self.switch(replay, "Clip sound", "replay", "sound", "A short chirp when a clip is saved.")
+        self.switch(replay, "Start with Jarvis", "replay", "autostart", "Turn replay on whenever Jarvis starts.")
+
+        extra = self.group(tabs["replay"], "Separate sound and storage")
+        self.choice(extra, "Sound tracks", "replay", "audio_tracks",
+                    {"One mixed track": "mixed", "Separate tracks (Windows 11)": "separate"},
+                    "Separate tracks keep the game, one program and your microphone apart, so you can mute one later.")
+        self.separate_app = tk.StringVar(value=", ".join(self.config["replay"]["separate_apps"]))
+        self.text(extra, "Program on its own track", variable=self.separate_app,
+                  detail="Its file name without .exe, for example firefox. Start it before replay.")
+        self.choice(extra, "Storage", "replay", "storage", {"RAM": "ram", "Disk (continuous writes)": "disk"},
+                    "Disk writes about 1–10 GB an hour and needs a local NTFS or ReFS disk.")
+        self.text(extra, "Disk folder", "replay", "buffer_dir", detail="Optional. Empty uses the app-data folder.")
+
+        picture = self.group(tabs["picture"], "Picture and size")
         from .video_settings import VideoSettings
         self.video = VideoSettings(self, picture)
         self.fps = self.variable("recording", "fps")
-        self.switch(source, "Folder for each game", "recording", "game_folders")
-        self.switch(source, "Recording sounds", "recording", "sound_feedback")
-
-        advanced = self.group(p, "Advanced")
-        self.choice(advanced, "Replay storage", "replay", "storage", {"RAM": "ram", "Disk (continuous writes)": "disk"},
-                    "Disk writes about 1–10 GB an hour and needs a local NTFS or ReFS disk.")
-        self.number(advanced, "Encoded-history budget (MiB)", "replay", "max_mb", 64, 16384, 64,
-                    "A save can shorten history or stop replay when this is used up.")
-        self.text(advanced, "Disk buffer folder", "replay", "buffer_dir", detail="Optional. Empty uses the app-data folder.")
-        self.switch(advanced, "Recorder setup is complete", "recording", "configured",
-                    "Voice commands start recordings only after this.")
         for key in ("bitrate_mbps", "rate_control"):
             self.variable("recording", key).trace_add("write", lambda *_: self.estimate())
+        for section, key in (("replay", "seconds"), ("replay", "max_mb"), ("replay", "own_video"), ("replay", "game_audio"),
+                             ("replay", "microphone")):
+            self.variable(section, key).trace_add("write", lambda *_: self.estimate())
         self.estimate()
 
     def estimate(self):
@@ -885,8 +959,9 @@ class Window:
         self.clips = ClipsPanel(self, p)
 
     def build_general(self, p):
-        self.subtitle(p, "Colors, privacy, startup and your settings file.")
-        themes = self.group(p, "Colors", "Graphite, or a combination from Sanzo Wada's A Dictionary of Color Combinations (1933).")
+        tabs = self.tabs(p, [("general", "General"), ("privacy", "Privacy"), ("diagnostics", "Diagnostics")])
+        self.build_diagnostics(tabs["diagnostics"])
+        themes = self.group(tabs["general"], "Colors", "Graphite, or a combination from Sanzo Wada's A Dictionary of Color Combinations (1933).")
         swatches = ttk.Frame(themes, style="Card.TFrame", borderwidth=0)
         self.palette_choice = tk.StringVar(value=self.palette)
         for column, (key, preset) in enumerate(palettes.ALL_PRESETS.items()):
@@ -904,19 +979,19 @@ class Window:
                       style="Caption.TLabel").pack(anchor="w")
         self.line(themes, swatches)
 
-        privacy = self.group(p, "Privacy")
+        privacy = self.group(tabs["privacy"], "Privacy")
         for title, text in PRIVACY_FACTS:
             self.row(privacy, title, ttk.Frame(privacy, style="Card.TFrame"), text)
         self.line(privacy, "Settings and logs stay in your Windows account's application-data folder.", caption=True)
-        startup = self.group(p, "Startup")
+        startup = self.group(tabs["general"], "Startup")
         self.switch(startup, "Start Jarvis when I sign in", "", "startup")
-        backup = self.group(p, "Your settings", "Save every setting to a file to back them up or move them to another PC. "
+        backup = self.group(tabs["general"], "Your settings", "Save every setting to a file to back them up or move them to another PC. "
                             "Jarvis also keeps a copy before an update or an import changes them.")
         self.buttons(backup, [("Export…", self.export_settings), ("Import…", self.import_settings), ("Open backups", self.open_backups)])
-        keys = self.group(p, "Keyboard shortcuts", "While this window is open.")
+        keys = self.group(tabs["general"], "Keyboard shortcuts", "While this window is open.")
         for shortcut, meaning in (("Ctrl+M", "Mute or unmute the microphone"), ("Ctrl+Space", "Listen now, or cancel")):
             self.row(keys, meaning, ttk.Label(keys, text=shortcut, style="Key.TLabel"))
-        leave = self.group(p, "Quit")
+        leave = self.group(tabs["general"], "Quit")
         self.line(leave, "Stops voice control, recording and instant replay, and closes this window.", caption=True)
         self.buttons(leave, [("Quit Jarvis…", self.quit_jarvis, "Danger.TButton")])
 
@@ -931,10 +1006,9 @@ class Window:
 
         checks = self.group(p, "")
         self.buttons(checks, [("Run diagnostics", lambda: self.submit(report, show), "Primary.TButton")])
-        self.diagnostic_text = self.tk_widget(tk.Text(checks, height=24, wrap="word", relief="flat", borderwidth=0),
+        self.diagnostic_text = self.tk_widget(tk.Text(checks, height=18, wrap="word", relief="flat", borderwidth=0),
                                               background="inset", foreground="text", insertbackground="text")
-        self.line(checks, self.diagnostic_text)
-        self.diagnostic_text.pack_configure(fill="x", expand=True)
+        self.wide(checks, self.diagnostic_text)
 
     # Saving --------------------------------------------------------------
 
