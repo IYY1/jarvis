@@ -21,7 +21,7 @@ class PaletteTests(unittest.TestCase):
                  ("live-text", "bg", 4.5), ("live-text", "card", 4.5), ("accent-text", "bg", 4.5),
                  ("accent-text", "card", 4.5), ("error-text", "error-bg", 4.5), ("text", "live-soft", 4.5),
                  ("focus", "bg", 3), ("accent", "bg", 3)]
-        for name, preset in palettes.PRESETS.items():
+        for name, preset in palettes.ALL_PRESETS.items():
             for foreground, background, needed in pairs:
                 with self.subTest(preset=name, pair=(foreground, background)):
                     ratio = palettes.contrast(preset["roles"][foreground], preset["roles"][background])

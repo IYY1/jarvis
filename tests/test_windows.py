@@ -86,6 +86,50 @@ class SettingsWindowTests(unittest.TestCase):
             self.window.show(old)
             self.assertEqual(self.window.current, new)
 
+    def status(self, **changes):
+        return {"status": {"state": "idle", "muted": False, "microphone_open": True, "message": "",
+                           "recording": {"state": "idle"}, "replay": {"state": "off"}, "dictation": {}, **changes}}
+
+    def test_home_offers_the_one_action_that_fits_the_voice_state(self):
+        home = self.window.home
+        self.window.disconnected(None)
+        self.assertEqual(home.action.cget("text"), "Start Jarvis")
+        for changes, label in (({}, "Listen now"), ({"state": "listening"}, "Cancel"), ({"state": "paused", "muted": True}, "Unmute")):
+            with self.subTest(changes=changes):
+                self.window.received(self.status(**changes))
+                self.assertEqual(home.action.cget("text"), label)
+
+    def test_home_buttons_follow_recording_and_replay(self):
+        home = self.window.home
+        self.window.received(self.status())
+        self.assertEqual(home.record_button.cget("text"), "Start")
+        self.assertEqual(home.replay_button.cget("text"), "Start")
+        self.assertFalse(home.replay_stop.winfo_manager())
+        self.window.received(self.status(recording={"state": "recording"}, replay={"state": "on", "message": "Replay running"}))
+        self.assertEqual(home.record_button.cget("text"), "Stop")
+        self.assertEqual(home.replay_button.cget("text"), "Save clip")
+        self.assertTrue(home.replay_stop.winfo_manager())
+
+    def test_home_shows_when_the_budget_shortens_replay(self):
+        warning = "About 46 of 120 seconds fit in this budget; raise the budget or lower the bitrate"
+        self.window.received(self.status(replay={"state": "on", "message": f"Replay running · AV1 · {warning}"}))
+        self.assertEqual(self.window.home.replay_text.get(), warning)
+
+    def test_allowing_the_microphone_leaves_no_empty_heading(self):
+        self.assertEqual(self.window.onboard_card.winfo_manager(), "grid")
+        self.window.onboard_card.grid_remove()
+        self.window.received(self.status())
+        self.assertFalse(self.window.config["privacy"]["onboarded"])
+        self.assertTrue(self.window.onboard_card.winfo_children()[0].cget("text"), "the heading lives inside the card")
+
+    def test_changing_colors_redraws_without_errors(self):
+        from jarvis import palettes
+        for name in palettes.ALL_PRESETS:
+            with self.subTest(name=name):
+                self.window.palette = name
+                self.window.apply_theme()
+                self.root.update_idletasks()
+
     def test_clips_only_this_survives_late_silence_detection(self):
         from jarvis.clipedit import Source
         panel = self.window.clips

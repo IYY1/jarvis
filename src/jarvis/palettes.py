@@ -106,23 +106,39 @@ PRESETS: dict[str, dict] = {
 }
 DEFAULT = "344"
 
+# Neutral graphite with one blue accent, for the Windows window. Not from the book.
+_GRAPHITE_BG = "#14161c"
+GRAPHITE = {
+    "name": "Graphite", "number": None, "dark": True,
+    "swatches": {"Blue": "#4c8dff", "Card": "#1c1f27", "Page": "#14161c", "Rail": "#0f1116"},
+    "roles": {
+        "bg": _GRAPHITE_BG, "surface": "#0f1116", "card": "#1c1f27", "inset": "#14161c", "control": "#2a2e39",
+        "control-hover": "#343945", "control-active": "#3d4250", "line": "#2c303b", "line-strong": "#4a4f5d",
+        "text": "#f2f3f5", "text-muted": "#a4aab6", "text-disabled": "#6b7180", "disabled": "#20232b",
+        "accent": "#4c8dff", "accent-hover": "#6aa1ff", "accent-text": "#7fb0ff", "on-accent": "#0b0d12",
+        "selected": "#26324b", "live": "#3dd68c", "live-soft": mix(_GRAPHITE_BG, "#3dd68c", 0.16), "live-text": "#3dd68c",
+        "on-live": "#0b0d12", "focus": "#6aa1ff", "error-bg": mix(_GRAPHITE_BG, "#f0616d", 0.22), "error-text": "#ff9aa2",
+    },
+}
+ALL_PRESETS: dict[str, dict] = {"graphite": GRAPHITE, **PRESETS}
+
 
 def preference_path() -> Path:
     from .config import config_path
     return config_path().with_name("appearance.json")
 
 
-def chosen() -> str:
+def chosen(default: str = DEFAULT) -> str:
     """The saved preset, or the default when none (or an unknown one) is saved."""
     try:
-        name = str(json.loads(preference_path().read_text(encoding="utf-8")).get("palette", DEFAULT))
+        name = str(json.loads(preference_path().read_text(encoding="utf-8")).get("palette", default))
     except (OSError, ValueError, AttributeError):
-        return DEFAULT
-    return name if name in PRESETS else DEFAULT
+        return default
+    return name if name in ALL_PRESETS else default
 
 
 def choose(name: str) -> None:
-    if name not in PRESETS:
+    if name not in ALL_PRESETS:
         raise ValueError(f"Unknown color preset {name!r}")
     path = preference_path()
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -132,7 +148,7 @@ def choose(name: str) -> None:
 
 
 def roles(name: str | None = None) -> dict[str, str]:
-    return PRESETS[name if name in PRESETS else chosen()]["roles"]
+    return ALL_PRESETS[name if name in ALL_PRESETS else chosen()]["roles"]
 
 
 def gtk_colors(name: str | None = None) -> str:

@@ -23,6 +23,8 @@ from .. import config, palettes
 from ..client import TIMEOUTS, request, restart_note, save_config_restarting, watch
 from ..commands import REFERENCE
 from ..encoding import storage_estimate
+from . import look
+from .home import Home
 
 # Sidebar order: (page, title).
 NAVIGATION = [("dashboard", "Home"), ("voice", "Voice"), ("commands", "Commands"),
@@ -56,24 +58,26 @@ class Window:
         self.save_timer = None
         self.toast_timer = None
         self.status = {}
-        self.palette = palettes.chosen()
+        self.palette = palettes.chosen("graphite")
+        self.shapes = None
         root.title("Jarvis")
-        root.geometry(f"{min(1080, root.winfo_screenwidth() - 60)}x{min(800, root.winfo_screenheight() - 80)}")
+        root.geometry(f"{min(1060, root.winfo_screenwidth() - 60)}x{min(680, root.winfo_screenheight() - 80)}")
         root.minsize(860, 540)
         self.style = ttk.Style(root)
         self.family = "Segoe UI" if os.name == "nt" else tkfont.nametofont("TkDefaultFont").actual("family")
         self.apply_theme()
 
-        self.header()
         body = ttk.Frame(root)
         body.pack(fill="both", expand=True)
-        rail = ttk.Frame(body, style="Rail.TFrame", padding=(12, 18))
+        rail = ttk.Frame(body, style="Rail.TFrame", padding=(10, 14), width=200)
         rail.pack(side="left", fill="y")
+        rail.pack_propagate(False)
+        self.brand(rail)
+        self.controls(rail)
         for key, title in NAVIGATION:
             button = ttk.Button(rail, text=title, style="Nav.TButton", command=lambda key=key: self.show(key))
             button.pack(fill="x", pady=1)
             self.nav[key] = button
-        ttk.Label(rail, text="LOCAL BY DEFAULT", style="RailEyebrow.TLabel").pack(side="bottom", anchor="w", padx=12)
         self.content = ttk.Frame(body)
         self.content.pack(side="left", fill="both", expand=True)
         for key, title in NAVIGATION:
@@ -104,7 +108,6 @@ class Window:
         for name, background in (("TFrame", r["bg"]), ("Rail.TFrame", r["surface"]), ("Header.TFrame", r["surface"]),
                                  ("Card.TFrame", r["card"])):
             s.configure(name, background=background)
-        s.configure("Card.TFrame", bordercolor=r["line"], relief="solid", borderwidth=1)
         labels = {"TLabel": (r["bg"], r["text"], (f, 10)), "Title.TLabel": (r["bg"], r["text"], (f, 20, "bold")),
                   "Subtitle.TLabel": (r["bg"], r["text-muted"], (f, 11)), "Group.TLabel": (r["bg"], r["text"], (f, 11, "bold")),
                   "GroupNote.TLabel": (r["bg"], r["text-muted"], (f, 10)), "Brand.TLabel": (r["surface"], r["text"], (f, 11, "bold")),
@@ -135,11 +138,11 @@ class Window:
                    "Toast.TButton": (r["text"], r["bg"], r["text"], r["text"])}
         for name, (background, foreground, border, hover) in buttons.items():
             s.configure(name, background=background, foreground=foreground, bordercolor=border, lightcolor=background,
-                        darkcolor=background, relief="flat", padding=(14, 7), font=(f, 10, "bold"))
+                        darkcolor=background, relief="flat", padding=(12, 4), font=(f + " Semibold", 10))
             s.map(name, background=[("disabled", r["disabled"]), ("pressed", hover), ("active", hover)],
                   foreground=[("disabled", r["text-disabled"])], bordercolor=[("focus", r["focus"])])
-        s.configure("Nav.TButton", anchor="w", padding=(14, 9), borderwidth=0)
-        s.configure("NavOn.TButton", anchor="w", padding=(14, 9), borderwidth=0)
+        s.configure("Nav.TButton", anchor="w", padding=(12, 6), borderwidth=0)
+        s.configure("NavOn.TButton", anchor="w", padding=(12, 6), borderwidth=0)
         s.configure("Toast.TButton", padding=(8, 2))
         for name in ("TCheckbutton", "TRadiobutton"):
             s.configure(name, background=r["card"], foreground=r["text"], indicatorbackground=r["inset"],
@@ -163,10 +166,28 @@ class Window:
         s.map("Treeview", background=[("selected", r["selected"])], foreground=[("selected", r["text"])])
         s.configure("Treeview.Heading", background=r["control"], foreground=r["text"], relief="flat", font=(f, 9, "bold"))
         s.configure("Horizontal.TScale", background=r["accent"], troughcolor=r["inset"], bordercolor=r["line"])
-        s.configure("Vertical.TScrollbar", background=r["control"], troughcolor=r["bg"], bordercolor=r["bg"],
-                    arrowcolor=r["text-muted"])
-        s.configure("TSeparator", background=r["line"])
-        s.configure("TMenubutton", background=r["control"], foreground=r["text"], padding=(10, 6), relief="flat")
+        s.configure("TSeparator", background=r["line"], lightcolor=r["line"], darkcolor=r["line"], bordercolor=r["line"])
+        s.configure("TMenubutton", background=r["control"], foreground=r["text"], arrowcolor=r["text-muted"],
+                    padding=(12, 4), relief="flat", font=(f + " Semibold", 10))
+        s.map("TMenubutton", background=[("active", r["control-hover"])])
+        s.configure("Glyph.TLabel", background=r["control"], foreground=r["accent-text"], font=("Segoe MDL2 Assets", 13), padding=(9, 8))
+        s.configure("CardTitle.TLabel", background=r["card"], foreground=r["text"], font=(f + " Semibold", 11))
+        s.configure("RailName.TLabel", background=r["surface"], foreground=r["text"], font=(f, 15, "bold"))
+        s.configure("RailNote.TLabel", background=r["surface"], foreground=r["text-muted"], font=(f, 8))
+        s.configure("RailLogo.TLabel", background=r["surface"])
+        s.configure("Panel.TFrame", background=r["card"])
+        s.configure("Title.TLabel", font=(f + " Semibold", 20))
+        s.configure("State.TLabel", font=(f + " Semibold", 15))
+        s.configure("Live.TLabel", font=(f + " Semibold", 15))
+        self.shapes = look.apply(s, self.root, r)   # the previous theme's pictures can go now
+        self.logo = look.image(self.root, look.logo_png(44, r["surface"], r["accent"], r["text"]))
+        self.icon = look.image(self.root, look.logo_png(32, r["surface"], r["accent"], r["text"]))
+        self.root.iconphoto(True, self.icon)
+        self.root.after(0, look.title_bar, self.root, r["surface"], r["text"], palettes.ALL_PRESETS[self.palette]["dark"])
+        if hasattr(self, "logo_label"):
+            self.logo_label.configure(image=self.logo)
+        if hasattr(self, "home"):
+            self.home.paint()
         for widget, options in self.recolor:
             try:
                 widget.configure(**{option: r[role] for option, role in options.items()})
@@ -193,13 +214,25 @@ class Window:
 
     # Layout --------------------------------------------------------------
 
-    def header(self):
-        bar = ttk.Frame(self.root, style="Header.TFrame", padding=(16, 10))
-        bar.pack(fill="x")
-        ttk.Label(bar, text="J A R V I S", style="Brand.TLabel").pack(side="left", padx=(4, 16))
-        self.pill = ttk.Label(bar, text="Offline", style="PillOff.TLabel")
-        self.pill.pack(side="left", padx=(0, 6))
-        self.replay_pill = ttk.Label(bar, text="Replay on", style="PillLive.TLabel")
+    def brand(self, rail):
+        top = ttk.Frame(rail, style="Rail.TFrame")
+        top.pack(fill="x", padx=4, pady=(0, 14))
+        self.logo_label = ttk.Label(top, image=self.logo, style="RailLogo.TLabel")
+        self.logo_label.pack(side="left", padx=(0, 10))
+        names = ttk.Frame(top, style="Rail.TFrame")
+        names.pack(side="left")
+        ttk.Label(names, text="JARVIS", style="RailName.TLabel").pack(anchor="w")
+        ttk.Label(names, text="Voice control", style="RailNote.TLabel").pack(anchor="w")
+
+    def controls(self, rail):
+        """Status, Mute and the menu, always in the same corner."""
+        bar = ttk.Frame(rail, style="Rail.TFrame")
+        bar.pack(side="bottom", fill="x")
+        pills = ttk.Frame(bar, style="Rail.TFrame")
+        pills.pack(fill="x", pady=(0, 8))
+        self.pill = ttk.Label(pills, text="Offline", style="PillOff.TLabel")
+        self.pill.pack(anchor="w")
+        self.replay_pill = ttk.Label(pills, text="Replay on", style="PillLive.TLabel")
         menu = tk.Menu(self.root, tearoff=False)
         menu.add_command(label="Export settings…", command=self.export_settings)
         menu.add_command(label="Import settings…", command=self.import_settings)
@@ -207,10 +240,9 @@ class Window:
         menu.add_separator()
         menu.add_command(label="Quit Jarvis…", command=self.quit_jarvis)
         self.tk_widget(menu, background="card", foreground="text", activebackground="selected", activeforeground="text")
-        more = ttk.Menubutton(bar, text="Menu", menu=menu)
-        more.pack(side="right")
         self.mute_button = ttk.Button(bar, text="Mute", style="Header.TButton", command=self.toggle_mute)
-        self.mute_button.pack(side="right", padx=(0, 8))
+        self.mute_button.pack(fill="x", pady=(0, 6))
+        ttk.Menubutton(bar, text="Menu", menu=menu).pack(fill="x")
 
     def page(self, key, title):
         frame = ttk.Frame(self.content)
@@ -218,14 +250,17 @@ class Window:
         frame.columnconfigure(0, weight=1)
         canvas = self.tk_widget(tk.Canvas(frame, highlightthickness=0, borderwidth=0), background="bg")
         scrollbar = ttk.Scrollbar(frame, orient="vertical", command=canvas.yview)
-        canvas.configure(yscrollcommand=scrollbar.set)
+        def scrolled(first, last, bar=scrollbar):
+            bar.set(first, last)
+            bar.configure(style="Quiet.Vertical.TScrollbar" if float(first) <= 0 and float(last) >= 1 else "Vertical.TScrollbar")
+        canvas.configure(yscrollcommand=scrolled)
         canvas.grid(row=0, column=0, sticky="nsew")
         scrollbar.grid(row=0, column=1, sticky="ns")
-        inner = ttk.Frame(canvas, padding=(32, 28, 32, 48))
+        inner = ttk.Frame(canvas, padding=(28, 18, 28, 24))
         item = canvas.create_window(0, 0, anchor="n", window=inner)
         inner.bind("<Configure>", lambda _, view=canvas: view.configure(scrollregion=view.bbox("all")))
         def fit(event, view=canvas, item=item):
-            width = min(event.width, 920)   # lines stay readable in a wide window
+            width = min(event.width, 1000)   # lines stay readable in a wide window
             view.itemconfigure(item, width=width)
             view.coords(item, event.width / 2, 0)
         canvas.bind("<Configure>", fit)
@@ -268,7 +303,7 @@ class Window:
             self.wrapping(ttk.Label(page, text=note, style="GroupNote.TLabel", justify="left")).grid(
                 row=page.next_row, column=0, sticky="ew", pady=(0, 6))
             page.next_row += 1
-        card = ttk.Frame(page, style="Card.TFrame", padding=(18, 6))
+        card = ttk.Frame(page, style="Panel.TFrame", padding=(18, 6))
         card.grid(row=page.next_row, column=0, sticky="ew")
         card.columnconfigure(0, weight=1)
         card.next_row = 0
@@ -316,7 +351,7 @@ class Window:
         return self.variables[identity]
 
     def switch(self, card, title, section, key, detail=""):
-        check = ttk.Checkbutton(card, text="On", variable=self.variable(section, key), command=lambda: self.changed(400))
+        check = ttk.Checkbutton(card, variable=self.variable(section, key), command=lambda: self.changed(400))
         return self.row(card, title, check, detail)
 
     def text(self, card, title, section=None, key=None, detail="", variable=None, width=28):
@@ -442,9 +477,7 @@ class Window:
     def disconnected(self, _):
         self.online = False
         self.pill.configure(text="Offline", style="PillOff.TLabel")
-        self.offline_card.grid()
-        self.voice_state.set("Jarvis isn't running")
-        self.voice_message.set("Start it to use your voice. Settings you change here are still saved.")
+        self.home.went_offline()
 
     def received(self, reply):
         status = reply.get("status")
@@ -455,7 +488,7 @@ class Window:
         self.status = status
         self.voice_controls.status(status)
         self.online = True
-        self.offline_card.grid_remove()
+        self.home.update(status)
         state = status.get("state", "paused")
         muted = bool(status.get("muted", True))
         pills = {"paused": ("Muted", "Pill.TLabel"), "idle": ("Waiting for wake word", "PillCalm.TLabel"),
@@ -475,7 +508,7 @@ class Window:
         self.record_state.set(str(recording.get("message") or "Not recording"))
         self.replay_state.set(str(replay.get("message") or "Replay off"))
         if replay.get("state") == "on":
-            self.replay_pill.pack(side="left")
+            self.replay_pill.pack(anchor="w", pady=(4, 0))
         else:
             self.replay_pill.pack_forget()
         self.onboard_card.grid() if not self.config["privacy"]["onboarded"] else self.onboard_card.grid_remove()
@@ -531,57 +564,9 @@ class Window:
     # Pages ---------------------------------------------------------------
 
     def build_dashboard(self, p):
-        self.subtitle(p, "What Jarvis is doing now, and the controls you reach for most.")
-        from .startup import start_service
-
-        self.offline_card = self.group(p, "", "")
-        ttk.Label(self.offline_card, text="Jarvis isn't running", style="State.TLabel").grid(row=0, column=0, sticky="w", pady=(10, 0))
-        self.offline_card.next_row, self.offline_card.after_heading = 1, True
-        self.line(self.offline_card, "Start it to use your voice. The microphone stays closed until you allow it.", caption=True)
-        self.buttons(self.offline_card, [("Start Jarvis", lambda: self.submit(start_service, lambda _: self.root.after(600, self.refresh_status)), "Primary.TButton")])
-
-        self.onboard_card = self.group(p, "Allow the microphone", "Jarvis asks before it ever listens. Here is what allowing it means:")
-        for title, text in PRIVACY_FACTS:
-            self.line(self.onboard_card, f"{title}. {text}", caption=True)
-        self.consent = tk.BooleanVar(value=self.config["privacy"]["onboarded"])
-        self.line(self.onboard_card, ttk.Checkbutton(self.onboard_card, text="I understand when Jarvis opens the microphone",
-                                                     variable=self.consent))
-        self.buttons(self.onboard_card, [("Allow and turn on the wake word", self.onboard, "Primary.TButton")])
-        if self.config["privacy"]["onboarded"]:
-            self.onboard_card.grid_remove()
-
-        voice = self.group(p, "Voice")
-        self.voice_state = tk.StringVar(value="Connecting…")
-        self.voice_title = ttk.Label(voice, textvariable=self.voice_state, style="State.TLabel")
-        self.voice_title.grid(row=0, column=0, sticky="w", pady=(10, 0))
-        self.voice_message = tk.StringVar()
-        self.wrapping(ttk.Label(voice, textvariable=self.voice_message, style="Caption.TLabel", justify="left")).grid(
-            row=1, column=0, columnspan=2, sticky="ew")
-        voice.next_row, voice.after_heading = 2, True
-        self.buttons(voice, [("Listen now", self.listen, "Primary.TButton"), ("Cancel", lambda: self.call("cancel"))])
-
-        self.arabic_enabled = tk.BooleanVar(value=self.config["recognition"]["language"] == "ar_en")
-        self.line(voice, ttk.Checkbutton(voice, text="Arabic commands and dictation", variable=self.arabic_enabled,
-                                       command=lambda: self.voice_controls.toggle_arabic()))
-        controls = self.buttons(voice, [("Start dictation", lambda: self.voice_controls.toggle(), "Primary.TButton")])
-        self.dictate_button = controls.winfo_children()[0]
-
-        capture = self.group(p, "Capture")
-        self.record_state = tk.StringVar(value="Not recording")
+        self.record_state = tk.StringVar(value="Not recording")   # also shown on Capture
         self.replay_state = tk.StringVar(value="Replay off")
-        self.wrapping(ttk.Label(capture, textvariable=self.record_state, style="Row.TLabel", justify="left")).grid(
-            row=0, column=0, sticky="ew", pady=(10, 0))
-        capture.next_row, capture.after_heading = 1, True
-        self.buttons(capture, [("Start recording", self.start_recording, "Primary.TButton"),
-                               ("Stop and save", lambda: self.call("record_stop"))])
-        self.line(capture, self.wrapping(ttk.Label(capture, textvariable=self.replay_state, style="Row.TLabel", justify="left")))
-        self.buttons(capture, [("Save clip", lambda: self.call("replay_save"), "Primary.TButton"),
-                               ("Start replay", lambda: self.call("replay_start")), ("Stop replay", lambda: self.call("replay_stop"))])
-
-        ideas = self.group(p, "Try saying", "After “Jarvis”, or another wake name.")
-        for phrase, detail in (("“Open Firefox”", "Open or focus an app"), ("“Turn the volume down”", "Change the volume"),
-                               ("“Clip that”", "Save the replay as a clip"), ("“Go to workspace three”", "Switch virtual desktops")):
-            self.row(ideas, phrase, ttk.Label(ideas, text=detail, style="Caption.TLabel"))
+        self.home = Home(self, p, PRIVACY_FACTS)
 
     def onboard(self):
         if not self.consent.get():
@@ -901,10 +886,10 @@ class Window:
 
     def build_general(self, p):
         self.subtitle(p, "Colors, privacy, startup and your settings file.")
-        look = self.group(p, "Colors", "Three color combinations from Sanzo Wada's A Dictionary of Color Combinations (1933).")
-        swatches = ttk.Frame(look, style="Card.TFrame", borderwidth=0)
+        themes = self.group(p, "Colors", "Graphite, or a combination from Sanzo Wada's A Dictionary of Color Combinations (1933).")
+        swatches = ttk.Frame(themes, style="Card.TFrame", borderwidth=0)
         self.palette_choice = tk.StringVar(value=self.palette)
-        for column, (key, preset) in enumerate(palettes.PRESETS.items()):
+        for column, (key, preset) in enumerate(palettes.ALL_PRESETS.items()):
             cell = ttk.Frame(swatches, style="Card.TFrame", borderwidth=0)
             cell.grid(row=0, column=column, padx=(0, 16), sticky="w")
             strip = tk.Canvas(cell, width=180, height=34, highlightthickness=0, borderwidth=0)
@@ -914,8 +899,10 @@ class Window:
             strip.pack(anchor="w")
             ttk.Radiobutton(cell, text=preset["name"], value=key, variable=self.palette_choice, style="Swatch.TRadiobutton",
                             command=lambda key=key: self.choose_palette(key)).pack(anchor="w", pady=(6, 0))
-            ttk.Label(cell, text=f"No. {preset['number']} · {'dark' if preset['dark'] else 'light'}", style="Caption.TLabel").pack(anchor="w")
-        self.line(look, swatches)
+            kind = "dark" if preset["dark"] else "light"
+            ttk.Label(cell, text=f"No. {preset['number']} · {kind}" if preset["number"] else kind.capitalize(),
+                      style="Caption.TLabel").pack(anchor="w")
+        self.line(themes, swatches)
 
         privacy = self.group(p, "Privacy")
         for title, text in PRIVACY_FACTS:
