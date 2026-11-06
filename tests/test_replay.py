@@ -291,8 +291,11 @@ class ClipLibraryTests(unittest.TestCase):
             self.skipTest("GTK is not available")
         page = MagicMock(export=None)
         player = page.player
-        ClipsPage.close(page)
+        with patch("jarvis.clips_ui.GLib") as glib:
+            ClipsPage.close(page)
         player.set_file.assert_called_once_with(None)   # drops the GStreamer pipeline
+        from jarvis.clips_ui import _release_memory      # and its freed memory goes back to the system
+        glib.timeout_add.assert_called_once_with(1500, _release_memory)
         page.video_slot.remove.assert_called_once_with(player)
         self.assertIsNone(page.player)
         busy = MagicMock()                                # an export in progress keeps going

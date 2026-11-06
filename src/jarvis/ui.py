@@ -124,6 +124,12 @@ def _fit(dropdown: Any) -> Any:
     return dropdown
 
 
+def _release_memory() -> bool:
+    from .transcriber import release_unused_memory
+    release_unused_memory()
+    return False
+
+
 def _audio_summary(config: dict, recording: bool, replay: bool) -> str:
     """Which audio the running capture keeps, so microphone capture is never a surprise."""
     parts = []
@@ -1445,6 +1451,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self._render_phrases()
         self._set_status(result)
         self._start_watch()
+        GLib.timeout_add(2000, _release_memory)   # building every page leaves freed scratch memory
 
     def _disconnected(self, error: str) -> None:
         self.connected = False
@@ -1876,24 +1883,22 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         add.update_property([Gtk.AccessibleProperty.LABEL], [f"Add a voice name for {name}"])
         top.append(add)
         row.append(top)
-        fields = _box(8, True)
-        entry = self._entry("Name to say, e.g. " + name.lower())
-        entry.update_property([Gtk.AccessibleProperty.LABEL], [f"Voice name for {name}"])
-        prefix = Gtk.Entry()
-        prefix.set_width_chars(10)
-        prefix.set_placeholder_text("Launch word")
-        prefix.set_text("open")
-        prefix.update_property([Gtk.AccessibleProperty.LABEL], ["Launch word; clear it to say only the name"])
-        save = _button("Save", lambda: self._save_voice_name(app_id, entry, prefix), "primary")
-        entry.connect("activate", lambda _entry: self._save_voice_name(app_id, entry, prefix))
-        fields.append(prefix)
-        fields.append(entry)
-        fields.append(save)
-        fields.set_visible(False)
-        row.append(fields)
         def reveal(_button: Any) -> None:
+            """The fields are made on request: 30 rows of hidden entries cost memory."""
+            fields = _box(8, True)
+            entry = self._entry("Name to say, e.g. " + name.lower())
+            entry.update_property([Gtk.AccessibleProperty.LABEL], [f"Voice name for {name}"])
+            prefix = Gtk.Entry()
+            prefix.set_width_chars(10)
+            prefix.set_placeholder_text("Launch word")
+            prefix.set_text("open")
+            prefix.update_property([Gtk.AccessibleProperty.LABEL], ["Launch word; clear it to say only the name"])
+            entry.connect("activate", lambda _entry: self._save_voice_name(app_id, entry, prefix))
+            fields.append(prefix)
+            fields.append(entry)
+            fields.append(_button("Save", lambda: self._save_voice_name(app_id, entry, prefix), "primary"))
+            row.append(fields)
             add.set_visible(False)
-            fields.set_visible(True)
             entry.grab_focus()
         add.connect("clicked", reveal)
         return row

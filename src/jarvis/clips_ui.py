@@ -17,6 +17,7 @@ from typing import Any, Callable
 from gi.repository import Gdk, Gio, GLib, Gtk
 
 from . import clipedit
+from .transcriber import release_unused_memory
 
 LIBRARY_ROWS = 8
 
@@ -94,6 +95,11 @@ class Timeline(Gtk.DrawingArea):
         cr.set_source_rgb(0.95, 0.94, 0.98)                # playhead
         cr.rectangle(x_of(self.position) - 1, 0, 3, height)
         cr.fill()
+
+
+def _release_memory() -> bool:
+    release_unused_memory()
+    return False
 
 
 class ClipsPage:
@@ -526,6 +532,9 @@ class ClipsPage:
             self.player.set_file(None)
             self.video_slot.remove(self.player)
             self.player = None
+            # The C allocator keeps GStreamer's freed decoder and frame memory
+            # (about 50 MiB for a 1440p clip); hand it back once its threads stop.
+            GLib.timeout_add(1500, _release_memory)
         self.loaded = -1
         self.editor.set_visible(False)
         self.edit = None
