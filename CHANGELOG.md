@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.0 — 2026-11-06
 
 - **Redesigned settings window** (Linux and Windows): a sidebar with seven
   pages (Home, Voice, Commands, Apps, Capture, Clips, General), one-line

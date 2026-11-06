@@ -4,13 +4,19 @@ Offline voice control for Linux with Hyprland and Windows 10/11. Say
 **“Jarvis, open Firefox”**, **“Jarvis, go to workspace three”**, or
 **“Jarvis, start recording”**.
 
-Everything runs on your CPU: Vosk listens for the wake word and Whisper small.en
+Everything runs on your CPU: Vosk listens for the wake word and Whisper tiny.en
 understands the command. No account, API key or cloud service. The settings
 window can close while Jarvis keeps listening in the background.
 
 Jarvis is early software. Recognition depends on your voice, microphone and room.
 
-## What's new (unreleased)
+## What's new in 0.4.0
+
+- **Redesigned settings**: seven sidebar pages, settings that apply as you change
+  them, and three color presets ([details](docs/ui.md)).
+- **Mute each app in Clips**: on Linux, separate replay tracks keep up to eight
+  apps apart. Keep Discord while muting Firefox; the Sound list has Keep,
+  Only this, Keep all and Mute all. Windows 11 separates one program.
 
 - **Arabic, with Najdi and Saudi speech first**: choose Voice → Language →
   Arabic and English for Arabic commands (افتح فايرفوكس، علّ الصوت، كلّبها) and
@@ -100,13 +106,13 @@ then `bash install.sh`.
 
 ### Windows 10/11
 
-Download `Jarvis-0.3.1-Windows-x64-Setup.exe` from the
+Download `Jarvis-0.4.0-Windows-x64-Setup.exe` from the
 [releases page](https://github.com/abdullaho21/jarvis/releases) and run it. It
 installs for your account only, with no administrator rights, downloads or
 restart, and upgrades an earlier Jarvis in place. A portable ZIP is also
-available. The installer passed its install, upgrade, voice, restart and
-uninstall checks on Windows 10 in a virtual machine, not yet on physical
-hardware; see [Windows setup](docs/windows.md) for details and known limits.
+available. Earlier 0.3.x installers passed install, upgrade, voice, restart and
+uninstall checks in a Windows 10 virtual machine. See [Windows setup](docs/windows.md)
+for the checks performed on 0.4.0 and remaining hardware limits.
 
 ### By hand from a checkout
 

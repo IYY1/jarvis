@@ -19,7 +19,7 @@ import time
 import unittest
 from unittest.mock import patch
 
-from jarvis import config, commands
+from jarvis import __version__, config, commands
 from jarvis.apps import App, AppRegistry
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -759,7 +759,7 @@ class ControllerServiceTests(unittest.TestCase):
         backups = list((h.config_path.parent / "backups").glob("config-before-repair-*.json"))
         self.assertEqual(len(backups), 1)
         self.assertEqual(json.loads(backups[0].read_text())["recording"]["fps"], 999)
-        self.assertEqual((h.config_path.parent / ".version").read_text(), "0.3.1")
+        self.assertEqual((h.config_path.parent / ".version").read_text(), __version__)
 
     def test_clips_and_recordings_of_a_focused_game_go_in_its_folder(self):
         window = json.dumps({"class": "steam_app_1422450", "title": "Deadlock", "pid": os.getpid()})

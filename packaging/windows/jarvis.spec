@@ -11,7 +11,9 @@ from PyInstaller.utils.hooks import (
 root = Path(SPECPATH).parents[1]
 # Speech runs in the bundled Rust worker (tools/jarvis-voice.exe); the Python
 # service and settings never import an inference library.
-datas = []
+# The shared Arabic parser reads this table at runtime, including in the
+# frozen Windows service; Python module discovery cannot collect JSON.
+datas = [(str(root / "src/jarvis/arabic_commands.json"), "jarvis")]
 binaries = []
 hiddenimports = []
 for package in (
