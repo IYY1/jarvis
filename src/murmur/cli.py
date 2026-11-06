@@ -98,6 +98,29 @@ def run_language(args, request) -> int:
     return 0
 
 
+def run_settings(args) -> int:
+    """jarvis settings export [FILE] | import FILE | backups"""
+    import time
+    from pathlib import Path
+    from . import config, settings_file
+    if args.action == "export":
+        target = args.file or str(Path.home() / f"jarvis-settings-{time.strftime('%Y-%m-%d')}.json")
+        print(f"Saved your settings to {settings_file.export_settings(target)}")
+    elif args.action == "import":
+        if not args.file:
+            raise ValueError("Say which file, e.g.: jarvis settings import ~/jarvis-settings.json")
+        print(settings_file.import_settings(args.file))
+    else:
+        copies = sorted(config.backups_dir().glob("config-*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+        for copy in copies:
+            print(copy)
+        if not copies:
+            print("No backups yet. Jarvis keeps one before an update changes settings and before an import.")
+        else:
+            print("Restore one with: jarvis settings import FILE")
+    return 0
+
+
 def run_add_app(args, request) -> int:
     """jarvis add-app                     -> list programs added in Jarvis
        jarvis add-app PATH [--name NAME]  -> add one (a portable program or AppImage)
@@ -200,6 +223,9 @@ def main():
     alias.add_argument("name", nargs="?", help="What you will say (\"open <name>\")")
     alias.add_argument("app", nargs="?", help="The app: its name as in your launcher, or its desktop ID")
     alias.add_argument("--remove", action="store_true", help="Remove the voice name instead")
+    settings = sub.add_parser("settings", help="Export your settings to a file, import them, or list backups")
+    settings.add_argument("action", choices=["export", "import", "backups"])
+    settings.add_argument("file", nargs="?", help="The settings file (export: default ~/jarvis-settings-DATE.json)")
     language = sub.add_parser("language", help="Switch Arabic on or off: jarvis language arabic | english")
     language.add_argument("language", nargs="?", choices=["arabic", "english"])
     add_app = sub.add_parser("add-app", help="Add a program your launcher doesn't list, e.g.: jarvis add-app ~/Tool.AppImage")
@@ -262,6 +288,8 @@ def main():
             result = report()
             print(json.dumps(result, indent=2))
             return 0
+        if args.command == "settings":
+            return run_settings(args)
         if args.command == "shutdown":
             from .windows.startup import stop_service
             print(json.dumps(stop_service(), indent=2))

@@ -191,6 +191,7 @@ async fn message(service: &mut service::Service, message: service::Message) {
 }
 
 async fn serve() -> Result<()> {
+    config::note_version(env!("CARGO_PKG_VERSION"));
     let config = config::load()?;
     let path = jarvis_controller::ipc::socket_path();
     let parent = path.parent().ok_or("Invalid IPC socket path")?;

@@ -191,6 +191,53 @@ class ConfigValidationTests(unittest.TestCase):
             config.save(loaded, path)
             self.assertNotIn("comand_timeout", json.loads(path.read_text())["activation"])
 
+    def test_settings_another_version_wrote_are_repaired_and_backed_up(self):
+        old = {"activation": {"wake_phrase": "alfred"},
+               "aliases": {"streamio": "com.stremio.Stremio.desktop"}, "app_prefixes": {"streamio": "watch"},
+               "recording": {"fps": 999, "quality_preset": "insane", "codec": "av1", "system_audio": True,
+                             "microphone": True, "audio_device": "combined", "combined_audio_source": True},
+               "replay": {"seconds": 300}}
+        fixed, reset = config.repair(old)
+        self.assertEqual(reset, ["recording.fps", "recording.quality_preset"])   # same as config.rs
+        self.assertEqual((fixed["app_prefixes"]["streamio"], fixed["recording"]["microphone"], fixed["replay"]["seconds"]),
+                         ("watch", True, 300))
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "config.json"
+            path.write_text(json.dumps(old))
+            with patch("sys.stderr"):
+                loaded = config.load(path)
+            self.assertEqual((loaded["activation"]["wake_phrase"], loaded["recording"]["fps"]), ("alfred", 30))
+            self.assertEqual(json.loads(path.read_text())["recording"]["fps"], 30)   # repaired on disk
+            [kept] = (Path(folder) / "backups").glob("config-before-repair-*.json")
+            self.assertEqual(json.loads(kept.read_text())["recording"]["fps"], 999)
+            path.write_text("{not json")
+            with patch("sys.stderr"):
+                self.assertEqual(config.load(path), config.validate({}))
+            self.assertEqual(len(list((Path(folder) / "backups").glob("config-unreadable-*.json"))), 1)
+            config.note_version("9.9.9", path)
+            config.note_version("9.9.9", path)
+            self.assertEqual(len(list((Path(folder) / "backups").glob("config-from-*.json"))), 1)
+
+    def test_settings_export_and_import_round_trip(self):
+        from murmur import settings_file
+        with tempfile.TemporaryDirectory() as folder:
+            live = Path(folder) / "config.json"
+            config.save(config.validate({"activation": {"wake_phrase": "alfred"}, "recording": {"fps": 120}}), live)
+            exported = Path(folder) / "export.json"
+            with patch.dict(os.environ, {"MURMUR_CONFIG": str(live)}), \
+                    patch("murmur.client.request", side_effect=ConnectionError("service off")):
+                settings_file.export_settings(exported)
+                self.assertEqual(oct(exported.stat().st_mode & 0o777), "0o600")
+                config.save(config.validate({}), live)
+                data = json.loads(exported.read_text())
+                data["recording"]["quality_preset"] = "insane"   # as if a newer version wrote it
+                exported.write_text(json.dumps(data))
+                message = settings_file.import_settings(exported)
+            restored = json.loads(live.read_text())
+            self.assertEqual((restored["activation"]["wake_phrase"], restored["recording"]["fps"]), ("alfred", 120))
+            self.assertIn("recording.quality_preset", message)
+            self.assertEqual(len(list((Path(folder) / "backups").glob("config-before-import-*.json"))), 1)
+
     def test_recorder_limits_match_config(self):
         self.assertEqual(config.validate({"recording": {"fps": 240, "bitrate_mbps": 500}})["recording"]["fps"], 240)
         for bad in ({"fps": 241}, {"bitrate_mbps": 501}, {"resolution": "1600"}):

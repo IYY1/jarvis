@@ -225,6 +225,84 @@ def validate(data: dict) -> dict:
     return c
 
 
+def backups_dir(path: Path | None = None) -> Path:
+    """Earlier copies of the settings (mirrors config.rs); the newest ten are kept."""
+    return (path or config_path()).with_name("backups")
+
+
+def backup(label: str, path: Path | None = None) -> Path | None:
+    """Copy the settings file to backups/config-<label>.json. Best effort."""
+    import shutil
+    path = path or config_path()
+    if not path.is_file():
+        return None
+    folder = backups_dir(path)
+    try:
+        folder.mkdir(parents=True, exist_ok=True, mode=0o700)
+        target = folder / f"config-{label}.json"
+        shutil.copyfile(path, target)
+        for old in sorted(folder.glob("config-*.json"), key=lambda p: p.stat().st_mtime, reverse=True)[10:]:
+            old.unlink()
+        return target
+    except OSError:
+        return None
+
+
+def note_version(version: str, path: Path | None = None) -> None:
+    """On the first start of a different version, keep the settings the
+    previous one wrote (backups/config-from-<version>.json)."""
+    path = path or config_path()
+    stamp = path.with_name(".version")
+    try:
+        previous = stamp.read_text().strip()
+    except OSError:
+        previous = ""
+    if previous != version:
+        backup(f"from-{previous or 'earlier'}", path)
+        try:
+            stamp.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+            stamp.write_text(version)
+        except OSError:
+            pass
+
+
+def repair(data: dict) -> tuple[dict, list[str]]:
+    """Keep every setting that still validates and reset only the others
+    (mirrors config.rs): another version may have written a value this one
+    rejects. Returns the settings and the reset names ("section.name")."""
+    pending = []
+    for section in DEFAULTS:   # aliases before app_prefixes, which refer to them
+        if section not in data:
+            continue
+        value = data[section]
+        if isinstance(value, dict) and value:
+            pending += [(section, name, v) for name, v in value.items()]
+        else:
+            pending.append((section, None, value))
+    kept: dict = {}
+    for _ in range(3):   # a value may depend on another accepted later
+        before, still = len(pending), []
+        for section, name, value in pending:
+            trial = copy.deepcopy(kept)
+            if name is None:
+                trial[section] = value
+            else:
+                trial.setdefault(section, {})[name] = value
+            try:
+                validate(trial)
+                kept = trial
+            except (ValueError, TypeError, KeyError, AttributeError):
+                still.append((section, name, value))
+        pending = still
+        if len(pending) == before:
+            break
+    reset = [section if name is None else f"{section}.{name}" for section, name, _ in pending]
+    try:
+        return validate(kept), reset
+    except (ValueError, TypeError, KeyError, AttributeError):
+        return copy.deepcopy(DEFAULTS), reset
+
+
 def load(path: Path | None = None) -> dict:
     path = path or config_path()
     if not path.exists():
@@ -235,14 +313,29 @@ def load(path: Path | None = None) -> dict:
         return defaults
     if path.stat().st_size > 65536:
         raise ValueError("Configuration exceeds 64 KiB")
-    data = json.loads(path.read_text(encoding="utf-8"))
+    import time
+    stamp = time.strftime("%Y-%m-%d_%H-%M-%S")
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as exc:
+        kept = backup(f"unreadable-{stamp}", path)
+        print(f"murmur: settings file is not valid JSON ({exc}); starting from defaults, original kept at {kept}",
+              file=sys.stderr)
+        return save(copy.deepcopy(DEFAULTS), path)
     if isinstance(data, dict):
         unknown = unknown_keys(data)
         if unknown:
             # Tolerate old or hand-edited files: warn, ignore, and drop on next save.
             print(f"murmur: ignoring unknown setting(s) in {path}: {', '.join(sorted(unknown))}", file=sys.stderr)
         data = without_unknown(data)
-    return validate(data)
+    try:
+        return validate(data)
+    except (ValueError, TypeError, KeyError, AttributeError) as exc:
+        fixed, reset = repair(data if isinstance(data, dict) else {})
+        kept = backup(f"before-repair-{stamp}", path)
+        print(f"murmur: some settings are not valid in this version ({exc}); reset {', '.join(reset)} "
+              f"and kept the rest; original at {kept}", file=sys.stderr)
+        return save(fixed, path)
 
 
 def save(data: dict, path: Path | None = None) -> dict:

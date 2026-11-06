@@ -309,6 +309,44 @@ class Window:
             "Try: “hey Jarvis, open Firefox”, “turn the volume down”, “start recording”, or “clip that”. Existing Windows virtual desktops are called workspaces one through ten.",
             6,
         )
+        self.buttons(
+            p,
+            [
+                ("Export settings…", self.export_settings),
+                ("Import settings…", self.import_settings),
+                ("Open backups folder", self.open_backups),
+            ],
+            7,
+        )
+        self.note(
+            p,
+            "Save your settings to a file to back them up or move them to another PC. Jarvis also keeps a copy before an update changes settings and before an import.",
+            8,
+        )
+
+    def export_settings(self):
+        import time
+        path = filedialog.asksaveasfilename(
+            parent=self.root, title="Export Jarvis settings", defaultextension=".json",
+            initialfile=f"jarvis-settings-{time.strftime('%Y-%m-%d')}.json", filetypes=[("Settings", "*.json")])
+        if path:
+            from ..settings_file import export_settings
+            self.submit(lambda: export_settings(path),
+                        lambda saved: messagebox.showinfo("Jarvis", f"Settings saved to {saved}", parent=self.root))
+
+    def import_settings(self):
+        path = filedialog.askopenfilename(parent=self.root, title="Import Jarvis settings",
+                                          filetypes=[("Settings", "*.json"), ("All files", "*.*")])
+        if path:
+            from ..settings_file import import_settings
+            self.submit(lambda: import_settings(path),
+                        lambda message: messagebox.showinfo("Jarvis", message + " Reopen settings to see them.",
+                                                            parent=self.root))
+
+    def open_backups(self):
+        folder = config.backups_dir()
+        folder.mkdir(parents=True, exist_ok=True)
+        os.startfile(folder)
 
     def build_activation(self, p):
         self.field(

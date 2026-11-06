@@ -336,6 +336,52 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         ideas.append(_button("All commands →", lambda: self.stack.set_visible_child_name("commands")))
         body.append(ideas)
 
+        backup = self._card("Your settings", "Save all your settings to a file to back them up or move them to "
+                            "another computer, and load them back. Jarvis also keeps a copy before an update "
+                            "changes settings and before an import; a setting a new version can't use is reset "
+                            "on its own, never all of them.")
+        actions = _box(8, True)
+        actions.append(_button("Export settings…", self._export_settings))
+        actions.append(_button("Import settings…", self._import_settings))
+        actions.append(_button("Open backups folder", self._open_backups))
+        backup.append(actions)
+        body.append(backup)
+
+    def _export_settings(self) -> None:
+        import time
+        dialog = Gtk.FileDialog(title="Export Jarvis settings", initial_name=f"jarvis-settings-{time.strftime('%Y-%m-%d')}.json")
+        def chosen(source, result) -> None:
+            try:
+                path = source.save_finish(result).get_path()
+            except GLib.Error:
+                return
+            from .settings_file import export_settings
+            self._work(lambda: {"ok": True, "message": f"Settings saved to {export_settings(path)}."},
+                       lambda r: self._notice(str(r.get("message") or r.get("error")), not r.get("ok")))
+        dialog.save(self, None, chosen)
+
+    def _import_settings(self) -> None:
+        dialog = Gtk.FileDialog(title="Import Jarvis settings")
+        def chosen(source, result) -> None:
+            try:
+                path = source.open_finish(result).get_path()
+            except GLib.Error:
+                return
+            from .settings_file import import_settings
+            self._notice("Importing settings…")
+            def imported(result: dict) -> None:
+                self._notice(str(result.get("message") or result.get("error")), not result.get("ok"))
+                if result.get("ok"):
+                    self.refresh()
+            self._work(lambda: {"ok": True, "message": import_settings(path)}, imported)
+        dialog.open(self, None, chosen)
+
+    def _open_backups(self) -> None:
+        from .config import backups_dir
+        folder = backups_dir()
+        folder.mkdir(parents=True, exist_ok=True, mode=0o700)
+        Gio.AppInfo.launch_default_for_uri(folder.as_uri(), None)
+
     def _overview_record(self) -> None:
         state = self.status.get("recording", {}).get("state", "idle")
         self._action("record_stop" if state == "recording" else "record_start")

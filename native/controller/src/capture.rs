@@ -967,7 +967,7 @@ pub fn duration(seconds: u64) -> String {
         (m, s) => format!("{m} min {s} s"),
     }
 }
-fn timestamp() -> String {
+pub(crate) fn timestamp() -> String {
     let time = unsafe { libc::time(std::ptr::null_mut()) };
     let mut tm = std::mem::MaybeUninit::<libc::tm>::uninit();
     if unsafe { libc::localtime_r(&time, tm.as_mut_ptr()) }.is_null() {

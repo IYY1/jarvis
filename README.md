@@ -176,6 +176,23 @@ jarvis alias
 jarvis alias streamio --remove
 ```
 
+### Your settings across updates
+
+Updates keep your settings. A setting a new version can't use (a changed range
+or a renamed choice) is reset on its own and every other setting is kept; the
+original file is copied to `~/.config/murmur/backups/` first, and so are the
+settings of the previous version on the first start of a new one. To back up or
+move your settings, use **Overview → Your settings**, or:
+
+```sh
+jarvis settings export ~/jarvis-settings.json
+jarvis settings import ~/jarvis-settings.json
+jarvis settings backups
+```
+
+Importing also repairs settings from another version and keeps a backup of the
+current ones; a running recording or replay restarts if its settings changed.
+
 Switch Arabic on or off with **Turn on Arabic** on Overview, or
 `jarvis language arabic` / `jarvis language english`.
 

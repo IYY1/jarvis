@@ -35,6 +35,9 @@ from . import dictation
 
 class Service:
     def __init__(self, config=None):
+        if config is None:
+            from . import __version__
+            configuration.note_version(__version__)
         self.config = configuration.validate(config) if config is not None else configuration.load()
         self.apps = AppRegistry(self.config["aliases"])
         self.parser = Parser.from_config(self.config)

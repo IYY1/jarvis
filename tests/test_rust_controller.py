@@ -157,7 +157,8 @@ class ControllerPolicyTests(unittest.TestCase):
 
 class Harness:
     def __init__(self, *, onboarded=False, dry_run=True, config_patch=None, accurate=False,
-                 real_worker=None, real_library=None, real_model=None, pcm=None, controller_argv=None, **environment):
+                 real_worker=None, real_library=None, real_model=None, pcm=None, controller_argv=None,
+                 unvalidated=None, **environment):
         parent = None
         if (config_patch or {}).get("replay", {}).get("storage") == "disk":
             parent = ROOT / "build/replay-storage/test-tmp"
@@ -178,7 +179,10 @@ class Harness:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(b"stub")
         self.cfg["recognition"]["model_path"] = str(real_model or model)
-        self.config_path.write_text(json.dumps(self.cfg))
+        written = copy.deepcopy(self.cfg)
+        for section, values in (unvalidated or {}).items():   # e.g. what another version wrote
+            written[section].update(values)
+        self.config_path.write_text(json.dumps(written))
         library = self.root / "libvosk.so"; library.write_bytes(b"stub")
         self.bin = self.root / "bin"; self.bin.mkdir()
         for program in ("hyprctl", "pactl", "pw-dump", "ffprobe", "wf-recorder", "gpu-screen-recorder", "gio", "wpctl", "pw-play", "systemctl"):
@@ -713,6 +717,19 @@ class ControllerServiceTests(unittest.TestCase):
         self.assertIn("HDR verification failed", status["message"])
         self.assertTrue(Path(status["file"]).exists())
         self.assertTrue(Path(status["file"]).name.endswith(".part.mkv"))
+
+    def test_settings_another_version_wrote_are_repaired_not_lost(self):
+        h = self.start(config_patch={"activation": {"wake_phrase": "alfred"}, "recording": {"codec": "av1"}},
+                       unvalidated={"recording": {"fps": 999, "quality_preset": "insane"}})
+        status = h.status()
+        self.assertIn("state", status)   # the service started
+        saved = json.loads(h.config_path.read_text())
+        self.assertEqual((saved["activation"]["wake_phrase"], saved["recording"]["codec"]), ("alfred", "av1"))
+        self.assertEqual((saved["recording"]["fps"], saved["recording"]["quality_preset"]), (30, "very_high"))
+        backups = list((h.config_path.parent / "backups").glob("config-before-repair-*.json"))
+        self.assertEqual(len(backups), 1)
+        self.assertEqual(json.loads(backups[0].read_text())["recording"]["fps"], 999)
+        self.assertEqual((h.config_path.parent / ".version").read_text(), "0.3.1")
 
     def test_ten_bit_sdr_recording_is_requested_and_verified(self):
         for pixel, ok in (("yuv420p", False), ("yuv420p10le", True)):

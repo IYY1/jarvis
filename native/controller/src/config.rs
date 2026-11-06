@@ -404,6 +404,94 @@ pub fn validate(data: &Value) -> Result<Value> {
     }
     Ok(c)
 }
+/// Earlier copies of the settings: before a repair, an import, or the first
+/// start of another version. The newest ten are kept.
+pub fn backups_dir() -> PathBuf {
+    path().with_file_name("backups")
+}
+/// Copies the settings file to backups/config-<label>.json. Best effort.
+pub fn backup(label: &str) -> Option<PathBuf> {
+    let source = path();
+    if !source.is_file() {
+        return None;
+    }
+    let dir = backups_dir();
+    util::private_dir(&dir).ok()?;
+    let target = dir.join(format!("config-{label}.json"));
+    fs::copy(&source, &target).ok()?;
+    let mut copies: Vec<_> = fs::read_dir(&dir)
+        .ok()?
+        .filter_map(|e| e.ok())
+        .filter(|e| e.file_name().to_string_lossy().starts_with("config-"))
+        .filter_map(|e| Some((e.metadata().ok()?.modified().ok()?, e.path())))
+        .collect();
+    copies.sort();
+    for (_, old) in copies.iter().rev().skip(10) {
+        let _ = fs::remove_file(old);
+    }
+    Some(target)
+}
+/// On the first start of a different version, keeps the settings the
+/// previous one wrote (backups/config-from-<version>.json).
+pub fn note_version(version: &str) {
+    let stamp = path().with_file_name(".version");
+    let previous = fs::read_to_string(&stamp).unwrap_or_default();
+    let previous = previous.trim();
+    if previous != version {
+        backup(&format!(
+            "from-{}",
+            if previous.is_empty() { "earlier" } else { previous }
+        ));
+        let _ = util::atomic_write(&stamp, version.as_bytes());
+    }
+}
+/// Settings another Jarvis version wrote can hold a value this one rejects
+/// (a changed range or a renamed choice). Keeps every value that still
+/// validates and resets only the others; returns them as "section.name".
+pub fn repair(data: &Value) -> (Value, Vec<String>) {
+    let mut pending: Vec<(String, Option<String>, Value)> = vec![];
+    if let (Some(map), Value::Object(order)) = (data.as_object(), defaults()) {
+        // Defaults order puts aliases before app_prefixes, which refer to them.
+        for section in order.keys() {
+            match map.get(section) {
+                Some(Value::Object(fields)) if !fields.is_empty() => pending.extend(
+                    fields
+                        .iter()
+                        .map(|(name, v)| (section.clone(), Some(name.clone()), v.clone())),
+                ),
+                Some(value) => pending.push((section.clone(), None, value.clone())),
+                None => {}
+            }
+        }
+    }
+    let mut kept = Value::Object(Default::default());
+    // A value can depend on another (two audio sources need the combined
+    // source), so retry the rejected ones while more are being accepted.
+    for _ in 0..3 {
+        let before = pending.len();
+        pending.retain(|(section, name, value)| {
+            let mut trial = kept.clone();
+            match name {
+                Some(name) => trial[section.as_str()][name.as_str()] = value.clone(),
+                None => trial[section.as_str()] = value.clone(),
+            }
+            if validate(&trial).is_ok() {
+                kept = trial;
+                false
+            } else {
+                true
+            }
+        });
+        if pending.len() == before {
+            break;
+        }
+    }
+    let reset = pending
+        .into_iter()
+        .map(|(section, name, _)| name.map_or(section.clone(), |n| format!("{section}.{n}")))
+        .collect();
+    (validate(&kept).unwrap_or_else(|_| defaults()), reset)
+}
 pub fn load() -> Result<Value> {
     let path = path();
     if !path.exists() {
@@ -412,7 +500,15 @@ pub fn load() -> Result<Value> {
     if fs::metadata(&path)?.len() > 65536 {
         return err("Configuration exceeds 64 KiB");
     }
-    let mut data: Value = serde_json::from_slice(&fs::read(path)?)?;
+    let stamp = crate::capture::timestamp();
+    let mut data: Value = match serde_json::from_slice(&fs::read(&path)?) {
+        Ok(data) => data,
+        Err(e) => {
+            let kept = backup(&format!("unreadable-{stamp}"));
+            eprintln!("jarvis: settings file is not valid JSON ({e}); starting from defaults, original kept at {kept:?}");
+            return save(&defaults());
+        }
+    };
     let keys = unknown(&data);
     if !keys.is_empty() {
         eprintln!("jarvis: ignoring unknown settings: {}", keys.join(", "));
@@ -426,7 +522,18 @@ pub fn load() -> Result<Value> {
             map.remove(&key);
         }
     }
-    validate(&data)
+    match validate(&data) {
+        Ok(c) => Ok(c),
+        Err(e) => {
+            let (c, reset) = repair(&data);
+            let kept = backup(&format!("before-repair-{stamp}"));
+            eprintln!(
+                "jarvis: some settings are not valid in this version ({e}); reset {} and kept the rest; original at {kept:?}",
+                reset.join(", ")
+            );
+            save(&c)
+        }
+    }
 }
 pub fn save(data: &Value) -> Result<Value> {
     let c = validate(data)?;
@@ -434,4 +541,34 @@ pub fn save(data: &Value) -> Result<Value> {
     bytes.push(b'\n');
     util::atomic_write(&path(), &bytes)?;
     Ok(c)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+    #[test]
+    fn repair_keeps_valid_settings_and_resets_only_rejected_ones() {
+        // Written by another version: fps above this version's range and a
+        // removed quality preset; everything else must survive.
+        let old = json!({
+            "activation": {"wake_phrase": "alfred"},
+            "aliases": {"streamio": "com.stremio.Stremio.desktop"},
+            "app_prefixes": {"streamio": "watch"},
+            "recording": {"fps": 999, "quality_preset": "insane", "codec": "av1",
+                          "system_audio": true, "microphone": true,
+                          "audio_device": "combined", "combined_audio_source": true},
+            "replay": {"seconds": 300}
+        });
+        assert!(validate(&old).is_err());
+        let (fixed, reset) = repair(&old);
+        assert_eq!(reset, vec!["recording.fps", "recording.quality_preset"]);
+        assert_eq!(fixed["activation"]["wake_phrase"], "alfred");
+        assert_eq!(fixed["app_prefixes"]["streamio"], "watch");
+        assert_eq!(fixed["recording"]["codec"], "av1");
+        // Accepted once the combined source it depends on is in.
+        assert_eq!(fixed["recording"]["microphone"], true);
+        assert_eq!(fixed["recording"]["fps"], defaults()["recording"]["fps"]);
+        assert_eq!(fixed["replay"]["seconds"], 300);
+    }
 }
