@@ -48,9 +48,11 @@ which one the preset and Advanced settings change. They are stored as
 `replay.own_video` plus `replay.codec`, `fps`, `resolution`, `rate_control`,
 `quality_preset` and `bitrate_mbps`; replay always records with a GPU format.
 
-**Saving while capture runs** applies the change at once: a running recording
-is stopped (and saved as its own file) and a new one starts; a running replay
-restarts with an empty history. Only captures whose settings changed restart.
+**Saving while capture runs** applies the change at once: the service stops a
+running recording (saved as its own file) and starts a new one, and restarts a
+running replay with an empty history. Only captures whose settings changed
+restart. The service does this itself, so it works from any settings window,
+including one opened before an update, and the save reply lists what restarted.
 
 | Preset | Format | Resolution | Frame rate | Size |
 | --- | --- | --- | --- | --- |

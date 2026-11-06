@@ -14,7 +14,7 @@ import socket
 import tempfile
 import threading
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from murmur import config
 from murmur.actions import Dispatcher
@@ -358,21 +358,29 @@ class ClipSoundTests(unittest.IsolatedAsyncioTestCase):
 
 
 class ReplayServiceTests(unittest.IsolatedAsyncioTestCase):
-    async def test_live_replay_audio_changes_require_restart_before_saving(self):
+    async def test_saving_replay_settings_while_it_runs_restarts_it(self):
         from murmur.daemon import Service
         registry = MagicMock(index={})
         with patch("murmur.daemon.AppRegistry", return_value=registry):
             service = Service({})
         service.replay = MagicMock()
-        service.replay.status.return_value = {"state": "on"}
-        for key, value in (("seconds", 180), ("game_audio", False), ("microphone", False),
-                           ("storage", "disk"), ("max_mb", 512), ("buffer_dir", "/another/buffer")):
+        for key, value in (("seconds", 180), ("game_audio", False), ("storage", "disk"), ("fps", 120)):
+            state = {"state": "on"}
+            service.replay.status.side_effect = lambda: dict(state)
+            phrases = []
+            async def execute(phrase):
+                phrases.append(phrase)
+                state["state"] = "off" if phrase == "stop replay" else "on"
+                return {"ok": True}
+            service.execute = execute
             cfg = copy.deepcopy(service.config)
             cfg["replay"][key] = value
-            with self.subTest(key=key), patch("murmur.daemon.configuration.save") as save:
-                with self.assertRaisesRegex(ValueError, "Stop instant replay"):
-                    await service.handle({"op": "save_config", "config": cfg})
-                save.assert_not_called()
+            with self.subTest(key=key), patch("murmur.daemon.configuration.save", side_effect=lambda c: c) as save, \
+                    patch.object(service, "desktop_call", AsyncMock(return_value=registry)):
+                result = await service.handle({"op": "save_config", "config": cfg})
+                save.assert_called_once()
+            self.assertEqual((result["restarted"], result["restart_errors"]), (["replay"], []))
+            self.assertEqual(phrases, ["stop replay", "start replay"])
 
     async def test_status_reports_replay_and_save_while_off_is_a_json_error(self):
         from murmur.daemon import Service

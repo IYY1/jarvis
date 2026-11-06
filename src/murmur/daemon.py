@@ -557,6 +557,18 @@ class Service:
                     self.activation.pause()
         elif op == "save_config":
             c = configuration.validate(payload["config"])
+            # Running captures whose settings change stop, then start again with them.
+            recording_changed = c["recording"] != self.config["recording"]
+            restart = []
+            if self.recorder.status()["state"] == "recording" and recording_changed:
+                restart.append(("stop recording", "start recording"))
+            if self.replay.status()["state"] == "on" and (recording_changed or any(
+                    c["replay"][key] != self.config["replay"][key] for key in REPLAY_CAPTURE_KEYS)):
+                restart.append(("stop replay", "start replay"))
+            for stop, _ in restart:
+                stopped = await self.execute(stop)
+                if not stopped.get("ok"):
+                    raise CommandError(f"Could not stop to apply the settings: {stopped.get('error', '')}")
             if self.recorder.status()["state"] in ("recording", "stopping") and c["recording"] != self.config["recording"]:
                 raise CommandError("Stop recording before changing capture settings")
             if self.replay.status()["state"] in ("on", "stopping") and (
@@ -577,7 +589,14 @@ class Service:
                 await self.set_mute(True)
             else:
                 await self.set_mute(self.muted if was_onboarded else False)
-            return {"ok": True, "config": self.config}
+            errors = []
+            for _, start in restart:
+                started = await self.execute(start)
+                if not started.get("ok"):
+                    errors.append(started.get("error", "did not start"))
+            return {"ok": True, "config": self.config,
+                    "restarted": ["record" if "recording" in s else "replay" for s, _ in restart],
+                    "restart_errors": errors}
         elif op in ("replay_start", "replay_stop", "replay_save"):
             return await self.execute(op.removeprefix("replay_") + " replay")
         elif op in ("record_start", "record_stop"):

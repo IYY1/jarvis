@@ -443,17 +443,23 @@ class ControllerServiceTests(unittest.TestCase):
         self.assertEqual(json.loads(h.config_path.read_text()), before)
         self.assertFalse(h.rpc("set_startup", enabled="yes")["ok"])
 
-    def test_recording_finalizes_once_and_capture_settings_are_guarded(self):
+    def test_recording_finalizes_once_and_saving_settings_restarts_it(self):
         h = self.start(dry_run=False)
         first = h.rpc("record_start"); self.assertTrue(first["ok"], first)
         self.assertTrue(h.rpc("record_start")["ok"])
         h.wait(lambda: bool(h.events("wf-recorder")))
         self.assertEqual(len(h.events("wf-recorder")), 1)
+        # Saving new capture settings mid-recording keeps what was recorded
+        # as its own file and continues in a new one with the new settings.
         changed = h.rpc("config")["config"]; changed["recording"]["fps"] = 60
-        self.assertFalse(h.rpc("save_config", config=changed)["ok"])
+        saved = h.rpc("save_config", config=changed)
+        self.assertEqual((saved["ok"], saved["restarted"], saved["restart_errors"]), (True, ["record"], []))
+        self.assertEqual(h.status()["recording"]["state"], "recording")
+        h.wait(lambda: len(h.events("wf-recorder")) == 2)
         stopped = h.rpc("record_stop"); self.assertTrue(stopped["ok"], stopped)
         path = Path(h.status()["recording"]["file"])
         self.assertTrue(path.exists()); self.assertFalse(path.name.startswith("."))
+        self.assertEqual(len(list(path.parent.glob("Murmur_*.mkv"))), 2)
         self.assertEqual(list(path.parent.glob("*.part.mkv")), [])
         self.assertEqual(path.stat().st_mode & 0o777, 0o600)
 
@@ -469,7 +475,9 @@ class ControllerServiceTests(unittest.TestCase):
         requests = [e["request"] for e in h.events("gpu-screen-recorder") if e.get("event") == "ipc_request"]
         self.assertEqual(requests, [{"id": 1, "name": "save-replay", "data": {"seconds": 120}}])
         changed = h.rpc("config")["config"]; changed["replay"]["seconds"] = 60
-        self.assertFalse(h.rpc("save_config", config=changed)["ok"])
+        saved = h.rpc("save_config", config=changed)
+        self.assertEqual((saved["ok"], saved["restarted"]), (True, ["replay"]))
+        self.assertEqual(h.status()["replay"]["state"], "on")
         self.assertTrue(h.rpc("replay_stop")["ok"])
         self.assertEqual(h.status()["replay"]["state"], "off")
 
@@ -488,10 +496,11 @@ class ControllerServiceTests(unittest.TestCase):
         self.assertEqual(clip.read_bytes(), b"fake replay 1")
         requests = [e["request"] for e in h.events("gpu-screen-recorder") if e.get("event") == "ipc_request"]
         self.assertEqual(requests, [{"id": 1, "name": "save-replay", "data": {"seconds": 120}}])
-        for key, value in (("storage", "ram"), ("max_mb", 1024), ("buffer_dir", str(h.root / "other"))):
-            changed = h.rpc("config")["config"]
-            changed["replay"][key] = value
-            self.assertFalse(h.rpc("save_config", config=changed)["ok"])
+        changed = h.rpc("config")["config"]
+        changed["replay"]["max_mb"] = 1024
+        saved = h.rpc("save_config", config=changed)   # restarts replay with the new budget
+        self.assertEqual((saved["ok"], saved["restarted"]), (True, ["replay"]))
+        self.assertTrue(clip.exists())
         self.assertTrue(h.rpc("replay_stop")["ok"])
         self.assertFalse(buffer.exists())
         self.assertTrue(clip.exists())

@@ -65,7 +65,8 @@ async fn connection(
             .send(service::Message::Request(payload, reply))
             .await
             .map_err(|_| "Service is stopping")?;
-        let response = timeout(Duration::from_secs(60), rx).await??;
+        // A save that restarts capture waits for a recording to be finalized.
+        let response = timeout(Duration::from_secs(120), rx).await??;
         write_json(&mut write, &response).await?;
         Ok::<_, Error>(())
     }
@@ -129,6 +130,42 @@ async fn request(service: &mut service::Service, payload: Value, reply: service:
                 .await;
         });
         return;
+    }
+    if op == "save_config" {
+        if let Ok((config, restart)) = service.restarts_for(&payload["config"]) {
+            if !restart.is_empty() {
+                // Stopping can take seconds (a recording is finalized), so it
+                // runs beside the state actor: stop, save, start again.
+                let (recording, replay) = (service.recording.clone(), service.replay.clone());
+                let events = service.events.clone();
+                tokio::spawn(async move {
+                    let capture = |kind: &str| if kind == "record" { recording.clone() } else { replay.clone() };
+                    for kind in &restart {
+                        if let Err(e) = capture(kind).lock().await.stop().await {
+                            let _ = reply.send(json!({"ok":false,"error":format!("Could not stop to apply the settings: {e}")}));
+                            return;
+                        }
+                    }
+                    let (saved, rx) = oneshot::channel();
+                    if events.send(service::Message::Request(payload, saved)).await.is_err() {
+                        return;
+                    }
+                    let Ok(mut response) = rx.await else { return };
+                    let mut errors = vec![];
+                    if response["ok"] == true {
+                        for kind in &restart {
+                            if let Err(e) = capture(kind).lock().await.start(&config).await {
+                                errors.push(e.to_string());
+                            }
+                        }
+                    }
+                    response["restarted"] = json!(restart);
+                    response["restart_errors"] = json!(errors);
+                    let _ = reply.send(response);
+                });
+                return;
+            }
+        }
     }
     if matches!(op, "devices" | "recording_devices" | "monitors") {
         // External servers can be slow. Discovery stays outside the state actor

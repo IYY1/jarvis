@@ -24,6 +24,25 @@ use tokio::{
 };
 
 pub type Reply = oneshot::Sender<Value>;
+/// Replay settings a running replay can't change; with any recording
+/// setting they make a save restart the replay (mirrors client.py).
+pub const REPLAY_CAPTURE_KEYS: [&str; 15] = [
+    "seconds",
+    "game_audio",
+    "microphone",
+    "storage",
+    "max_mb",
+    "buffer_dir",
+    "audio_tracks",
+    "separate_apps",
+    "own_video",
+    "codec",
+    "fps",
+    "resolution",
+    "rate_control",
+    "quality_preset",
+    "bitrate_mbps",
+];
 pub enum Message {
     Request(Value, Reply),
     Voice(u64, Value),
@@ -614,6 +633,26 @@ impl Service {
             let _ = reply.send(response);
         }
     }
+    /// The running captures a save of `config` would change: "record" while
+    /// recording, "replay" while replay is on. The caller stops them, saves
+    /// and starts them again, so settings apply without stopping by hand.
+    pub fn restarts_for(&self, config: &Value) -> Result<(Value, Vec<&'static str>)> {
+        let c = config::validate(config)?;
+        let recording_changed = c["recording"] != self.config["recording"];
+        let mut restart = vec![];
+        if self.recording_updates.borrow()["state"] == "recording" && recording_changed {
+            restart.push("record");
+        }
+        if self.replay_updates.borrow()["state"] == "on"
+            && (recording_changed
+                || REPLAY_CAPTURE_KEYS
+                    .iter()
+                    .any(|key| c["replay"][*key] != self.config["replay"][*key]))
+        {
+            restart.push("replay");
+        }
+        Ok((c, restart))
+    }
     pub async fn handle(&mut self, payload: &Value) -> Result<Value> {
         let op = payload["op"].as_str().ok_or("Unsupported operation")?;
         match op {
@@ -716,25 +755,9 @@ impl Service {
                 }
                 if (replay_active || self.pending_captures > 0)
                     && (c["recording"] != self.config["recording"]
-                        || [
-                            "seconds",
-                            "game_audio",
-                            "microphone",
-                            "storage",
-                            "max_mb",
-                            "buffer_dir",
-                            "audio_tracks",
-                            "separate_apps",
-                            "own_video",
-                            "codec",
-                            "fps",
-                            "resolution",
-                            "rate_control",
-                            "quality_preset",
-                            "bitrate_mbps",
-                        ]
-                        .iter()
-                        .any(|key| c["replay"][key] != self.config["replay"][key]))
+                        || REPLAY_CAPTURE_KEYS
+                            .iter()
+                            .any(|key| c["replay"][*key] != self.config["replay"][*key]))
                 {
                     return err("Stop instant replay before changing capture settings");
                 }

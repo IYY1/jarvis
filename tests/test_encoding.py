@@ -69,33 +69,29 @@ class EncodingTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate({"replay": {"codec": "libx264"}})  # replay always records on the GPU
 
-    def test_saving_restarts_only_running_captures_whose_settings_changed(self):
-        from murmur import client
-        old = validate({"recording": {"codec": "av1", "fps": 60}})
-        calls = []
-        def fake(op, **payload):
-            calls.append(op)
-            if op == "config":
-                return {"ok": True, "config": old}
-            if op == "status":
-                return {"ok": True, "status": {"recording": {"state": "recording"}, "replay": {"state": "on"}}}
-            return {"ok": True}
-        new = validate({"recording": {"codec": "av1", "fps": 120}})
-        with patch("murmur.client.request", side_effect=fake):
-            result = client.save_config_restarting(new)
-        self.assertEqual(calls, ["config", "status", "record_stop", "replay_stop", "save_config", "record_start", "replay_start"])
-        self.assertIn("a new one started", client.restart_note(result))
-        # Replay-only change with its own settings: only replay restarts.
-        calls.clear()
-        replay_only = validate({"recording": {"codec": "av1", "fps": 60}, "replay": {"own_video": True, "fps": 144}})
-        with patch("murmur.client.request", side_effect=fake):
-            client.save_config_restarting(replay_only)
-        self.assertEqual(calls, ["config", "status", "replay_stop", "save_config", "replay_start"])
-        # Nothing capture-related changed: nothing stops.
-        calls.clear()
-        with patch("murmur.client.request", side_effect=fake):
-            self.assertEqual(client.restart_note(client.save_config_restarting(old)), "")
-        self.assertEqual(calls, ["config", "status", "save_config"])
+    def test_saving_while_replay_runs_restarts_it_with_the_new_settings(self):
+        from tests.test_rust_controller import BINARY, Harness
+        from murmur.client import restart_note
+        if not BINARY.exists():
+            self.skipTest("build Rust controller")
+        h = Harness(dry_run=False, MURMUR_TEST_CODEC="av1", config_patch={"recording": {"codec": "av1", "fps": 60}})
+        self.addCleanup(h.close)
+        self.assertTrue(h.rpc("replay_start")["ok"])
+        launches = lambda: [e["args"] for e in h.events("gpu-screen-recorder") if not e.get("event") and "-ipc" in e["args"]]
+        h.wait(lambda: h.status()["replay"]["state"] == "on" and len(launches()) == 1)
+        config = h.rpc("config")["config"]
+        config["recording"]["fps"] = 120
+        result = h.rpc("save_config", config=config)
+        self.assertTrue(result["ok"], result)
+        self.assertEqual((result["restarted"], result["restart_errors"]), (["replay"], []))
+        self.assertIn("instant replay restarted", restart_note(result))
+        self.assertEqual(h.status()["replay"]["state"], "on")
+        h.wait(lambda: len(launches()) == 2)
+        args = launches()[-1]
+        self.assertEqual((len(launches()), args[args.index("-f") + 1]), (2, "120"))
+        # A save that changes nothing about capture leaves replay running.
+        result = h.rpc("save_config", config=h.rpc("config")["config"])
+        self.assertEqual((result.get("restarted", []), len(launches())), ([], 2))
 
     def test_sdr_gpu_uses_gpu_backend_with_explicit_audio(self):
         for codec in GPU_CODECS:
