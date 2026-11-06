@@ -62,6 +62,13 @@ including one opened before an update, and the save reply lists what restarted.
 | **Small files · 1080p** | as Recommended | 1080p at most | 30 fps | Fixed 8 Mbps |
 | **Compatible · H.264** | H.264 | Display's own | 60 fps | Consistent quality, Sharp |
 
+**Fixed bitrate is the default, and it follows the picture.** With **Match
+resolution and frame rate** on (`bitrate_auto`, the default), the bitrate is
+set when capture starts from the output size, frame rate and format: about
+0.075 bits per pixel for AV1/HEVC and 0.11 for H.264, between 4 and 500 Mbps.
+2K at 60 fps in AV1 is about 17 Mbps, 2K at 120 fps 33, 1080p at 60 fps 9, 4K at
+60 fps 37. Turning the switch off keeps the bitrate you type.
+
 **Advanced** settings: format (AV1 10-bit, AV1, HEVC 10-bit, HEVC, H.264, and a
 legacy encoder only if already in use), **resolution** (the display's own, or at
 most 4K, 2K, 1080p or 720p: `recording.resolution` is `native`, `2160`, `1440`,

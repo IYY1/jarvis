@@ -26,7 +26,7 @@ use tokio::{
 pub type Reply = oneshot::Sender<Value>;
 /// Replay settings a running replay can't change; with any recording
 /// setting they make a save restart the replay (mirrors client.py).
-pub const REPLAY_CAPTURE_KEYS: [&str; 15] = [
+pub const REPLAY_CAPTURE_KEYS: [&str; 16] = [
     "seconds",
     "game_audio",
     "microphone",
@@ -42,6 +42,7 @@ pub const REPLAY_CAPTURE_KEYS: [&str; 15] = [
     "rate_control",
     "quality_preset",
     "bitrate_mbps",
+    "bitrate_auto",
 ];
 pub enum Message {
     Request(Value, Reply),
@@ -98,6 +99,8 @@ pub struct Service {
     last_recording: String,
     last_replay: Value,
     dictation: dictation::Session,
+    /// Set by “close yourself” or a quit request: the service ends after replying.
+    pub quit: bool,
 }
 impl Service {
     pub fn new(
@@ -145,6 +148,7 @@ impl Service {
             last_recording: "idle".into(),
             last_replay: Value::Null,
             dictation: Default::default(),
+            quit: false,
         };
         result.publish();
         Ok(result)
@@ -527,6 +531,9 @@ impl Service {
             )
         } else if action == "cancel" {
             Some(Ok("Cancelled".into()))
+        } else if action == "quit" {
+            self.quit = true;
+            Some(Ok("Closing Jarvis. Open it again from your app menu or with: jarvis".into()))
         } else if action == "dictation_start" {
             Some(
                 self.start_dictation(Some(phrase))
@@ -662,6 +669,10 @@ impl Service {
                 )
             }
             "config" => return Ok(json!({"ok":true,"config":self.config})),
+            "quit" => {
+                self.quit = true;
+                return Ok(json!({"ok":true,"message":"Closing Jarvis"}));
+            }
             "commands" => {
                 return Ok(
                     json!({"ok":true,"commands":policy::TABLES["REFERENCE"],"applications":self.apps.voice_commands(&self.parser)?}),

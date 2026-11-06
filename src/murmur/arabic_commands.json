@@ -37,6 +37,8 @@
     "طفي الريبلاي": "stop replay", "طفي الاعاده الفوريه": "stop replay", "وقف الاعاده": "stop replay",
     "وقف الاستماع": "stop listening", "اوقف الاستماع": "stop listening", "لا تسمع": "stop listening",
     "بطل تسمع": "stop listening", "لا تسمعني": "stop listening", "سكر المايك": "stop listening", "اقفل المايك": "stop listening",
+    "سكر نفسك": "close yourself", "اقفل نفسك": "close yourself", "طفي نفسك": "close yourself",
+    "سكر جارفس": "close yourself", "اقفل جارفس": "close yourself",
     "الغ": "cancel", "الغاء": "cancel", "كنسل": "cancel", "خلاص": "cancel", "انسي": "cancel", "لا خلاص": "cancel",
     "تجاهل": "cancel", "الغ الامر": "cancel", "ولا شي": "cancel",
     "اسمعني": "listen to me", "اكتب اللي اقوله": "listen to me", "اكتب اللي بقوله": "listen to me",

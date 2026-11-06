@@ -467,6 +467,11 @@ class Service:
             intent = None
             try:
                 intent = self.parser.parse(phrase)
+                if intent.action == "quit":
+                    self.stopping.set()   # the service shuts down after replying
+                    self.message = "Closing Jarvis"
+                    self.publish()
+                    return {"ok": True, "message": self.message}
                 if intent.action in ("dictation_start", "dictation_stop"):
                     if intent.action == "dictation_start":
                         await self.start_dictation(phrase)
@@ -492,9 +497,9 @@ class Service:
 
     async def handle(self, payload):
         op = payload.get("op")
-        if op == "shutdown" and is_windows():
+        if (op == "shutdown" and is_windows()) or op == "quit":
             self.stopping.set()
-            return {"ok": True, "pid": os.getpid()}
+            return {"ok": True, "pid": os.getpid(), "message": "Closing Jarvis"}
         if op == "status":
             from .process_memory import snapshot
             return {"ok": True, "status": self.status(), "pid": os.getpid(), "memory": snapshot()}

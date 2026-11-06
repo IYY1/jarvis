@@ -55,7 +55,13 @@
     "start dictation": "listen to me",
     "take dictation": "listen to me",
     "start dictating": "listen to me",
-    "listen": "listen to me"
+    "listen": "listen to me",
+    "quit jarvis": "close yourself",
+    "close jarvis": "close yourself",
+    "exit jarvis": "close yourself",
+    "quit yourself": "close yourself",
+    "shut yourself down": "close yourself",
+    "turn yourself off": "close yourself"
   },
   "POLITE_PREFIXES": [
     "please",
@@ -182,6 +188,14 @@
       ]
     },
     {
+      "category": "Privacy",
+      "title": "Close Jarvis",
+      "examples": [
+        "close yourself",
+        "quit Jarvis"
+      ]
+    },
+    {
       "category": "Arabic",
       "title": "Arabic commands (Arabic and English setting)",
       "examples": [
@@ -302,6 +316,10 @@
     },
     "stop dictation": {
       "action": "dictation_stop",
+      "target": null
+    },
+    "close yourself": {
+      "action": "quit",
       "target": null
     }
   }

@@ -112,7 +112,41 @@ fn gpu_args(color: &str, r: &Value) -> Vec<String> {
     args
 }
 /// Video settings replay can keep apart from recording (replay.own_video).
-pub const REPLAY_VIDEO: [&str; 6] = ["codec", "fps", "resolution", "rate_control", "quality_preset", "bitrate_mbps"];
+pub const REPLAY_VIDEO: [&str; 7] = [
+    "codec",
+    "fps",
+    "resolution",
+    "rate_control",
+    "quality_preset",
+    "bitrate_mbps",
+    "bitrate_auto",
+];
+/// The fixed bitrate (Mbps) used while `bitrate_auto` is on: it follows the
+/// output size (the display's, or the resolution limit) and frame rate, at
+/// about 0.075 bits per pixel for AV1/HEVC and 0.11 for H.264 (mirrors
+/// encoding.py). 2K at 60 fps in AV1 is about 17 Mbps.
+pub fn auto_bitrate(video: &Value, display: &Value) -> u64 {
+    let mut width = display["width"].as_f64().unwrap_or(1920.0);
+    let mut height = display["height"].as_f64().unwrap_or(1080.0);
+    let limit = RESOLUTIONS
+        .iter()
+        .find(|(name, _)| video["resolution"] == *name)
+        .and_then(|(_, size)| size.split_once('x'))
+        .and_then(|(w, h)| Some((w.parse::<f64>().ok()?, h.parse::<f64>().ok()?)));
+    if let Some((w, h)) = limit {
+        let scale = (w / width).min(h / height).min(1.0);
+        width *= scale;
+        height *= scale;
+    }
+    let fps = video["fps"].as_f64().unwrap_or(60.0);
+    let codec = video["codec"].as_str().unwrap_or("");
+    let bits_per_pixel = if ["h264", "libx264", "h264_vaapi"].contains(&codec) {
+        0.11
+    } else {
+        0.075
+    };
+    ((width * height * fps * bits_per_pixel / 1e6).round() as u64).clamp(4, 500)
+}
 /// The recording section with replay's own video settings, when it has them.
 pub fn replay_video(cfg: &Value) -> Value {
     let mut video = cfg["recording"].clone();
@@ -123,9 +157,9 @@ pub fn replay_video(cfg: &Value) -> Value {
     }
     video
 }
-pub fn replay_command(cfg: &Value, ipc: &Path, folder: &Path, color: &str) -> Vec<String> {
-    let video = replay_video(cfg);
-    let r = &video;
+/// `video` is replay_video(cfg), with any automatic bitrate already set.
+pub fn replay_command(cfg: &Value, video: &Value, ipc: &Path, folder: &Path, color: &str) -> Vec<String> {
+    let r = video;
     let replay = &cfg["replay"];
     let mut argv = vec![
         "gpu-screen-recorder".into(),
@@ -405,16 +439,15 @@ impl Capture {
             }
             return Ok(self.snapshot());
         }
-        let video = if self.replay {
+        let mut video = if self.replay {
             replay_video(cfg)
         } else {
             cfg["recording"].clone()
         };
-        let r = &video;
-        if !self.replay && r["configured"] != true {
+        if !self.replay && video["configured"] != true {
             return err("Open Recording settings and finish source, audio, folder, and permission setup first.");
         }
-        let monitor = r["monitor"].as_str().unwrap().trim();
+        let monitor = video["monitor"].as_str().unwrap().trim().to_owned();
         if monitor.is_empty() {
             return err("Choose a display in Recording settings first.");
         }
@@ -423,8 +456,13 @@ impl Capture {
             .as_array()
             .unwrap()
             .iter()
-            .find(|m| m["name"] == monitor)
+            .find(|m| m["name"] == monitor.as_str())
             .ok_or("Capture source is unavailable. Choose a connected monitor.")?;
+        if video["bitrate_auto"] == true {
+            video["bitrate_mbps"] = json!(auto_bitrate(&video, display));
+        }
+        let r = &video;
+        let monitor = monitor.as_str();
         self.color = color(r, display)?.into();
         self.codec = r["codec"]
             .as_str()
@@ -484,6 +522,7 @@ impl Capture {
             let buffer = budget.as_ref().and_then(|b| b.disk.as_ref());
             replay_command(
                 cfg,
+                r,
                 &self.ipc,
                 buffer.map(|s| s.path.as_path()).unwrap_or(&folder),
                 &self.color,
@@ -990,6 +1029,20 @@ mod tests {
     use super::*;
     use serde_json::json;
     #[test]
+    fn automatic_bitrate_follows_output_size_frame_rate_and_format() {
+        let display = json!({"width":2560,"height":1440});
+        let video = |codec: &str, fps: u64, resolution: &str| {
+            json!({"codec":codec,"fps":fps,"resolution":resolution})
+        };
+        assert_eq!(auto_bitrate(&video("av1", 60, "native"), &display), 17);
+        assert_eq!(auto_bitrate(&video("av1", 120, "native"), &display), 33);
+        assert_eq!(auto_bitrate(&video("av1", 60, "1080"), &display), 9);
+        assert_eq!(auto_bitrate(&video("av1", 60, "2160"), &display), 17); // never scaled up
+        assert_eq!(auto_bitrate(&video("h264", 60, "native"), &display), 24);
+        assert_eq!(auto_bitrate(&video("av1", 30, "720"), &display), 4); // floor
+        assert_eq!(auto_bitrate(&video("av1", 60, "native"), &json!({"width":3840,"height":2160})), 37);
+    }
+    #[test]
     fn replay_uses_recording_video_unless_it_has_its_own() {
         let mut cfg = json!({
             "recording": {"monitor":"DP-3","fps":60,"codec":"av1_10bit","resolution":"native",
@@ -1001,12 +1054,12 @@ mod tests {
         let arg = |argv: &[String], flag: &str| {
             argv.iter().position(|a| a == flag).map(|i| argv[i + 1].clone())
         };
-        let same = replay_command(&cfg, Path::new("/ipc"), Path::new("/out"), "sdr");
+        let same = replay_command(&cfg, &replay_video(&cfg), Path::new("/ipc"), Path::new("/out"), "sdr");
         assert_eq!(arg(&same, "-k").as_deref(), Some("av1_10bit"));
         assert_eq!(arg(&same, "-f").as_deref(), Some("60"));
         assert_eq!(arg(&same, "-s"), None);
         cfg["replay"]["own_video"] = json!(true);
-        let own = replay_command(&cfg, Path::new("/ipc"), Path::new("/out"), "sdr");
+        let own = replay_command(&cfg, &replay_video(&cfg), Path::new("/ipc"), Path::new("/out"), "sdr");
         assert_eq!(arg(&own, "-k").as_deref(), Some("hevc"));
         assert_eq!(arg(&own, "-f").as_deref(), Some("120"));
         assert_eq!(arg(&own, "-s").as_deref(), Some("1920x1080"));

@@ -308,6 +308,16 @@ class ServiceResilienceTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(service.activation.state, "error")
         self.assertIn("microphone missing", service.message)
 
+    async def test_close_yourself_stops_the_service(self):
+        from murmur.daemon import Service
+        with patch("murmur.daemon.AppRegistry", return_value=MagicMock(index={})):
+            service = Service({"privacy": {"onboarded": True}, "activation": {"mode": "push_to_talk"}})
+        for phrase in ("close yourself", "quit jarvis", "سكّر نفسك"):
+            service.stopping.clear()
+            result = await service.execute(phrase)
+            self.assertTrue(result["ok"], phrase)
+            self.assertTrue(service.stopping.is_set(), phrase)
+
     async def test_service_starts_even_if_voice_cannot(self):
         from murmur import daemon
         with tempfile.TemporaryDirectory() as directory:

@@ -20,6 +20,15 @@
 - **Video formats**: Recommended (AV1, else HEVC) / Compatible (H.264 GPU),
   each tested on the selected display's GPU with synthetic frames. CPU H.264
   and legacy VA-API remain only for existing configurations.
+- **Fixed bitrate by default, matched to resolution and frame rate** until
+  you set your own; size control and quality live under Advanced.
+- **Commands & apps** is one page: a short “Say this” list on top, every
+  phrase and your shortcuts folded away.
+- **Close Jarvis** by voice (“close yourself”, “quit Jarvis”, سكّر نفسك) or the
+  Quit Jarvis button; a running recording is saved first.
+- **Clips: mute tracks** with one switch per track.
+- **Dictation stops 3 seconds after you stop talking** (was 20).
+- Recorder setup moved to Advanced; Start recording completes it.
 - **Settings survive updates**: values a new version rejects are reset one by
   one instead of stopping the service; the original and the previous
   version's settings are kept in `backups/`. **Export/import** with

@@ -132,7 +132,7 @@ pub fn validate(data: &Value) -> Result<Value> {
     )?;
     if !d["idle_seconds"]
         .as_f64()
-        .is_some_and(|v| (5.0..=300.0).contains(&v))
+        .is_some_and(|v| (2.0..=300.0).contains(&v))
         || !d["max_minutes"]
             .as_f64()
             .is_some_and(|v| (1.0..=60.0).contains(&v))
@@ -310,6 +310,9 @@ pub fn validate(data: &Value) -> Result<Value> {
         &["medium", "high", "very_high", "ultra"],
         "Choose a supported quality preset",
     )?;
+    if !r["bitrate_auto"].is_boolean() {
+        return err("Automatic bitrate must be true or false");
+    }
     choices(
         &r["resolution"],
         &crate::capture::RESOLUTIONS.map(|(name, _)| name),
@@ -329,7 +332,7 @@ pub fn validate(data: &Value) -> Result<Value> {
     for key in ["output_dir", "monitor", "audio_device"] {
         text(&r[key], 4096, &format!("recording {key}"))?;
     }
-    for key in ["autostart", "game_audio", "microphone", "sound", "own_video"] {
+    for key in ["autostart", "game_audio", "microphone", "sound", "own_video", "bitrate_auto"] {
         if !c["replay"][key].is_boolean() {
             return err("Replay switches must be true or false");
         }

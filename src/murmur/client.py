@@ -55,7 +55,7 @@ def request(op: str, timeout: float | None = None, **kwargs) -> dict:
 # setting they make a save restart the replay (mirrors service.rs).
 REPLAY_CAPTURE_KEYS = ("seconds", "game_audio", "microphone", "storage", "max_mb", "buffer_dir", "audio_tracks",
                        "separate_apps", "own_video", "codec", "fps", "resolution", "rate_control",
-                       "quality_preset", "bitrate_mbps")
+                       "quality_preset", "bitrate_mbps", "bitrate_auto")
 
 
 def save_config_restarting(config: dict) -> dict:

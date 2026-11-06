@@ -14,7 +14,7 @@ import subprocess
 import threading
 import uuid
 
-from .encoding import GPU_CODECS, expected_codec, gpu_video_args, split_codec, validate_encoding
+from .encoding import GPU_CODECS, expected_codec, gpu_video_args, split_codec, validate_encoding, with_auto_bitrate
 
 
 class RecorderError(RuntimeError):
@@ -236,6 +236,7 @@ class Recorder:
         if display is None:
             raise RecorderError(f"Capture source {monitor!r} is unavailable. Choose a connected monitor.")
         color = capture_color(cfg, display)
+        cfg = with_auto_bitrate(cfg, display)
         gpu = color == "hdr" or cfg.get("codec") in GPU_CODECS
         if not gpu and cfg.get("resolution", "native") != "native":
             raise RecorderError("The legacy CPU/VA-API recorder records the display's own resolution only. "

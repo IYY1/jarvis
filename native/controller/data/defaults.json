@@ -46,7 +46,8 @@
     "sound_feedback": false,
     "vaapi_device": "/dev/dri/renderD128",
     "resolution": "native",
-    "rate_control": "quality",
+    "bitrate_auto": true,
+    "rate_control": "bitrate",
     "bitrate_mbps": 8,
     "quality_preset": "very_high",
     "encoder": "auto"
@@ -66,13 +67,14 @@
     "codec": "av1",
     "fps": 60,
     "resolution": "native",
-    "rate_control": "quality",
+    "rate_control": "bitrate",
     "quality_preset": "very_high",
-    "bitrate_mbps": 8
+    "bitrate_mbps": 8,
+    "bitrate_auto": true
   },
   "dictation": {
     "language": "auto",
-    "idle_seconds": 20,
+    "idle_seconds": 3,
     "max_minutes": 10,
     "stop_phrases": [
       "stop dictation",

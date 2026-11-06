@@ -32,11 +32,11 @@ DEFAULTS = {
     "aliases": {}, "commands": {}, "app_prefixes": {}, "close_words": ["close"], "startup": False,
     # dictation: "Jarvis, listen to me" types speech into the focused text field.
     # language: "auto" follows recognition.language; "ar" or "en" chooses one.
-    "dictation": {"language": "auto", "idle_seconds": 20, "max_minutes": 10, "stop_phrases": ["stop dictation", "وقف الكتابة"],
+    "dictation": {"language": "auto", "idle_seconds": 3, "max_minutes": 10, "stop_phrases": ["stop dictation", "وقف الكتابة"],
                   "keyboard_fallback": True},
     "recording": {"output_dir": "~/Videos/Murmur", "monitor": "", "system_audio": False,
                   "microphone": False, "audio_device": "", "fps": 30,
-                  "codec": "libx264", "quality": 23, "rate_control": "quality",
+                  "codec": "libx264", "quality": 23, "rate_control": "bitrate", "bitrate_auto": True,
                   "bitrate_mbps": 8, "quality_preset": "very_high", "encoder": "auto", "configured": False, "color_mode": "auto",
                   "combined_audio_source": False, "sound_feedback": False,
                   "vaapi_device": "/dev/dri/renderD128", "resolution": "native"},
@@ -47,8 +47,8 @@ DEFAULTS = {
     # instead of the recording settings (the default).
     "replay": {"seconds": 120, "autostart": False, "game_audio": True, "microphone": True, "sound": True,
                "storage": "ram", "max_mb": 256, "buffer_dir": "", "audio_tracks": "mixed", "separate_apps": [],
-               "own_video": False, "codec": "av1", "fps": 60, "resolution": "native", "rate_control": "quality",
-               "quality_preset": "very_high", "bitrate_mbps": 8},
+               "own_video": False, "codec": "av1", "fps": 60, "resolution": "native", "rate_control": "bitrate",
+               "quality_preset": "very_high", "bitrate_mbps": 8, "bitrate_auto": True},
 }
 # Sections that existed in earlier versions and are now ignored.
 LEGACY_SECTIONS: tuple[str, ...] = ()
@@ -126,7 +126,7 @@ def validate(data: dict) -> dict:
     if d["language"] not in ("auto", "ar", "en"):
         raise ValueError("Dictation language must be auto, ar or en")
     if not isinstance(d, dict) or not all(isinstance(d[k], (int, float)) and not isinstance(d[k], bool) for k in ("idle_seconds", "max_minutes")) \
-            or not 5 <= d["idle_seconds"] <= 300 or not 1 <= d["max_minutes"] <= 60 or not isinstance(d["keyboard_fallback"], bool):
+            or not 2 <= d["idle_seconds"] <= 300 or not 1 <= d["max_minutes"] <= 60 or not isinstance(d["keyboard_fallback"], bool):
         raise ValueError("Dictation needs 5–300 idle seconds, 1–60 minutes and a true/false keyboard fallback")
     if not isinstance(d["stop_phrases"], list) or len(d["stop_phrases"]) > 8:
         raise ValueError("Use up to eight dictation stop phrases")

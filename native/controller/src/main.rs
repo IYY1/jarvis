@@ -274,7 +274,12 @@ async fn serve() -> Result<()> {
         tokio::select! { biased;
             _ = terminate.recv() => break,
             _ = interrupt.recv() => break,
-            Some(event) = messages.recv() => message(&mut service, event).await,
+            Some(event) = messages.recv() => {
+                message(&mut service, event).await;
+                if service.quit {
+                    break;  // “close yourself”: shutdown below finishes captures first
+                }
+            }
             Ok(()) = service.recording_updates.changed() => service.capture_changed(),
             Ok(()) = service.replay_updates.changed() => service.capture_changed(),
             accepted = listener.accept() => {

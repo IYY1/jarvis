@@ -740,6 +740,17 @@ class ControllerServiceTests(unittest.TestCase):
         self.assertEqual(json.loads(backups[0].read_text())["recording"]["fps"], 999)
         self.assertEqual((h.config_path.parent / ".version").read_text(), "0.3.1")
 
+    def test_close_yourself_saves_the_recording_and_exits(self):
+        h = self.start(dry_run=False)
+        self.assertTrue(h.rpc("record_start")["ok"])
+        h.wait(lambda: bool(h.events("wf-recorder")))
+        reply = h.rpc("execute", phrase="quit jarvis")
+        self.assertTrue(reply["ok"], reply)
+        self.assertEqual(h.process.wait(timeout=25), 0)
+        videos = list((h.root / "videos").glob("Murmur_*.mkv"))
+        self.assertEqual(len(videos), 1)                       # finalized, not a .part file
+        self.assertEqual(list((h.root / "videos").glob("*.part.mkv")), [])
+
     def test_ten_bit_sdr_recording_is_requested_and_verified(self):
         for pixel, ok in (("yuv420p", False), ("yuv420p10le", True)):
             with self.subTest(pixel=pixel):

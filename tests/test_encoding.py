@@ -15,7 +15,8 @@ from murmur.replay import command
 class EncodingTests(unittest.TestCase):
     def test_old_settings_keep_software_quality_and_new_options_are_validated(self):
         r = validate({})["recording"]
-        self.assertEqual((r["codec"], r["quality"], r["rate_control"]), ("libx264", 23, "quality"))
+        # Fixed bitrate that follows resolution and frame rate is the default.
+        self.assertEqual((r["codec"], r["quality"], r["rate_control"], r["bitrate_auto"]), ("libx264", 23, "bitrate", True))
         cases = [("codec", v) for v in (*CODECS, "bogus", None, [])]
         cases += [(key, v) for key in ("bitrate_mbps", "fps") for v in (True, 0, 1, 8.0, 60, 100, 101, 120, 240, 241, 500, 501)]
         cases += [("resolution", v) for v in ("native", "2160", "1440", "1080", "720", "1600", 1080)]
@@ -93,6 +94,18 @@ class EncodingTests(unittest.TestCase):
         result = h.rpc("save_config", config=h.rpc("config")["config"])
         self.assertEqual((result.get("restarted", []), len(launches())), ([], 2))
 
+    def test_automatic_bitrate_matches_the_rust_controller(self):
+        from murmur.encoding import auto_bitrate, with_auto_bitrate
+        cases = [("av1", 60, "native", 2560, 1440, 17), ("av1", 120, "native", 2560, 1440, 33),
+                 ("av1", 60, "1080", 2560, 1440, 9), ("av1", 60, "2160", 2560, 1440, 17),
+                 ("h264", 60, "native", 2560, 1440, 24), ("av1", 30, "720", 2560, 1440, 4),
+                 ("av1", 60, "native", 3840, 2160, 37)]   # same table as capture.rs
+        for codec, fps, resolution, width, height, mbps in cases:
+            self.assertEqual(auto_bitrate({"codec": codec, "fps": fps, "resolution": resolution}, width, height), mbps)
+        display = {"width": 2560, "height": 1440}
+        self.assertEqual(with_auto_bitrate({"codec": "av1", "fps": 60, "bitrate_auto": True, "bitrate_mbps": 8}, display)["bitrate_mbps"], 17)
+        self.assertEqual(with_auto_bitrate({"codec": "av1", "fps": 60, "bitrate_auto": False, "bitrate_mbps": 8}, display)["bitrate_mbps"], 8)
+
     def test_sdr_gpu_uses_gpu_backend_with_explicit_audio(self):
         for codec in GPU_CODECS:
             cfg = validate({"recording": {"configured": True, "monitor": "DP-1", "codec": codec,
@@ -107,7 +120,8 @@ class EncodingTests(unittest.TestCase):
             self.assertEqual(args[args.index("-a") + 1], "game.monitor")
 
     def test_cpu_bitrate_mode_uses_bounded_encoder_buffer_and_keeps_thread_limit(self):
-        cfg = validate({"recording": {"configured": True, "monitor": "DP-1", "rate_control": "bitrate", "bitrate_mbps": 6}})
+        cfg = validate({"recording": {"configured": True, "monitor": "DP-1", "rate_control": "bitrate", "bitrate_mbps": 6,
+                                      "bitrate_auto": False}})
         with patch("murmur.recorder.sources", return_value=[{"name": "DP-1"}]), \
                 patch("murmur.recorder.shutil.which", side_effect=lambda name: "/fake/" + name):
             active, _, args = Recorder(cfg)._validate()
@@ -146,7 +160,8 @@ class EncodingTests(unittest.TestCase):
         from tests.test_rust_controller import BINARY, Harness
         if not BINARY.exists():
             self.skipTest("build Rust controller")
-        h = Harness(dry_run=False, MURMUR_TEST_CODEC="av1", config_patch={"recording": {"codec": "av1", "fps": 24, "rate_control": "bitrate", "bitrate_mbps": 6}})
+        h = Harness(dry_run=False, MURMUR_TEST_CODEC="av1", config_patch={"recording": {"codec": "av1", "fps": 24, "rate_control": "bitrate", "bitrate_mbps": 6,
+                                                                               "bitrate_auto": False}})
         self.addCleanup(h.close)
         self.assertTrue(h.rpc("record_start")["ok"])
         h.wait(lambda: bool(h.events("gpu-screen-recorder")))

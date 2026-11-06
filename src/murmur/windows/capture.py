@@ -17,7 +17,7 @@ import uuid
 from ..host import child_options, command as worker_command, tool
 from ..recorder import RecorderError, capture_color, verify_video
 from ..replay import write_track_names
-from ..encoding import replay_video
+from ..encoding import replay_video, with_auto_bitrate
 from . import encoding
 
 
@@ -176,6 +176,7 @@ class _Capture:
         if display is None:
             raise RecorderError("Choose a connected recording display")
         color = capture_color(cfg, display)
+        cfg = dict(with_auto_bitrate(cfg, display))
         if self.replay:
             cfg.update(
                 system_audio=self.config["replay"]["game_audio"],

@@ -28,8 +28,8 @@ else:
     GTK_ERROR = ""
 
 from . import client
-from .commands import normalize
-from .encoding import GPU_CODECS, QUALITY_PRESETS, REPLAY_VIDEO, storage_estimate
+from .commands import REFERENCE, normalize
+from .encoding import GPU_CODECS, QUALITY_PRESETS, REPLAY_VIDEO, auto_bitrate, storage_estimate
 
 
 def _merge(base: dict, patch: dict) -> dict:
@@ -90,7 +90,7 @@ def _audio_summary(config: dict, recording: bool, replay: bool) -> str:
     return " · ".join(parts)
 
 
-PAGES = {"dashboard", "commands", "applications", "recording", "clips", "voice", "privacy"}
+PAGES = {"dashboard", "applications", "recording", "clips", "voice", "privacy"}
 
 
 class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
@@ -135,6 +135,9 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.mute_button.set_tooltip_text("Immediately close the voice-control microphone (Ctrl+M)")
         self.mute_button.set_sensitive(False)
         header.pack_end(self.mute_button)
+        quit_button = _button("Quit Jarvis", self._quit_jarvis)
+        quit_button.set_tooltip_text("Close Jarvis completely: the voice service, any recording (saved first) and this window")
+        header.pack_end(quit_button)
         self.state_pill = _label("Connecting", "pill", wrap=False)
         self.state_pill.set_valign(Gtk.Align.CENTER)
         header.pack_start(self.state_pill)
@@ -167,12 +170,14 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
 
         self._dashboard()
         self._voice_page()
-        self._commands_page()
         self._applications_page()
         self._recording_page()
         self._clips_page()
         self._privacy_page()
-        self.stack.set_visible_child_name(page if page in PAGES else "dashboard")
+        if page == "commands":   # the old Commands page is part of Commands & apps
+            self._show_all_commands()
+        else:
+            self.stack.set_visible_child_name(page if page in PAGES else "dashboard")
 
         self.notice = _label("Connecting to the local service…", "notice")
         self.notice.set_selectable(True)
@@ -192,7 +197,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         body.append(heading)
         scroller.set_child(body)
         self.stack.add_titled(scroller, name, {
-            "dashboard": "Overview", "commands": "Commands", "applications": "Apps", "clips": "Clips",
+            "dashboard": "Overview", "applications": "Commands & apps", "clips": "Clips",
             "recording": "Capture", "voice": "Voice", "privacy": "Privacy",
         }[name])
         return body
@@ -333,7 +338,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
             line.append(_label(detail, "caption"))
             grid.attach(line, i % 2, i // 2, 1, 1)
         ideas.append(grid)
-        ideas.append(_button("All commands →", lambda: self.stack.set_visible_child_name("commands")))
+        ideas.append(_button("All commands →", self._show_all_commands))
         body.append(ideas)
 
         backup = self._card("Your settings", "Save all your settings to a file to back them up or move them to "
@@ -384,7 +389,36 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
 
     def _overview_record(self) -> None:
         state = self.status.get("recording", {}).get("state", "idle")
-        self._action("record_stop" if state == "recording" else "record_start")
+        self._action("record_stop") if state == "recording" else self._start_recording()
+
+    def _start_recording(self) -> None:
+        """Start recording. Pressing Start in this window is the setup test, so
+        the first one also marks recorder setup complete."""
+        if self.config.get("recording", {}).get("configured"):
+            self._action("record_start")
+            return
+        if not self.connected:
+            self._notice("Start or reconnect to the local service first.", True)
+            return
+        def start() -> dict:
+            current = client.request("config")
+            if not current.get("ok"):
+                return current
+            config = current["config"]
+            config["recording"]["configured"] = True
+            saved = client.request("save_config", config=config)
+            if not saved.get("ok"):
+                return saved
+            result = client.request("record_start")
+            result["config"] = config
+            return result
+        def done(result: dict) -> None:
+            if "config" in result:
+                self.config = result["config"]
+                self.capture_configured.set_active(True)
+            self._notice(str(result.get("error") or result.get("message") or "Recording started."), not result.get("ok"))
+            self.refresh()
+        self._work(start, done)
 
     def _dictation_buttons(self) -> list:
         return [self.dictation_button, self.overview_dictate]
@@ -395,8 +429,28 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
     def _held_buttons(self) -> list:
         return [self.dictation_copy, self.overview_copy]
 
-    def _commands_page(self) -> None:
-        body = self._page("commands", "Commands", "Every supported phrase, in English and Arabic, and shortcuts to the words you use most.")
+    def _show_all_commands(self) -> None:
+        self.stack.set_visible_child_name("applications")
+        self.all_commands.set_expanded(True)
+
+    def _commands_section(self, body: Any) -> None:
+        """The short "Say this" list, then every phrase and your shortcuts folded away."""
+        short = self._card("Say this", "After your wake name. Apps you can open and close are listed below.")
+        grid = Gtk.Grid(column_spacing=24, row_spacing=10)
+        for i, group in enumerate(REFERENCE):
+            line = _box(2)
+            line.append(_label(group["title"], "row-title"))
+            line.append(_label(" · ".join(f"“{e}”" for e in group["examples"][:2]), "caption"))
+            grid.attach(line, i % 2, i // 2, 1, 1)
+        short.append(grid)
+        body.append(short)
+        self.all_commands = Gtk.Expander()
+        self.all_commands.set_label_widget(_label("Every command and your own shortcuts", "row-title"))
+        folded = _box(12)
+        folded.set_margin_top(12)
+        self.all_commands.set_child(folded)
+        body.append(self.all_commands)
+        body = folded
         self.command_search = Gtk.SearchEntry()
         self.command_search.set_placeholder_text("Search actions or example phrases")
         self.command_search.connect("search-changed", self._filter_commands)
@@ -426,7 +480,9 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         body.append(custom)
 
     def _applications_page(self) -> None:
-        body = self._page("applications", "Apps", "Open, focus or close apps by voice. Give them names you'd say, or add apps Jarvis didn't find.")
+        body = self._page("applications", "Commands & apps", "What you can say, and the apps you open, focus or close "
+                          "by voice. Give apps names you'd say, or add apps Jarvis didn't find.")
+        self._commands_section(body)
         self.app_search = Gtk.SearchEntry()
         self.app_search.set_placeholder_text("Search installed applications")
         self.app_search.connect("search-changed", lambda _entry: self._render_apps())
@@ -491,7 +547,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         live.append(self.recorder_status)
         live.append(self.recorder_file)
         controls = _box(8, True)
-        self.record_start = _button("Start recording", lambda: self._action("record_start"), "primary")
+        self.record_start = _button("Start recording", self._start_recording, "primary")
         self.record_stop = _button("Stop & save", lambda: self._action("record_stop"))
         controls.append(self.record_start)
         controls.append(self.record_stop)
@@ -577,9 +633,10 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self._row(capture, "Recording audio source", self.record_device, "The backend accepts one source. Use a preconfigured combined source to record both game and microphone audio.")
         self.system_audio.connect("notify::active", lambda control, _pspec: self._record_audio_changed(control))
         self.record_mic.connect("notify::active", lambda control, _pspec: self._record_audio_changed(control))
-        self.capture_configured = Gtk.CheckButton(label="I tested capture permission and completed recorder setup")
-        capture.append(self.capture_configured)
-        capture.append(_label("Verify a short recording in your desktop session before enabling this. Initial capture permissions may require system UI. This setting cannot bypass a portal or compositor permission prompt.", "caption"))
+        self.capture_configured = Gtk.CheckButton(label="Recorder setup is complete")
+        advanced.append(self.capture_configured)
+        advanced.append(_label("Pressing Start recording here completes setup. Until then, voice commands don't start "
+                               "recordings. A first capture can still show a permission prompt from your desktop.", "caption"))
         body.append(capture)
         quality = self._card("Picture & storage", "Applies to recordings and replay. Pick a preset; Advanced holds the "
                              "exact format, resolution, frame rate and bitrate. Formats are encoded on the GPU of the "
@@ -611,7 +668,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self._formats: dict = {}
         self._showing = False
         self.capture_advanced = Gtk.Expander()
-        self.capture_advanced.set_label_widget(_label("Advanced: format, resolution, frame rate and bitrate", "row-title"))
+        self.capture_advanced.set_label_widget(_label("Advanced: format, resolution, frame rate, size control, quality and bitrate", "row-title"))
         tuning = _box(12)
         tuning.set_margin_top(12)
         self.capture_advanced.set_child(tuning)
@@ -635,12 +692,18 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
                   "30 for small files, 60 for smooth motion, 120 and above for fast games on high-refresh displays. "
                   "Higher rates need more encoder work and larger files, and the game has to reach that rate too.")
         self.rate_control = Gtk.DropDown.new_from_strings(["Consistent quality · variable size", "Fixed bitrate · predictable size"])
+        self.rate_control.set_selected(1)
         self._row(tuning, "Size control", self.rate_control)
         self.quality_preset = Gtk.DropDown.new_from_strings(self.QUALITY_NAMES)
         self._row(tuning, "Quality", self.quality_preset, "Used with consistent quality. Maximum keeps the most detail.")
+        self.bitrate_auto = Gtk.Switch()
+        self.bitrate_auto.set_active(True)
+        self._row(tuning, "Match resolution and frame rate", self.bitrate_auto,
+                  "On: the bitrate follows the resolution, frame rate and format, for example about 17 Mbps for "
+                  "2K at 60 fps in AV1. Turn off to set your own.")
         self.bitrate = self._spin(1, 500, 1)
         self._row(tuning, "Bitrate (Mbps)", self.bitrate,
-                  "Used with fixed bitrate. About 8 Mbps suits 1080p at 60 fps; 2K at 120 fps or 4K needs 40–80 Mbps or more.")
+                  "Used with fixed bitrate. About 9 Mbps suits 1080p at 60 fps; 2K at 120 fps or 4K needs 35–75 Mbps.")
         self.storage_hint = _label("", "caption")
         tuning.append(self.storage_hint)
         self.format_tested = _label("", "caption")
@@ -661,6 +724,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         for control in (self.codec, self.rate_control, self.quality_preset, self.resolution):
             control.connect("notify::selected", lambda *_: self._encoding_changed())
         self.bitrate.connect("value-changed", lambda *_: self._encoding_changed())
+        self.bitrate_auto.connect("notify::active", lambda *_: self._encoding_changed())
         self.fps.connect("value-changed", lambda *_: self._encoding_changed())
         self.replay_seconds.connect("value-changed", lambda *_: self._encoding_changed())
         body.append(_button("Save recorder settings", self._save_recording, "primary"))
@@ -733,8 +797,9 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.stop_phrases = self._entry("stop dictation, وقف الكتابة")
         self._row(dictation, "Stop phrases", self.stop_phrases,
                   "Ending a sentence with one of these stops dictation; the phrase itself is not typed. Separate with commas.")
-        self.dictation_idle = self._spin(5, 300, 5)
-        self._row(dictation, "Stop after quiet (seconds)", self.dictation_idle)
+        self.dictation_idle = self._spin(2, 300, 1)
+        self._row(dictation, "Stop after quiet (seconds)", self.dictation_idle,
+                  "How long after you finish speaking dictation stops. Shorter pauses, to take a breath, keep it going.")
         self.keyboard_fallback = Gtk.Switch()
         self._row(dictation, "Also type into apps without text-field support", self.keyboard_fallback,
                   "Most apps tell Jarvis when a text field is focused and whether it is a password field. Some "
@@ -830,7 +895,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
             ("mute", self._toggle_mute, ["<Control>m"]),
             ("listen", self._listen, ["<Control>space"]),
             ("dictate", self._toggle_dictation, ["<Control>d"]),
-            ("commands", lambda: self.stack.set_visible_child_name("commands"), ["<Control>k"]),
+            ("commands", self._show_all_commands, ["<Control>k"]),
             ("close", self.close, ["<Control>w"]),
         ]:
             action = Gio.SimpleAction.new(name, None)
@@ -1097,7 +1162,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         dictation = self.config.get("dictation", {})
         self.dictation_language.set_selected({"auto": 0, "ar": 1, "en": 2}.get(dictation.get("language", "auto"), 0))
         self.stop_phrases.set_text(", ".join(dictation.get("stop_phrases", [])))
-        self.dictation_idle.set_value(float(dictation.get("idle_seconds", 20)))
+        self.dictation_idle.set_value(float(dictation.get("idle_seconds", 3)))
         self.keyboard_fallback.set_active(bool(dictation.get("keyboard_fallback", True)))
         self._show_arabic_model()
         self.noise_suppression.set_active(bool(recognition.get("noise_suppression", False)))
@@ -1128,6 +1193,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.quality.set_value(float(recorder.get("quality", 23)))
         self.rate_control.set_selected(1 if recorder.get("rate_control") == "bitrate" else 0)
         self.bitrate.set_value(float(recorder.get("bitrate_mbps", 8)))
+        self.bitrate_auto.set_active(recorder.get("bitrate_auto", True))
         self.quality_preset.set_selected(QUALITY_PRESETS.index(recorder.get("quality_preset", "very_high")))
         self.resolution.set_selected(self.RESOLUTIONS.index(recorder.get("resolution", "native")))
         self._showing = False
@@ -1612,13 +1678,14 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
               "hevc_10bit": "HEVC 10-bit · GPU", "hevc": "HEVC · GPU", "h264": "H.264 · GPU"}
     NAMES = {"av1_10bit": "AV1 10-bit", "av1": "AV1", "hevc_10bit": "HEVC 10-bit", "hevc": "HEVC", "h264": "H.264"}
 
-    # (name, format, resolution, fps, size control, quality, Mbps). Formats:
-    # "best" is AV1 when the GPU encodes it (else HEVC, H.264); "high" AV1 10-bit.
-    PRESETS = [("Recommended", "best", "native", 60, "quality", "very_high", 0),
-               ("High quality", "high", "native", 60, "quality", "ultra", 0),
-               ("High frame rate · 120 fps", "best", "native", 120, "quality", "very_high", 0),
-               ("Small files · 1080p", "best", "1080", 30, "bitrate", "very_high", 8),
-               ("Compatible · H.264", "h264", "native", 60, "quality", "very_high", 0)]
+    # (name, format, resolution, fps, size control, quality, Mbps or "auto").
+    # Formats: "best" is AV1 when the GPU encodes it (else HEVC, H.264);
+    # "high" AV1 10-bit. "auto" bitrate follows resolution and frame rate.
+    PRESETS = [("Recommended", "best", "native", 60, "bitrate", "very_high", "auto"),
+               ("High quality", "high", "native", 60, "quality", "ultra", "auto"),
+               ("High frame rate · 120 fps", "best", "native", 120, "bitrate", "very_high", "auto"),
+               ("Small files · 1080p", "best", "1080", 30, "bitrate", "very_high", "auto"),
+               ("Compatible · H.264", "h264", "native", 60, "bitrate", "very_high", "auto")]
     RECOMMENDED, HIGH, HIGH_FPS, SMALL, COMPATIBLE, CUSTOM = range(6)
     RESOLUTIONS = ["native", "2160", "1440", "1080", "720"]
     RESOLUTION_LABELS = ["Display's own", "4K · 3840×2160", "2K · 2560×1440", "1080p · 1920×1080", "720p · 1280×720"]
@@ -1639,9 +1706,10 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
 
     def _matching_preset(self) -> int:
         rate = "bitrate" if self.rate_control.get_selected() == 1 else "quality"
+        bitrate = "auto" if self.bitrate_auto.get_active() else self.bitrate.get_value_as_int()
         current = self._settings_key(self._chosen_codec(), self.RESOLUTIONS[self.resolution.get_selected()],
                                      int(round(self.fps.get_value())), rate,
-                                     QUALITY_PRESETS[self.quality_preset.get_selected()], self.bitrate.get_value_as_int())
+                                     QUALITY_PRESETS[self.quality_preset.get_selected()], bitrate)
         for index, (_, kind, resolution, fps, rate, quality, bitrate) in enumerate(self.PRESETS):
             if current == self._settings_key(self._preset_codec(kind), resolution, fps, rate, quality, bitrate):
                 return index
@@ -1662,7 +1730,8 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.fps.set_value(fps)
         self.rate_control.set_selected(1 if rate == "bitrate" else 0)
         self.quality_preset.set_selected(QUALITY_PRESETS.index(quality))
-        if bitrate:
+        self.bitrate_auto.set_active(bitrate == "auto")
+        if bitrate != "auto":
             self.bitrate.set_value(bitrate)
         self._showing = False
         self._encoding_changed()
@@ -1714,7 +1783,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
                 "fps": int(round(self.fps.get_value())),
                 "rate_control": "bitrate" if self.rate_control.get_selected() == 1 else "quality",
                 "quality_preset": QUALITY_PRESETS[self.quality_preset.get_selected()],
-                "bitrate_mbps": self.bitrate.get_value_as_int()}
+                "bitrate_mbps": self.bitrate.get_value_as_int(), "bitrate_auto": self.bitrate_auto.get_active()}
 
     def _write_video(self, video: dict) -> None:
         codec = video["codec"]
@@ -1726,6 +1795,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.rate_control.set_selected(1 if video["rate_control"] == "bitrate" else 0)
         self.quality_preset.set_selected(QUALITY_PRESETS.index(video["quality_preset"]))
         self.bitrate.set_value(video["bitrate_mbps"])
+        self.bitrate_auto.set_active(video.get("bitrate_auto", True))
         self._showing = False
         self._show_codec(codec)
 
@@ -1787,7 +1857,19 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         gpu = codec in GPU_CODECS
         size = self.resolution.get_model().get_string(self.resolution.get_selected()) or "Display's own"
         fps = int(round(self.fps.get_value()))
-        amount = (f"{self.bitrate.get_value_as_int()} Mbps" if budget
+        if self.bitrate_auto.get_active():
+            selected = self.monitor.get_selected()
+            item = self._monitors[selected] if selected < len(self._monitors) else {}
+            width, height = item.get("width"), item.get("height")
+            automatic = auto_bitrate({"codec": codec, "fps": fps,
+                                      "resolution": self.RESOLUTIONS[self.resolution.get_selected()]},
+                                     width if isinstance(width, int) else None, height if isinstance(height, int) else None)
+            if self.bitrate.get_value_as_int() != automatic:
+                showing, self._showing = self._showing, True
+                self.bitrate.set_value(automatic)
+                self._showing = showing
+        amount = (f"fixed {self.bitrate.get_value_as_int()} Mbps" + (" (matches resolution and frame rate)"
+                  if self.bitrate_auto.get_active() else "") if budget
                   else f"{self.QUALITY_NAMES[self.quality_preset.get_selected()]} quality")
         if codec in self.LEGACY:
             detail = f"{self.LEGACY[codec]} · {fps} fps."
@@ -1804,7 +1886,8 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
             elif fps > 60:
                 detail += " The game must reach this frame rate, and fast motion makes larger files."
         self.format_detail.set_text(detail)
-        self.bitrate.set_sensitive(budget)
+        self.bitrate_auto.set_sensitive(budget)
+        self.bitrate.set_sensitive(budget and not self.bitrate_auto.get_active())
         self.quality_preset.set_sensitive(not budget and gpu)
         self.resolution.set_sensitive(gpu)
         self.quality.set_sensitive(not budget and not gpu)
@@ -1889,6 +1972,16 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
                 self._set_status(result)
             self._notice(str(result.get("message", "Action sent to the local service.")))
         self._work(action, done)
+
+    def _quit_jarvis(self) -> None:
+        """Close the service (a recording is saved first), then this window."""
+        def quit_service() -> dict:
+            try:
+                return client.request("quit", timeout=60)
+            except (OSError, ConnectionError):
+                return {"ok": True}   # already closed
+        self._notice("Closing Jarvis…")
+        self._work(quit_service, lambda _result: self.close())
 
     def _toggle_mute(self) -> None:
         if self.status.get("muted", True) and not self.config.get("privacy", {}).get("onboarded"):
@@ -2014,7 +2107,7 @@ def start_service_process() -> tuple[str, Path | None]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Jarvis native GTK4 settings")
-    parser.add_argument("--page", choices=sorted(PAGES), default="dashboard")
+    parser.add_argument("--page", choices=sorted(PAGES | {"commands"}), default="dashboard")
     args = parser.parse_args(argv)
     if Gtk is None:
         print("Jarvis settings require GTK4 and PyGObject (python-gobject on Arch, python3-gi and gir1.2-gtk-4.0 on Debian/Ubuntu).\n"

@@ -17,7 +17,7 @@ import subprocess
 import threading
 
 from .client import socket_path
-from .encoding import expected_codec, replay_video
+from .encoding import expected_codec, replay_video, with_auto_bitrate
 from .recorder import (RecorderError, _parent_death_prefix, _spawn, capture_color,
                        gpu_video_args, sources, verify_video)
 
@@ -129,6 +129,7 @@ class Replay:
                 if display is None:
                     raise RecorderError(f"Display {monitor!r} is unavailable. Choose a connected display.")
                 color = capture_color(cfg, display)
+                cfg = with_auto_bitrate(cfg, display)
                 if not shutil.which("ffprobe"):
                     raise RecorderError("ffprobe is missing. Install FFmpeg to validate saved replays.")
                 folder = Path(str(cfg.get("output_dir", "~/Videos/Murmur"))).expanduser().resolve()

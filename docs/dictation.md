@@ -17,7 +17,7 @@ Dictation stops when you:
 
 - end a sentence with a stop phrase (“stop dictation”, وقف الكتابة; change them in Voice → Dictation), which is not typed;
 - press Stop, the shortcut again, or run `jarvis dictate stop` (Cancel discards speech not yet typed);
-- stay quiet for 20 seconds (adjustable), or reach 10 minutes;
+- stop talking for 3 seconds (adjustable in Voice → Dictation; shorter pauses to take a breath keep it going), or reach 10 minutes;
 - move focus to another window, mute the microphone, or a password field is focused.
 
 ## What it does and does not do

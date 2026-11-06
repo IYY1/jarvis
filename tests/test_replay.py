@@ -232,8 +232,8 @@ class ReplayPhraseTests(unittest.TestCase):
                                                        "storage": "ram", "max_mb": 256, "buffer_dir": "",
                                                    "audio_tracks": "mixed", "separate_apps": [],
                                                "own_video": False, "codec": "av1", "fps": 60, "resolution": "native",
-                                               "rate_control": "quality", "quality_preset": "very_high",
-                                               "bitrate_mbps": 8})
+                                               "rate_control": "bitrate", "quality_preset": "very_high",
+                                               "bitrate_mbps": 8, "bitrate_auto": True})
         for bad in ({"seconds": 5}, {"seconds": 1801}, {"seconds": "120"}, {"autostart": 1}, {"game_audio": "yes"},
                     {"microphone": 0}, {"sound": None}, {"storage": "auto"}, {"storage": None},
                     {"max_mb": True}, {"max_mb": 63}, {"max_mb": 16385}, {"max_mb": 64.0},

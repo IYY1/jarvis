@@ -3,7 +3,7 @@
 The preview plays the original files and skips removed sections, so what you
 see follows the edit without rendering anything. Exports run on a thread and
 never touch the original. GStreamer plays one audio track (the first); the
-track switches apply to the export, which says so in the editor.
+Sound switches (off mutes a track) apply to the export, which says so in the editor.
 """
 from __future__ import annotations
 
@@ -143,7 +143,8 @@ class ClipsPage:
         self.editor.append(join)
         self.tracks_box = box(8)
         self.editor.append(self.tracks_box)
-        self.mix = Gtk.CheckButton(label="Mix the chosen tracks into one (plays everywhere; re-encodes audio only)")
+        self.mix = Gtk.CheckButton(label="Combine the remaining tracks into one (plays in every player)", active=True)
+        self.mix.set_visible(False)
         self.editor.append(self.mix)
         export_row = box(8, True)
         self.mode = Gtk.DropDown.new_from_strings(["Fast · original quality, cuts on keyframes",
@@ -262,19 +263,27 @@ class ClipsPage:
             self.tracks_box.remove(child)
             child = self.tracks_box.get_first_child()
         self.track_checks = []
+        self.mix.set_visible(len(source.audio) > 1)
         if not source.audio:
             self.tracks_box.append(self._label("This clip has no sound.", "caption"))
             return
-        self.tracks_box.append(self._label("Audio tracks to export", "row-title"))
-        row = self._box(12, True)
+        self.tracks_box.append(self._label("Sound", "row-title"))
         for track in source.audio:
-            check = Gtk.CheckButton(label=track["name"], active=True)
-            check.connect("toggled", lambda *_: self.refresh())
-            self.track_checks.append(check)
-            row.append(check)
-        self.tracks_box.append(row)
+            # One switch per track: off mutes it in the export.
+            row = self._box(12, True)
+            name = self._label(track["name"], "")
+            name.set_hexpand(True)
+            row.append(name)
+            switch = Gtk.Switch(active=True, valign=Gtk.Align.CENTER)
+            switch.update_property([Gtk.AccessibleProperty.LABEL], [f"Keep {track['name']}"])
+            switch.connect("notify::active", lambda *_: self.refresh())
+            self.track_checks.append(switch)
+            row.append(switch)
+            self.tracks_box.append(row)
         if len(source.audio) > 1:
-            self.tracks_box.append(self._label("Preview plays the first track only; the export uses the tracks you tick.", "caption"))
+            self.tracks_box.append(self._label("Turn a track off to mute it in the exported clip, for example a "
+                                               "podcast behind the game. The original keeps every track. The preview "
+                                               "plays the first track only.", "caption"))
         else:
             self.tracks_box.append(self._label("One track: sound that was mixed while recording can't be separated "
                                                "afterwards. Turn on separate tracks in Capture → Instant replay for "
@@ -433,6 +442,10 @@ class ClipsPage:
         busy = self.export is not None
         self.export_button.set_sensitive(not busy and not problems)
         self.mix.set_sensitive(len(tracks) > 1)
+        muted = [s for s in self.track_checks if not s.get_active()]
+        if muted and len(muted) == len(self.track_checks):
+            self.status.set_text("Every track is off, so the export will be silent.")
+            return
         if problems:
             self.status.set_text("Fast export needs matching clips: " + "; ".join(problems[:3]) +
                                  ". Choose Exact, which converts them.")

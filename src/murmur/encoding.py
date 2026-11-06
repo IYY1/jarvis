@@ -15,7 +15,30 @@ RESOLUTIONS = {"native": "", "2160": "3840x2160", "1440": "2560x1440", "1080": "
 
 
 # Video settings replay can keep apart from recording (replay.own_video).
-REPLAY_VIDEO = ("codec", "fps", "resolution", "rate_control", "quality_preset", "bitrate_mbps")
+REPLAY_VIDEO = ("codec", "fps", "resolution", "rate_control", "quality_preset", "bitrate_mbps", "bitrate_auto")
+
+
+def auto_bitrate(cfg, width, height):
+    """The fixed bitrate (Mbps) used while bitrate_auto is on: it follows the
+    output size (the display's, or the resolution limit) and frame rate, at
+    about 0.075 bits per pixel for AV1/HEVC and 0.11 for H.264 (mirrors
+    capture.rs). 2K at 60 fps in AV1 is about 17 Mbps."""
+    width, height = float(width or 1920), float(height or 1080)
+    limit = RESOLUTIONS.get(cfg.get("resolution", "native"), "")
+    if limit:
+        w, h = (float(n) for n in limit.split("x"))
+        scale = min(w / width, h / height, 1.0)
+        width, height = width * scale, height * scale
+    bits = 0.11 if cfg.get("codec") in ("h264", "libx264", "h264_vaapi") else 0.075
+    # Rust's f64::round rounds halves away from zero; Python's round() would not.
+    return max(4, min(500, int(width * height * cfg.get("fps", 60) * bits / 1e6 + 0.5)))
+
+
+def with_auto_bitrate(cfg, display):
+    """``cfg`` with its automatic bitrate filled in for this display."""
+    if not cfg.get("bitrate_auto"):
+        return cfg
+    return {**cfg, "bitrate_mbps": auto_bitrate(cfg, display.get("width"), display.get("height"))}
 
 
 def replay_video(config):
@@ -37,6 +60,8 @@ def validate_encoding(cfg):
         raise ValueError("Recording rate control must be quality or bitrate")
     if cfg.get("quality_preset", "very_high") not in QUALITY_PRESETS:
         raise ValueError("Choose a supported recording quality preset")
+    if not isinstance(cfg.get("bitrate_auto", True), bool):
+        raise ValueError("Automatic bitrate must be true or false")
     if cfg.get("resolution", "native") not in RESOLUTIONS:
         raise ValueError("Choose native, 2160, 1440, 1080 or 720 recording resolution")
 

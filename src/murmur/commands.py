@@ -53,6 +53,7 @@ FIXED = {
     "save replay": Intent("replay_save"), "start replay": Intent("replay_start"), "stop replay": Intent("replay_stop"),
     "stop listening": Intent("pause"), "cancel": Intent("cancel"),
     "listen to me": Intent("dictation_start"), "stop dictation": Intent("dictation_stop"),
+    "close yourself": Intent("quit"),
 }
 
 # Explicit wording variants. These are grammar rules, never fuzzy intent guesses.
@@ -80,6 +81,8 @@ VARIANTS = {
     "turn off instant replay": "stop replay",
     "start dictation": "listen to me", "take dictation": "listen to me", "start dictating": "listen to me",
     "listen": "listen to me",
+    "quit jarvis": "close yourself", "close jarvis": "close yourself", "exit jarvis": "close yourself",
+    "quit yourself": "close yourself", "shut yourself down": "close yourself", "turn yourself off": "close yourself",
 }
 
 # Optional sentence-edge courtesy. The parser accepts both; the speech grammar
@@ -135,6 +138,7 @@ REFERENCE = [
     {"category": "Recording", "title": "Instant replay", "examples": ["clip that", "clip the last thirty seconds", "clip the last two minutes", "save replay", "start replay", "stop replay"]},
     {"category": "Dictation", "title": "Type what you say into the focused text field", "examples": ["listen to me", "start dictation", "stop dictation"]},
     {"category": "Privacy", "title": "Stop immediately", "examples": ["stop listening", "cancel"]},
+    {"category": "Privacy", "title": "Close Jarvis", "examples": ["close yourself", "quit Jarvis"]},
     {"category": "Arabic", "title": "Arabic commands (Arabic and English setting)", "examples": ["افتح فايرفوكس", "سكّر ديسكورد", "علّ الصوت", "وطّ الصوت", "روح لمساحة العمل الثالثة", "احفظ آخر ثلاثين ثانية", "كلّبها", "اسمعني", "خلاص"]},
 ]
 

@@ -161,7 +161,7 @@ fallback recognizes less accurately.
 | Recording | “start recording”, “stop recording”, “open the video recorder” |
 | Instant replay | “clip that”, “clip the last 25 seconds”, “clip the last 2 minutes”, “save replay”, “start replay”, “stop replay” |
 | Dictation | “listen”, “listen to me”, “start dictation”, “stop dictation” |
-| Voice control | “cancel”, “stop listening” |
+| Voice control | “cancel”, “stop listening”, “close yourself” / “quit Jarvis” (closes Jarvis; a recording is saved first) |
 | Arabic (Arabic and English setting) | “افتح فايرفوكس”, “سكّر ديسكورد”, “علّ الصوت”, “روح لمساحة العمل الثالثة”, “احفظ آخر ثلاثين ثانية”, “اسمعني” |
 
 **Applications → Close words** changes the word that closes an app (for
