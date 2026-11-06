@@ -33,6 +33,15 @@ from .desktop_process import desktop_argv
 from . import dictation
 
 
+async def close_connection(writer):
+    """Close a client's stream. A client that already vanished is routine, not an error."""
+    writer.close()
+    try:
+        await writer.wait_closed()
+    except OSError:
+        pass
+
+
 class Service:
     def __init__(self, config=None):
         if config is None:
@@ -721,8 +730,7 @@ async def serve():
         finally:
             if queue:
                 service.watchers.discard(queue)
-            writer.close()
-            await writer.wait_closed()
+            await close_connection(writer)
     if is_windows():
         server = await asyncio.start_server(connection, "127.0.0.1", 0, limit=65536)
         transport.publish(server.sockets[0].getsockname()[1], token)
