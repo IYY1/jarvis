@@ -1,4 +1,4 @@
-# Windows 0.3.0 release candidate
+# Windows release
 
 Target: **Windows 10 22H2 and Windows 11, x64**. The release includes a per-user
 installer and a portable ZIP. Both carry the same application, offline Vosk and
@@ -20,7 +20,7 @@ ignored local `build/deferred-discord/snapshot/` folder for future work. Ordinar
 
 ## Install and use
 
-Download `Jarvis-0.3.0-Windows-x64-Setup.exe` and run it. Setup installs for the
+Download `Jarvis-0.4.0-Windows-x64-Setup.exe` and run it. Setup installs for the
 current Windows account into `%LOCALAPPDATA%\Programs\Jarvis`, needs no
 administrator rights, downloads nothing and never restarts Windows. Its pages:
 welcome (what Setup will and will not do), MIT license, **components** (Jarvis,
@@ -42,7 +42,7 @@ removed from Apps & features. `Setup.exe /S` installs silently with the defaults
 
 Or extract the entire portable ZIP and open `Jarvis.exe`. Keep
 `JarvisConsole.exe`, `_internal/`, `models/` and `tools/` together. Opening Settings does not start capture.
-Choose **Start service**, review **Privacy**, then save microphone consent when ready.
+Choose **Start Jarvis**, then review and allow microphone access on **Home** when ready.
 The tray menu provides mute/resume, listen once, recording stop, replay save and quit.
 Closing Settings leaves the service running.
 
@@ -183,6 +183,25 @@ Installer binaries are not committed to Git. Publish them as GitHub release
 assets (or another artifact store) together with their `.sha256` files.
 
 ## Validation and remaining acceptance
+
+### 0.4.0
+
+This release adds the redesigned settings window and clip editor, dictation,
+Arabic support and separate sound tracks. The Linux track list supports up to
+eight apps. Windows process loopback separates one program, the rest of system
+sound and the microphone, and requires Windows 11 (build 20348 or later).
+Arabic is an optional model download; English models are bundled.
+
+The release is built with Windows CPython under Wine on a private display.
+Windows CI covers policy, settings and the native voice worker. Frozen-bundle
+acceptance covers offline dependency/model discovery, a muted service, dry-run
+command dispatch, clean shutdown, microphone-consent refusal and opening and
+closing Settings without starting capture. The release notes record the results
+for the shipped build.
+
+The 0.3.x VM results below apply to those versions. Windows 11 app-audio capture,
+Windows dictation, a real microphone, GPU recording and HDR have not been
+validated for 0.4.0 on Windows hardware.
 
 ### 0.3.1 on Windows 10 (virtual machine)
 

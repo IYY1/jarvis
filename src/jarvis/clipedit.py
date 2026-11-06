@@ -21,6 +21,7 @@ from dataclasses import dataclass, field
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import tempfile
 import threading
@@ -64,8 +65,19 @@ class Segment:
         return self.end - self.start
 
 
+def _executable(argv: list[str]) -> list[str]:
+    from .host import is_windows, tool
+    if is_windows():
+        resolved = tool(argv[0])
+        if not resolved:
+            raise EditError(f"{argv[0]} is missing. Reinstall the complete Jarvis app.")
+        return [resolved, *argv[1:]]
+    return argv
+
+
 def _run(argv: list[str], timeout: float = 60) -> str:
-    result = subprocess.run(argv, capture_output=True, text=True, timeout=timeout)
+    from .host import child_options
+    result = subprocess.run(_executable(argv), capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout, **child_options())
     if result.returncode:
         raise EditError((result.stderr.strip().splitlines() or ["FFmpeg failed"])[-1][:300])
     return result.stdout
@@ -75,12 +87,33 @@ def track_names(path: str | Path, count: int) -> list[str]:
     """Names Jarvis stored when it saved the replay, else "Audio 1", "Audio 2"…"""
     path = Path(path)
     try:
-        names = json.loads((path.parent / f".{path.name}.tracks.json").read_text())["tracks"]
+        names = json.loads((path.parent / f".{path.name}.tracks.json").read_text(encoding="utf-8"))["tracks"]
         if len(names) == count and all(isinstance(n, str) for n in names):
             return names
     except (OSError, ValueError, KeyError, TypeError):
         pass
     return [f"Audio {i + 1}" for i in range(count)]
+
+
+SILENT_DB = -90.0   # volumedetect reports digital silence as -91 dB
+
+
+def loudness(path: str | Path, count: int, timeout: float = 120) -> list[float | None]:
+    """The loudest moment of each audio track in dB, from one pass that
+    decodes only the sound (a few seconds for a long clip). None: unknown."""
+    if count <= 0:
+        return []
+    graph = ";".join(f"[0:a:{i}]volumedetect[o{i}]" for i in range(count))
+    maps = [arg for i in range(count) for arg in ("-map", f"[o{i}]")]
+    from .host import child_options
+    result = subprocess.run(_executable(["ffmpeg", "-nostats", "-hide_banner", "-vn", "-i", str(path), "-filter_complex", graph,
+                             *maps, "-f", "null", "-"]), capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout, **child_options())
+    peaks: dict[int, float] = {}
+    for line in result.stderr.splitlines():
+        found = re.search(r"Parsed_volumedetect_(\d+) .*max_volume: (-?[\d.]+|-inf) dB", line)
+        if found:
+            peaks[int(found.group(1))] = float("-inf") if found.group(2) == "-inf" else float(found.group(2))
+    return [peaks.get(i) for i in range(count)]
 
 
 def probe(path: str | Path) -> Source:
@@ -245,7 +278,9 @@ def command(edit: Edit, output: Path, mode: str, tracks: list[int], mix: bool, w
         raise EditError("Nothing left to export")
     first = edit.sources[edit.segments[0].source]
     argv = ["ffmpeg", "-hide_banner", "-nostdin", "-v", "error", "-progress", "pipe:1", "-nostats", "-n"]
-    audio_codec = ["-c:a", "aac", "-b:a", "192k"] if any(a["codec_name"] == "aac" for a in first.audio) \
+    from .host import is_windows
+    # The bundled Windows FFmpeg includes AAC, but does not include libopus.
+    audio_codec = ["-c:a", "aac", "-b:a", "192k"] if is_windows() or any(a["codec_name"] == "aac" for a in first.audio) \
         else ["-c:a", "libopus", "-b:a", "160k"]
     if mode == "fast":
         problems = edit.fast_problems(tracks)
@@ -254,9 +289,9 @@ def command(edit: Edit, output: Path, mode: str, tracks: list[int], mix: bool, w
         listing = workdir / "segments.ffconcat"
         lines = ["ffconcat version 1.0"]
         for start, segment in zip(edit.fast_starts(), edit.segments):
-            path = edit.sources[segment.source].path.replace("'", "'\\''")
+            path = edit.sources[segment.source].path.replace("\\", "/").replace("'", "'\\''")
             lines += [f"file '{path}'", f"inpoint {start:.6f}", f"outpoint {segment.end:.6f}"]
-        listing.write_text("\n".join(lines) + "\n")
+        listing.write_text("\n".join(lines) + "\n", encoding="utf-8")
         argv += ["-f", "concat", "-safe", "0", "-i", str(listing), "-map", "0:v:0"]
         if mix and len(tracks) > 1:
             inputs = "".join(f"[0:a:{t}]" for t in tracks)
@@ -344,15 +379,20 @@ class Export:
             self._process.terminate()
 
     def run(self) -> Path:
+        from .host import child_options
+        if self._cancelled.is_set():
+            raise EditError("Export cancelled; the original is unchanged")
         total = max(self.edit.duration, 0.1)
         with tempfile.TemporaryDirectory(prefix="jarvis-edit-") as work:
             work = Path(work)
             staging = self.output.with_name(f".{self.output.stem}.part{self.output.suffix}")
             argv = command(self.edit, staging, self.mode, self.tracks, self.mix, work)
             errors = work / "ffmpeg.log"
-            with errors.open("w") as log, \
-                    subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=log, text=True) as process:
+            with errors.open("w", encoding="utf-8") as log, \
+                    subprocess.Popen(_executable(argv), stdout=subprocess.PIPE, stderr=log, text=True, encoding="utf-8", errors="replace", **child_options()) as process:
                 self._process = process
+                if self._cancelled.is_set():
+                    process.terminate()
                 for line in process.stdout:
                     key, _, value = line.strip().partition("=")
                     if key == "out_time_us" and value.isdigit():
@@ -362,7 +402,7 @@ class Export:
                 staging.unlink(missing_ok=True)
                 if self._cancelled.is_set():
                     raise EditError("Export cancelled; the original is unchanged")
-                detail = errors.read_text()[-400:].strip().splitlines()
+                detail = errors.read_text(encoding="utf-8", errors="replace")[-400:].strip().splitlines()
                 raise EditError("Export failed: " + (detail[-1] if detail else f"FFmpeg exit {code}"))
             # Publish without replacing a file that appeared meanwhile.
             try:
@@ -374,5 +414,5 @@ class Export:
             self.progress(1.0)
             names = [self.edit.sources[0].audio[t]["name"] for t in self.tracks if t < len(self.edit.sources[0].audio)]
             if not self.mix and len(names) > 1:
-                (self.output.parent / f".{self.output.name}.tracks.json").write_text(json.dumps({"tracks": names}))
+                (self.output.parent / f".{self.output.name}.tracks.json").write_text(json.dumps({"tracks": names}), encoding="utf-8")
             return self.output

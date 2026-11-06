@@ -43,7 +43,8 @@ DEFAULTS = {
                   "vaapi_device": "/dev/dri/renderD128", "resolution": "native"},
     # Disk storage is an explicit privacy choice. RAM remains the default.
     # game_audio/microphone mix the default output and input into one track; sound chirps on save.
-    # audio_tracks "separate" keeps game, each of separate_apps and the microphone on their own tracks.
+    # audio_tracks "separate" gives each app playing sound (and each heard before, and each of
+    # separate_apps) its own track, plus "everything else" and the microphone (see audio_apps.rs).
     # own_video: replay records with its own format/fps/resolution/quality below
     # instead of the recording settings (the default).
     "replay": {"seconds": 120, "autostart": False, "game_audio": True, "microphone": True, "sound": True,

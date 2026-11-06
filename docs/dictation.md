@@ -1,7 +1,7 @@
 # Dictation
 
 Say **“Jarvis, listen”** or **“Jarvis, listen to me”** (also “start dictation”, or اسمعني), press
-**Start dictation** in Overview or Voice, press **Ctrl+D** in the settings
+**Start dictation** on Home or Voice, press **Ctrl+D** in the settings
 window, or bind a key to `jarvis dictate`:
 
 ```ini
@@ -40,9 +40,9 @@ Dictation stops when you:
   field is focused, the app accepts no typed text or typing fails, everything
   not typed in this session is copied (wl-copy on Linux, the Windows
   clipboard) and the status says “press Ctrl+V to paste it”. Text meant for a
-  password field is never copied; it stays under **Copy text that was not
-  typed**, which copies only when you press it. **Also type into apps without
-  text-field support** (Voice → Dictation, on by default) is what lets Jarvis
+  password field is never copied; it stays under **Copy text that wasn't
+  typed**, which copies only when you press it. **Type into any app**
+  (Voice → Dictation, on by default) is what lets Jarvis
   type into terminals, Electron apps and XWayland windows at all.
 - Long continuous speech is cut at 20 seconds. If transcription falls behind,
   at most three pieces wait; later speech is dropped and the status says so.
@@ -52,7 +52,7 @@ Dictation stops when you:
 | Platform | Method | Password fields | Limits |
 | --- | --- | --- | --- |
 | Hyprland / Wayland | Input method (`zwp_input_method_v2`), through the `jarvis-type` helper | Refused: the app reports the field type | Only one input method at a time: if fcitx5 or ibus is running, Jarvis falls back to the virtual keyboard. Apps must support text-input-v3 (GTK, Qt, Firefox do; many terminals, Electron apps without `--enable-wayland-ime`, games and XWayland apps don't). |
-| Hyprland / Wayland, fallback | Virtual keyboard (`zwp_virtual_keyboard_v1`) with a temporary keymap | Not visible to Jarvis; windows that look like password prompts (pinentry, polkit, KeePassXC, Bitwarden, titles containing “password”) are skipped | Optional: Voice → Dictation → “Also type into apps without text-field support”. Hyprland may briefly show the temporary layout until you press a key. |
+| Hyprland / Wayland, fallback | Virtual keyboard (`zwp_virtual_keyboard_v1`) with a temporary keymap | Not visible to Jarvis; windows that look like password prompts (pinentry, polkit, KeePassXC, Bitwarden, titles containing “password”) are skipped | Optional: Voice → Dictation → “Type into any app”. Hyprland may briefly show the temporary layout until you press a key. |
 | Windows 10/11 | `SendInput` with Unicode characters; UI Automation identifies the focused element | Refused when UI Automation reports a password field | Windows blocks typing into apps running as administrator (UIPI); Jarvis reports it. **Not yet tested on Windows.** |
 
 Verified on Hyprland 0.57 (2026-11-05): Arabic, English and digits were typed

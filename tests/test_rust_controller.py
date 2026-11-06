@@ -19,7 +19,7 @@ import time
 import unittest
 from unittest.mock import patch
 
-from jarvis import config, commands
+from jarvis import __version__, config, commands
 from jarvis.apps import App, AppRegistry
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -192,6 +192,7 @@ class Harness:
         worker = self.root / "voice"
         worker.write_bytes((FIXTURES / "controller_voice.py").read_bytes()); worker.chmod(0o755)
         self.env = dict(os.environ, HOME=str(self.root), XDG_DATA_HOME=str(self.root / "data"), XDG_DATA_DIRS=str(self.root / "system"),
+                        XDG_STATE_HOME=str(self.root / "state"),
                         XDG_CONFIG_HOME=str(self.root / "config"), JARVIS_CONFIG=str(self.config_path), JARVIS_SOCKET=str(self.socket),
                         JARVIS_RUST_VOICE_BINARY=str(real_worker or worker), JARVIS_VOSK_LIBRARY=str(real_library or library), JARVIS_MANAGED_SERVICE="0",
                         JARVIS_TEST_LOG=str(self.log), JARVIS_DRY_RUN="1" if dry_run else "0",
@@ -481,6 +482,26 @@ class ControllerServiceTests(unittest.TestCase):
         self.assertTrue(h.rpc("replay_stop")["ok"])
         self.assertEqual(h.status()["replay"]["state"], "off")
 
+    def test_separate_tracks_give_each_app_playing_its_own_track(self):
+        streams = [{"application.name": "Firefox", "application.process.binary": "firefox"},
+                   {"application.name": "WEBRTC VoiceEngine", "application.process.binary": "Discord"},
+                   {"application.name": "jarvis-ui", "application.process.binary": "python3"}]
+        h = self.start(dry_run=False, config_patch={"replay": {"audio_tracks": "separate", "separate_apps": ["Spotify"]}},
+                       JARVIS_TEST_STREAMS=json.dumps(streams))
+        self.assertTrue(h.rpc("replay_start")["ok"])
+        h.wait(lambda: (h.socket.parent / "replay.sock").exists())
+        argv = next(e["args"] for e in h.events("gpu-screen-recorder") if "-ipc" in e["args"])
+        sources = [argv[i + 1] for i, arg in enumerate(argv) if arg == "-a"]
+        self.assertEqual(sources, ["app-inverse:Spotify|app-inverse:Firefox|app-inverse:WEBRTC VoiceEngine",
+                                   "app:Spotify", "app:Firefox", "app:WEBRTC VoiceEngine", "default_input"])
+        self.assertTrue(h.rpc("replay_save")["ok"])
+        clip = Path(h.status()["replay"]["file"])
+        names = json.loads((clip.parent / f".{clip.name}.tracks.json").read_text())["tracks"]
+        self.assertEqual(names, ["Everything else", "Spotify", "Firefox", "Discord", "Microphone"])
+        heard = json.loads((h.root / "state/jarvis/heard-apps.json").read_text())["apps"]
+        self.assertEqual(heard[:2], [{"name": "Firefox", "label": "Firefox"}, {"name": "WEBRTC VoiceEngine", "label": "Discord"}])
+        self.assertTrue(h.rpc("replay_stop")["ok"])
+
     def test_disk_replay_is_private_and_saved_clips_survive_buffer_cleanup(self):
         h = self.start(dry_run=False, config_patch={"replay": {"storage": "disk", "max_mb": 512}})
         self.assertTrue(h.rpc("replay_start")["ok"])
@@ -738,7 +759,7 @@ class ControllerServiceTests(unittest.TestCase):
         backups = list((h.config_path.parent / "backups").glob("config-before-repair-*.json"))
         self.assertEqual(len(backups), 1)
         self.assertEqual(json.loads(backups[0].read_text())["recording"]["fps"], 999)
-        self.assertEqual((h.config_path.parent / ".version").read_text(), "0.3.1")
+        self.assertEqual((h.config_path.parent / ".version").read_text(), __version__)
 
     def test_clips_and_recordings_of_a_focused_game_go_in_its_folder(self):
         window = json.dumps({"class": "steam_app_1422450", "title": "Deadlock", "pid": os.getpid()})

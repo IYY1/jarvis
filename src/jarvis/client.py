@@ -56,6 +56,16 @@ def request(op: str, timeout: float | None = None, **kwargs) -> dict:
 REPLAY_CAPTURE_KEYS = ("seconds", "game_audio", "microphone", "storage", "max_mb", "buffer_dir", "audio_tracks",
                        "separate_apps", "own_video", "codec", "fps", "resolution", "rate_control",
                        "quality_preset", "bitrate_mbps", "bitrate_auto")
+# Recording settings read when needed (start/stop tones, setup completion), so
+# changing one never restarts a capture (mirrors service.rs).
+LIVE_RECORDING_KEYS = ("sound_feedback", "configured")
+
+
+def recording_capture_changed(old: dict, new: dict) -> bool:
+    """Whether the recording settings that a running capture uses differ."""
+    def capture(section: dict) -> dict:
+        return {key: value for key, value in section.items() if key not in LIVE_RECORDING_KEYS}
+    return capture(old) != capture(new)
 
 
 def save_config_restarting(config: dict) -> dict:

@@ -1,76 +1,102 @@
-/* GTK4 native theme. Relative text sizes follow the desktop's text scaling.
-   Spacing: 4 8 12 16 24 32 px. Type: 0.8 0.95 1 1.1 1.5 1.9 em; weights 600 700 800. */
-@define-color bg #14111b;
-@define-color surface #1a1623;
-@define-color card #1f1a2b;
-@define-color inset #110e17;
-@define-color control #2b2440;
-@define-color control-hover #372e52;
-@define-color control-active #433862;
-@define-color line #342c47;
-@define-color line-strong #594d77;
-@define-color text #f3effa;
-@define-color text-muted #c3bbd5;
-@define-color text-disabled #8b819f;
-@define-color disabled #231e2f;
-@define-color accent #c3adff;
-@define-color accent-hover #d5c6ff;
-@define-color on-accent #1c1133;
-@define-color selected #382a5c;
-/* Gold marks live states only: listening, working, recording. */
-@define-color gold #e9c46a;
-@define-color gold-soft #3a3019;
-@define-color on-gold #2a1f05;
-@define-color focus #f0d68a;
-@define-color error-bg #3b1d27;
-@define-color error-text #ffc6d1;
+/* GTK4 theme for the settings window. Colors are not defined here: ui.load_theme
+   prepends the chosen preset's @define-color lines (palettes.py: combinations
+   from Sanzo Wada's A Dictionary of Color Combinations). Roles: bg surface card
+   inset control(-hover/-active) line line-strong text text-muted text-disabled
+   disabled accent accent-text accent-hover on-accent selected live live-soft
+   live-text on-live focus error-bg error-text.
+   Live colors mark live states only: listening, working, recording, replay.
+   Relative text sizes follow the desktop's text scaling.
+   Spacing: 2 4 8 12 16 24 32 px. Type: 0.8 0.9 0.95 1 1.1 1.35 1.9 em; weights 600 700 800. */
 
 window.jarvis { background: @bg; color: @text; }
-.jarvis headerbar { background: @surface; border-bottom: 1px solid @line; min-height: 56px; }
+.jarvis headerbar { background: @surface; color: @text; border-bottom: 1px solid @line; min-height: 52px; box-shadow: none; }
 .jarvis windowcontrols button { background: transparent; border-color: transparent; padding: 4px; min-width: 24px; min-height: 24px; border-radius: 999px; }
 .jarvis windowcontrols button:hover { background: @control; }
-.jarvis .brand { font-size: 1.1em; font-weight: 800; letter-spacing: 3px; color: @text; }
-.jarvis .rail { background: @surface; padding: 24px 16px; border-right: 1px solid @line; }
-.jarvis stacksidebar { background: transparent; }
-.jarvis stacksidebar row { padding: 12px; margin: 4px 0; border-radius: 8px; font-weight: 600; color: @text-muted; }
-.jarvis stacksidebar row:hover { background: @control; color: @text; }
-.jarvis stacksidebar row:selected { background: @selected; color: @accent-hover; }
-.jarvis .page { background: @bg; padding: 32px; }
-.jarvis .page-title { font-size: 1.9em; font-weight: 700; letter-spacing: -0.7px; color: @text; }
-.jarvis .subtitle { color: @text-muted; font-size: 1.1em; }
-.jarvis .card { background: @card; border: 1px solid @line; border-radius: 12px; padding: 24px; }
+.jarvis .brand { font-size: 1em; font-weight: 800; letter-spacing: 4px; color: @text; }
+
+/* Sidebar */
+.jarvis .rail { background: @surface; padding: 20px 12px; border-right: 1px solid @line; }
+.jarvis .nav { background: transparent; }
+.jarvis .nav row { padding: 10px 12px; margin: 2px 0; border-radius: 8px; color: @text-muted; font-weight: 600; }
+.jarvis .nav row image { color: @text-muted; }
+.jarvis .nav row:hover { background: @control; color: @text; }
+.jarvis .nav row:selected { background: @selected; color: @text; }
+.jarvis .nav row:selected image { color: @accent-text; }
+.jarvis .rail-note { padding: 0 12px; }
+
+/* Pages, groups and rows */
+.jarvis .page { padding: 32px 32px 56px; }
+.jarvis .page-title { font-size: 1.9em; font-weight: 700; letter-spacing: -0.5px; color: @text; }
+.jarvis .subtitle { color: @text-muted; font-size: 1.05em; }
+.jarvis .group-title { font-size: 1.1em; font-weight: 700; color: @text; }
+.jarvis .group { background: @card; border: 1px solid @line; border-radius: 12px; }
+.jarvis .group .row { padding: 14px 18px; border-top: 1px solid @line; }
+.jarvis .group > .row:first-child, .jarvis .group > box:first-child > .row:first-child { border-top: none; }
+.jarvis .subgroup .row { padding: 12px 0; }
+.jarvis .subgroup > .row:first-child { border-top: none; }
+.jarvis .group .row.callout-row { background: @live-soft; border-radius: 11px 11px 0 0; }
+.jarvis .card { background: @card; border: 1px solid @line; border-radius: 12px; padding: 20px 24px; }
+.jarvis .card.callout { border: 2px solid @accent; }
+.jarvis .commands .card { padding: 14px 16px; background: @surface; }
+.jarvis flowbox, .jarvis flowboxchild { background: transparent; padding: 0; }
 .jarvis .section-title { font-size: 1.1em; font-weight: 700; color: @text; }
-.jarvis .state-title { font-size: 1.5em; font-weight: 700; color: @text; }
-.jarvis .state-title.active { color: @gold; }
+.jarvis .state-title { font-size: 1.35em; font-weight: 700; color: @text; }
+.jarvis .state-title.small { font-size: 1.1em; }
+.jarvis .state-title.active { color: @live-text; }
 .jarvis .state-title.error { color: @error-text; }
-.jarvis .pill { padding: 4px 12px; border-radius: 999px; font-size: 0.95em; font-weight: 600; background: @control; color: @text-muted; border: 1px solid @line-strong; }
-.jarvis .pill.idle { background: @selected; color: @accent-hover; border-color: @selected; }
-.jarvis .pill.listening, .jarvis .pill.dictating { background: @gold; color: @on-gold; border-color: @gold; }
-.jarvis .pill.processing, .jarvis .pill.replay { background: @gold-soft; color: @gold; border-color: @gold; }
-.jarvis .pill.error, .jarvis .pill.offline { background: @error-bg; color: @error-text; border-color: @error-bg; }
+.jarvis .eyebrow { color: @accent-text; font-size: 0.8em; font-weight: 800; letter-spacing: 1.4px; }
+.jarvis .caption { color: @text-muted; font-size: 0.95em; }
+.jarvis .caption.warning { color: @live-text; }
+.jarvis .notice-inline { background: @live-soft; color: @text; border: 1px solid @line-strong; border-radius: 8px; padding: 10px 14px; }
+.jarvis .row-title { font-weight: 600; color: @text; }
+.jarvis .example { font-weight: 600; color: @text; }
+.jarvis .chip { background: @surface; border: 1px solid @line; border-radius: 10px; padding: 10px 14px; }
+.jarvis .inline-setting { border-top: 1px solid @line; padding-top: 12px; margin-top: 4px; }
+.jarvis .keycap { font-family: monospace; font-size: 0.9em; font-weight: 700; color: @text; background: @inset; border: 1px solid @line-strong; border-radius: 6px; padding: 2px 8px; min-width: 96px; }
 .jarvis expander-widget title { padding: 4px 0; }
 .jarvis expander-widget title > expander { margin-right: 8px; color: @text-muted; }
-.jarvis expander-widget title:hover .section-title { color: @accent-hover; }
-.jarvis .caption { color: @text-muted; font-size: 0.95em; }
-.jarvis .eyebrow { color: @accent; font-size: 0.8em; font-weight: 800; letter-spacing: 1.4px; }
-.jarvis .row-title { font-weight: 600; color: @text; }
-.jarvis .example { font-size: 1.1em; font-weight: 600; color: @text; }
-.jarvis .notice { background: @surface; color: @text-muted; border-top: 1px solid @line; padding: 12px 24px; font-size: 0.95em; }
-.jarvis .notice.error { background: @error-bg; color: @error-text; }
-.jarvis button { background: @control; color: @text; border: 1px solid @line-strong; border-radius: 8px; padding: 8px 16px; min-height: 24px; font-weight: 600; box-shadow: none; }
+.jarvis expander-widget title:hover .group-title, .jarvis expander-widget title:hover .row-title { color: @accent-text; }
+
+/* Status pills */
+.jarvis .pill { padding: 4px 12px; border-radius: 999px; font-size: 0.9em; font-weight: 700; background: @control; color: @text-muted; border: 1px solid @line-strong; }
+.jarvis .pill.idle { background: @selected; color: @text; border-color: @selected; }
+.jarvis .pill.listening, .jarvis .pill.dictating { background: @live; color: @on-live; border-color: @live; }
+.jarvis .pill.processing, .jarvis .pill.replay { background: @live-soft; color: @live-text; border-color: @live; }
+.jarvis .pill.error, .jarvis .pill.offline { background: @error-bg; color: @error-text; border-color: @error-bg; }
+
+/* Buttons */
+.jarvis button { background: @control; color: @text; border: 1px solid @line-strong; border-radius: 8px; padding: 8px 16px; min-height: 24px; font-weight: 600; box-shadow: none; text-shadow: none; }
 .jarvis button:hover { background: @control-hover; }
 .jarvis button:active { background: @control-active; }
 .jarvis button.primary { background: @accent; color: @on-accent; border-color: @accent; }
-.jarvis button.primary:hover { background: @accent-hover; }
-.jarvis button.mute { border-color: @text-disabled; }
+.jarvis button.primary:hover { background: @accent-hover; border-color: @accent-hover; }
+.jarvis button.destructive { background: @error-bg; color: @error-text; border-color: @error-text; }
+.jarvis button.quiet { background: transparent; color: @accent-text; border-color: @line-strong; }
+.jarvis button.quiet:hover { background: @control; }
+.jarvis button.flat { background: transparent; border-color: transparent; padding: 6px; min-width: 24px; }
+.jarvis button.flat:hover { background: @control; }
+.jarvis .help > button { background: transparent; border-color: transparent; color: @text-muted; padding: 2px; min-width: 22px; min-height: 22px; border-radius: 999px; }
+.jarvis .help > button:hover, .jarvis .help > button:checked { background: @control; color: @text; }
+.jarvis headerbar menubutton > button { background: transparent; border-color: transparent; padding: 6px; }
+.jarvis headerbar menubutton > button:hover { background: @control; }
+.jarvis button.mute.muted { background: @live-soft; color: @live-text; border-color: @live; }
 .jarvis button:disabled, .jarvis button.primary:disabled { background: @disabled; color: @text-disabled; border-color: @line; }
-.jarvis entry, .jarvis searchentry, .jarvis spinbutton, .jarvis dropdown { background: @inset; color: @text; border: 1px solid @line-strong; border-radius: 8px; min-height: 36px; }
+.jarvis button.swatch-card { background: @surface; padding: 12px; border: 2px solid @line; border-radius: 12px; }
+.jarvis button.swatch-card:hover { border-color: @line-strong; }
+.jarvis button.swatch-card:checked { background: @selected; border-color: @accent; }
+.jarvis .swatch { border-radius: 8px; }
+
+/* Inputs */
+.jarvis entry, .jarvis searchentry, .jarvis spinbutton { background: @inset; color: @text; border: 1px solid @line-strong; border-radius: 8px; min-height: 36px; }
 .jarvis entry:focus-within, .jarvis searchentry:focus-within, .jarvis spinbutton:focus-within { border-color: @accent; }
 .jarvis entry:disabled, .jarvis spinbutton:disabled { background: @disabled; color: @text-disabled; }
-.jarvis entry { padding: 4px 8px; }
-.jarvis dropdown button { background: @control; }
-.jarvis popover contents { background: @card; color: @text; border: 1px solid @line; }
-.jarvis .app-row { padding: 12px 16px; border: 1px solid @line; border-radius: 8px; background: @card; }
+.jarvis entry { padding: 4px 10px; }
+.jarvis spinbutton button { border-radius: 0; border-width: 0 0 0 1px; }
+.jarvis dropdown > button { background: @control; }
+.jarvis popover > contents, .jarvis popover > arrow { background: @card; color: @text; border: 1px solid @line-strong; }
+.jarvis popover listview, .jarvis popover row { background: transparent; color: @text; }
+.jarvis popover row:selected, .jarvis popover row:hover { background: @selected; }
+.jarvis .popover-text { padding: 8px 6px; color: @text; }
 .jarvis switch { min-width: 44px; min-height: 24px; padding: 2px; border: 1px solid @line-strong; border-radius: 999px; background: @control; }
 .jarvis switch:checked { background: @accent; border-color: @accent; }
 .jarvis switch slider { min-width: 20px; min-height: 20px; margin: 0; border: none; border-radius: 999px; background: @text; box-shadow: none; }
@@ -80,6 +106,19 @@ window.jarvis { background: @bg; color: @text; }
 .jarvis check { min-width: 16px; min-height: 16px; border: 1px solid @line-strong; border-radius: 4px; background: @inset; color: @on-accent; }
 .jarvis check:checked { background: @accent; border-color: @accent; }
 .jarvis levelbar trough { min-height: 8px; background: @inset; border: 1px solid @line; border-radius: 4px; }
-.jarvis levelbar block.filled { background: @accent; border-color: @accent; border-radius: 4px; }
+.jarvis levelbar block.filled { background: @live; border-color: @live; border-radius: 4px; }
+.jarvis scale trough { background: @inset; border-radius: 999px; min-height: 6px; }
+.jarvis scale highlight { background: @accent; border-radius: 999px; }
+.jarvis scale slider { background: @text; border: 2px solid @accent; border-radius: 999px; min-width: 18px; min-height: 18px; }
+.jarvis scale marks, .jarvis scale mark { color: @text-muted; }
+
+/* Messages */
+.jarvis .toast { background: @text; color: @bg; border-radius: 12px; padding: 6px 6px 6px 18px; box-shadow: 0 8px 28px alpha(black, 0.35); }
+.jarvis .toast .toast-text { color: @bg; font-weight: 600; }
+.jarvis .toast button.flat { color: @bg; }
+.jarvis .toast button.flat:hover { background: alpha(@bg, 0.15); }
+.jarvis .toast.error { background: @error-bg; border: 1px solid @error-text; }
+.jarvis .toast.error .toast-text, .jarvis .toast.error button.flat { color: @error-text; }
+
 .jarvis :focus-visible { outline: 2px solid @focus; outline-offset: 3px; }
-/* GTK gets no timers, infinite animations or custom frame callbacks from this UI. */
+/* GTK gets no repeating timers, infinite animations or custom frame callbacks from this UI. */

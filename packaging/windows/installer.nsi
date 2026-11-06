@@ -8,7 +8,7 @@ Unicode true
   !error "Pass -DBUNDLE=<complete Jarvis folder>"
 !endif
 !ifndef VERSION
-  !define VERSION "0.3.1"
+  !define VERSION "0.4.0"
 !endif
 !ifndef OUTPUT
   !define OUTPUT "Jarvis-${VERSION}-Windows-x64-Setup.exe"
@@ -39,7 +39,7 @@ VIAddVersionKey "LegalCopyright" "Jarvis contributors; MIT"
 !define MUI_WELCOMEPAGE_TEXT "Jarvis is offline voice control for your desktop: say $\"Jarvis$\" followed by a command.$\r$\n$\r$\nSetup installs Jarvis for your Windows account only. It does not need administrator rights, does not download anything and does not restart your PC. Speech recognition runs entirely on this PC.$\r$\n$\r$\nIf Jarvis is already installed, Setup closes it, upgrades it in place and keeps your settings, voice names and recordings."
 !define MUI_COMPONENTSPAGE_SMALLDESC
 !define MUI_FINISHPAGE_TITLE "Jarvis is installed"
-!define MUI_FINISHPAGE_TEXT "Jarvis starts with the microphone off. Open Privacy in Jarvis to allow listening.$\r$\n$\r$\nIf Windows blocks the microphone, turn on Settings > Privacy > Microphone > $\"Let desktop apps access your microphone$\"."
+!define MUI_FINISHPAGE_TEXT "Jarvis starts with the microphone off. Open Home in Jarvis to allow listening.$\r$\n$\r$\nIf Windows blocks the microphone, turn on Settings > Privacy > Microphone > $\"Let desktop apps access your microphone$\"."
 !define MUI_FINISHPAGE_RUN "$INSTDIR\Jarvis.exe"
 !define MUI_FINISHPAGE_RUN_TEXT "Open Jarvis now"
 !insertmacro MUI_PAGE_WELCOME
@@ -68,7 +68,11 @@ FunctionEnd
 Function StopJarvis
   ; The settings window holds files open; the service stops through its own command.
   settings:
-  FindWindow $0 "TkTopLevel" "Jarvis · Settings"
+  FindWindow $0 "TkTopLevel" "Jarvis"
+  ${If} $0 == 0
+    ; Older releases used this title; upgrades must still find their window.
+    FindWindow $0 "TkTopLevel" "Jarvis · Settings"
+  ${EndIf}
   StrCmp $0 "0" service
   MessageBox MB_RETRYCANCEL|MB_ICONINFORMATION "Close the Jarvis Settings window, then choose Retry." IDRETRY settings
   Abort
@@ -83,7 +87,11 @@ Function StopJarvis
 FunctionEnd
 
 Function un.StopJarvis
-  FindWindow $0 "TkTopLevel" "Jarvis · Settings"
+  FindWindow $0 "TkTopLevel" "Jarvis"
+  ${If} $0 == 0
+    ; Older releases used this title; upgrades must still find their window.
+    FindWindow $0 "TkTopLevel" "Jarvis · Settings"
+  ${EndIf}
   StrCmp $0 "0" service
   MessageBox MB_ICONINFORMATION "Close Jarvis Settings before uninstalling. Nothing was removed."
   Abort

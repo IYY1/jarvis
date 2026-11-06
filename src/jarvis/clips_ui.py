@@ -17,6 +17,7 @@ from typing import Any, Callable
 from gi.repository import Gdk, Gio, GLib, Gtk
 
 from . import clipedit
+from .transcriber import release_unused_memory
 
 LIBRARY_ROWS = 8
 
@@ -96,6 +97,23 @@ class Timeline(Gtk.DrawingArea):
         cr.fill()
 
 
+def _release_memory() -> bool:
+    release_unused_memory()
+    return False
+
+
+
+def describe(track: dict) -> str:
+    """A track's format, as LosslessCut shows it: "AAC · stereo · 48 kHz"."""
+    codecs = {"aac": "AAC", "opus": "Opus", "flac": "FLAC", "mp3": "MP3", "vorbis": "Vorbis", "ac3": "AC-3", "eac3": "E-AC-3"}
+    layouts = {1: "mono", 2: "stereo", 6: "5.1", 8: "7.1"}
+    parts = [codecs.get(str(track.get("codec_name")), str(track.get("codec_name", "audio")).upper())]
+    if track.get("channels"):
+        parts.append(layouts.get(int(track["channels"]), f"{track['channels']} channels"))
+    if str(track.get("sample_rate", "")).isdigit():
+        parts.append(f"{int(track['sample_rate']) / 1000:g} kHz")
+    return " · ".join(parts)
+
 class ClipsPage:
     """Builds the Clips page into `body` and owns the player and exports."""
 
@@ -112,6 +130,7 @@ class ClipsPage:
         self.player: Any = None
         self.result: Path | None = None
         self.track_checks: list[Any] = []
+        self.track_details: list[Any] = []
 
         self.editor = card("Editor")
         self.editor.set_visible(False)
@@ -184,7 +203,8 @@ class ClipsPage:
         library = card("Library")
         self.caption = label("Your saved clips appear here.", "caption")
         library.append(self.caption)
-        self.list = box(8)
+        self.list = box(0)
+        self.list.add_css_class("group")
         library.append(self.list)
         more = box(8, True)
         self.more = button("Show all", self._toggle_more)
@@ -208,7 +228,7 @@ class ClipsPage:
         self.more.set_label("Show fewer" if self.show_all else f"Show all {len(found)}")
         for clip in shown:
             row = self._box(12, True)
-            row.add_css_class("app-row")
+            row.add_css_class("row")
             labels = self._box(2)
             labels.set_hexpand(True)
             name = self._label(clip["name"], "row-title", wrap=False)
@@ -258,36 +278,82 @@ class ClipsPage:
         return False
 
     def _tracks(self, source: clipedit.Source) -> None:
+        """The Sound list, as in LosslessCut: one row per track with its name and
+        format, a Keep switch, and Only this. Silent tracks are found after opening."""
         child = self.tracks_box.get_first_child()
         while child:
             self.tracks_box.remove(child)
             child = self.tracks_box.get_first_child()
-        self.track_checks = []
+        self.track_checks, self.track_details = [], []
         self.mix.set_visible(len(source.audio) > 1)
         if not source.audio:
             self.tracks_box.append(self._label("This clip has no sound.", "caption"))
             return
-        self.tracks_box.append(self._label("Sound", "row-title"))
-        for track in source.audio:
-            # One switch per track: off mutes it in the export.
+        header = self._box(8, True)
+        title = self._label(f"Sound tracks · {len(source.audio)}", "row-title")
+        title.set_hexpand(True)
+        title.set_valign(Gtk.Align.CENTER)
+        header.append(title)
+        if len(source.audio) > 1:
+            header.append(self._button("Keep all", lambda: self._keep(lambda _i: True)))
+            header.append(self._button("Mute all", lambda: self._keep(lambda _i: False)))
+        self.tracks_box.append(header)
+        rows = self._box(0)
+        rows.add_css_class("group")
+        for index, track in enumerate(source.audio):
             row = self._box(12, True)
-            name = self._label(track["name"], "")
-            name.set_hexpand(True)
-            row.append(name)
+            row.add_css_class("row")
+            info = self._box(2)
+            info.set_hexpand(True)
+            info.set_valign(Gtk.Align.CENTER)
+            info.append(self._label(track["name"], "row-title"))
+            detail = self._label(describe(track), "caption")
+            info.append(detail)
+            row.append(info)
             switch = Gtk.Switch(active=True, valign=Gtk.Align.CENTER)
             switch.update_property([Gtk.AccessibleProperty.LABEL], [f"Keep {track['name']}"])
             switch.connect("notify::active", lambda *_: self.refresh())
-            self.track_checks.append(switch)
+            if len(source.audio) > 1:
+                only = self._button("Only this", lambda i=index: self._keep(lambda j: j == i), "quiet")
+                only.set_valign(Gtk.Align.CENTER)
+                only.update_property([Gtk.AccessibleProperty.LABEL], [f"Keep only {track['name']}"])
+                row.append(only)
             row.append(switch)
-            self.tracks_box.append(row)
+            self.track_checks.append(switch)
+            self.track_details.append(detail)
+            rows.append(row)
+        self.tracks_box.append(rows)
         if len(source.audio) > 1:
-            self.tracks_box.append(self._label("Turn a track off to mute it in the exported clip, for example a "
-                                               "podcast behind the game. The original keeps every track. The preview "
-                                               "plays the first track only.", "caption"))
+            self.tracks_box.append(self._label("Turn a track off to mute it in the exported clip, for example Firefox "
+                                               "behind the game while Discord stays. The original keeps every track. "
+                                               "The preview plays the first track only.", "caption"))
+            self._find_silence(source)
         else:
-            self.tracks_box.append(self._label("One track: sound that was mixed while recording can't be separated "
-                                               "afterwards. Turn on separate tracks in Capture → Instant replay for "
-                                               "future clips.", "caption"))
+            self.tracks_box.append(self._label("One track: sound mixed while recording can't be separated afterwards. "
+                                               "Choose Separate tracks in Capture → Instant replay, and each app gets "
+                                               "its own track in future clips.", "caption"))
+
+    def _keep(self, keep: Callable[[int], bool]) -> None:
+        for index, switch in enumerate(self.track_checks):
+            switch.set_active(keep(index))
+
+    def _find_silence(self, source: clipedit.Source) -> None:
+        """Mark tracks with no sound (an app that stayed quiet) and start them off."""
+        def measure() -> None:
+            try:
+                peaks = clipedit.loudness(source.path, len(source.audio))
+            except (OSError, subprocess.SubprocessError):
+                return
+            GLib.idle_add(show, peaks)
+        def show(peaks: list) -> bool:
+            if not self.edit or self.edit.sources[0].path != source.path or len(peaks) != len(self.track_checks):
+                return False   # another clip is open now
+            for switch, detail, peak, track in zip(self.track_checks, self.track_details, peaks, source.audio):
+                if peak is not None and peak <= clipedit.SILENT_DB:
+                    detail.set_text(f"{describe(track)} · no sound in this clip")
+                    switch.set_active(False)
+            return False
+        threading.Thread(target=measure, name="jarvis-clip-loudness", daemon=True).start()
 
     def _load(self, index: int, at: float, play: bool = False) -> None:
         if self.player is None:
@@ -525,6 +591,9 @@ class ClipsPage:
             self.player.set_file(None)
             self.video_slot.remove(self.player)
             self.player = None
+            # The C allocator keeps GStreamer's freed decoder and frame memory
+            # (about 50 MiB for a 1440p clip); hand it back once its threads stop.
+            GLib.timeout_add(1500, _release_memory)
         self.loaded = -1
         self.editor.set_visible(False)
         self.edit = None

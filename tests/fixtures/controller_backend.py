@@ -36,7 +36,9 @@ if program == "hyprctl":
     else:
         print("ok")
 elif program == "pw-dump":
-    print(json.dumps([{"info": {"props": {"media.class": "Audio/Source", "node.name": "fake-mic", "node.description": "Fake input"}}}]))
+    streams = json.loads(os.environ.get("JARVIS_TEST_STREAMS", "[]"))   # apps playing sound
+    print(json.dumps([{"info": {"props": {"media.class": "Audio/Source", "node.name": "fake-mic", "node.description": "Fake input"}}},
+                      *({"info": {"props": {"media.class": "Stream/Output/Audio", **s}}} for s in streams)]))
 elif program == "pactl":
     print(json.dumps([{"name": "fake-mic", "description": "Fake input"}, {"name": "fake.monitor", "monitor_of_sink": 1}]))
 elif program == "ffprobe":
@@ -50,6 +52,9 @@ elif program == "ffprobe":
 elif program in ("wf-recorder", "gpu-screen-recorder"):
     if args == ["--version"]:
         print("6.1.5")
+        sys.exit(0)
+    if args == ["--list-application-audio"]:
+        print("\n".join(s["application.name"] for s in json.loads(os.environ.get("JARVIS_TEST_STREAMS", "[]"))))
         sys.exit(0)
     signal.signal(signal.SIGINT, lambda *_: sys.exit(0))
     if "-ipc" in args:

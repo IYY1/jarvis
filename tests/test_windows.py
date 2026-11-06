@@ -3,6 +3,7 @@
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import queue
 import struct
@@ -41,6 +42,140 @@ class WindowRequestTests(unittest.TestCase):
                 with patch("jarvis.windows.ui.request", return_value={"ok": True}) as request:
                     runs[0]()
                 self.assertEqual(request.call_args.kwargs["timeout"], timeout)
+
+
+@unittest.skipUnless(TK, "Tk is not installed")
+class SettingsWindowTests(unittest.TestCase):
+    """The redesigned window: sidebar pages, settings that save on their own, Wada colors."""
+
+    def setUp(self):
+        import tkinter
+        try:
+            self.root = tkinter.Tk()
+        except tkinter.TclError:
+            self.skipTest("no display for Tk")
+        self.root.withdraw()
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        environment = patch.dict(os.environ, {"JARVIS_CONFIG": str(Path(folder.name) / "config.json")})
+        environment.start()
+        self.addCleanup(environment.stop)
+        offline = patch("jarvis.windows.ui.request", side_effect=OSError("service offline"))
+        offline.start()
+        self.addCleanup(offline.stop)
+        from jarvis.windows.ui import Window
+        with patch.object(Window, "observe", lambda _window: None):   # no status watcher
+            self.window = Window(self.root)
+        self.addCleanup(self.root.destroy)
+
+    def finish(self):
+        """Let queued work end and deliver its results, as the Tk loop would."""
+        self.window.executor.shutdown(wait=True)
+        while not self.window.events.empty():
+            callback, result, error = self.window.events.get_nowait()
+            self.assertIsNone(error)
+            if callback:
+                callback(result)
+
+    def test_every_page_opens_and_older_links_still_work(self):
+        from jarvis.windows.ui import NAVIGATION
+        for key, _title in NAVIGATION:
+            self.window.show(key)
+            self.assertEqual(self.window.current, key)
+        for old, new in (("activation", "voice"), ("replay", "recording"), ("privacy", "general"), ("nope", "dashboard")):
+            self.window.show(old)
+            self.assertEqual(self.window.current, new)
+
+    def test_clips_only_this_survives_late_silence_detection(self):
+        from jarvis.clipedit import Source
+        panel = self.window.clips
+        pending = []
+        panel.work = lambda run, done: pending.append((run, done))
+        source = Source("clip.mkv", 3, {}, [
+            {"name": "Firefox", "codec_name": "opus"},
+            {"name": "Discord", "codec_name": "opus"}], [0])
+        panel.loaded((source, None))
+        panel.only(1)
+        pending[0][1](([-91, -91], None))
+        self.assertEqual(panel.selection(), [1], "a late scan must keep the user's choice")
+        panel.keep_all(False)
+        self.assertEqual(panel.selection(), [])
+        panel.keep_all(True)
+        self.assertEqual(panel.selection(), [0, 1])
+
+    def test_clips_export_keeps_discord_and_mutes_firefox(self):
+        import hashlib
+        import shutil
+        import subprocess
+        if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
+            self.skipTest("needs FFmpeg")
+        with tempfile.TemporaryDirectory(prefix="jarvis-clip-ui-") as folder:
+            path = Path(folder) / "clip's العربية.mkv"
+            subprocess.run(["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "color=size=160x90:rate=10",
+                "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=48000",
+                "-f", "lavfi", "-i", "sine=frequency=880:sample_rate=48000",
+                "-t", "1", "-map", "0:v", "-map", "1:a", "-map", "2:a",
+                "-c:v", "libx264", "-threads", "1", "-c:a", "aac", str(path)], check=True)
+            (path.parent / f".{path.name}.tracks.json").write_text(json.dumps({"tracks": ["Firefox", "Discord"]}))
+            original = hashlib.sha256(path.read_bytes()).hexdigest()
+            panel = self.window.clips
+            panel.work = lambda run, done: done((run(), None))
+            panel.open(path)
+            panel.only(1)
+            panel.export_copy()
+            exported = next(path.parent.glob("* edit 1.mkv"))
+            self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), original)
+            data = json.loads(subprocess.run(["ffprobe", "-v", "error", "-show_streams", "-of", "json", str(exported)],
+                                             capture_output=True, text=True, check=True).stdout)
+            self.assertEqual(len([s for s in data["streams"] if s["codec_type"] == "audio"]), 1)
+            def sound(file, track):
+                return subprocess.run(["ffmpeg", "-v", "error", "-i", str(file), "-map", f"0:a:{track}",
+                                       "-f", "hash", "-"], capture_output=True, check=True).stdout
+            self.assertEqual(sound(exported, 0), sound(path, 1))
+            self.assertNotEqual(sound(exported, 0), sound(path, 0))
+            panel.keep_all(True)
+            panel.mix.set(True)
+            panel.export_copy()
+            mixed = next(path.parent.glob("* edit 2.mkv"))
+            metadata = json.loads(subprocess.run(["ffprobe", "-v", "error", "-show_streams", "-of", "json", str(mixed)],
+                                                 capture_output=True, text=True, check=True).stdout)
+            audio = [s for s in metadata["streams"] if s["codec_type"] == "audio"]
+            self.assertEqual(len(audio), 1)
+            self.assertEqual(audio[0]["codec_name"], "aac")
+            self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), original)
+
+
+
+    def test_a_change_saves_on_its_own_while_the_service_is_off(self):
+        self.window.variable("replay", "sound").set(False)
+        self.window.variable("replay", "seconds").set("300")
+        self.window.save()
+        self.finish()
+        saved = config.load()
+        self.assertEqual((saved["replay"]["sound"], saved["replay"]["seconds"]), (False, 300))
+        self.assertIn("Saved.", self.window.notice.get())
+
+    def test_shown_values_and_invalid_ones_are_not_saved(self):
+        self.window.loading = True
+        self.window.changed(0)
+        self.assertIsNone(self.window.save_timer)
+        self.window.loading = False
+        self.window.variable("replay", "seconds").set("ten")
+        self.window.save()
+        self.assertIn("Not saved", self.window.notice.get())
+
+    def test_shortcuts_are_a_list_not_json(self):
+        self.window.new_phrase.set("Capture That")
+        self.window.new_command.set("start recording")
+        self.window.add_shortcut()
+        self.finish()
+        self.assertEqual(config.load()["commands"], {"capture that": "start recording"})
+
+    def test_color_presets_restyle_the_window(self):
+        from jarvis import palettes
+        self.window.choose_palette("190")
+        self.assertEqual(self.window.style.lookup("TFrame", "background"), palettes.roles("190")["bg"])
+        self.assertEqual(palettes.chosen(), "190")
 
 
 class EncoderTests(unittest.TestCase):
@@ -93,7 +228,7 @@ class EncoderTests(unittest.TestCase):
         replay = config.validate({"replay": {"audio_tracks": "separate", "separate_apps": ["firefox"]}})["replay"]
         cfg = dict(self.cfg, system_audio=True, microphone=True)
         plan = encoding.audio_plan(cfg, replay, build=22631)
-        self.assertEqual([title for title, _ in plan], ["Game and other apps", "firefox", "Microphone"])
+        self.assertEqual([title for title, _ in plan], ["Everything else", "firefox", "Microphone"])
         self.assertEqual([c["track"] for _, c in plan],
                          [{"kind": "game", "app": "firefox"}, {"kind": "app", "app": "firefox"}, {"kind": "microphone"}])
         pipes = [(rf"\\.\pipe\Jarvis-t-audio{i}", title) for i, (title, _) in enumerate(plan)]

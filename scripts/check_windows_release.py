@@ -22,6 +22,10 @@ def main():
     import win32gui
     import win32process
 
+    # Check runtime data in the bundle, not the source checkout on sys.path.
+    table = json.loads((bundle / "_internal/jarvis/arabic_commands.json").read_text(encoding="utf-8"))
+    assert table["wake_words"] and table["numbers"]
+    print("Frozen Arabic command table is present and readable", flush=True)
     console = bundle / "JarvisConsole.exe"
     with tempfile.TemporaryDirectory(prefix="jarvis-frozen-") as temporary:
         folder = Path(temporary)
@@ -83,6 +87,13 @@ def main():
                     "Dry run"
                     in request("execute", phrase="turn the volume down")["message"]
                 )
+                assert "Dry run" in request("execute", phrase="عل الصوت")["message"]
+                print("Frozen Arabic command parsing and dry-run dispatch passed", flush=True)
+                refusal = request("mute", muted=False)
+                assert not refusal["ok"] and "consent" in refusal.get("error", "").lower(), refusal
+                status = request("status")["status"]
+                assert status["muted"] and not status["microphone_open"]
+                print("Frozen service refuses microphone access without consent", flush=True)
                 assert json.loads(run("shutdown"))["ok"]
                 assert service.wait(timeout=5) == 0
             finally:
@@ -93,31 +104,12 @@ def main():
             "Frozen muted service, command dispatch and wait-for-exit shutdown passed",
             flush=True,
         )
-        payload = {
-            "config": config.load(cfg),
-            "mode": "once",
-            "grammar": {"phrases": []},
-        }
-        result = subprocess.run(
-            [str(console), "--internal", "voice"],
-            input=json.dumps(payload) + "\n",
-            text=True,
-            env=dict(env, JARVIS_OWNER_PID=str(os.getpid())),
-            capture_output=True,
-            timeout=15,
-        )
-        events = [json.loads(line) for line in result.stdout.splitlines()]
-        assert any(
-            event.get("event") == "error" and "consent" in event["message"]
-            for event in events
-        ), result.stderr
-        print("Frozen voice worker refuses capture without consent", flush=True)
         ui = subprocess.Popen([str(bundle / "Jarvis.exe")], env=env)
         try:
             deadline = time.monotonic() + 15
             hwnd = 0
             while not hwnd and ui.poll() is None and time.monotonic() < deadline:
-                candidate = win32gui.FindWindow("TkTopLevel", "Jarvis · Settings")
+                candidate = win32gui.FindWindow("TkTopLevel", "Jarvis")
                 if (
                     candidate
                     and win32process.GetWindowThreadProcessId(candidate)[1] == ui.pid

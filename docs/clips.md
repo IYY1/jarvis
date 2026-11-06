@@ -1,5 +1,11 @@
 # Clips: watch, trim and join
 
+On Windows, **Clips** offers a native file picker and recordings list, per-track
+Keep switches, Only this / Keep all / Mute all, silent-track detection, start/end
+times and Fast/Exact export to a new copy. It uses the bundled FFmpeg tools;
+Exact export uses the CPU. Playback, the visual timeline, splitting and joining
+described below are in the Linux GTK editor.
+
 The **Clips** page lists saved replays and recordings (newest first; eight at a
 time, **Show all** for the rest). **Open** loads one into a small editor:
 
@@ -10,9 +16,15 @@ time, **Show all** for the rest). **Open** loads one into a small editor:
 - **Edit.** Mark in (I) and Mark out (O), then **Remove section** (Delete) or
   **Keep only section** (K). **Split** (S) cuts at the playhead. **Join at end**
   appends another clip. **Undo** (Ctrl+Z) steps back.
-- **Audio tracks.** Tick the tracks to export, or mix them into one. Replays
-  saved with separate tracks ([recording](recording.md#separate-sound-tracks))
-  show their names, for example “Game and other apps”, “Firefox”, “Microphone”.
+- **Sound tracks.** As in LosslessCut, every track is a row with its name and
+  format (“Discord · Opus · stereo · 48 kHz”) and a **Keep** switch; **Only
+  this** keeps just that track, and **Keep all** / **Mute all** switch every
+  one. Replays saved with separate tracks
+  ([recording](recording.md#separate-sound-tracks)) have one per app, for
+  example “Everything else”, “Firefox”, “Discord”, “Microphone”. A track with no
+  sound in the clip (an app that stayed quiet) is marked and starts off; one
+  audio-only pass finds it in a few seconds. Kept tracks can stay separate or be
+  mixed into one.
 - **Export copy** writes `NAME edit N.mp4` beside the first clip and shows
   progress; **Cancel export** stops it. The original is never changed and an
   existing file is never overwritten.
@@ -32,8 +44,8 @@ start up to two seconds early. The editor shows the Fast length before you
 export (“Fast export starts parts on keyframes: 00:17.0 long”). Mixing tracks
 re-encodes only the audio.
 
-Sound that was mixed while recording can't be separated afterwards. To mute a
-podcast or your voice later, turn on separate tracks before recording.
+Sound that was mixed while recording can't be separated afterwards. To mute an
+app or your voice later, turn on separate tracks before recording.
 
 ## What was wrong with the old player
 
