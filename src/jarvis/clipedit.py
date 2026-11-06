@@ -77,7 +77,7 @@ def _executable(argv: list[str]) -> list[str]:
 
 def _run(argv: list[str], timeout: float = 60) -> str:
     from .host import child_options
-    result = subprocess.run(_executable(argv), capture_output=True, text=True, timeout=timeout, **child_options())
+    result = subprocess.run(_executable(argv), capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout, **child_options())
     if result.returncode:
         raise EditError((result.stderr.strip().splitlines() or ["FFmpeg failed"])[-1][:300])
     return result.stdout
@@ -87,7 +87,7 @@ def track_names(path: str | Path, count: int) -> list[str]:
     """Names Jarvis stored when it saved the replay, else "Audio 1", "Audio 2"…"""
     path = Path(path)
     try:
-        names = json.loads((path.parent / f".{path.name}.tracks.json").read_text())["tracks"]
+        names = json.loads((path.parent / f".{path.name}.tracks.json").read_text(encoding="utf-8"))["tracks"]
         if len(names) == count and all(isinstance(n, str) for n in names):
             return names
     except (OSError, ValueError, KeyError, TypeError):
@@ -107,7 +107,7 @@ def loudness(path: str | Path, count: int, timeout: float = 120) -> list[float |
     maps = [arg for i in range(count) for arg in ("-map", f"[o{i}]")]
     from .host import child_options
     result = subprocess.run(_executable(["ffmpeg", "-nostats", "-hide_banner", "-vn", "-i", str(path), "-filter_complex", graph,
-                             *maps, "-f", "null", "-"]), capture_output=True, text=True, timeout=timeout, **child_options())
+                             *maps, "-f", "null", "-"]), capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout, **child_options())
     peaks: dict[int, float] = {}
     for line in result.stderr.splitlines():
         found = re.search(r"Parsed_volumedetect_(\d+) .*max_volume: (-?[\d.]+|-inf) dB", line)
@@ -291,7 +291,7 @@ def command(edit: Edit, output: Path, mode: str, tracks: list[int], mix: bool, w
         for start, segment in zip(edit.fast_starts(), edit.segments):
             path = edit.sources[segment.source].path.replace("\\", "/").replace("'", "'\\''")
             lines += [f"file '{path}'", f"inpoint {start:.6f}", f"outpoint {segment.end:.6f}"]
-        listing.write_text("\n".join(lines) + "\n")
+        listing.write_text("\n".join(lines) + "\n", encoding="utf-8")
         argv += ["-f", "concat", "-safe", "0", "-i", str(listing), "-map", "0:v:0"]
         if mix and len(tracks) > 1:
             inputs = "".join(f"[0:a:{t}]" for t in tracks)
@@ -388,8 +388,8 @@ class Export:
             staging = self.output.with_name(f".{self.output.stem}.part{self.output.suffix}")
             argv = command(self.edit, staging, self.mode, self.tracks, self.mix, work)
             errors = work / "ffmpeg.log"
-            with errors.open("w") as log, \
-                    subprocess.Popen(_executable(argv), stdout=subprocess.PIPE, stderr=log, text=True, **child_options()) as process:
+            with errors.open("w", encoding="utf-8") as log, \
+                    subprocess.Popen(_executable(argv), stdout=subprocess.PIPE, stderr=log, text=True, encoding="utf-8", errors="replace", **child_options()) as process:
                 self._process = process
                 if self._cancelled.is_set():
                     process.terminate()
@@ -402,7 +402,7 @@ class Export:
                 staging.unlink(missing_ok=True)
                 if self._cancelled.is_set():
                     raise EditError("Export cancelled; the original is unchanged")
-                detail = errors.read_text()[-400:].strip().splitlines()
+                detail = errors.read_text(encoding="utf-8", errors="replace")[-400:].strip().splitlines()
                 raise EditError("Export failed: " + (detail[-1] if detail else f"FFmpeg exit {code}"))
             # Publish without replacing a file that appeared meanwhile.
             try:
@@ -414,5 +414,5 @@ class Export:
             self.progress(1.0)
             names = [self.edit.sources[0].audio[t]["name"] for t in self.tracks if t < len(self.edit.sources[0].audio)]
             if not self.mix and len(names) > 1:
-                (self.output.parent / f".{self.output.name}.tracks.json").write_text(json.dumps({"tracks": names}))
+                (self.output.parent / f".{self.output.name}.tracks.json").write_text(json.dumps({"tracks": names}), encoding="utf-8")
             return self.output
