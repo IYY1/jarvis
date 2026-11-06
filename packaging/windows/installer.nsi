@@ -127,7 +127,7 @@ Section "Jarvis (required)" SecMain
   RMDir /r "$INSTDIR\models"
   RMDir /r "$INSTDIR\tools"
   RMDir /r "$INSTDIR\licenses"
-  File /r "${BUNDLE}/*"
+  File /r "${BUNDLE}\*"
   CreateDirectory "$SMPROGRAMS\Jarvis"
   CreateShortcut "$SMPROGRAMS\Jarvis\Jarvis.lnk" "$INSTDIR\Jarvis.exe" "" "$INSTDIR\Jarvis.exe" 0 SW_SHOWNORMAL "" "Offline voice control"
   CreateShortcut "$SMPROGRAMS\Jarvis\Uninstall Jarvis.lnk" "$INSTDIR\Uninstall.exe"
