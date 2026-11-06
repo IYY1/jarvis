@@ -24,6 +24,22 @@ def process_image(process):
     return buffer.value
 
 
+def package_family(path):
+    """The package of a Store app's executable, from its versioned install folder.
+
+    ...\\WindowsApps\\Name_1.2.3.0_x64__publisher\\App.exe becomes name_publisher, the
+    part of an app ID before "!". Windows don't always report their app ID, and the
+    folder changes with every update, so neither can identify such a window alone.
+    """
+    parts = [part.casefold() for part in PureWindowsPath(path).parts]
+    if "windowsapps" not in parts[:-1]:
+        return None
+    folder = parts[parts.index("windowsapps") + 1].split("_")
+    if len(folder) != 5 or not folder[0] or not folder[4]:
+        return None
+    return f"{folder[0]}_{folder[4]}"
+
+
 def window_identity(hwnd):
     import pywintypes
     import win32api
@@ -51,6 +67,9 @@ def window_identity(hwnd):
         try:
             path = process_image(process)
             identities.add(str(PureWindowsPath(path)).casefold())
+            family = package_family(path)
+            if family:
+                identities.add(family)
         finally:
             process.Close()
     except (OSError, pywintypes.error):

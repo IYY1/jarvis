@@ -61,7 +61,14 @@
     "exit jarvis": "close yourself",
     "quit yourself": "close yourself",
     "shut yourself down": "close yourself",
-    "turn yourself off": "close yourself"
+    "turn yourself off": "close yourself",
+    "unmute volume": "turn the sound back on",
+    "unmute the volume": "turn the sound back on",
+    "unmute audio": "turn the sound back on",
+    "unmute the audio": "turn the sound back on",
+    "unmute sound": "turn the sound back on",
+    "unmute the sound": "turn the sound back on",
+    "unmute": "turn the sound back on"
   },
   "POLITE_PREFIXES": [
     "please",

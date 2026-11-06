@@ -517,6 +517,39 @@ class EncoderTests(unittest.TestCase):
                 encoding.select_encoder(self.cfg, self.display, "hevc")
 
 
+class FoundOnRealHardwareTests(unittest.TestCase):
+    def test_the_encoder_probe_is_not_below_nvencs_minimum_size(self):
+        encoding._probe.cache_clear()
+        with patch("jarvis.windows.encoding.subprocess.run", return_value=types.SimpleNamespace(returncode=0)) as run:
+            self.assertTrue(encoding._probe("ffmpeg", 1, "nvenc", "av1", 0, False, True))
+        size = next(a for a in run.call_args.args[0] if a.startswith("color=black")).split("s=")[1].split(":")[0]
+        width, height = map(int, size.split("x"))
+        self.assertGreaterEqual(width, 160)
+        self.assertGreaterEqual(height, 120)
+        encoding._probe.cache_clear()
+
+    def test_store_app_windows_are_recognized_by_package_across_updates(self):
+        from jarvis.windows.apps import WindowsApp
+        from jarvis.windows.desktop import package_family
+        path = r"C:\Program Files\WindowsApps\Microsoft.WindowsNotepad_11.2607.14.0_x64__8wekyb3d8bbwe\Notepad\Notepad.exe"
+        family = package_family(path)
+        self.assertEqual(family, "microsoft.windowsnotepad_8wekyb3d8bbwe")
+        app = WindowsApp("Microsoft.WindowsNotepad_8wekyb3d8bbwe!App", "Notepad", "Microsoft.WindowsNotepad_8wekyb3d8bbwe!App", "")
+        self.assertIn(family, app.classes())
+
+    def test_ordinary_programs_have_no_package(self):
+        from jarvis.windows.desktop import package_family
+        self.assertIsNone(package_family(r"C:\Program Files\Steam\steam.exe"))
+        self.assertIsNone(package_family(r"C:\Program Files\WindowsApps\odd-folder\app.exe"))
+
+    def test_unmute_is_never_mistaken_for_mute(self):
+        from jarvis.commands import Intent, Parser
+        for phrase in ("unmute volume", "unmute the volume", "unmute", "unmute the sound"):
+            with self.subTest(phrase=phrase):
+                self.assertEqual(Parser().parse(phrase), Intent("volume_unmute"))
+        self.assertEqual(Parser().parse("mute volume"), Intent("volume_mute"))
+
+
 class BufferTests(unittest.TestCase):
     def test_out_of_order_pipes_are_reassembled_in_capture_order(self):
         buffer = ReplayBuffer(10)

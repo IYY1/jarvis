@@ -66,6 +66,12 @@ VARIANTS = {
     "turn the sound off": "mute volume",
     "turn the sound on": "turn the sound back on", "sound on": "turn the sound back on",
     "restore the volume": "turn the sound back on",
+    # For the second recognizer, which knows the word: spelling is all that separates
+    # this from "mute volume", so without these the closest match is the opposite.
+    "unmute volume": "turn the sound back on", "unmute the volume": "turn the sound back on",
+    "unmute audio": "turn the sound back on", "unmute the audio": "turn the sound back on",
+    "unmute sound": "turn the sound back on", "unmute the sound": "turn the sound back on",
+    "unmute": "turn the sound back on",
     "start screen recording": "start recording", "start a recording": "start recording",
     "start recording my screen": "start recording", "record my screen": "start recording",
     "stop screen recording": "stop recording", "stop the recording": "stop recording",

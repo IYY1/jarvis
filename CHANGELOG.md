@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Windows: HEVC and AV1 work on NVIDIA again. The encoder test used a frame below
+  NVENC's minimum size, so both were reported as unavailable. HDR displays were
+  affected in every format, because HDR capture needs HEVC or AV1.
+- Windows: Store apps such as Notepad and Spotify can now be closed and focused.
+  Their windows weren't recognized, so Jarvis said they weren't running.
+- "Unmute volume" now unmutes. It used to match the closest phrase, "mute volume".
 - Voice (Rust worker): commands can answer about 0.15 seconds after speech stops
   instead of about 0.7, when Vosk and Whisper independently name the same complete
   command. A command that could continue, closing an app, and quitting all still

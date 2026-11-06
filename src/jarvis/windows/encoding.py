@@ -123,6 +123,7 @@ def encoder_options(cfg, family, codec):
 def _probe(binary, stamp, family, codec, adapter, cpu, ten_bit=False):
     # A synthetic black frame verifies the encoder/driver without capturing a
     # screen or opening audio. Presence in -encoders alone is not sufficient.
+    # NVENC refuses HEVC and AV1 below its minimum size, so the frame can't be tiny.
     cfg = {
         "codec": "libx264" if cpu else codec,
         "encoder": "cpu" if cpu else family,
@@ -139,7 +140,7 @@ def _probe(binary, stamp, family, codec, adapter, cpu, ten_bit=False):
         "-f",
         "lavfi",
         "-i",
-        "color=black:s=128x128:r=1",
+        "color=black:s=320x180:r=1",
         "-vf",
         "format=p010le" if ten_bit else "format=nv12",
         "-frames:v",
