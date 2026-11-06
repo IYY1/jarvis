@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Windows: "Primary display" now works. The window offers it, but capture refused
+  it with "Choose a connected recording display".
 - Windows: recordings and replays now reach the frame rate you choose. Audio that
   started after video made FFmpeg discard frames: 60 fps delivered about 40, and
   165 about 46. Audio is now flowing before capture starts, which also keeps sound

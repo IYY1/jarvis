@@ -930,6 +930,16 @@ class AudioTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "no audio"):
                 microphone.read(480)
 
+    def test_no_chosen_display_means_the_primary_one(self):
+        from jarvis.windows.capture import chosen_display
+        left = {"name": "two", "left": -2560, "top": 0}
+        primary = {"name": "one", "left": 0, "top": 0}
+        self.assertIs(chosen_display([left, primary], ""), primary)
+        self.assertIs(chosen_display([left, primary], "two"), left)
+        self.assertIsNone(chosen_display([left, primary], "gone"))   # still says to choose one
+        self.assertIs(chosen_display([left], ""), left)
+        self.assertIsNone(chosen_display([], ""))
+
     def test_capture_asks_for_more_frames_than_it_keeps(self):
         from jarvis.windows.encoding import capture_rate, capped_fps
         self.assertEqual(capture_rate(60), 120)

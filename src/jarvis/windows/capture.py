@@ -37,6 +37,14 @@ def sources():
     return discover()
 
 
+def chosen_display(displays, name):
+    """The named display. No name means "Primary display", as the window calls it:
+    the one Windows places at the desktop's origin."""
+    if name:
+        return next((d for d in displays if d["name"] == name), None)
+    return next((d for d in displays if (d.get("left"), d.get("top")) == (0, 0)), displays[0] if displays else None)
+
+
 def replay_budget_warning(cfg, replay, audio_tracks):
     """Status text when the budget can't hold the chosen length at this bitrate."""
     fit = replay_fit_seconds(cfg, replay["max_mb"], audio_tracks)
@@ -222,7 +230,7 @@ class _Capture:
         cfg = dict(replay_video(self.config) if self.replay else self.config["recording"])
         if not cfg.get("configured"):
             raise RecorderError("Complete and review recording setup first")
-        display = next((d for d in sources() if d["name"] == cfg["monitor"]), None)
+        display = chosen_display(sources(), cfg["monitor"])
         if display is None:
             raise RecorderError("Choose a connected recording display")
         color = capture_color(cfg, display)
