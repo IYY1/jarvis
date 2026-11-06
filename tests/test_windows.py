@@ -118,20 +118,28 @@ class EncoderTests(unittest.TestCase):
 
     def test_app_audio_is_relayed_and_its_error_reported(self):
         from murmur.windows import audio
+        import subprocess
+        import sys
+        popen = subprocess.Popen
         with tempfile.TemporaryDirectory() as folder:
-            worker = Path(folder) / "jarvis-voice"
-            worker.write_text("#!/bin/sh\nread request\necho \"$request\" > \"$0.request\"\nprintf 'PCMDATA!'\n"
-                              "echo '{\"event\":\"error\",\"message\":\"firefox is not running.\"}' >&2\nexit 1\n")
-            worker.chmod(0o755)
+            # A Python stand-in for jarvis-voice.exe, so this runs on Linux and Windows.
+            worker = Path(folder) / "jarvis-voice.py"
+            worker.write_text(
+                "import sys\n"
+                "open(sys.argv[0] + '.request', 'w').write(sys.stdin.readline())\n"
+                "sys.stdout.buffer.write(b'PCMDATA!'); sys.stdout.flush()\n"
+                "sys.stderr.write('{\"event\":\"error\",\"message\":\"firefox is not running.\"}\\n')\n"
+                "sys.exit(1)\n")
             written = []
             pipe = MagicMock()
             pipe.return_value.__enter__.return_value.write.side_effect = written.append
             with patch("murmur.native_worker.binary_path", return_value=worker), \
-                    patch("murmur.windows.pipes.PipeWriter", pipe):
+                    patch("murmur.windows.pipes.PipeWriter", pipe), \
+                    patch("subprocess.Popen", side_effect=lambda argv, **kw: popen([sys.executable, *argv], **kw)):
                 with self.assertRaisesRegex(RuntimeError, "firefox is not running"):
                     audio.track_to_pipe({"track": {"kind": "game", "app": "firefox"}}, r"\\.\pipe\Jarvis-x")
             self.assertEqual(b"".join(written), b"PCMDATA!")
-            self.assertEqual(json.loads((Path(folder) / "jarvis-voice.request").read_text()),
+            self.assertEqual(json.loads((Path(folder) / "jarvis-voice.py.request").read_text()),
                              {"process": "firefox", "include": False})
 
     def test_audio_failure_names_the_track_and_reason(self):
