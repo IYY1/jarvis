@@ -45,6 +45,7 @@
     "combined_audio_source": false,
     "sound_feedback": false,
     "vaapi_device": "/dev/dri/renderD128",
+    "resolution": "native",
     "rate_control": "quality",
     "bitrate_mbps": 8,
     "quality_preset": "very_high",

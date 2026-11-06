@@ -43,6 +43,15 @@ pub fn color(cfg: &Value, monitor: &Value) -> Result<&'static str> {
 /// banding; HDR capture is always 10-bit whichever family is chosen.
 pub const GPU_CODECS: [&str; 5] = ["h264", "hevc", "av1", "hevc_10bit", "av1_10bit"];
 const TEN_BIT: [&str; 4] = ["yuv420p10le", "p010le", "p010be", "yuv420p10be"];
+/// recording.resolution: the largest output size; smaller displays are never
+/// scaled up, larger ones are scaled down keeping their aspect ratio.
+pub const RESOLUTIONS: [(&str, &str); 5] = [
+    ("native", ""),
+    ("2160", "3840x2160"),
+    ("1440", "2560x1440"),
+    ("1080", "1920x1080"),
+    ("720", "1280x720"),
+];
 fn gpu_args(color: &str, r: &Value) -> Vec<String> {
     let codec = match r["codec"].as_str().unwrap_or("libx264") {
         c @ ("av1" | "av1_10bit") => {
@@ -78,6 +87,13 @@ fn gpu_args(color: &str, r: &Value) -> Vec<String> {
     .into_iter()
     .map(str::to_owned)
     .collect();
+    let size = RESOLUTIONS
+        .iter()
+        .find(|(name, _)| r["resolution"] == *name)
+        .map_or("", |(_, size)| size);
+    if !size.is_empty() {
+        args.extend(["-s".into(), size.into()]);
+    }
     if r["rate_control"] == "bitrate" {
         args.extend([
             "-bm".into(),
@@ -406,6 +422,9 @@ impl Capture {
         let gpu = self.replay
             || self.color == "hdr"
             || GPU_CODECS.contains(&r["codec"].as_str().unwrap_or(""));
+        if !gpu && r["resolution"].as_str().is_some_and(|s| s != "native") {
+            return err("The legacy CPU/VA-API recorder records the display's own resolution only. Choose a GPU format or the display's resolution.");
+        }
         let backend = if gpu {
             "gpu-screen-recorder"
         } else {

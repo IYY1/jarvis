@@ -22,7 +22,7 @@ The installed wf-recorder help/man page and [upstream usage](https://github.com/
 2. Choose an output folder with sufficient space. Jarvis creates it when capture starts, reserves each new file with mode `0600`, and does not overwrite recordings.
 3. Select no audio, microphone, or system audio. Audio is off by default. For microphone, select the Pulse source name of the input. For system audio, choose the output sink's `.monitor` source. PipeWire systems normally provide these through `pipewire-pulse` and `pactl`.
 4. To record both, create/review your own combined audio source before gaming, select it explicitly, and set `combined_audio_source: true`. That routing is outside this initial release. Selecting both without this acknowledgment fails safely; it does not silently omit either input.
-5. Choose a format, size control and frame rate under **Picture & storage**. Start with 30 fps. Hardware AV1 is an efficient option on supported recent GPUs; choose H.264 for broad sharing compatibility. Test the chosen GPU format and driver before gaming.
+5. Choose a **Preset** under **Picture & storage** (Recommended is AV1 at 60 fps where the GPU supports it); **Advanced** holds the exact format, resolution, frame rate and bitrate. Test a short recording before gaming.
 6. Check compositor capture permission, make a short test clip, and play it back. Confirm that it shows the intended screen and audio, produces no permission prompt on a second capture, and leaves focus on the game. Then mark recording setup complete (`configured: true`). This flag records your setup acknowledgment; it does not grant permissions or prove future sessions will remain permitted.
 
 [Hyprland's permission documentation](https://wiki.hypr.land/configuring/core/advanced-configuration/permissions/) describes screencopy allow/ask/deny rules. In current Lua configuration, an explicit grant looks like:
@@ -38,12 +38,28 @@ Review that grant before adding it: it allows the named recorder to capture with
 **Capture → Picture & storage** offers three choices; the exact list is under
 **Advanced capture settings**. These settings also apply to instant replay.
 
-| Choice | Format | Use when |
-| --- | --- | --- |
-| **Recommended** | AV1 on the GPU when the display's GPU encodes it, otherwise HEVC | Everyday clips: good quality in small files |
-| **High quality** | AV1 10-bit (HEVC 10-bit without AV1), constant quality at **Maximum** | The best picture the GPU records; larger files, most of all in fast motion |
-| **Compatible** | H.264 on the GPU | Plays and edits on almost any phone, PC or editor, at larger sizes |
-| **Custom…** | AV1 10-bit, AV1, HEVC 10-bit, HEVC or H.264, any quality | Pick the exact format and quality |
+**Picture & storage → Preset** picks everything at once; **Advanced** under it
+holds each setting. Changing any of them shows the preset as *Custom*.
+
+| Preset | Format | Resolution | Frame rate | Size |
+| --- | --- | --- | --- | --- |
+| **Recommended** (default) | AV1 when the display's GPU encodes it, else HEVC, else H.264 | Display's own | 60 fps | Consistent quality, Sharp |
+| **High quality** | AV1 10-bit (HEVC 10-bit without AV1) | Display's own | 60 fps | Consistent quality, **Maximum** |
+| **High frame rate · 120 fps** | as Recommended | Display's own | 120 fps | Consistent quality, Sharp |
+| **Small files · 1080p** | as Recommended | 1080p at most | 30 fps | Fixed 8 Mbps |
+| **Compatible · H.264** | H.264 | Display's own | 60 fps | Consistent quality, Sharp |
+
+**Advanced** settings: format (AV1 10-bit, AV1, HEVC 10-bit, HEVC, H.264, and a
+legacy encoder only if already in use), **resolution** (the display's own, or at
+most 4K, 2K, 1080p or 720p: `recording.resolution` is `native`, `2160`, `1440`,
+`1080` or `720`, passed as GPU Screen Recorder's `-s` output-size limit, which
+scales down keeping the aspect ratio and never scales up), **frames per second**
+(1–240), size control, quality (Compact, Balanced, Sharp, Maximum) and bitrate
+(1–500 Mbps). On this machine a 3-second capture on DP-3 (2560×1440, 180 Hz)
+at 120 fps with a 1080p limit came out as AV1 1920×1080 at 120 fps (341 frames
+in 2.89 s). The game has to reach a frame rate for the recording to show it.
+Windows does not offer a smaller resolution yet, and the legacy CPU/VA-API
+recorder records the display's own size only.
 
 **Why there is no format above AV1.** For live capture on the GPU, AV1 is the
 best format any current graphics card encodes. Its successor AV2 got its first

@@ -20,9 +20,11 @@
 - **Video formats**: Recommended (AV1, else HEVC) / Compatible (H.264 GPU),
   each tested on the selected display's GPU with synthetic frames. CPU H.264
   and legacy VA-API remain only for existing configurations.
-- **Video format picker**: Recommended, **High quality** (AV1 10-bit at the
-  new Maximum quality, HEVC 10-bit without AV1), Compatible and Custom, each
-  explained in one line.
+- **Capture presets**: Recommended (AV1 where supported), High quality (AV1
+  10-bit at the new Maximum quality), High frame rate · 120 fps, Small files ·
+  1080p and Compatible · H.264, with format, resolution (display's own, 4K, 2K,
+  1080p, 720p), frame rate (up to 240 fps) and bitrate (up to 500 Mbps) under
+  Advanced.
 - **Arabic switch**: **Turn on Arabic** on Overview and `jarvis language`.
 - **Dictation language follows the phrase**: اسمعني dictates Arabic, “listen”
   English; the Start dictation button no longer locks onto Jarvis's own window.

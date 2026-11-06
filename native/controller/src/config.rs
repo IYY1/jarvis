@@ -256,13 +256,13 @@ pub fn validate(data: &Value) -> Result<Value> {
         "Capture color mode must be auto, hdr or sdr",
     )?;
     for (value, min, max, message) in [
-        (&r["fps"], 1, 60, "Recording fps must be 1–60"),
+        (&r["fps"], 1, 240, "Recording fps must be 1–240"),
         (&r["quality"], 0, 51, "Recording quality must be CRF 0–51"),
         (
             &r["bitrate_mbps"],
             1,
-            100,
-            "Recording bitrate must be 1–100 Mbps",
+            500,
+            "Recording bitrate must be 1–500 Mbps",
         ),
         (
             &c["replay"]["seconds"],
@@ -309,6 +309,11 @@ pub fn validate(data: &Value) -> Result<Value> {
         &r["quality_preset"],
         &["medium", "high", "very_high", "ultra"],
         "Choose a supported quality preset",
+    )?;
+    choices(
+        &r["resolution"],
+        &crate::capture::RESOLUTIONS.map(|(name, _)| name),
+        "Choose native, 2160, 1440, 1080 or 720 recording resolution",
     )?;
     choices(
         &r["encoder"],

@@ -237,6 +237,9 @@ class Recorder:
             raise RecorderError(f"Capture source {monitor!r} is unavailable. Choose a connected monitor.")
         color = capture_color(cfg, display)
         gpu = color == "hdr" or cfg.get("codec") in GPU_CODECS
+        if not gpu and cfg.get("resolution", "native") != "native":
+            raise RecorderError("The legacy CPU/VA-API recorder records the display's own resolution only. "
+                                "Choose a GPU format or the display's resolution.")
         backend_name = "gpu-screen-recorder" if gpu else "wf-recorder"
         backend = shutil.which(backend_name)
         if not backend:

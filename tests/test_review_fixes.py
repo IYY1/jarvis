@@ -192,8 +192,10 @@ class ConfigValidationTests(unittest.TestCase):
             self.assertNotIn("comand_timeout", json.loads(path.read_text())["activation"])
 
     def test_recorder_limits_match_config(self):
-        with self.assertRaises(ValueError):
-            config.validate({"recording": {"fps": 90}})
+        self.assertEqual(config.validate({"recording": {"fps": 240, "bitrate_mbps": 500}})["recording"]["fps"], 240)
+        for bad in ({"fps": 241}, {"bitrate_mbps": 501}, {"resolution": "1600"}):
+            with self.assertRaises(ValueError):
+                config.validate({"recording": bad})
         with self.assertRaises(ValueError):
             config.validate({"recording": {"vaapi_device": "/etc/passwd"}})
 

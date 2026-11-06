@@ -9,10 +9,13 @@ CODEC_LABELS = ("H.264 · CPU (compatible)", "H.264 · VA-API (legacy)",
 GPU_CODECS = ("h264", "hevc", "av1", "hevc_10bit", "av1_10bit")
 # "ultra" is the highest GPU Screen Recorder offers: larger files, no visible loss.
 QUALITY_PRESETS = ("medium", "high", "very_high", "ultra")
+# recording.resolution: the largest output size (mirrors capture.rs). Smaller
+# displays are never scaled up; larger ones are scaled down keeping aspect.
+RESOLUTIONS = {"native": "", "2160": "3840x2160", "1440": "2560x1440", "1080": "1920x1080", "720": "1280x720"}
 
 
 def validate_encoding(cfg):
-    for key, low, high in (("fps", 1, 60), ("quality", 0, 51), ("bitrate_mbps", 1, 100)):
+    for key, low, high in (("fps", 1, 240), ("quality", 0, 51), ("bitrate_mbps", 1, 500)):
         value = cfg.get(key, {"fps": 30, "quality": 23, "bitrate_mbps": 8}[key])
         if type(value) is not int or not low <= value <= high:
             raise ValueError(f"Recording {key} must be an integer from {low} to {high}")
@@ -22,6 +25,8 @@ def validate_encoding(cfg):
         raise ValueError("Recording rate control must be quality or bitrate")
     if cfg.get("quality_preset", "very_high") not in QUALITY_PRESETS:
         raise ValueError("Choose a supported recording quality preset")
+    if cfg.get("resolution", "native") not in RESOLUTIONS:
+        raise ValueError("Choose native, 2160, 1440, 1080 or 720 recording resolution")
 
 
 def expected_codec(cfg, color):
@@ -45,6 +50,8 @@ def gpu_video_args(color, cfg=None):
     if color == "hdr":
         codec = "av1_hdr" if codec.startswith("av1") else "hevc_hdr"
     args = ["-k", codec, "-cr", "limited", "-fallback-cpu-encoding", "no"]
+    if RESOLUTIONS[cfg.get("resolution", "native")]:
+        args += ["-s", RESOLUTIONS[cfg["resolution"]]]
     if cfg.get("rate_control", "quality") == "bitrate":
         args += ["-bm", "cbr", "-q", str(cfg.get("bitrate_mbps", 8) * 1000)]
     else:

@@ -535,67 +535,74 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         capture.append(self.capture_configured)
         capture.append(_label("Verify a short recording in your desktop session before enabling this. Initial capture permissions may require system UI. This setting cannot bypass a portal or compositor permission prompt.", "caption"))
         body.append(capture)
-        quality = self._card("Picture & storage", "Applies to recordings and replay. Formats are encoded on the GPU "
-                             "of the chosen display; each one is tested there, not assumed. There is no silent CPU fallback.")
+        quality = self._card("Picture & storage", "Applies to recordings and replay. Pick a preset; Advanced holds the "
+                             "exact format, resolution, frame rate and bitrate. Formats are encoded on the GPU of the "
+                             "chosen display and tested there first; there is no silent CPU fallback.")
         self.legacy_banner = _box(8)
         self.legacy_banner.add_css_class("card")
         self.legacy_text = _label("", "caption")
         self.legacy_banner.append(self.legacy_text)
-        self.legacy_banner.append(_button("Use the recommended format", lambda: self.format_choice.set_selected(0)))
+        self.legacy_banner.append(_button("Use the recommended preset",
+                                          lambda: self.capture_preset.set_selected(self.RECOMMENDED)))
         self.legacy_banner.set_visible(False)
         quality.append(self.legacy_banner)
-        self.format_choice = Gtk.DropDown.new_from_strings(self.FORMAT_CHOICES)
-        self._row(quality, "Video format", self.format_choice,
-                  "Recommended: good quality in small files, for everyday clips. "
-                  "High quality: the best picture this GPU can record (10-bit, maximum quality); files are larger, most of all in fast-moving scenes. "
-                  "Compatible: plays and edits on almost any phone, PC or editor. "
-                  "Custom: choose the exact format and quality yourself.")
+        self.capture_preset = Gtk.DropDown.new_from_strings([preset[0] for preset in self.PRESETS] + ["Custom"])
+        self._row(quality, "Preset", self.capture_preset,
+                  "Recommended suits most clips. High quality keeps the most detail in larger files. High frame rate "
+                  "is for fast games on high-refresh displays. Small files and Compatible are for sharing.")
         self.format_detail = _label("Testing which formats this display's GPU can encode…", "caption")
         quality.append(self.format_detail)
         self._codec_options: list[str] = []
         self._formats: dict = {}
-        self.fps = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 1, 60, 1)
+        self._showing = False
+        self.capture_advanced = Gtk.Expander()
+        self.capture_advanced.set_label_widget(_label("Advanced: format, resolution, frame rate and bitrate", "row-title"))
+        tuning = _box(12)
+        tuning.set_margin_top(12)
+        self.capture_advanced.set_child(tuning)
+        quality.append(self.capture_advanced)
+        self.codec = Gtk.DropDown.new_from_strings(["AV1"])
+        self._row(tuning, "Format (encoder)", self.codec,
+                  "AV1: smallest files for the quality; the default when the GPU encodes it. AV1 10-bit: no banding in "
+                  "dark scenes and gradients, slightly larger files; older phones and some editors can't play it. "
+                  "HEVC: for GPUs without AV1. H.264: plays everywhere, largest files.")
+        self.resolution = Gtk.DropDown.new_from_strings(["Display's own"] + self.RESOLUTION_LABELS[1:])
+        self._row(tuning, "Resolution", self.resolution,
+                  "The largest size to record. A size above the display's records the display's own size: "
+                  "the picture is never stretched up. Smaller sizes make smaller files.")
+        self.fps = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 1, 240, 1)
         self.fps.set_digits(0)
-        self.fps.set_size_request(220, -1)
+        self.fps.set_size_request(280, -1)
         self.fps.set_hexpand(True)
-        for value in (15, 30, 60):
+        for value in (30, 60, 120, 144, 240):
             self.fps.add_mark(value, Gtk.PositionType.BOTTOM, str(value))
-        self._row(quality, "Frames per second", self.fps,
-                  "30 is a good starting point for smaller, lighter recordings. 60 makes fast motion smoother and uses more encoding work.")
-        self.rate_control = Gtk.DropDown.new_from_strings(["Consistent quality · variable size", "Storage budget · Mbps"])
-        self._row(quality, "Size control", self.rate_control)
-        self.quality_preset = Gtk.DropDown.new_from_strings(["Compact", "Balanced", "Sharp", "Maximum"])
-        self._row(quality, "GPU quality", self.quality_preset)
-        self.bitrate = self._spin(1, 100, 1)
-        self._row(quality, "Video bitrate (Mbps)", self.bitrate,
-                  "Start at 8 Mbps for 1080p; increase for higher resolutions or busy scenes. At a fixed bitrate, more frames share the same storage budget.")
+        self._row(tuning, "Frames per second", self.fps,
+                  "30 for small files, 60 for smooth motion, 120 and above for fast games on high-refresh displays. "
+                  "Higher rates need more encoder work and larger files, and the game has to reach that rate too.")
+        self.rate_control = Gtk.DropDown.new_from_strings(["Consistent quality · variable size", "Fixed bitrate · predictable size"])
+        self._row(tuning, "Size control", self.rate_control)
+        self.quality_preset = Gtk.DropDown.new_from_strings(self.QUALITY_NAMES)
+        self._row(tuning, "Quality", self.quality_preset, "Used with consistent quality. Maximum keeps the most detail.")
+        self.bitrate = self._spin(1, 500, 1)
+        self._row(tuning, "Bitrate (Mbps)", self.bitrate,
+                  "Used with fixed bitrate. About 8 Mbps suits 1080p at 60 fps; 2K at 120 fps or 4K needs 40–80 Mbps or more.")
         self.storage_hint = _label("", "caption")
-        quality.append(self.storage_hint)
-        presets = _box(8, True)
-        for title, fps, bitrate in (("Small", 30, 4), ("Balanced", 30, 8), ("Smooth", 60, 16)):
-            presets.append(_button(title, lambda fps=fps, bitrate=bitrate: self._recording_preset(fps, bitrate)))
-        quality.append(presets)
-        quality.append(_label("Presets select the recommended format and a bitrate budget. Existing settings change only when saved.", "caption"))
+        tuning.append(self.storage_hint)
+        self.format_tested = _label("", "caption")
+        tuning.append(self.format_tested)
+        tuning.append(_button("Test formats again", lambda: self._probe_formats(force=True)))
         self.sound_feedback = Gtk.Switch()
         self._row(quality, "Recording sounds", self.sound_feedback, "Short local tones on start, save and error.")
         body.append(quality)
         legacy = advanced
-        self.codec = Gtk.DropDown.new_from_strings(["AV1"])
-        self._row(legacy, "Exact format (with Choose a format…)", self.codec,
-                  "AV1 10-bit: the best quality for its size, without banding in dark scenes and gradients; "
-                  "files are only slightly larger than 8-bit AV1, but older phones, GPUs and some editors can't play them. "
-                  "AV1 GPU: smallest files; needs a recent GPU and player. HEVC GPU: smaller than H.264, widely "
-                  "supported by hardware, some editors and browsers lack it. H.264 GPU: the most compatible.")
-        self.format_tested = _label("", "caption")
-        legacy.append(self.format_tested)
-        legacy.append(_button("Test formats again", lambda: self._probe_formats(force=True)))
         self.quality = self._spin(0, 51, 1)
-        self._row(legacy, "H.264 quality value", self.quality, "Lower values improve quality and increase file size. Your existing value is preserved.")
+        self._row(legacy, "H.264 quality value (legacy CPU recorder)", self.quality,
+                  "Lower values improve quality and increase file size. Your existing value is preserved.")
         body.append(advanced_card)
-        self.codec.connect("notify::selected", lambda *_: self._encoding_changed())
-        self.format_choice.connect("notify::selected", lambda *_: self._format_changed())
+        self.capture_preset.connect("notify::selected", lambda *_: self._preset_changed())
         self.monitor.connect("notify::selected", lambda *_: self._probe_formats())
-        self.rate_control.connect("notify::selected", lambda *_: self._encoding_changed())
+        for control in (self.codec, self.rate_control, self.quality_preset, self.resolution):
+            control.connect("notify::selected", lambda *_: self._encoding_changed())
         self.bitrate.connect("value-changed", lambda *_: self._encoding_changed())
         self.fps.connect("value-changed", lambda *_: self._encoding_changed())
         self.replay_seconds.connect("value-changed", lambda *_: self._encoding_changed())
@@ -1057,12 +1064,15 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self._replay_tracks_changed()
         self.replay_sound.set_active(bool(replay.get("sound", True)))
         self._populate_record_devices()
+        self._showing = True  # load every control, then find the matching preset once
         self.fps.set_value(float(recorder.get("fps", 30)))
         self.quality.set_value(float(recorder.get("quality", 23)))
         self.rate_control.set_selected(1 if recorder.get("rate_control") == "bitrate" else 0)
         self.bitrate.set_value(float(recorder.get("bitrate_mbps", 8)))
         self.quality_preset.set_selected(QUALITY_PRESETS.index(recorder.get("quality_preset", "very_high")))
-        self._show_codec(recorder.get("codec", "libx264"))  # after quality: High quality needs both
+        self.resolution.set_selected(self.RESOLUTIONS.index(recorder.get("resolution", "native")))
+        self._showing = False
+        self._show_codec(recorder.get("codec", "libx264"))
         self._encoding_changed()
         self.startup.set_active(bool(self.config.get("startup", False)))
         onboarded = bool(self.config.get("privacy", {}).get("onboarded", False))
@@ -1494,7 +1504,8 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
             "rate_control": "bitrate" if self.rate_control.get_selected() == 1 else "quality",
             "bitrate_mbps": self.bitrate.get_value_as_int(),
             "quality_preset": QUALITY_PRESETS[self.quality_preset.get_selected()],
-            "codec": codec, "quality": self.quality.get_value_as_int()},
+            "codec": codec, "quality": self.quality.get_value_as_int(),
+            "resolution": self.RESOLUTIONS[self.resolution.get_selected()]},
             "replay": {"seconds": self.replay_seconds.get_value_as_int(), "autostart": self.replay_autostart.get_active(),
                        "game_audio": self.replay_game.get_active(), "microphone": self.replay_mic.get_active(),
                        "sound": self.replay_sound.get_active(),
@@ -1530,49 +1541,110 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
               "hevc_10bit": "HEVC 10-bit · GPU", "hevc": "HEVC · GPU", "h264": "H.264 · GPU"}
     NAMES = {"av1_10bit": "AV1 10-bit", "av1": "AV1", "hevc_10bit": "HEVC 10-bit", "hevc": "HEVC", "h264": "H.264"}
 
-    FORMAT_CHOICES = ["Recommended · small files", "High quality · large files",
-                      "Compatible · plays everywhere", "Custom…"]
-    RECOMMENDED, HIGH, COMPATIBLE, CUSTOM = range(4)
+    # (name, format, resolution, fps, size control, quality, Mbps). Formats:
+    # "best" is AV1 when the GPU encodes it (else HEVC, H.264); "high" AV1 10-bit.
+    PRESETS = [("Recommended", "best", "native", 60, "quality", "very_high", 0),
+               ("High quality", "high", "native", 60, "quality", "ultra", 0),
+               ("High frame rate · 120 fps", "best", "native", 120, "quality", "very_high", 0),
+               ("Small files · 1080p", "best", "1080", 30, "bitrate", "very_high", 8),
+               ("Compatible · H.264", "h264", "native", 60, "quality", "very_high", 0)]
+    RECOMMENDED, HIGH, HIGH_FPS, SMALL, COMPATIBLE, CUSTOM = range(6)
+    RESOLUTIONS = ["native", "2160", "1440", "1080", "720"]
+    RESOLUTION_LABELS = ["Display's own", "4K · 3840×2160", "2K · 2560×1440", "1080p · 1920×1080", "720p · 1280×720"]
+    QUALITY_NAMES = ["Compact", "Balanced", "Sharp", "Maximum"]
 
-    def _high_codec(self) -> str:
-        """The 10-bit format High quality uses: AV1, or HEVC on GPUs without AV1."""
+    def _preset_codec(self, kind: str) -> str:
+        from .encoder_probe import recommended
         formats = self._formats.get("formats", {})
-        return next((c for c in ("av1_10bit", "hevc_10bit") if formats.get(c)), "av1_10bit")
+        if kind == "best":
+            return recommended(formats) or "av1"
+        if kind == "high":
+            return next((c for c in ("av1_10bit", "hevc_10bit") if formats.get(c)), "av1_10bit")
+        return kind
+
+    def _settings_key(self, codec, resolution, fps, rate, quality, bitrate) -> tuple:
+        """What a preset fixes: quality only counts with consistent quality, bitrate only when fixed."""
+        return (codec, resolution, fps, rate, quality if rate == "quality" else None, bitrate if rate == "bitrate" else None)
+
+    def _matching_preset(self) -> int:
+        rate = "bitrate" if self.rate_control.get_selected() == 1 else "quality"
+        current = self._settings_key(self._chosen_codec(), self.RESOLUTIONS[self.resolution.get_selected()],
+                                     int(round(self.fps.get_value())), rate,
+                                     QUALITY_PRESETS[self.quality_preset.get_selected()], self.bitrate.get_value_as_int())
+        for index, (_, kind, resolution, fps, rate, quality, bitrate) in enumerate(self.PRESETS):
+            if current == self._settings_key(self._preset_codec(kind), resolution, fps, rate, quality, bitrate):
+                return index
+        return self.CUSTOM
+
+    def _sync_preset(self) -> None:
+        self._showing = True  # reflect the controls without applying a preset
+        self.capture_preset.set_selected(self._matching_preset())
+        self._showing = False
+
+    def _apply_preset(self, index: int) -> None:
+        _, kind, resolution, fps, rate, quality, bitrate = self.PRESETS[index]
+        codec = self._preset_codec(kind)
+        self._showing = True
+        if codec in self._codec_options:
+            self.codec.set_selected(self._codec_options.index(codec))
+        self.resolution.set_selected(self.RESOLUTIONS.index(resolution))
+        self.fps.set_value(fps)
+        self.rate_control.set_selected(1 if rate == "bitrate" else 0)
+        self.quality_preset.set_selected(QUALITY_PRESETS.index(quality))
+        if bitrate:
+            self.bitrate.set_value(bitrate)
+        self._showing = False
+        self._encoding_changed()
+
+    def _preset_changed(self) -> None:
+        if self._showing:
+            return
+        index = self.capture_preset.get_selected()
+        if index == self.CUSTOM:
+            self.capture_advanced.set_expanded(True)
+        else:
+            self._apply_preset(index)
+
+    def _show_resolutions(self) -> None:
+        """Name the selected display's own size (2K, 4K…) in the resolution list."""
+        selected = self.monitor.get_selected()
+        item = self._monitors[selected] if selected < len(self._monitors) else {}
+        width, height = item.get("width"), item.get("height")
+        own = "Display's own"
+        if isinstance(width, int) and isinstance(height, int):
+            names = {2160: "4K", 1440: "2K", 1080: "1080p", 720: "720p"}
+            own += f" · {names[height]} ({width}×{height})" if height in names else f" · {width}×{height}"
+        keep = self.resolution.get_selected()
+        self._showing = True
+        self.resolution.set_model(Gtk.StringList.new([own] + self.RESOLUTION_LABELS[1:]))
+        self.resolution.set_selected(keep if keep < len(self.RESOLUTIONS) else 0)
+        self._showing = False
 
     def _show_codec(self, codec: str) -> None:
         """Put a saved codec into the picker. Legacy encoders stay selectable only
         for configurations that already use them; nothing changes until Save."""
         self._saved_codec = codec
         self._codec_options = list(self.LABELS) + ([codec] if codec in self.LEGACY else [])
+        self._showing = True
         self.codec.set_model(Gtk.StringList.new([self.LABELS.get(c) or self.LEGACY[c] for c in self._codec_options]))
         self.codec.set_selected(self._codec_options.index(codec) if codec in self._codec_options else 0)
-        from .encoder_probe import recommended
-        best = recommended(self._formats.get("formats", {})) or "av1"
-        high = (codec == self._high_codec() and self.rate_control.get_selected() == 0
-                and QUALITY_PRESETS[self.quality_preset.get_selected()] == "ultra")
-        self._showing = True  # reflect saved settings without changing them
-        self.format_choice.set_selected(self.HIGH if high else self.RECOMMENDED if codec == best
-                                        else self.COMPATIBLE if codec == "h264" else self.CUSTOM)
         self._showing = False
         self.legacy_banner.set_visible(codec in self.LEGACY)
         self.legacy_text.set_text(f"This recorder uses {self.LEGACY.get(codec, '')}. It keeps working, but the GPU "
                                   "formats record games with a small fraction of the CPU. Nothing changes until you Save.")
+        if codec in self.LEGACY and not self.config.get("recording", {}).get("configured"):
+            self._apply_preset(self.RECOMMENDED)  # a new setup starts on AV1 where the GPU has it
+        else:
+            self._sync_preset()
 
     def _chosen_codec(self) -> str:
-        from .encoder_probe import recommended
-        choice = self.format_choice.get_selected()
-        if choice == self.RECOMMENDED:
-            return recommended(self._formats.get("formats", {})) or "av1"
-        if choice == self.HIGH:
-            return self._high_codec()
-        if choice == self.COMPATIBLE:
-            return "h264"
         index = self.codec.get_selected()
         return self._codec_options[index] if index < len(self._codec_options) else "av1"
 
     def _probe_formats(self, force: bool = False) -> None:
         selected = self.monitor.get_selected()
         monitor = self._monitors[selected]["name"] if selected < len(self._monitors) else ""
+        self._show_resolutions()
         def probe() -> dict:
             from . import encoder_probe
             if force:
@@ -1580,60 +1652,46 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
             return encoder_probe.formats_for_monitor(monitor)
         def done(result: dict) -> None:
             if isinstance(result, dict) and "formats" in result:
+                preset = self.capture_preset.get_selected()
                 self._formats = result
-                self._show_codec(getattr(self, "_saved_codec", "libx264")) if not force else None
+                self._show_codec(self._chosen_codec() if self._codec_options else getattr(self, "_saved_codec", "libx264"))
+                if preset != self.CUSTOM and self._matching_preset() != preset:
+                    self._apply_preset(preset)  # e.g. Recommended is HEVC on a GPU without AV1
             self._encoding_changed()
         self._work(probe, done)
 
-    def _format_changed(self) -> None:
-        """High quality means constant quality at Maximum; leaving it for
-        Recommended or Compatible returns to the default Sharp."""
-        ultra = QUALITY_PRESETS.index("ultra")
-        choice = self.format_choice.get_selected()
-        if getattr(self, "_showing", False):
-            pass
-        elif choice == self.HIGH:
-            self.rate_control.set_selected(0)
-            self.quality_preset.set_selected(ultra)
-        elif choice in (self.RECOMMENDED, self.COMPATIBLE) and self.quality_preset.get_selected() == ultra:
-            self.quality_preset.set_selected(QUALITY_PRESETS.index("very_high"))
-        self._encoding_changed()
-
     def _encoding_changed(self) -> None:
-        from .encoder_probe import recommended
+        if not self._showing:
+            self._sync_preset()
         formats = self._formats.get("formats", {})
         codec = self._chosen_codec()
-        choice = self.format_choice.get_selected()
-        self.codec.set_sensitive(choice == self.CUSTOM)
         names = self.NAMES
         if formats:
-            best = recommended(formats)
             works = ", ".join(names[c] for c in ("av1", "hevc", "h264") if formats.get(c)) or "none"
             ten = ", ".join(n for c, n in (("av1_10bit", "AV1"), ("hevc_10bit", "HEVC")) if formats.get(c)) or "none"
             self.format_tested.set_text(f"Tested on {self._formats.get('gpu')}: {works} · 10-bit (SDR and HDR): {ten}.")
-            usable = codec not in names or formats.get(codec)
-            detail = (f"Recommended here: {names.get(best, 'none')} on {self._formats.get('gpu')}." if best else
-                      "No GPU format passed the test on this display's GPU.")
-            if codec in self.LEGACY:
-                detail = f"Selected: {self.LEGACY[codec]}."
-            elif not usable:
-                detail = f"{names[codec]} did not pass the encoder test on this display's GPU; choose another format."
-            elif choice == self.RECOMMENDED:
-                detail = f"{names[codec]}: good quality in small files. Fine for most clips and sharing."
-            elif choice == self.HIGH:
-                detail = (f"{names[codec]} at Maximum quality: the best picture this GPU records, with no visible loss "
-                          "and no banding. Files are larger, most of all in fast-moving scenes, and a replay keeps fewer seconds in its memory budget.")
-            elif choice == self.COMPATIBLE:
-                detail = f"{names[codec]}: plays and edits on almost any phone, PC or editor; larger files than AV1."
-            else:
-                detail = f"Selected: {names[codec]} on the GPU. " + detail
-            self.format_detail.set_text(detail)
-        elif shutil.which("ffmpeg") is None:
-            self.format_detail.set_text("FFmpeg is missing, so formats can't be tested. Install ffmpeg.")
         budget = self.rate_control.get_selected() == 1
         gpu = codec in GPU_CODECS
+        size = self.resolution.get_model().get_string(self.resolution.get_selected()) or "Display's own"
+        fps = int(round(self.fps.get_value()))
+        amount = (f"{self.bitrate.get_value_as_int()} Mbps" if budget
+                  else f"{self.QUALITY_NAMES[self.quality_preset.get_selected()]} quality")
+        if codec in self.LEGACY:
+            detail = f"{self.LEGACY[codec]} · {fps} fps."
+        elif formats and not formats.get(codec):
+            detail = f"{names.get(codec, codec)} did not pass the encoder test on this display's GPU; choose another preset or format."
+        elif shutil.which("ffmpeg") is None and not formats:
+            detail = "FFmpeg is missing, so formats can't be tested. Install ffmpeg."
+        else:
+            detail = f"Records {names.get(codec, codec)} · {size.split(' (')[0]} · {fps} fps · {amount}."
+            if self.capture_preset.get_selected() == self.HIGH:
+                detail += " Files are larger, most of all in fast motion, and a replay keeps fewer seconds in its memory budget."
+            elif fps > 60:
+                detail += " The game must reach this frame rate, and fast motion makes larger files."
+        self.format_detail.set_text(detail)
         self.bitrate.set_sensitive(budget)
         self.quality_preset.set_sensitive(not budget and gpu)
+        self.resolution.set_sensitive(gpu)
         self.quality.set_sensitive(not budget and not gpu)
         if budget:
             cfg = {"bitrate_mbps": self.bitrate.get_value_as_int()}
@@ -1642,14 +1700,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
                 f"Replay video buffer: ~{storage_estimate(cfg, self.replay_seconds.get_value_as_int()):.0f} MB. "
                 "Audio, container and encoder overhead are extra; these are estimates, not a hard size or RAM limit.")
         else:
-            self.storage_hint.set_text("File size and replay RAM vary with scene complexity. Choose Storage budget for a predictable video bitrate.")
-
-    def _recording_preset(self, fps=30, bitrate=8) -> None:
-        self.fps.set_value(fps)
-        self.format_choice.set_selected(0)
-        self.rate_control.set_selected(1)
-        self.bitrate.set_value(bitrate)
-        self._notice(f"Selected the recommended format, {fps} fps, {bitrate} Mbps. Save to apply.")
+            self.storage_hint.set_text("File size and replay RAM vary with scene complexity. Choose fixed bitrate for a predictable size.")
 
     def _save_startup(self) -> None:
         self._action("set_startup", enabled=self.startup.get_active())

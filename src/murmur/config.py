@@ -39,7 +39,7 @@ DEFAULTS = {
                   "codec": "libx264", "quality": 23, "rate_control": "quality",
                   "bitrate_mbps": 8, "quality_preset": "very_high", "encoder": "auto", "configured": False, "color_mode": "auto",
                   "combined_audio_source": False, "sound_feedback": False,
-                  "vaapi_device": "/dev/dri/renderD128"},
+                  "vaapi_device": "/dev/dri/renderD128", "resolution": "native"},
     # Disk storage is an explicit privacy choice. RAM remains the default.
     # game_audio/microphone mix the default output and input into one track; sound chirps on save.
     # audio_tracks "separate" keeps game, each of separate_apps and the microphone on their own tracks.

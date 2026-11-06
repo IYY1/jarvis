@@ -205,6 +205,9 @@ def command(cfg, display, binary, family, *, audio_pipes=()):
             "Windows could not report the display color mode. Check HDR settings and explicitly choose SDR or HDR."
         )
     codec = format_for(cfg, color)
+    if cfg.get("resolution", "native") != "native":
+        raise RecorderError("Recording at a smaller resolution is not available on Windows yet; "
+                            "choose the display's own resolution.")
     fps = cfg.get("fps", 30)
     args = [
         binary,

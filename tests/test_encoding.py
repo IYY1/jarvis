@@ -17,7 +17,8 @@ class EncodingTests(unittest.TestCase):
         r = validate({})["recording"]
         self.assertEqual((r["codec"], r["quality"], r["rate_control"]), ("libx264", 23, "quality"))
         cases = [("codec", v) for v in (*CODECS, "bogus", None, [])]
-        cases += [(key, v) for key in ("bitrate_mbps", "fps") for v in (True, 0, 1, 8.0, 60, 100, 101)]
+        cases += [(key, v) for key in ("bitrate_mbps", "fps") for v in (True, 0, 1, 8.0, 60, 100, 101, 120, 240, 241, 500, 501)]
+        cases += [("resolution", v) for v in ("native", "2160", "1440", "1080", "720", "1600", 1080)]
         cases += [("rate_control", v) for v in ("quality", "bitrate", "auto", False)]
         cases += [("quality_preset", v) for v in ("medium", "high", "very_high", "ultra", {})]
         from tests.test_rust_controller import BINARY, policies
@@ -45,6 +46,14 @@ class EncodingTests(unittest.TestCase):
                 self.assertEqual(args[args.index("-fallback-cpu-encoding") + 1], "no")
         self.assertEqual(storage_estimate({"bitrate_mbps": 8}), 60)
         self.assertEqual(storage_estimate({"bitrate_mbps": 8}, 120), 120)
+
+    def test_resolution_caps_output_size_only_when_chosen(self):
+        for resolution, size in (("native", None), ("2160", "3840x2160"), ("1080", "1920x1080")):
+            cfg = validate({"recording": {"codec": "av1", "resolution": resolution, "fps": 144}})["recording"]
+            args = gpu_video_args("sdr", cfg)
+            self.assertEqual(args[args.index("-s") + 1] if "-s" in args else None, size)
+            args = command(cfg, {}, Path("/fake"), Path("/fake/ipc"))
+            self.assertEqual(args[args.index("-f") + 1], "144")
 
     def test_sdr_gpu_uses_gpu_backend_with_explicit_audio(self):
         for codec in GPU_CODECS:
