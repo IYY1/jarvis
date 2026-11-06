@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.1 — 2026-11-06
+
+- Windows: expose 1–240 fps, 120/240 fps presets, resolution limits, automatic
+  bitrate, per-profile video settings for replay, and game folders.
+- Windows: implement scaled GPU encoding and verified 10-bit SDR output;
+  scaling/conversion use CPU processing, encoding uses the selected GPU.
+- Windows: Arabic language/model install controls, dictation start/stop,
+  language, quiet timeout, stop phrases and copying held text.
+- Windows Clips: keep/remove sections, split, join, undo and preview in player.
+
 ## 0.4.0 — 2026-11-06
 
 - **Redesigned settings window** (Linux and Windows): a sidebar with seven

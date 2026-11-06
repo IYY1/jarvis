@@ -1,10 +1,11 @@
 # Clips: watch, trim and join
 
-On Windows, **Clips** offers a native file picker and recordings list, per-track
-Keep switches, Only this / Keep all / Mute all, silent-track detection, start/end
-times and Fast/Exact export to a new copy. It uses the bundled FFmpeg tools;
-Exact export uses the CPU. Playback, the visual timeline, splitting and joining
-described below are in the Linux GTK editor.
+On Windows, **Clips** has a native file picker and recordings list, per-track
+Keep switches, Only this / Keep all / Mute all, silent-track detection,
+keep/remove sections, split, join, undo and Fast/Exact export to a new copy.
+Start/end numbers mark sections; preview opens the system player. It uses the
+bundled FFmpeg tools, with CPU re-encoding for Exact mode. Linux additionally
+has embedded playback and the visual timeline described below.
 
 The **Clips** page lists saved replays and recordings (newest first; eight at a
 time, **Show all** for the rest). **Open** loads one into a small editor:
