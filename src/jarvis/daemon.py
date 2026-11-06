@@ -11,6 +11,7 @@ import struct
 import subprocess
 import sys
 import threading
+import time
 
 from . import config as configuration
 from .actions import Dispatcher
@@ -40,6 +41,44 @@ async def close_connection(writer):
         await writer.wait_closed()
     except OSError:
         pass
+
+
+WORKER_ERROR_TAIL = 4096
+
+
+async def worker_error_tail(stream):
+    """Drain a worker's stderr so it can't block, keeping only the newest bytes."""
+    tail = bytearray()
+    while chunk := await stream.read(WORKER_ERROR_TAIL):
+        tail += chunk
+        del tail[:-WORKER_ERROR_TAIL]
+    return bytes(tail)
+
+
+def exit_description(code):
+    """Exit code as text; Windows crash codes are only recognisable in hex."""
+    if isinstance(code, int) and abs(code) > 255:
+        return f"{code} (0x{code & 0xFFFFFFFF:08X})"
+    return str(code)
+
+
+class TimestampedLog:
+    """Prefixes each line written to the service log with the local time."""
+
+    def __init__(self, stream):
+        self.stream = stream
+        self.at_line_start = True
+
+    def write(self, text):
+        for line in text.splitlines(keepends=True):
+            if self.at_line_start:
+                self.stream.write(time.strftime("%Y-%m-%d %H:%M:%S "))
+            self.stream.write(line)
+            self.at_line_start = line.endswith("\n")
+        return len(text)
+
+    def __getattr__(self, name):
+        return getattr(self.stream, name)
 
 
 class Service:
@@ -223,18 +262,22 @@ class Service:
                 raise CommandError("Voice grammar exceeds the 1 MiB worker limit")
             self.worker = await asyncio.create_subprocess_exec(
                 *worker_argv, stdin=asyncio.subprocess.PIPE,
-                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, limit=65536,
+                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, limit=65536,
                 env=worker_env, **child_options())
+            errors = getattr(self.worker, "stderr", None)
+            errors = asyncio.create_task(worker_error_tail(errors)) if errors else None
             self.worker_mode = mode
             # Mute may arrive while subprocess creation yields. Never leave a stale worker.
             if self.muted or not self.config["privacy"]["onboarded"] or (mode == "wake_word" and self.config["activation"]["mode"] != "wake_word"):
                 await self._stop_worker_locked()
+                if errors:
+                    errors.cancel()
                 return
             self.worker.stdin.write(encoded)
             await self.worker.stdin.drain()
             if mode not in ("wake_word", "dictation"):   # only these take control lines
                 self.worker.stdin.close()
-            self.voice_task = asyncio.create_task(self.read_voice(self.worker, mode))
+            self.voice_task = asyncio.create_task(self.read_voice(self.worker, mode, errors))
             self.publish()
 
     async def steer_worker(self, line: bytes) -> bool:
@@ -254,7 +297,20 @@ class Service:
                 return False   # it just exited; the caller starts a new one
             return True
 
-    async def read_voice(self, proc, mode):
+    async def log_worker_exit(self, proc, mode, errors):
+        """Record why a worker we didn't stop ended; its stderr is not kept otherwise."""
+        tail = b""
+        if errors:
+            try:
+                tail = await asyncio.wait_for(errors, 1)
+            except (TimeoutError, OSError):
+                pass
+        if proc.returncode or tail:
+            detail = tail.decode(errors="replace").strip()
+            print(f"jarvis: voice worker ({mode}) ended with exit code {exit_description(proc.returncode)}"
+                  + (f": {detail}" if detail else ""), file=sys.stderr, flush=True)
+
+    async def read_voice(self, proc, mode, errors=None):
         try:
             while line := await proc.stdout.readline():
                 event = json.loads(line)
@@ -318,6 +374,7 @@ class Service:
                 self.publish()
             await proc.wait()
             if self.worker is proc:
+                await self.log_worker_exit(proc, mode, errors)
                 self.worker = None
                 self.level = 0
                 if mode in ("test", "once") and not self.muted and self.activation.state != "error" and self.config["activation"]["mode"] == "wake_word":
@@ -332,10 +389,14 @@ class Service:
         except asyncio.CancelledError:
             raise
         except Exception as exc:
+            print(f"jarvis: voice worker ({mode}) failed: {exc!r}", file=sys.stderr, flush=True)
             await self.stop_worker()
             self.activation.error()
             self.message = "Voice worker failed: " + str(exc)
             self.publish()
+        finally:
+            if errors:
+                errors.cancel()
 
     async def set_mute(self, muted):
         if type(muted) is not bool:
@@ -785,4 +846,8 @@ async def serve():
 
 
 def main():
+    if is_windows() and sys.stderr:   # systemd already timestamps the journal
+        from . import __version__
+        sys.stderr = TimestampedLog(sys.stderr)
+        print(f"jarvis: service {__version__} starting", file=sys.stderr, flush=True)
     asyncio.run(serve())
