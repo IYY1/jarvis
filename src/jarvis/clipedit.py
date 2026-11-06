@@ -278,7 +278,9 @@ def command(edit: Edit, output: Path, mode: str, tracks: list[int], mix: bool, w
         raise EditError("Nothing left to export")
     first = edit.sources[edit.segments[0].source]
     argv = ["ffmpeg", "-hide_banner", "-nostdin", "-v", "error", "-progress", "pipe:1", "-nostats", "-n"]
-    audio_codec = ["-c:a", "aac", "-b:a", "192k"] if any(a["codec_name"] == "aac" for a in first.audio) \
+    from .host import is_windows
+    # The bundled Windows FFmpeg includes AAC, but does not include libopus.
+    audio_codec = ["-c:a", "aac", "-b:a", "192k"] if is_windows() or any(a["codec_name"] == "aac" for a in first.audio) \
         else ["-c:a", "libopus", "-b:a", "160k"]
     if mode == "fast":
         problems = edit.fast_problems(tracks)

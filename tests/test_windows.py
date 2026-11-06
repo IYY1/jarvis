@@ -115,7 +115,7 @@ class SettingsWindowTests(unittest.TestCase):
                 "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=48000",
                 "-f", "lavfi", "-i", "sine=frequency=880:sample_rate=48000",
                 "-t", "1", "-map", "0:v", "-map", "1:a", "-map", "2:a",
-                "-c:v", "libx264", "-threads", "1", "-c:a", "libopus", str(path)], check=True)
+                "-c:v", "libx264", "-threads", "1", "-c:a", "aac", str(path)], check=True)
             (path.parent / f".{path.name}.tracks.json").write_text(json.dumps({"tracks": ["Firefox", "Discord"]}))
             original = hashlib.sha256(path.read_bytes()).hexdigest()
             panel = self.window.clips
@@ -133,6 +133,17 @@ class SettingsWindowTests(unittest.TestCase):
                                        "-f", "hash", "-"], capture_output=True, check=True).stdout
             self.assertEqual(sound(exported, 0), sound(path, 1))
             self.assertNotEqual(sound(exported, 0), sound(path, 0))
+            panel.keep_all(True)
+            panel.mix.set(True)
+            panel.export_copy()
+            mixed = next(path.parent.glob("* edit 2.mkv"))
+            metadata = json.loads(subprocess.run(["ffprobe", "-v", "error", "-show_streams", "-of", "json", str(mixed)],
+                                                 capture_output=True, text=True, check=True).stdout)
+            audio = [s for s in metadata["streams"] if s["codec_type"] == "audio"]
+            self.assertEqual(len(audio), 1)
+            self.assertEqual(audio[0]["codec_name"], "aac")
+            self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), original)
+
 
 
     def test_a_change_saves_on_its_own_while_the_service_is_off(self):
