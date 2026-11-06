@@ -19,7 +19,7 @@ if is_windows():
     from .windows.apps import AppRegistry
 else:
     from .apps import AppRegistry
-from .client import REPLAY_CAPTURE_KEYS, socket_path
+from .client import REPLAY_CAPTURE_KEYS, recording_capture_changed, socket_path
 from .commands import REFERENCE, CommandError, Parser, normalize
 if is_windows():
     from .windows.desktop import Desktop as Hyprland
@@ -563,7 +563,7 @@ class Service:
         elif op == "save_config":
             c = configuration.validate(payload["config"])
             # Running captures whose settings change stop, then start again with them.
-            recording_changed = c["recording"] != self.config["recording"]
+            recording_changed = recording_capture_changed(self.config["recording"], c["recording"])
             restart = []
             if self.recorder.status()["state"] == "recording" and recording_changed:
                 restart.append(("stop recording", "start recording"))
@@ -574,10 +574,10 @@ class Service:
                 stopped = await self.execute(stop)
                 if not stopped.get("ok"):
                     raise CommandError(f"Could not stop to apply the settings: {stopped.get('error', '')}")
-            if self.recorder.status()["state"] in ("recording", "stopping") and c["recording"] != self.config["recording"]:
+            if self.recorder.status()["state"] in ("recording", "stopping") and recording_capture_changed(self.config["recording"], c["recording"]):
                 raise CommandError("Stop recording before changing capture settings")
             if self.replay.status()["state"] in ("on", "stopping") and (
-                    c["recording"] != self.config["recording"] or any(
+                    recording_capture_changed(self.config["recording"], c["recording"]) or any(
                         c["replay"][key] != self.config["replay"][key]
                         for key in REPLAY_CAPTURE_KEYS)):
                 raise CommandError("Stop instant replay before changing capture settings")

@@ -44,6 +44,23 @@ pub const REPLAY_CAPTURE_KEYS: [&str; 16] = [
     "bitrate_mbps",
     "bitrate_auto",
 ];
+/// Recording settings the service reads when it needs them (the start/stop
+/// tones, setup completion), so changing one never restarts a capture.
+pub const LIVE_RECORDING_KEYS: [&str; 2] = ["sound_feedback", "configured"];
+
+/// Whether the recording settings that a running capture uses differ.
+pub fn recording_capture_changed(old: &Value, new: &Value) -> bool {
+    let capture = |section: &Value| {
+        let mut section = section.clone();
+        if let Some(fields) = section.as_object_mut() {
+            for key in LIVE_RECORDING_KEYS {
+                fields.remove(key);
+            }
+        }
+        section
+    };
+    capture(old) != capture(new)
+}
 pub enum Message {
     Request(Value, Reply),
     Voice(u64, Value),
@@ -645,7 +662,8 @@ impl Service {
     /// and starts them again, so settings apply without stopping by hand.
     pub fn restarts_for(&self, config: &Value) -> Result<(Value, Vec<&'static str>)> {
         let c = config::validate(config)?;
-        let recording_changed = c["recording"] != self.config["recording"];
+        let recording_changed =
+            recording_capture_changed(&self.config["recording"], &c["recording"]);
         let mut restart = vec![];
         if self.recording_updates.borrow()["state"] == "recording" && recording_changed {
             restart.push("record");
@@ -760,12 +778,12 @@ impl Service {
                 let replay_active = ["on", "stopping"]
                     .contains(&self.replay_updates.borrow()["state"].as_str().unwrap_or(""));
                 if (recording_active || self.pending_captures > 0)
-                    && c["recording"] != self.config["recording"]
+                    && recording_capture_changed(&self.config["recording"], &c["recording"])
                 {
                     return err("Stop recording before changing capture settings");
                 }
                 if (replay_active || self.pending_captures > 0)
-                    && (c["recording"] != self.config["recording"]
+                    && (recording_capture_changed(&self.config["recording"], &c["recording"])
                         || REPLAY_CAPTURE_KEYS
                             .iter()
                             .any(|key| c["replay"][*key] != self.config["replay"][*key]))

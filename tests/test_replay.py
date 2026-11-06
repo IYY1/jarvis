@@ -382,6 +382,26 @@ class ReplayServiceTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual((result["restarted"], result["restart_errors"]), (["replay"], []))
             self.assertEqual(phrases, ["stop replay", "start replay"])
 
+    async def test_settings_read_when_needed_never_restart_a_running_capture(self):
+        from jarvis.daemon import Service
+        registry = MagicMock(index={})
+        with patch("jarvis.daemon.AppRegistry", return_value=registry):
+            service = Service({})
+        service.replay = MagicMock()
+        service.replay.status.return_value = {"state": "on"}
+        service.recorder = MagicMock()
+        service.recorder.status.return_value = {"state": "recording"}
+        service.execute = AsyncMock()
+        cfg = copy.deepcopy(service.config)
+        cfg["recording"]["sound_feedback"] = not cfg["recording"]["sound_feedback"]
+        cfg["recording"]["configured"] = True
+        with patch("jarvis.daemon.configuration.save", side_effect=lambda c: c), \
+                patch.object(service, "desktop_call", AsyncMock(return_value=registry)):
+            result = await service.handle({"op": "save_config", "config": cfg})
+        self.assertTrue(result["ok"], result)
+        self.assertEqual(result.get("restarted", []), [])
+        service.execute.assert_not_called()
+
     async def test_status_reports_replay_and_save_while_off_is_a_json_error(self):
         from jarvis.daemon import Service
         registry = MagicMock()

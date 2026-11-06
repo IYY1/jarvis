@@ -93,6 +93,14 @@ class EncodingTests(unittest.TestCase):
         # A save that changes nothing about capture leaves replay running.
         result = h.rpc("save_config", config=h.rpc("config")["config"])
         self.assertEqual((result.get("restarted", []), len(launches())), ([], 2))
+        # So does one of the settings read when needed (tones, setup completion):
+        # the settings window saves each change on its own.
+        config = h.rpc("config")["config"]
+        config["recording"]["sound_feedback"] = not config["recording"]["sound_feedback"]
+        config["recording"]["configured"] = True
+        result = h.rpc("save_config", config=config)
+        self.assertTrue(result["ok"], result)
+        self.assertEqual((result.get("restarted", []), len(launches())), ([], 2))
 
     def test_automatic_bitrate_matches_the_rust_controller(self):
         from jarvis.encoding import auto_bitrate, with_auto_bitrate
