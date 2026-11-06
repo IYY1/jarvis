@@ -80,6 +80,28 @@ class DictationPolicyTests(unittest.TestCase):
         self.assertEqual(copies, ["hello", "hello world"])  # the whole untyped text, never the password
         self.assertEqual(secret, "Password field.")
 
+    def test_language_command_switches_arabic_on_and_off(self):
+        import contextlib
+        import io
+        from argparse import Namespace
+        from unittest.mock import patch
+        from murmur.cli import run_language
+        saved = []
+        cfg = config.validate({})
+        def request(op, **payload):
+            if op == "save_config":
+                saved.append(payload["config"]["recognition"]["language"])
+            return {"ok": True, "config": cfg}
+        with patch("murmur.models.arabic_model_ready", return_value=True), contextlib.redirect_stdout(io.StringIO()) as out:
+            run_language(Namespace(language="arabic"), request)
+            run_language(Namespace(language="english"), request)
+            run_language(Namespace(language=None), request)
+        self.assertEqual(saved, ["ar_en", "en"])
+        self.assertIn("English only", out.getvalue().splitlines()[-1])
+        with patch("murmur.models.arabic_model_ready", return_value=False):
+            with self.assertRaisesRegex(ValueError, "install-model --arabic"):
+                run_language(Namespace(language="arabic"), request)
+
     def test_dictation_settings_are_validated(self):
         defaults = config.validate({})["dictation"]
         self.assertEqual(defaults["language"], "auto")

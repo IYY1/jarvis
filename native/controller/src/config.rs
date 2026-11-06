@@ -307,7 +307,7 @@ pub fn validate(data: &Value) -> Result<Value> {
     )?;
     choices(
         &r["quality_preset"],
-        &["medium", "high", "very_high"],
+        &["medium", "high", "very_high", "ultra"],
         "Choose a supported quality preset",
     )?;
     choices(

@@ -176,6 +176,9 @@ jarvis alias
 jarvis alias streamio --remove
 ```
 
+Switch Arabic on or off with **Turn on Arabic** on Overview, or
+`jarvis language arabic` / `jarvis language english`.
+
 Programs your launcher doesn't list (an AppImage, a portable `.exe`) can be
 added first, then named:
 

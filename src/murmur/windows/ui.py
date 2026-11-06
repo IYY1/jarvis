@@ -618,7 +618,7 @@ class Window:
             "recording",
             "quality_preset",
             8,
-            {"Medium": "medium", "High": "high", "Very high": "very_high"},
+            {"Medium": "medium", "High": "high", "Very high": "very_high", "Maximum": "ultra"},
         )
         self.field(
             p,

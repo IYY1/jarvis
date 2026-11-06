@@ -7,7 +7,7 @@ from ..encoding import validate_encoding
 from ..host import child_options, tool
 from ..recorder import RecorderError, capture_color
 
-QUALITY = {"medium": 28, "high": 23, "very_high": 19}
+QUALITY = {"medium": 28, "high": 23, "very_high": 19, "ultra": 15}
 VENDORS = {0x10DE: "nvenc", 0x1002: "amf", 0x8086: "qsv"}
 
 
@@ -83,7 +83,7 @@ def encoder_options(cfg, family, codec):
             args += [
                 "-quality",
                 str(
-                    {"medium": 55, "high": 75, "very_high": 90}[
+                    {"medium": 55, "high": 75, "very_high": 90, "ultra": 100}[
                         cfg.get("quality_preset", "very_high")
                     ]
                 ),

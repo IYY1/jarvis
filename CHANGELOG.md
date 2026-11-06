@@ -20,6 +20,10 @@
 - **Video formats**: Recommended (AV1, else HEVC) / Compatible (H.264 GPU),
   each tested on the selected display's GPU with synthetic frames. CPU H.264
   and legacy VA-API remain only for existing configurations.
+- **Video format picker**: Recommended, **High quality** (AV1 10-bit at the
+  new Maximum quality, HEVC 10-bit without AV1), Compatible and Custom, each
+  explained in one line.
+- **Arabic switch**: **Turn on Arabic** on Overview and `jarvis language`.
 - **Dictation**: “Jarvis, listen” starts it too, and text that can't be typed
   (no text field, focus moved, an app without text input) is put on the
   clipboard so Ctrl+V pastes it; password-field text never is.

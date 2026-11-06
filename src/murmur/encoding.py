@@ -7,7 +7,8 @@ CODEC_LABELS = ("H.264 · CPU (compatible)", "H.264 · VA-API (legacy)",
 # Formats GPU Screen Recorder encodes. The 10-bit ones record SDR without
 # banding; HDR capture is always 10-bit whichever family is chosen.
 GPU_CODECS = ("h264", "hevc", "av1", "hevc_10bit", "av1_10bit")
-QUALITY_PRESETS = ("medium", "high", "very_high")
+# "ultra" is the highest GPU Screen Recorder offers: larger files, no visible loss.
+QUALITY_PRESETS = ("medium", "high", "very_high", "ultra")
 
 
 def validate_encoding(cfg):

@@ -1,7 +1,15 @@
 # Arabic speech (Najdi and Saudi first)
 
 **Voice → Language → Arabic and English** adds a local Arabic recognizer beside
-the English one. Two separate abilities come with it:
+the English one. **Turn on Arabic** / **Turn off Arabic** on Overview switches
+in one click, and so does a terminal:
+
+```sh
+jarvis language arabic
+jarvis language english
+jarvis language
+```
+ Two separate abilities come with it:
 
 - **Arabic commands**: a fixed list of Arabic wordings (Najdi/Saudi first, then
   formal Arabic) that map onto the existing commands. Only these run actions.

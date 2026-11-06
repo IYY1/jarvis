@@ -72,6 +72,32 @@ def run_alias(args, request) -> int:
     return 0
 
 
+def run_language(args, request) -> int:
+    """jarvis language            -> show it
+       jarvis language arabic     -> Arabic and English
+       jarvis language english    -> English only"""
+    current = request("config")
+    if not current.get("ok"):
+        raise RuntimeError(current.get("error", "Jarvis service is not running"))
+    config = current["config"]
+    names = {"ar_en": "Arabic and English", "en": "English only"}
+    if not args.language:
+        print(names.get(config["recognition"]["language"], config["recognition"]["language"]))
+        return 0
+    wanted = "ar_en" if args.language == "arabic" else "en"
+    if wanted == "ar_en":
+        from .models import arabic_model_ready
+        if not arabic_model_ready():
+            raise ValueError("The Arabic model is not installed. Run: jarvis install-model --arabic")
+    config["recognition"]["language"] = wanted
+    result = request("save_config", config=config)
+    if not result.get("ok"):
+        raise ValueError(result.get("error", "Could not save"))
+    print(f"Language: {names[wanted]}." + (" Dictation types Arabic unless Voice → Dictation says English."
+                                           if wanted == "ar_en" else ""))
+    return 0
+
+
 def run_add_app(args, request) -> int:
     """jarvis add-app                     -> list programs added in Jarvis
        jarvis add-app PATH [--name NAME]  -> add one (a portable program or AppImage)
@@ -174,6 +200,8 @@ def main():
     alias.add_argument("name", nargs="?", help="What you will say (\"open <name>\")")
     alias.add_argument("app", nargs="?", help="The app: its name as in your launcher, or its desktop ID")
     alias.add_argument("--remove", action="store_true", help="Remove the voice name instead")
+    language = sub.add_parser("language", help="Switch Arabic on or off: jarvis language arabic | english")
+    language.add_argument("language", nargs="?", choices=["arabic", "english"])
     add_app = sub.add_parser("add-app", help="Add a program your launcher doesn't list, e.g.: jarvis add-app ~/Tool.AppImage")
     add_app.add_argument("target", nargs="?", help="The program file, or with --remove the added program's name")
     add_app.add_argument("--name", help="Name to show and say (default: the file name)")
@@ -247,6 +275,8 @@ def main():
             return run_alias(args, request)
         if args.command == "add-app":
             return run_add_app(args, request)
+        if args.command == "language":
+            return run_language(args, request)
         if args.command == "waybar":
             try:
                 return run_waybar(watch, threading.Event())

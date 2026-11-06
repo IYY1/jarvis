@@ -282,6 +282,9 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.overview_dictate = _button("Start dictation", self._toggle_dictation)
         self.overview_dictate.set_tooltip_text("Type what you say into the focused text field (Ctrl+D)")
         voice_actions.append(self.overview_dictate)
+        self.overview_language = _button("Turn on Arabic", self._toggle_arabic)
+        self.overview_language.set_tooltip_text("Switch between English only and Arabic and English")
+        voice_actions.append(self.overview_language)
         voice.append(voice_actions)
         self.overview_dictation = _label("Dictation is off.", "caption")
         self.overview_dictation.set_selectable(True)
@@ -541,11 +544,12 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.legacy_banner.append(_button("Use the recommended format", lambda: self.format_choice.set_selected(0)))
         self.legacy_banner.set_visible(False)
         quality.append(self.legacy_banner)
-        self.format_choice = Gtk.DropDown.new_from_strings(["Recommended", "Compatible · H.264 on the GPU", "Choose a format…"])
+        self.format_choice = Gtk.DropDown.new_from_strings(self.FORMAT_CHOICES)
         self._row(quality, "Video format", self.format_choice,
-                  "Recommended: AV1 when this display's GPU encodes it (smallest files), otherwise HEVC. "
-                  "Compatible: H.264 plays and edits almost everywhere, at larger sizes. HDR always uses AV1 or HEVC 10-bit. "
-                  "For the highest SDR quality, Choose a format… and pick AV1 10-bit.")
+                  "Recommended: good quality in small files, for everyday clips. "
+                  "High quality: the best picture this GPU can record (10-bit, maximum quality); files are larger, most of all in fast-moving scenes. "
+                  "Compatible: plays and edits on almost any phone, PC or editor. "
+                  "Custom: choose the exact format and quality yourself.")
         self.format_detail = _label("Testing which formats this display's GPU can encode…", "caption")
         quality.append(self.format_detail)
         self._codec_options: list[str] = []
@@ -560,7 +564,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
                   "30 is a good starting point for smaller, lighter recordings. 60 makes fast motion smoother and uses more encoding work.")
         self.rate_control = Gtk.DropDown.new_from_strings(["Consistent quality · variable size", "Storage budget · Mbps"])
         self._row(quality, "Size control", self.rate_control)
-        self.quality_preset = Gtk.DropDown.new_from_strings(["Compact", "Balanced", "Sharp"])
+        self.quality_preset = Gtk.DropDown.new_from_strings(["Compact", "Balanced", "Sharp", "Maximum"])
         self._row(quality, "GPU quality", self.quality_preset)
         self.bitrate = self._spin(1, 100, 1)
         self._row(quality, "Video bitrate (Mbps)", self.bitrate,
@@ -589,7 +593,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self._row(legacy, "H.264 quality value", self.quality, "Lower values improve quality and increase file size. Your existing value is preserved.")
         body.append(advanced_card)
         self.codec.connect("notify::selected", lambda *_: self._encoding_changed())
-        self.format_choice.connect("notify::selected", lambda *_: self._encoding_changed())
+        self.format_choice.connect("notify::selected", lambda *_: self._format_changed())
         self.monitor.connect("notify::selected", lambda *_: self._probe_formats())
         self.rate_control.connect("notify::selected", lambda *_: self._encoding_changed())
         self.bitrate.connect("value-changed", lambda *_: self._encoding_changed())
@@ -1022,7 +1026,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.closest_match.set_active(bool(recognition.get("closest_match", True)))
         self.accurate.set_active(bool(recognition.get("accurate", True)))
         self.speech_model.set_selected(0 if recognition.get("speech_model") == "small" else 1)
-        self.language.set_selected(1 if recognition.get("language") == "ar_en" else 0)
+        self._show_language()
         dictation = self.config.get("dictation", {})
         self.dictation_language.set_selected({"auto": 0, "ar": 1, "en": 2}.get(dictation.get("language", "auto"), 0))
         self.stop_phrases.set_text(", ".join(dictation.get("stop_phrases", [])))
@@ -1053,11 +1057,11 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.replay_sound.set_active(bool(replay.get("sound", True)))
         self._populate_record_devices()
         self.fps.set_value(float(recorder.get("fps", 30)))
-        self._show_codec(recorder.get("codec", "libx264"))
         self.quality.set_value(float(recorder.get("quality", 23)))
         self.rate_control.set_selected(1 if recorder.get("rate_control") == "bitrate" else 0)
         self.bitrate.set_value(float(recorder.get("bitrate_mbps", 8)))
         self.quality_preset.set_selected(QUALITY_PRESETS.index(recorder.get("quality_preset", "very_high")))
+        self._show_codec(recorder.get("codec", "libx264"))  # after quality: High quality needs both
         self._encoding_changed()
         self.startup.set_active(bool(self.config.get("startup", False)))
         onboarded = bool(self.config.get("privacy", {}).get("onboarded", False))
@@ -1347,6 +1351,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
                 self._notice(str(result.get("error", "Settings could not be saved.")), True)
                 return
             self.config = result["config"]
+            self._show_language()
             self._render_aliases()
             self._render_phrases()
             self._render_apps()
@@ -1377,6 +1382,22 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
             "wake_aliases": [name.strip() for name in self.wake_aliases.get_text().split(",") if name.strip()], "sensitivity": self.sensitivity.get_value(),
             "command_timeout": self.timeout.get_value_as_int(), "confidence": self.confidence.get_value(),
         }}, "Voice settings saved. Use Listen once, or unmute to enable the selected activation mode.")
+
+    def _show_language(self) -> None:
+        arabic = self.config.get("recognition", {}).get("language") == "ar_en"
+        self.language.set_selected(1 if arabic else 0)
+        self.overview_language.set_label("Turn off Arabic" if arabic else "Turn on Arabic")
+
+    def _toggle_arabic(self) -> None:
+        """One click between English only and Arabic and English (also: jarvis language)."""
+        from .models import arabic_model_ready
+        if self.config.get("recognition", {}).get("language") == "ar_en":
+            self._save({"recognition": {"language": "en"}}, "Arabic is off. Jarvis understands English only.")
+        elif not arabic_model_ready():
+            self._notice("The Arabic model is not installed. Download it in Voice → Language first.", True)
+        else:
+            self._save({"recognition": {"language": "ar_en"}},
+                       "Arabic is on. Say commands in Arabic or English; dictation types Arabic.")
 
     def _show_arabic_model(self) -> None:
         from .models import arabic_model_dir, arabic_model_ready
@@ -1508,6 +1529,15 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
               "hevc_10bit": "HEVC 10-bit · GPU", "hevc": "HEVC · GPU", "h264": "H.264 · GPU"}
     NAMES = {"av1_10bit": "AV1 10-bit", "av1": "AV1", "hevc_10bit": "HEVC 10-bit", "hevc": "HEVC", "h264": "H.264"}
 
+    FORMAT_CHOICES = ["Recommended · small files", "High quality · large files",
+                      "Compatible · plays everywhere", "Custom…"]
+    RECOMMENDED, HIGH, COMPATIBLE, CUSTOM = range(4)
+
+    def _high_codec(self) -> str:
+        """The 10-bit format High quality uses: AV1, or HEVC on GPUs without AV1."""
+        formats = self._formats.get("formats", {})
+        return next((c for c in ("av1_10bit", "hevc_10bit") if formats.get(c)), "av1_10bit")
+
     def _show_codec(self, codec: str) -> None:
         """Put a saved codec into the picker. Legacy encoders stay selectable only
         for configurations that already use them; nothing changes until Save."""
@@ -1517,7 +1547,12 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self.codec.set_selected(self._codec_options.index(codec) if codec in self._codec_options else 0)
         from .encoder_probe import recommended
         best = recommended(self._formats.get("formats", {})) or "av1"
-        self.format_choice.set_selected(0 if codec == best else 1 if codec == "h264" else 2)
+        high = (codec == self._high_codec() and self.rate_control.get_selected() == 0
+                and QUALITY_PRESETS[self.quality_preset.get_selected()] == "ultra")
+        self._showing = True  # reflect saved settings without changing them
+        self.format_choice.set_selected(self.HIGH if high else self.RECOMMENDED if codec == best
+                                        else self.COMPATIBLE if codec == "h264" else self.CUSTOM)
+        self._showing = False
         self.legacy_banner.set_visible(codec in self.LEGACY)
         self.legacy_text.set_text(f"This recorder uses {self.LEGACY.get(codec, '')}. It keeps working, but the GPU "
                                   "formats record games with a small fraction of the CPU. Nothing changes until you Save.")
@@ -1525,9 +1560,11 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
     def _chosen_codec(self) -> str:
         from .encoder_probe import recommended
         choice = self.format_choice.get_selected()
-        if choice == 0:
+        if choice == self.RECOMMENDED:
             return recommended(self._formats.get("formats", {})) or "av1"
-        if choice == 1:
+        if choice == self.HIGH:
+            return self._high_codec()
+        if choice == self.COMPATIBLE:
             return "h264"
         index = self.codec.get_selected()
         return self._codec_options[index] if index < len(self._codec_options) else "av1"
@@ -1547,11 +1584,26 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
             self._encoding_changed()
         self._work(probe, done)
 
+    def _format_changed(self) -> None:
+        """High quality means constant quality at Maximum; leaving it for
+        Recommended or Compatible returns to the default Sharp."""
+        ultra = QUALITY_PRESETS.index("ultra")
+        choice = self.format_choice.get_selected()
+        if getattr(self, "_showing", False):
+            pass
+        elif choice == self.HIGH:
+            self.rate_control.set_selected(0)
+            self.quality_preset.set_selected(ultra)
+        elif choice in (self.RECOMMENDED, self.COMPATIBLE) and self.quality_preset.get_selected() == ultra:
+            self.quality_preset.set_selected(QUALITY_PRESETS.index("very_high"))
+        self._encoding_changed()
+
     def _encoding_changed(self) -> None:
         from .encoder_probe import recommended
         formats = self._formats.get("formats", {})
         codec = self._chosen_codec()
-        self.codec.set_sensitive(self.format_choice.get_selected() == 2)
+        choice = self.format_choice.get_selected()
+        self.codec.set_sensitive(choice == self.CUSTOM)
         names = self.NAMES
         if formats:
             best = recommended(formats)
@@ -1565,6 +1617,13 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
                 detail = f"Selected: {self.LEGACY[codec]}."
             elif not usable:
                 detail = f"{names[codec]} did not pass the encoder test on this display's GPU; choose another format."
+            elif choice == self.RECOMMENDED:
+                detail = f"{names[codec]}: good quality in small files. Fine for most clips and sharing."
+            elif choice == self.HIGH:
+                detail = (f"{names[codec]} at Maximum quality: the best picture this GPU records, with no visible loss "
+                          "and no banding. Files are larger, most of all in fast-moving scenes, and a replay keeps fewer seconds in its memory budget.")
+            elif choice == self.COMPATIBLE:
+                detail = f"{names[codec]}: plays and edits on almost any phone, PC or editor; larger files than AV1."
             else:
                 detail = f"Selected: {names[codec]} on the GPU. " + detail
             self.format_detail.set_text(detail)
@@ -1638,6 +1697,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
                 self._notice(str(result.get("error", "Could not remove shortcut.")), True)
                 return
             self.config = result["config"]
+            self._show_language()
             self._render_aliases()
             self._render_phrases()
             self._notice("Shortcut removed.")

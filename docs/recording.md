@@ -40,9 +40,23 @@ Review that grant before adding it: it allows the named recorder to capture with
 
 | Choice | Format | Use when |
 | --- | --- | --- |
-| **Recommended** | AV1 on the GPU when the display's GPU encodes it, otherwise HEVC | Smallest files at similar quality; recent players and editors |
-| **Compatible** | H.264 on the GPU | Plays and edits almost everywhere, at larger sizes |
-| Choose a format… | AV1 10-bit, AV1, HEVC 10-bit, HEVC or H.264 on the GPU | Pick one explicitly |
+| **Recommended** | AV1 on the GPU when the display's GPU encodes it, otherwise HEVC | Everyday clips: good quality in small files |
+| **High quality** | AV1 10-bit (HEVC 10-bit without AV1), constant quality at **Maximum** | The best picture the GPU records; larger files, most of all in fast motion |
+| **Compatible** | H.264 on the GPU | Plays and edits on almost any phone, PC or editor, at larger sizes |
+| **Custom…** | AV1 10-bit, AV1, HEVC 10-bit, HEVC or H.264, any quality | Pick the exact format and quality |
+
+**Why there is no format above AV1.** For live capture on the GPU, AV1 is the
+best format any current graphics card encodes. Its successor AV2 got its first
+encoder in 2026 and no GPU encodes it in hardware yet; H.266/VVC has no GPU
+encoder either. Truly lossless formats (FFV1, x264 lossless, ProRes) run on the
+CPU: at 1440p60 they would compete with the game for every core and write
+hundreds of megabits per second. High quality therefore raises the quality
+setting instead of changing the format: GPU Screen Recorder's `ultra` preset
+(`recording.quality_preset: "ultra"`, shown as **Maximum**), which its authors
+describe as more than most recordings need. On this machine (RX 9070, AV1
+10-bit, 2560×1440, a mostly still desktop) 3 seconds took 869 KiB at Maximum
+versus 699 KiB at Sharp; fast game scenes grow more. A replay keeps fewer
+seconds within the same memory budget.
 
 **AV1 10-bit** (`recording.codec: "av1_10bit"`) has the highest quality ceiling
 for SDR: 10 bits per channel remove the banding 8-bit leaves in dark scenes,
