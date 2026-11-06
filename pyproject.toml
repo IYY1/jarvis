@@ -36,12 +36,11 @@ windows = [
 ]
 
 [project.scripts]
-jarvis = "murmur.cli:main"
-murmur = "murmur.cli:main"
+jarvis = "jarvis.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["murmur*"]
+include = ["jarvis*"]
 
 [tool.setuptools.package-data]
-murmur = ["style.css", "onnx-cpu.conf", "arabic_commands.json"]
+jarvis = ["style.css", "onnx-cpu.conf", "arabic_commands.json"]

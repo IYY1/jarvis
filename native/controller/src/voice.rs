@@ -7,18 +7,18 @@ use serde_json::{json, Value};
 use std::{env, fs, path::PathBuf};
 
 pub fn project_root() -> Option<PathBuf> {
-    env::var_os("MURMUR_PROJECT_ROOT")
+    env::var_os("JARVIS_PROJECT_ROOT")
         .map(PathBuf::from)
         .or_else(|| {
             env::current_exe()
                 .ok()?
                 .ancestors()
-                .find(|p| p.join("pyproject.toml").is_file() && p.join("src/murmur").is_dir())
+                .find(|p| p.join("pyproject.toml").is_file() && p.join("src/jarvis").is_dir())
                 .map(|p| p.to_path_buf())
         })
 }
 pub fn binary() -> Result<PathBuf> {
-    if let Some(p) = env::var_os("MURMUR_RUST_VOICE_BINARY") {
+    if let Some(p) = env::var_os("JARVIS_RUST_VOICE_BINARY") {
         let p = PathBuf::from(p);
         if p.is_file() {
             return Ok(p);
@@ -31,7 +31,7 @@ pub fn binary() -> Result<PathBuf> {
     }
     if let Some(root) = project_root() {
         candidates.extend([
-            root.join("src/murmur/bin/jarvis-voice"),
+            root.join("src/jarvis/bin/jarvis-voice"),
             root.join("native/voice-worker/target/release/jarvis-voice"),
         ]);
     }
@@ -41,7 +41,7 @@ pub fn binary() -> Result<PathBuf> {
         .ok_or_else(|| "Rust voice worker missing. Run scripts/build_voice_worker.py first.".into())
 }
 pub fn vosk_library() -> Result<PathBuf> {
-    if let Some(p) = env::var_os("MURMUR_VOSK_LIBRARY") {
+    if let Some(p) = env::var_os("JARVIS_VOSK_LIBRARY") {
         let p = PathBuf::from(p);
         if p.is_file() {
             return Ok(p);
@@ -76,7 +76,7 @@ fn model_root() -> PathBuf {
     env::var_os("XDG_DATA_HOME")
         .map(PathBuf::from)
         .unwrap_or_else(|| util::home().join(".local/share"))
-        .join("murmur/models")
+        .join("jarvis/models")
 }
 pub fn prepare(
     config: &Value,
@@ -179,7 +179,7 @@ pub fn prepare(
         .unwrap_or(2)
         / 2;
     // The worker loads Whisper on a wake name and frees it after a minute
-    // without a command, matching murmur.native_worker.WHISPER_IDLE_SECONDS.
+    // without a command, matching jarvis.native_worker.WHISPER_IDLE_SECONDS.
     // Finalizing Vosk utterances frees each decoder's feature history (about
     // 45 MiB of standby growth); see docs/vosk-finalization.md.
     let native = json!({"vosk_library":library.unwrap_or_default(),"model_path":model,"whisper":files,"denoiser":denoiser,"threads":threads.clamp(1,8),"candidates":candidates,"wake_forms":all_wake_forms(config)?,"greetings":TABLES["GREETINGS"],"prefixes":TABLES["POLITE_PREFIXES"],"suffixes":TABLES["POLITE_SUFFIXES"],"whisper_idle_seconds":60,"vosk_finalize_utterances":true,"arabic":arabic,"dictation_language":if arabic.is_null() {"en"} else {dictation_language}});
@@ -192,7 +192,7 @@ pub fn available() -> bool {
     binary().is_ok() && vosk_library().is_ok()
 }
 pub fn python() -> Result<PathBuf> {
-    let python = env::var_os("MURMUR_UI_PYTHON")
+    let python = env::var_os("JARVIS_UI_PYTHON")
         .map(PathBuf::from)
         .or_else(|| {
             project_root()
@@ -207,7 +207,7 @@ pub fn ui_argv(page: &str) -> Result<Vec<String>> {
     util::desktop_argv(vec![
         python()?.to_string_lossy().into_owned(),
         "-m".into(),
-        "murmur".into(),
+        "jarvis".into(),
         "ui".into(),
         "--page".into(),
         page.into(),

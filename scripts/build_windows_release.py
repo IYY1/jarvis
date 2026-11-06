@@ -101,7 +101,7 @@ def main():
     parser.add_argument("--xvfb", type=Path)
     parser.add_argument("--ffmpeg-tools", type=Path, help="Folder with ffmpeg.exe and ffprobe.exe")
     parser.add_argument("--ffmpeg-source", type=Path)
-    parser.add_argument("--models", type=Path, default=Path.home() / ".local/share/murmur/models")
+    parser.add_argument("--models", type=Path, default=Path.home() / ".local/share/jarvis/models")
     parser.add_argument("--output", type=Path, default=ROOT / "dist/windows")
     parser.add_argument("--cargo", default="cargo")
     parser.add_argument("--offline", action="store_true", help="Use cached Cargo dependencies")
@@ -117,7 +117,7 @@ def main():
     ffmpeg_tools = args.ffmpeg_tools or work / "ffmpeg-tools/bin"
     ffmpeg_source = args.ffmpeg_source or work / "FFmpeg-Corresponding-Source.tar.xz"
     sys.path.insert(0, str(root / "src"))
-    from murmur import __version__ as version
+    from jarvis import __version__ as version
     logs = root / "build/windows-release"
     logs.mkdir(parents=True, exist_ok=True)
     if args.no_voice_worker:

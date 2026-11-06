@@ -20,15 +20,15 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from murmur.commands import Parser
-from murmur.config import validate
-from murmur.native_worker import prepare
+from jarvis.commands import Parser
+from jarvis.config import validate
+from jarvis.native_worker import prepare
 
 
 def measure(binary, fixture, decoder, policy, cycles, seconds, reverse):
     config = validate({"recognition": {"accurate": False}, "activation": {"wake_phrase": "go forward"}})
     grammar = Parser({"ten meters": "start recording", "go forward ten meters": "start recording"}).grammar(["firefox", "steam", "stremio"])
-    with patch.dict(os.environ, MURMUR_VOICE_WORKER="rust"):
+    with patch.dict(os.environ, JARVIS_VOICE_WORKER="rust"):
         _, payload, env = prepare(config, "once", grammar)
     request = {"path": str(fixture.resolve()), "decoder": decoder, "policy": policy, "cycles": cycles,
                "seconds_per_cycle": seconds, "reverse": reverse}

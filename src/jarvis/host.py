@@ -31,7 +31,7 @@ def data_dir():
         )
     return (
         Path(os.environ.get("XDG_DATA_HOME", str(Path.home() / ".local/share")))
-        / "murmur"
+        / "jarvis"
     )
 
 
@@ -39,7 +39,7 @@ def settings_dir():
     if is_windows():
         return data_dir()
     return (
-        Path(os.environ.get("XDG_CONFIG_HOME", str(Path.home() / ".config"))) / "murmur"
+        Path(os.environ.get("XDG_CONFIG_HOME", str(Path.home() / ".config"))) / "jarvis"
     )
 
 
@@ -47,7 +47,7 @@ def runtime_dir():
     if is_windows():
         return data_dir() / "run"
     base = os.environ.get("XDG_RUNTIME_DIR")
-    return Path(base) / "murmur" if base else Path(f"/tmp/murmur-{os.getuid()}")
+    return Path(base) / "jarvis" if base else Path(f"/tmp/jarvis-{os.getuid()}")
 
 
 def tool(name):
@@ -67,7 +67,7 @@ def command(mode, *args):
                 "JarvisConsole.exe is missing; extract/install the complete Jarvis folder"
             )
         return [str(binary), "--internal", mode, *map(str, args)]
-    return [sys.executable, "-m", "murmur", "--internal", mode, *map(str, args)]
+    return [sys.executable, "-m", "jarvis", "--internal", mode, *map(str, args)]
 
 
 def child_options(*, independent=False):

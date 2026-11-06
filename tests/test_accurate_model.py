@@ -1,6 +1,6 @@
 """Accurate command model (Whisper via sherpa-onnx), adaptive gate, model install.
 
-Fake-model tests always run. Real-model tests run when MURMUR_WHISPER_DIR points
+Fake-model tests always run. Real-model tests run when JARVIS_WHISPER_DIR points
 to an unpacked sherpa-onnx-whisper-small.en folder.
 """
 
@@ -15,9 +15,9 @@ import types
 import unittest
 from unittest.mock import patch
 
-from murmur import models
-from murmur.commands import Parser, closest_match, match_candidates
-from murmur.voice import NoiseFloor
+from jarvis import models
+from jarvis.commands import Parser, closest_match, match_candidates
+from jarvis.voice import NoiseFloor
 
 from tests.test_voice_upgrade import APPS, FakeModel, FakeRecognizer, words
 
@@ -65,7 +65,7 @@ class FakeTranscriber:
 
 class AccurateEngineTests(unittest.TestCase):
     def setUp(self):
-        from murmur.vosk_engine import VoskEngine
+        from jarvis.vosk_engine import VoskEngine
         module = types.SimpleNamespace(Model=FakeModel, KaldiRecognizer=FakeRecognizer, SetLogLevel=lambda _l: None)
         patcher = patch.dict(sys.modules, {"vosk": module})
         patcher.start()
@@ -130,19 +130,19 @@ class InstallTests(unittest.TestCase):
                     models.install_accurate("bad", archive=archive)
 
 
-WHISPER = os.environ.get("MURMUR_WHISPER_DIR", "")
+WHISPER = os.environ.get("JARVIS_WHISPER_DIR", "")
 
 
-@unittest.skipUnless(WHISPER, "set MURMUR_WHISPER_DIR to an unpacked sherpa-onnx-whisper-small.en folder")
+@unittest.skipUnless(WHISPER, "set JARVIS_WHISPER_DIR to an unpacked sherpa-onnx-whisper-small.en folder")
 class RealWhisperTests(unittest.TestCase):
     def test_transcribes_upstream_recording(self):
-        from murmur.transcriber import Transcriber
-        fixture = os.environ.get("MURMUR_SPEECH_TEST_RAW")
+        from jarvis.transcriber import Transcriber
+        fixture = os.environ.get("JARVIS_SPEECH_TEST_RAW")
         if not fixture:
-            self.skipTest("set MURMUR_SPEECH_TEST_RAW to goforward.raw")
+            self.skipTest("set JARVIS_SPEECH_TEST_RAW to goforward.raw")
         with patch.object(models, "accurate_model_dir", return_value=Path(WHISPER)), \
-                patch("murmur.transcriber.accurate_model_dir", return_value=Path(WHISPER)), \
-                patch("murmur.transcriber.accurate_model_ready", return_value=True):
+                patch("jarvis.transcriber.accurate_model_dir", return_value=Path(WHISPER)), \
+                patch("jarvis.transcriber.accurate_model_ready", return_value=True):
             text = Transcriber(threads=2).transcribe(Path(fixture).read_bytes())
         self.assertIn("forward", text.lower())
         self.assertIn("meters", text.lower())

@@ -5,11 +5,11 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import MagicMock, patch
 
-from murmur.recorder import RecorderError
+from jarvis.recorder import RecorderError
 
 
 spec = importlib.util.spec_from_file_location(
-    "murmur_check_desktop", Path(__file__).resolve().parents[1] / "scripts" / "check_desktop.py")
+    "jarvis_check_desktop", Path(__file__).resolve().parents[1] / "scripts" / "check_desktop.py")
 desktop_check = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(desktop_check)
 

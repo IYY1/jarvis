@@ -154,7 +154,7 @@ class _Capture:
 
     def inspect_previous(self):
         folder = Path(self.config["recording"]["output_dir"]).expanduser()
-        partials = sorted(folder.glob(".Murmur_*.part.mkv"))
+        partials = sorted(folder.glob(".Jarvis_*.part.mkv"))
         if partials:
             self._set(
                 "idle",
@@ -242,8 +242,8 @@ class _Capture:
                         prefix + "-%03d",
                     ]
                 else:
-                    partial = folder / f".Murmur_{tag}.part.mkv"
-                    final = folder / f"Murmur_{tag}.mkv"
+                    partial = folder / f".Jarvis_{tag}.part.mkv"
+                    final = folder / f"Jarvis_{tag}.mkv"
                     # Reserve without overwriting; FFmpeg receives an explicitly
                     # reserved staging file and only that file may be replaced.
                     with partial.open("xb"):
@@ -432,7 +432,7 @@ class Replay(_Capture):
                 + "_"
                 + uuid.uuid4().hex[:10]
             )
-            partial = folder / f".Murmur_replay_{tag}.part.mkv"
+            partial = folder / f".Jarvis_replay_{tag}.part.mkv"
             final = folder / f"Replay_{tag}.mkv"
             with buffer.files(after=time.monotonic(), timeout=2) as paths:
                 if seconds is not None:

@@ -80,7 +80,7 @@ class Service:
                 "recording": self.recorder.status(), "replay": self.replay.status(), "level": self.level,
                 "voice_available": self.voice_available,
                 "unsupported_phrases": self.unsupported, "engine": self.engine, "gate": self.gate,
-                "dry_run": os.environ.get("MURMUR_DRY_RUN") == "1",
+                "dry_run": os.environ.get("JARVIS_DRY_RUN") == "1",
                 "microphone_open": self.worker is not None,
                 "mic_test": self.worker is not None and self.worker_mode == "test",
                 "dictation": self.dictation.status()}
@@ -128,7 +128,7 @@ class Service:
             if done.cancelled() or done.exception() is None:
                 return
             exc = done.exception()
-            print(f"murmur: {what} failed: {exc!r}", file=sys.stderr, flush=True)
+            print(f"jarvis: {what} failed: {exc!r}", file=sys.stderr, flush=True)
             if what == "voice restart":
                 self.activation.error()
             self.message = f"{what.capitalize()} failed: {exc}"
@@ -165,10 +165,10 @@ class Service:
             threading.Thread(target=proc.wait, daemon=True).start()
             return
         # Separate process and no UI import retained by the service.
-        proc = subprocess.Popen(desktop_argv([sys.executable, "-m", "murmur", "ui", "--page", page]),
+        proc = subprocess.Popen(desktop_argv([sys.executable, "-m", "jarvis", "ui", "--page", page]),
                          stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                          stderr=subprocess.DEVNULL, start_new_session=True)
-        threading.Thread(target=proc.wait, daemon=True, name="murmur-ui-reaper").start()
+        threading.Thread(target=proc.wait, daemon=True, name="jarvis-ui-reaper").start()
 
     async def stop_worker(self):
         async with self.worker_lock:
@@ -481,7 +481,7 @@ class Service:
                         self.message = "Dictation stopped"
                     self.publish()
                     return {"ok": True, "message": self.message}
-                if os.environ.get("MURMUR_DRY_RUN") == "1":
+                if os.environ.get("JARVIS_DRY_RUN") == "1":
                     self.message = "Dry run: " + intent.action
                 else:
                     self.message = await self.desktop_call(self.dispatcher.execute, intent)
@@ -619,7 +619,7 @@ class Service:
                 from .windows.startup import set_startup
                 await asyncio.to_thread(set_startup, enabled)
             else:
-                r = await asyncio.to_thread(subprocess.run, ["systemctl", "--user", "enable" if enabled else "disable", "murmur.service"], capture_output=True, text=True, timeout=5)
+                r = await asyncio.to_thread(subprocess.run, ["systemctl", "--user", "enable" if enabled else "disable", "jarvis.service"], capture_output=True, text=True, timeout=5)
                 if r.returncode:
                     raise CommandError("Install the optional user service first (see README). " + r.stderr.strip()[:300])
             self.config["startup"] = enabled
@@ -667,7 +667,7 @@ async def serve():
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError as exc:
             lock.close()
-            raise RuntimeError("Murmur service is already running") from exc
+            raise RuntimeError("Jarvis service is already running") from exc
     path.unlink(missing_ok=True)
     async def connection(reader, writer):
         queue = None
@@ -741,12 +741,12 @@ async def serve():
         try:
             await asyncio.to_thread(service.recorder.inspect_previous)
         except OSError as exc:
-            print(f"murmur: could not inspect earlier recordings: {exc}", file=sys.stderr)
+            print(f"jarvis: could not inspect earlier recordings: {exc}", file=sys.stderr)
         if service.config["replay"]["autostart"]:
             try:
                 await asyncio.to_thread(service.replay.start)
             except RuntimeError as exc:   # shown in status; the service keeps running
-                print(f"murmur: instant replay did not start: {exc}", file=sys.stderr)
+                print(f"jarvis: instant replay did not start: {exc}", file=sys.stderr)
         if not service.muted:
             # A voice failure must not take the whole service down (and into a
             # systemd restart loop); show it and wait for the user instead.
@@ -766,7 +766,7 @@ async def serve():
                                            asyncio.to_thread(service.recorder.close), return_exceptions=True)
             for result in results:
                 if isinstance(result, Exception):
-                    print(f"murmur: capture cleanup: {result}", file=sys.stderr)
+                    print(f"jarvis: capture cleanup: {result}", file=sys.stderr)
         finally:
             path.unlink(missing_ok=True)
             lock.close()

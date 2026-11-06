@@ -24,21 +24,21 @@ With Rust 1.91 or newer:
 ./run-jarvis waybar
 ```
 
-The build installs `src/murmur/bin/jarvis` atomically. `--offline` uses cached
+The build installs `src/jarvis/bin/jarvis` atomically. `--offline` uses cached
 Cargo dependencies. Building does not restart the running controller, alter
 settings, download models, or open audio. The Python build script is a build-time
 convenience; `cargo build --release --locked --manifest-path native/cli/Cargo.toml`
 also produces the standalone native executable.
 
 The checkout's `run-jarvis` prefers this native client when built. Set
-`MURMUR_CLI=python` to select the compatibility client, or `MURMUR_CLI=rust` to
+`JARVIS_CLI=python` to select the compatibility client, or `JARVIS_CLI=rust` to
 require the native binary. The Python package's `.venv/bin/jarvis` entry point
 remains Python. Existing launchers and Waybar configurations using that path
 must point to `run-jarvis` or the native executable to use this port. The
 [Waybar example](../examples/waybar.jsonc) uses the checkout launcher.
 
 The native CLI talks to either controller through the existing API; controls
-do not start a controller automatically. `MURMUR_SOCKET` and XDG locations are
+do not start a controller automatically. `JARVIS_SOCKET` and XDG locations are
 preserved. Peer credentials must match the current user. Requests are limited
 to 64 KiB, responses to 1 MiB, and watch events to 64 KiB. Operation-specific
 timeouts preserve recorder/replay finalization behavior. Waybar uses one event
@@ -77,7 +77,7 @@ not claim to have verified GTK imports. The compatibility diagnostic remains
 available for Python/venv troubleshooting:
 
 ```sh
-MURMUR_CLI=python ./run-jarvis doctor
+JARVIS_CLI=python ./run-jarvis doctor
 ```
 
 ## Verification and memory

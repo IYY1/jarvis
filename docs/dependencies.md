@@ -42,7 +42,7 @@ OpenAI Whisper small.en (MIT) converted to int8 ONNX by the sherpa-onnx project,
 and the optional GTCRN speech-enhancement model; both are downloaded from the
 sherpa-onnx GitHub releases with pinned SHA-256 values, never bundled.
 Vosk 0.3.45 (Apache-2.0) is part of the `[voice]` extra. Its small English model
-(`vosk-model-small-en-us-0.15`, Apache-2.0, 40 MB) is not bundled: `murmur
+(`vosk-model-small-en-us-0.15`, Apache-2.0, 40 MB) is not bundled: `jarvis
 install-model` downloads it from alphacephei.com and checks a pinned SHA-256.
 openWakeWord was researched but is not installed. Its pretrained model terms
 are separate from its code license.

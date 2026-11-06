@@ -21,7 +21,7 @@ class RecorderError(RuntimeError):
     """An actionable configuration, capture, or finalization error."""
 
 
-PARTIAL_GLOB = ".Murmur_*.part.mkv"
+PARTIAL_GLOB = ".Jarvis_*.part.mkv"
 _spawner: ThreadPoolExecutor | None = None
 _spawner_lock = threading.Lock()
 
@@ -37,7 +37,7 @@ def _spawn(argv: list[str], **kwargs) -> subprocess.Popen:
     global _spawner
     with _spawner_lock:
         if _spawner is None:
-            _spawner = ThreadPoolExecutor(max_workers=1, thread_name_prefix="murmur-recorder-spawn")
+            _spawner = ThreadPoolExecutor(max_workers=1, thread_name_prefix="jarvis-recorder-spawn")
     return _spawner.submit(subprocess.Popen, argv, **kwargs).result()
 
 
@@ -50,7 +50,7 @@ def _parent_death_prefix() -> list[str]:
 
 
 def orphaned_recorders() -> list[int]:
-    """PIDs of this user's capture processes writing a Murmur staging file."""
+    """PIDs of this user's capture processes writing a Jarvis staging file."""
     found = []
     uid = os.getuid()
     for entry in Path("/proc").iterdir():
@@ -63,7 +63,7 @@ def orphaned_recorders() -> list[int]:
         except OSError:
             continue
         if any(Path(a.decode(errors="replace")).name in ("wf-recorder", "gpu-screen-recorder") for a in argv[:6]) and \
-                any(Path(a.decode(errors="replace")).name.startswith(".Murmur_") for a in argv):
+                any(Path(a.decode(errors="replace")).name.startswith(".Jarvis_") for a in argv):
             found.append(int(entry.name))
     return found
 
@@ -194,7 +194,7 @@ class Recorder:
     def inspect_previous(self, orphans=None) -> None:
         """Report captures left behind by an earlier service that crashed or was killed."""
         orphans = orphaned_recorders() if orphans is None else orphans
-        folder = Path(str(self._settings().get("output_dir", "~/Videos/Murmur"))).expanduser()
+        folder = Path(str(self._settings().get("output_dir", "~/Videos/Jarvis"))).expanduser()
         try:
             partials = sorted(folder.glob(PARTIAL_GLOB)) if folder.is_dir() else []
         except OSError:
@@ -203,7 +203,7 @@ class Recorder:
             if self._process is not None:
                 return
             if orphans:
-                self._set("error", "A recorder from an earlier Murmur session is still running "
+                self._set("error", "A recorder from an earlier Jarvis session is still running "
                           f"(PID {', '.join(map(str, orphans))}). Stop it with: kill -INT {orphans[0]}. "
                           "Its partial file stays in the output folder.")
             elif partials:
@@ -308,17 +308,17 @@ class Recorder:
             try:
                 orphans = orphaned_recorders()
                 if orphans:
-                    raise RecorderError("A recorder from an earlier Murmur session is still running "
+                    raise RecorderError("A recorder from an earlier Jarvis session is still running "
                                         f"(PID {orphans[0]}). Stop it with: kill -INT {orphans[0]}")
                 cfg, _monitor, argv = self._validate()
-                folder = Path(str(cfg.get("output_dir", "~/Videos/Murmur"))).expanduser().resolve()
+                folder = Path(str(cfg.get("output_dir", "~/Videos/Jarvis"))).expanduser().resolve()
                 if cfg.get("game_folders"):
                     from .games import focused_game
                     folder = folder / (focused_game() or "")   # the game focused when recording starts
                 folder.mkdir(parents=True, exist_ok=True, mode=0o700)
                 tag = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + "_" + uuid.uuid4().hex[:10]
-                final = folder / f"Murmur_{tag}.mkv"
-                staging = folder / f".Murmur_{tag}.part.mkv"
+                final = folder / f"Jarvis_{tag}.mkv"
+                staging = folder / f".Jarvis_{tag}.part.mkv"
                 fd = os.open(staging, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
                 os.close(fd)
                 try:
@@ -341,7 +341,7 @@ class Recorder:
             self._done.clear()
             self._set("recording", f"Recorder running · {self._color.upper()}. Stop to finalize and verify the file.", staging)
             threading.Thread(target=self._watch, args=(process, staging, final),
-                             name="murmur-recorder", daemon=True).start()
+                             name="jarvis-recorder", daemon=True).start()
         self._notify()
         return self.status()
 

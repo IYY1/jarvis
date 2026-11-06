@@ -36,7 +36,7 @@ def main() -> int:
         _notify("Typing what you say. Say “stop dictation” or press your dictation shortcut to stop.")
         return 0
 
-    app = Gtk.Application(application_id="org.murmur.Dictation")
+    app = Gtk.Application(application_id="org.jarvis.Dictation")
     stop = threading.Event()
 
     def build(application):

@@ -14,9 +14,9 @@ import time
 import resource
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from murmur.apps import AppRegistry
-from murmur.hyprland import Hyprland
-from murmur.recorder import Recorder, RecorderError
+from jarvis.apps import AppRegistry
+from jarvis.hyprland import Hyprland
+from jarvis.recorder import Recorder, RecorderError
 
 
 def recording_check(a, base, desktop):
@@ -79,16 +79,16 @@ def main():
         desktop = Hyprland()
         monitors = desktop.query("monitors")
         result.update(monitors_discovered=len(monitors), apps_discovered=len(AppRegistry().apps))
-        with tempfile.TemporaryDirectory(prefix="murmur-desktop-check-") as temp:
+        with tempfile.TemporaryDirectory(prefix="jarvis-desktop-check-") as temp:
             base = Path(temp)
             marker = base / "launched"
             launcher = base / "launch.py"
             launcher.write_text("from pathlib import Path\nPath(" + repr(str(marker)) + ").write_text('ok')\n")
-            (base / "murmur-integration.desktop").write_text(
-                '[Desktop Entry]\nType=Application\nName=Murmur Integration Check\n'
+            (base / "jarvis-integration.desktop").write_text(
+                '[Desktop Entry]\nType=Application\nName=Jarvis Integration Check\n'
                 f'Exec="/usr/bin/python3" "{launcher}"\nTerminal=false\n')
             registry = AppRegistry(roots=[base])
-            registry.launch(registry.resolve("murmur integration check"))
+            registry.launch(registry.resolve("jarvis integration check"))
             until = time.monotonic() + 5
             while not marker.exists() and time.monotonic() < until:
                 time.sleep(.05)

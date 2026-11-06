@@ -137,7 +137,7 @@ an existing installation before using `--replace`. Keep the checkout and venv
 where they are. Optional Rust parts are described under [Development](#development).
 
 After a system Python upgrade, rebuild the venv;
-`MURMUR_CLI=python ./run-jarvis doctor` reports the mismatch.
+`JARVIS_CLI=python ./run-jarvis doctor` reports the mismatch.
 
 ### First run
 
@@ -180,7 +180,7 @@ jarvis alias streamio --remove
 
 Updates keep your settings. A setting a new version can't use (a changed range
 or a renamed choice) is reset on its own and every other setting is kept; the
-original file is copied to `~/.config/murmur/backups/` first, and so are the
+original file is copied to `~/.config/jarvis/backups/` first, and so are the
 settings of the previous version on the first start of a new one. To back up or
 move your settings, use **Overview → Your settings**, or:
 
@@ -225,11 +225,11 @@ start that target (for example with uwsm) and export its environment:
 
 ```sh
 systemctl --user import-environment WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP XDG_RUNTIME_DIR
-systemctl --user start murmur.service
+systemctl --user start jarvis.service
 ```
 
 `./run-jarvis daemon` runs the service in the foreground; run one at a time.
-The service, package and storage paths keep the earlier name Murmur, so older
+The service, package and storage paths keep the earlier name Jarvis, so older
 settings, models and recordings still work. Optional [Waybar](examples/waybar.jsonc)
 and [Hyprland](examples/hyprland.conf) examples are never installed automatically.
 
@@ -262,9 +262,9 @@ Python:
 
 | Part | Build | Notes |
 | --- | --- | --- |
-| [Voice worker](docs/rust-voice.md) (Whisper and noise suppression) | `scripts/build_voice_worker.py` | `MURMUR_VOICE_WORKER=python` selects Python |
-| [Command-line client](docs/rust-cli.md) | `scripts/build_cli.py --test` | `MURMUR_CLI=python` selects Python |
-| [Background controller](docs/rust-controller.md) | `scripts/build_controller.py` | Opt in with `MURMUR_CONTROLLER=rust` |
+| [Voice worker](docs/rust-voice.md) (Whisper and noise suppression) | `scripts/build_voice_worker.py` | `JARVIS_VOICE_WORKER=python` selects Python |
+| [Command-line client](docs/rust-cli.md) | `scripts/build_cli.py --test` | `JARVIS_CLI=python` selects Python |
+| [Background controller](docs/rust-controller.md) | `scripts/build_controller.py` | Opt in with `JARVIS_CONTROLLER=rust` |
 
 The settings window and the Windows service use Python; Windows releases
 ship only the Rust voice worker. Tests and checks:
@@ -286,7 +286,7 @@ parts it touches, restart the service and try the change with your own voice:
 python scripts/build_controller.py --offline
 python scripts/build_voice_worker.py --offline
 python scripts/build_cli.py --offline
-systemctl --user restart murmur
+systemctl --user restart jarvis
 ./run-jarvis status
 ```
 
@@ -295,7 +295,7 @@ Push only after the restarted service runs the new build and the change works.
 ## Project layout
 
 ```text
-src/murmur/       Voice engine, service, desktop adapters and GTK UI
+src/jarvis/       Voice engine, service, desktop adapters and GTK UI
 native/           Rust voice worker, Whisper, denoiser, controller and CLI
 tests/            Policy, lifecycle, model and regression tests
 scripts/          Installer, build scripts, integration checks and benchmarks

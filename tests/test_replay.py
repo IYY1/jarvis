@@ -16,11 +16,11 @@ import threading
 import unittest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from murmur import config
-from murmur.actions import Dispatcher
-from murmur.commands import Intent, Parser
-from murmur.recorder import RecorderError
-from murmur.replay import Replay
+from jarvis import config
+from jarvis.actions import Dispatcher
+from jarvis.commands import Intent, Parser
+from jarvis.recorder import RecorderError
+from jarvis.replay import Replay
 
 
 class FakeReplayProcess:
@@ -83,10 +83,10 @@ class ReplayTests(unittest.TestCase):
         def spawn(argv, **kwargs):
             self.children.append(FakeReplayProcess(argv, **kwargs))
             return self.children[-1]
-        for patcher in (patch("murmur.replay.shutil.which", side_effect=lambda name: "/usr/bin/" + name),
-                        patch("murmur.replay.sources", return_value=[{"name": "DP-1"}]),
-                        patch("murmur.replay.verify_video"),
-                        patch("murmur.recorder.subprocess.Popen", side_effect=spawn)):
+        for patcher in (patch("jarvis.replay.shutil.which", side_effect=lambda name: "/usr/bin/" + name),
+                        patch("jarvis.replay.sources", return_value=[{"name": "DP-1"}]),
+                        patch("jarvis.replay.verify_video"),
+                        patch("jarvis.recorder.subprocess.Popen", side_effect=spawn)):
             patcher.start()
             self.addCleanup(patcher.stop)
         self.changes = []
@@ -152,7 +152,7 @@ class ReplayTests(unittest.TestCase):
         self.assertIn("status 1", self.replay.status()["message"])
 
     def test_missing_backend_or_display_explains_the_fix(self):
-        with patch("murmur.replay.shutil.which", return_value=None), self.assertRaisesRegex(RecorderError, "pacman -S gpu-screen-recorder"):
+        with patch("jarvis.replay.shutil.which", return_value=None), self.assertRaisesRegex(RecorderError, "pacman -S gpu-screen-recorder"):
             self.replay.start()
         self.config["recording"]["monitor"] = ""
         with self.assertRaisesRegex(RecorderError, "Choose a display"):
@@ -164,8 +164,8 @@ class ReplayTests(unittest.TestCase):
             self.replay.save()
 
     def test_hdr_replay_selects_hdr_codec_and_checks_saved_color(self):
-        with patch("murmur.replay.sources", return_value=[{"name": "DP-1", "colorManagementPreset": "hdr"}]), \
-                patch("murmur.replay.verify_video") as verify:
+        with patch("jarvis.replay.sources", return_value=[{"name": "DP-1", "colorManagementPreset": "hdr"}]), \
+                patch("jarvis.replay.verify_video") as verify:
             status = self.replay.start()
             try:
                 argv = self.children[-1].argv
@@ -180,7 +180,7 @@ class ReplayTests(unittest.TestCase):
         self.config["recording"]["color_mode"] = "hdr"
         self.replay.start()
         try:
-            with patch("murmur.replay.verify_video", side_effect=RecorderError("HDR verification failed")):
+            with patch("jarvis.replay.verify_video", side_effect=RecorderError("HDR verification failed")):
                 with self.assertRaisesRegex(RecorderError, "HDR verification failed"):
                     self.replay.save()
             self.assertIsNone(self.replay.status()["file"])
@@ -216,7 +216,7 @@ class ReplayPhraseTests(unittest.TestCase):
         self.assertIn("clip the last two minutes", phrases)
 
     def test_spoken_clip_lengths_are_matched_exactly_never_guessed(self):
-        from murmur.commands import closest_match, match_candidates
+        from jarvis.commands import closest_match, match_candidates
         candidates = match_candidates(Parser().grammar([]))
         self.assertEqual(candidates["clip the last fifteen seconds"], "replay_save:15")
         for heard, phrase in (("Clip the last 25 seconds.", "clip the last twenty five seconds"),
@@ -255,7 +255,7 @@ class ReplayPhraseTests(unittest.TestCase):
 
 class ReplayWindowTests(unittest.TestCase):
     def test_header_and_controls_follow_replay_state(self):
-        from murmur.ui import JarvisWindow
+        from jarvis.ui import JarvisWindow
         window = MagicMock(closed=False, connected=True, _test_active=False, config={"privacy": {"onboarded": True}})
         for state, visible, toggle in (("on", True, "Stop replay"), ("off", False, "Start replay")):
             with self.subTest(state=state):
@@ -268,25 +268,25 @@ class ReplayWindowTests(unittest.TestCase):
 
 class ClipLibraryTests(unittest.TestCase):
     def test_lists_saved_videos_newest_first_without_partial_files(self):
-        from murmur.ui import clips
+        from jarvis.ui import clips
         with tempfile.TemporaryDirectory() as directory:
             folder = Path(directory)
-            for age, name in ((30, "Murmur_old.mkv"), (10, "Replay_new.mp4"), (20, "Replay_mid.MP4"),
-                              (0, ".Murmur_x.part.mkv"), (0, "notes.txt")):
+            for age, name in ((30, "Jarvis_old.mkv"), (10, "Replay_new.mp4"), (20, "Replay_mid.MP4"),
+                              (0, ".Jarvis_x.part.mkv"), (0, "notes.txt")):
                 (folder / name).write_bytes(b"x" * 10)
                 os.utime(folder / name, (1_000_000 - age, 1_000_000 - age))
-            self.assertEqual([c["name"] for c in clips(folder)], ["Replay_new.mp4", "Replay_mid.MP4", "Murmur_old.mkv"])
+            self.assertEqual([c["name"] for c in clips(folder)], ["Replay_new.mp4", "Replay_mid.MP4", "Jarvis_old.mkv"])
             self.assertEqual(len(clips(folder, limit=1)), 1)
             self.assertEqual(clips(folder / "missing"), [])
 
     def test_closing_or_leaving_the_player_releases_the_video(self):
-        from murmur.ui import JarvisWindow
+        from jarvis.ui import JarvisWindow
         window = MagicMock()
         window.stack.get_visible_child_name.return_value = "recording"
         JarvisWindow._clips_page_shown(window)
         window.clips_page.close.assert_called_once_with()
         try:
-            from murmur.clips_ui import ClipsPage
+            from jarvis.clips_ui import ClipsPage
         except (ImportError, ValueError):
             self.skipTest("GTK is not available")
         page = MagicMock(export=None)
@@ -302,30 +302,30 @@ class ClipLibraryTests(unittest.TestCase):
 
 class ReplayCliTests(unittest.TestCase):
     def test_save_timeout_covers_backend_save_and_media_validation(self):
-        from murmur.client import TIMEOUTS
+        from jarvis.client import TIMEOUTS
         # Backend reply can take 30 s and ffprobe another 10 s.
         self.assertGreater(TIMEOUTS["replay_save"], 30 + 10)
 
     def test_waybar_marks_replay_and_cli_maps_actions(self):
         import json
-        from murmur import cli
+        from jarvis import cli
         line = json.loads(cli.waybar_line({"status": {"state": "idle", "message": "Waiting", "replay": {"state": "on"}}}))
         self.assertTrue(line["text"].endswith("⟲"))
         self.assertIn("Instant replay on", line["tooltip"])
         self.assertNotIn("⟲", json.loads(cli.waybar_line({"status": {"state": "idle"}}))["text"])
         for action in ("start", "stop", "save"):
             with self.subTest(action=action), patch("sys.argv", ["jarvis", "replay", action]), \
-                    patch("murmur.client.request", return_value={"ok": True}) as request, patch("builtins.print"):
+                    patch("jarvis.client.request", return_value={"ok": True}) as request, patch("builtins.print"):
                 self.assertEqual(cli.main(), 0)
                 request.assert_called_once_with("replay_" + action)
 
 
 class ClipSoundTests(unittest.IsolatedAsyncioTestCase):
     def make_service(self, sound=True):
-        from murmur.daemon import Service
+        from jarvis.daemon import Service
         registry = MagicMock()
         registry.index = {}
-        with patch("murmur.daemon.AppRegistry", return_value=registry):
+        with patch("jarvis.daemon.AppRegistry", return_value=registry):
             service = Service({"activation": {"mode": "push_to_talk"}, "replay": {"sound": sound}})
         service.loop = asyncio.get_running_loop()
         return service
@@ -334,24 +334,24 @@ class ClipSoundTests(unittest.IsolatedAsyncioTestCase):
         async def inline(function, *args, **kwargs):
             return function(*args, **kwargs)
         for sound, expected in ((True, ["clip", "error"]), (False, [])):
-            with self.subTest(sound=sound), patch("murmur.daemon.asyncio.to_thread", side_effect=inline), \
-                    patch("murmur.feedback.play") as play:
+            with self.subTest(sound=sound), patch("jarvis.daemon.asyncio.to_thread", side_effect=inline), \
+                    patch("jarvis.feedback.play") as play:
                 service = self.make_service(sound)
                 saved = {"state": "on", "message": "Saved replay: a.mp4", "file": "/v/a.mp4"}
                 service.on_replay_changed(saved)
                 service.on_replay_changed(saved)                 # same clip again: no second chirp
                 service.dispatcher = MagicMock()
                 service.dispatcher.execute.side_effect = RecorderError("Replay not saved: no keyframe yet")
-                with patch.dict("os.environ", {"MURMUR_DRY_RUN": "0"}):
+                with patch.dict("os.environ", {"JARVIS_DRY_RUN": "0"}):
                     result = await service.execute("clip that")
                 await asyncio.gather(*service.tasks)
                 self.assertFalse(result["ok"])
                 self.assertEqual([c.args[0] for c in play.call_args_list], expected)
 
     def test_clip_chirp_is_two_short_tones(self):
-        from murmur import feedback
-        with patch("murmur.feedback.shutil.which", return_value="/usr/bin/pw-play"), \
-                patch("murmur.feedback.subprocess.run") as run:
+        from jarvis import feedback
+        with patch("jarvis.feedback.shutil.which", return_value="/usr/bin/pw-play"), \
+                patch("jarvis.feedback.subprocess.run") as run:
             feedback.play("clip")
             feedback.play("error")
         self.assertEqual(len(run.call_args_list[0].kwargs["input"]), 2 * len(run.call_args_list[1].kwargs["input"]))
@@ -359,9 +359,9 @@ class ClipSoundTests(unittest.IsolatedAsyncioTestCase):
 
 class ReplayServiceTests(unittest.IsolatedAsyncioTestCase):
     async def test_saving_replay_settings_while_it_runs_restarts_it(self):
-        from murmur.daemon import Service
+        from jarvis.daemon import Service
         registry = MagicMock(index={})
-        with patch("murmur.daemon.AppRegistry", return_value=registry):
+        with patch("jarvis.daemon.AppRegistry", return_value=registry):
             service = Service({})
         service.replay = MagicMock()
         for key, value in (("seconds", 180), ("game_audio", False), ("storage", "disk"), ("fps", 120)):
@@ -375,7 +375,7 @@ class ReplayServiceTests(unittest.IsolatedAsyncioTestCase):
             service.execute = execute
             cfg = copy.deepcopy(service.config)
             cfg["replay"][key] = value
-            with self.subTest(key=key), patch("murmur.daemon.configuration.save", side_effect=lambda c: c) as save, \
+            with self.subTest(key=key), patch("jarvis.daemon.configuration.save", side_effect=lambda c: c) as save, \
                     patch.object(service, "desktop_call", AsyncMock(return_value=registry)):
                 result = await service.handle({"op": "save_config", "config": cfg})
                 save.assert_called_once()
@@ -383,15 +383,15 @@ class ReplayServiceTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(phrases, ["stop replay", "start replay"])
 
     async def test_status_reports_replay_and_save_while_off_is_a_json_error(self):
-        from murmur.daemon import Service
+        from jarvis.daemon import Service
         registry = MagicMock()
         registry.index = {}
-        with patch("murmur.daemon.AppRegistry", return_value=registry):
+        with patch("jarvis.daemon.AppRegistry", return_value=registry):
             service = Service({"activation": {"mode": "push_to_talk"}})
         self.assertEqual(service.status()["replay"]["state"], "off")
         async def inline(function, *args, **kwargs):
             return function(*args, **kwargs)
-        with patch("murmur.daemon.asyncio.to_thread", side_effect=inline):
+        with patch("jarvis.daemon.asyncio.to_thread", side_effect=inline):
             result = await service.handle({"op": "replay_save"})
         self.assertFalse(result["ok"])
         self.assertIn("start replay", result["error"])

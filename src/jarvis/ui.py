@@ -107,7 +107,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         super().__init__(application=application, title="Jarvis")
         self.set_default_size(1080, 780)
         self.set_size_request(720, 540)
-        self.add_css_class("murmur")
+        self.add_css_class("jarvis")
         self.config: dict = {}
         self.status: dict = {}
         self.connected = False
@@ -628,7 +628,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         capture.append(_label("HDR clips need an HDR-aware player and display, or a player that tone maps to SDR. "
                               "The built-in preview may not display HDR correctly; use Open in your player. "
                               "SDR capture requires display HDR to be off; Jarvis does not tone map direct monitor capture.", "caption"))
-        self.output_dir = self._entry("~/Videos/Murmur")
+        self.output_dir = self._entry("~/Videos/Jarvis")
         self._row(capture, "Save recordings to", self.output_dir)
         self.system_audio = Gtk.Switch()
         self._row(capture, "System audio", self.system_audio, "Record game and application sound")
@@ -761,7 +761,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
             self.clips_page.close()   # leaving the page releases the video and its pipeline
 
     def _refresh_clips(self) -> None:
-        folder = Path(str(self.config.get("recording", {}).get("output_dir", "~/Videos/Murmur"))).expanduser()
+        folder = Path(str(self.config.get("recording", {}).get("output_dir", "~/Videos/Jarvis"))).expanduser()
         self._work(lambda: clips(folder), lambda found: self.clips_page.render(folder, found if isinstance(found, list) else []))
 
     def _voice_page(self) -> None:
@@ -938,7 +938,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
                     callback(value)
                 return False
             GLib.idle_add(finish)
-        threading.Thread(target=run, name="murmur-ui-request", daemon=True).start()
+        threading.Thread(target=run, name="jarvis-ui-request", daemon=True).start()
 
     def refresh(self) -> None:
         def fetch() -> dict:
@@ -1008,7 +1008,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
             except Exception as error:
                 if not self._watch_stop.is_set():
                     GLib.idle_add(self._disconnected, f"Service connection closed: {error}. Use Reconnect.")
-        self._watch_thread = threading.Thread(target=watch, name="murmur-ui-events", daemon=True)
+        self._watch_thread = threading.Thread(target=watch, name="jarvis-ui-events", daemon=True)
         self._watch_thread.start()
 
     def _set_status(self, event: dict, validate_grammar: bool = True) -> bool:
@@ -1182,7 +1182,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
         self._show_arabic_model()
         self.noise_suppression.set_active(bool(recognition.get("noise_suppression", False)))
         self.adaptive_gate.set_active(bool(self.config.get("audio", {}).get("adaptive_gate", True)))
-        self.output_dir.set_text(str(recorder.get("output_dir", "~/Videos/Murmur")))
+        self.output_dir.set_text(str(recorder.get("output_dir", "~/Videos/Jarvis")))
         modes = ["auto", "hdr", "sdr"]
         self.color_mode.set_selected(modes.index(recorder.get("color_mode", "auto")))
         self.combined_audio.set_active(bool(recorder.get("combined_audio_source", False)))
@@ -2062,7 +2062,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
                     except OSError:
                         pass
                 waiter.wait(.1)
-            where = ("journalctl --user -u murmur.service -n 50" if started_by == "systemd"
+            where = ("journalctl --user -u jarvis.service -n 50" if started_by == "systemd"
                      else f"the log at {log}")
             return {"ok": False, "error": f"The service did not become ready. Check {where}, then choose Reconnect."}
         def done(result: dict) -> None:
@@ -2091,7 +2091,7 @@ class JarvisWindow(Gtk.ApplicationWindow if Gtk else object):
 
 def service_log_path() -> Path:
     state = Path(os.environ.get("XDG_STATE_HOME", str(Path.home() / ".local/state")))
-    return state / "murmur" / "daemon.log"
+    return state / "jarvis" / "daemon.log"
 
 
 def start_service_process() -> tuple[str, Path | None]:
@@ -2100,10 +2100,10 @@ def start_service_process() -> tuple[str, Path | None]:
     log file (not /dev/null) and reap it so it never lingers as a zombie."""
     systemctl = shutil.which("systemctl")
     if systemctl:
-        unit = subprocess.run([systemctl, "--user", "cat", "murmur.service"],
+        unit = subprocess.run([systemctl, "--user", "cat", "jarvis.service"],
                               capture_output=True, text=True, timeout=5, check=False)
         if unit.returncode == 0:
-            subprocess.run([systemctl, "--user", "start", "murmur.service"],
+            subprocess.run([systemctl, "--user", "start", "jarvis.service"],
                            capture_output=True, text=True, timeout=10, check=False)
             return "systemd", None
     log = service_log_path()
@@ -2115,10 +2115,10 @@ def start_service_process() -> tuple[str, Path | None]:
         pass
     with open(log, "ab", buffering=0) as output:
         os.chmod(log, 0o600)
-        process = subprocess.Popen([sys.executable, "-m", "murmur", "daemon"],
+        process = subprocess.Popen([sys.executable, "-m", "jarvis", "daemon"],
                                    stdin=subprocess.DEVNULL, stdout=output, stderr=output,
                                    start_new_session=True)
-    threading.Thread(target=process.wait, name="murmur-daemon-reaper", daemon=True).start()
+    threading.Thread(target=process.wait, name="jarvis-daemon-reaper", daemon=True).start()
     return "process", log
 
 
@@ -2133,7 +2133,7 @@ def main(argv: list[str] | None = None) -> int:
     if not Gtk.init_check():
         print("Cannot open a graphical display. Run ‘jarvis ui’ inside your Wayland desktop session. The service does not need a display window.", file=sys.stderr)
         return 1
-    application = Gtk.Application(application_id="org.murmur.Controller", flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
+    application = Gtk.Application(application_id="org.jarvis.Controller", flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
     def activate(app: Any) -> None:
         window = app.get_active_window()
         if window is None:
@@ -2152,7 +2152,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     application.connect("activate", activate)
     application.connect("command-line", command_line)
-    return application.run(["murmur-ui", "--page", args.page])
+    return application.run(["jarvis-ui", "--page", args.page])
 
 
 if __name__ == "__main__":

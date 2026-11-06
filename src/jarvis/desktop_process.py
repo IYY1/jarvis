@@ -6,7 +6,7 @@ from .commands import CommandError
 
 
 def desktop_argv(argv: list[str]) -> list[str]:
-    if os.environ.get("MURMUR_MANAGED_SERVICE") != "1":
+    if os.environ.get("JARVIS_MANAGED_SERVICE") != "1":
         return argv
     runner = shutil.which("systemd-run")
     if not runner:

@@ -34,7 +34,7 @@ DEFAULTS = {
     # language: "auto" follows recognition.language; "ar" or "en" chooses one.
     "dictation": {"language": "auto", "idle_seconds": 3, "max_minutes": 10, "stop_phrases": ["stop dictation", "وقف الكتابة"],
                   "keyboard_fallback": True},
-    "recording": {"output_dir": "~/Videos/Murmur", "monitor": "", "system_audio": False,
+    "recording": {"output_dir": "~/Videos/Jarvis", "monitor": "", "system_audio": False,
                   "microphone": False, "audio_device": "", "fps": 30,
                   "codec": "libx264", "quality": 23, "rate_control": "bitrate", "bitrate_auto": True,
                   "game_folders": True,
@@ -84,7 +84,7 @@ def without_unknown(data: dict) -> dict:
 
 def config_path() -> Path:
     from .host import settings_dir
-    return Path(os.environ.get("MURMUR_CONFIG", str(settings_dir() / "config.json")))
+    return Path(os.environ.get("JARVIS_CONFIG", str(settings_dir() / "config.json")))
 
 
 def merged(base: dict, update: dict) -> dict:
@@ -321,21 +321,21 @@ def load(path: Path | None = None) -> dict:
         data = json.loads(path.read_text(encoding="utf-8"))
     except ValueError as exc:
         kept = backup(f"unreadable-{stamp}", path)
-        print(f"murmur: settings file is not valid JSON ({exc}); starting from defaults, original kept at {kept}",
+        print(f"jarvis: settings file is not valid JSON ({exc}); starting from defaults, original kept at {kept}",
               file=sys.stderr)
         return save(copy.deepcopy(DEFAULTS), path)
     if isinstance(data, dict):
         unknown = unknown_keys(data)
         if unknown:
             # Tolerate old or hand-edited files: warn, ignore, and drop on next save.
-            print(f"murmur: ignoring unknown setting(s) in {path}: {', '.join(sorted(unknown))}", file=sys.stderr)
+            print(f"jarvis: ignoring unknown setting(s) in {path}: {', '.join(sorted(unknown))}", file=sys.stderr)
         data = without_unknown(data)
     try:
         return validate(data)
     except (ValueError, TypeError, KeyError, AttributeError) as exc:
         fixed, reset = repair(data if isinstance(data, dict) else {})
         kept = backup(f"before-repair-{stamp}", path)
-        print(f"murmur: some settings are not valid in this version ({exc}); reset {', '.join(reset)} "
+        print(f"jarvis: some settings are not valid in this version ({exc}); reset {', '.join(reset)} "
               f"and kept the rest; original at {kept}", file=sys.stderr)
         return save(fixed, path)
 

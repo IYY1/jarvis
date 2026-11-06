@@ -9,14 +9,14 @@ use tokio::{
 };
 
 pub fn socket_path() -> PathBuf {
-    env::var_os("MURMUR_SOCKET")
+    env::var_os("JARVIS_SOCKET")
         .map(PathBuf::from)
         .unwrap_or_else(|| {
             env::var_os("XDG_RUNTIME_DIR")
                 .map(PathBuf::from)
-                .map(|p| p.join("murmur"))
+                .map(|p| p.join("jarvis"))
                 .unwrap_or_else(|| {
-                    PathBuf::from(format!("/tmp/murmur-{}", unsafe { libc::getuid() }))
+                    PathBuf::from(format!("/tmp/jarvis-{}", unsafe { libc::getuid() }))
                 })
                 .join("control.sock")
         })

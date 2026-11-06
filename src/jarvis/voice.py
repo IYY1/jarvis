@@ -118,7 +118,7 @@ def run(config: dict, mode: str, grammar: dict | list[str]):
         raise SystemExit(0)
     signal.signal(signal.SIGTERM, shutdown)
     signal.signal(signal.SIGINT, shutdown)
-    _parent_death(expected_parent=int(os.environ["MURMUR_OWNER_PID"]) if "MURMUR_OWNER_PID" in os.environ else None)
+    _parent_death(expected_parent=int(os.environ["JARVIS_OWNER_PID"]) if "JARVIS_OWNER_PID" in os.environ else None)
     try:
         if not config["privacy"]["onboarded"]:
             raise RuntimeError("Complete microphone consent in Settings first")

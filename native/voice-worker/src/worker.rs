@@ -14,7 +14,7 @@ extern "C" fn stop(_: libc::c_int) {
     STOP.store(true, Ordering::Relaxed);
 }
 fn expected_owner(actual: u32) -> Result<u32> {
-    Ok(std::env::var("MURMUR_OWNER_PID")
+    Ok(std::env::var("JARVIS_OWNER_PID")
         .ok()
         .map(|s| s.parse())
         .transpose()?
@@ -46,7 +46,7 @@ pub fn bind_parent() -> Result<()> {
     use windows::Win32::System::Threading::{
         OpenProcess, WaitForSingleObject, INFINITE, PROCESS_SYNCHRONIZE,
     };
-    let Ok(owner) = std::env::var("MURMUR_OWNER_PID") else {
+    let Ok(owner) = std::env::var("JARVIS_OWNER_PID") else {
         return Ok(());
     };
     let owner = expected_owner(owner.parse()?)?;

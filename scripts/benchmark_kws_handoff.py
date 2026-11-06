@@ -18,16 +18,16 @@ from unittest.mock import patch
 
 from benchmark_kws import ROOT, digest, silence
 from benchmark_kws_gate import GATE
-from murmur.commands import Parser
-from murmur.config import validate
-from murmur.native_worker import prepare
+from jarvis.commands import Parser
+from jarvis.config import validate
+from jarvis.native_worker import prepare
 
 
 def payload(profile, tiny):
     config = validate({"recognition": {"accurate": profile != "vosk", "noise_suppression": False, "closest_match": True},
                        "activation": {"wake_phrase": "go forward"}})
     grammar = Parser({"ten meters": "start recording"}).grammar(["firefox", "steam", "stremio"])
-    with patch.dict(os.environ, MURMUR_VOICE_WORKER="rust"):
+    with patch.dict(os.environ, JARVIS_VOICE_WORKER="rust"):
         _, data, _ = prepare(config, "wake_word", grammar)
     # The entire command worker is on demand. Load its configured recognizer
     # immediately inside that child, including the real cold-loading peak.

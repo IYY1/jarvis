@@ -3,7 +3,7 @@
 Jarvis is a Python application with a native GTK settings client and separate
 speech worker. See [architecture](docs/architecture.md) before changing process
 lifetime or capture behavior. The package namespace and service/storage IDs
-retain the earlier `murmur` spelling for compatibility.
+retain the earlier `jarvis` spelling for compatibility.
 
 ## Development and tests
 
@@ -19,8 +19,8 @@ python3 -m venv .venv
 
 For native UI work, use the distribution's GTK/PyGObject and a venv created with
 `--system-site-packages`, as shown in the root README. For real speech tests,
-install `.[voice]` and supply `MURMUR_VOSK_MODEL`, `MURMUR_WHISPER_DIR` and
-`MURMUR_SPEECH_TEST_RAW` explicitly. Tests never download models automatically.
+install `.[voice]` and supply `JARVIS_VOSK_MODEL`, `JARVIS_WHISPER_DIR` and
+`JARVIS_SPEECH_TEST_RAW` explicitly. Tests never download models automatically.
 
 ## Changes for review
 

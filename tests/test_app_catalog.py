@@ -6,8 +6,8 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from murmur import app_catalog
-from murmur.apps import AppRegistry, utility
+from jarvis import app_catalog
+from jarvis.apps import AppRegistry, utility
 
 
 class CatalogTests(unittest.TestCase):
@@ -75,7 +75,7 @@ class CatalogTests(unittest.TestCase):
         (self.home / "Downloads").mkdir()
         (self.home / "Downloads" / "Tool.exe").write_text("")
         (self.home / "Downloads" / "Known.exe").write_text("")
-        with patch("murmur.app_catalog.is_windows", return_value=True), \
+        with patch("jarvis.app_catalog.is_windows", return_value=True), \
                 patch("pathlib.Path.home", return_value=self.home), \
                 patch.dict(os.environ, {"SystemDrive": str(self.home / "none")}):
             found = app_catalog.program_candidates(known_exec=str(self.home / "Downloads" / "Known.exe"))
@@ -91,7 +91,7 @@ class CatalogTests(unittest.TestCase):
         from argparse import Namespace
         import contextlib
         import io
-        from murmur.cli import run_add_app
+        from jarvis.cli import run_add_app
         calls = []
         request = lambda op, **_: calls.append(op) or {"ok": True}
         path = self.program("Tool.AppImage")
@@ -107,7 +107,7 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(app_catalog.added(), [])
 
     def test_games_are_recognized_like_the_rust_controller_does(self):
-        from murmur import games
+        from jarvis import games
         self.assertEqual(games.game_from_paths("/home/u/.local/share/Steam/steamapps/common/Deadlock/game/bin/deadlock"), "Deadlock")
         self.assertEqual(games.game_from_paths("Z:\\home\\u\\steamapps\\common\\Elden Ring\\Game\\eldenring.exe"), "Elden Ring")
         self.assertEqual(games.game_from_paths("/home/u/Games/Heroic/Hades/Hades.exe"), "Hades")
@@ -117,13 +117,13 @@ class CatalogTests(unittest.TestCase):
         self.assertIsNone(games.game_folder(" ../ "))
         clip = self.home / "Replay.mkv"
         clip.write_text("video")
-        with patch("murmur.games.focused_game", return_value="Deadlock"):
+        with patch("jarvis.games.focused_game", return_value="Deadlock"):
             moved = games.into_game_folder(clip)
         self.assertEqual((moved.parent.name, moved.read_text()), ("Deadlock", "video"))
-        with patch("murmur.games.focused_game", return_value=None):
+        with patch("jarvis.games.focused_game", return_value=None):
             other = self.home / "Desktop clip.mkv"; other.write_text("x")
             self.assertEqual(games.into_game_folder(other), other)
-        from murmur.ui import clips
+        from jarvis.ui import clips
         self.assertEqual(sorted(c["name"] for c in clips(self.home)), ["Deadlock / Replay.mkv", "Desktop clip.mkv"])
 
 

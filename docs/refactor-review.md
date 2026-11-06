@@ -122,8 +122,8 @@ PYTHONPATH=src .venv/bin/python -m unittest discover -s tests -v
 .venv/bin/python scripts/benchmark_controller_queue.py --output queue.json
 ```
 
-Set `MURMUR_VOSK_MODEL`, `MURMUR_WHISPER_MODEL`, `MURMUR_GTCRN_MODEL` and
-`MURMUR_SPEECH_TEST_RAW` to explicit existing local assets for the full model
+Set `JARVIS_VOSK_MODEL`, `JARVIS_WHISPER_MODEL`, `JARVIS_GTCRN_MODEL` and
+`JARVIS_SPEECH_TEST_RAW` to explicit existing local assets for the full model
 tests; optional tests otherwise skip. `--offline` builds require cached locked
 Cargo dependencies. For policy comparison, use `--source OTHER_CHECKOUT/src`;
 for queued-action comparison, use `--binary OTHER_CONTROLLER`.

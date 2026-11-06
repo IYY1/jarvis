@@ -10,8 +10,8 @@ import tempfile
 import threading
 import unittest
 
-from murmur.cli import waybar_line
-from murmur import models
+from jarvis.cli import waybar_line
+from jarvis import models
 from tests.test_rust_controller import Harness, BINARY as CONTROLLER
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,8 +25,8 @@ class NativeCliTests(unittest.TestCase):
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)
         self.env = dict(os.environ, HOME=str(self.root), XDG_DATA_HOME=str(self.root / "data"),
-                        XDG_CONFIG_HOME=str(self.root / "config"), MURMUR_CONFIG=str(self.root / "config.json"),
-                        MURMUR_SOCKET=str(self.root / "control.sock"), PATH="/nonexistent")
+                        XDG_CONFIG_HOME=str(self.root / "config"), JARVIS_CONFIG=str(self.root / "config.json"),
+                        JARVIS_SOCKET=str(self.root / "control.sock"), PATH="/nonexistent")
 
     def cli(self, *args, env=None, check=False):
         return subprocess.run([str(BINARY), *args], env=env or self.env, capture_output=True,
@@ -66,7 +66,7 @@ class NativeCliTests(unittest.TestCase):
     def rpc_once(self, args, response):
         received = []
         server = socket.socket(socket.AF_UNIX)
-        server.bind(self.env["MURMUR_SOCKET"]); server.listen(1); server.settimeout(5)
+        server.bind(self.env["JARVIS_SOCKET"]); server.listen(1); server.settimeout(5)
         def serve():
             try:
                 with server.accept()[0] as client:
@@ -80,7 +80,7 @@ class NativeCliTests(unittest.TestCase):
             result = self.cli(*args)
         finally:
             thread.join(timeout=6)
-            Path(self.env["MURMUR_SOCKET"]).unlink(missing_ok=True)
+            Path(self.env["JARVIS_SOCKET"]).unlink(missing_ok=True)
         self.assertFalse(thread.is_alive())
         return result, received[0]
 
@@ -124,7 +124,7 @@ class NativeCliTests(unittest.TestCase):
         self.assertEqual(process.wait(timeout=3), 0)
 
     def test_waybar_reconnects_and_matches_reference(self):
-        server = socket.socket(socket.AF_UNIX); server.bind(self.env["MURMUR_SOCKET"]); server.listen(2); server.settimeout(6)
+        server = socket.socket(socket.AF_UNIX); server.bind(self.env["JARVIS_SOCKET"]); server.listen(2); server.settimeout(6)
         self.addCleanup(server.close)
         process = subprocess.Popen([str(BINARY), "waybar"], env=self.env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.addCleanup(self.stop, process)
@@ -139,10 +139,10 @@ class NativeCliTests(unittest.TestCase):
     def test_installer_dry_run_and_conflict_prevalidation(self):
         preview = self.cli("install-user", "--service", "--dry-run", check=True)
         self.assertIn("jarvis-controller", preview.stdout)
-        self.assertNotIn(" -m murmur daemon", preview.stdout)
+        self.assertNotIn(" -m jarvis daemon", preview.stdout)
         self.assertFalse((self.root / "data").exists())
         self.assertFalse((self.root / "config").exists())
-        unit = self.root / "config/systemd/user/murmur.service"
+        unit = self.root / "config/systemd/user/jarvis.service"
         unit.parent.mkdir(parents=True); unit.write_text("custom service\n")
         self.assertEqual(self.cli("install-user", "--service").returncode, 1)
         self.assertFalse((self.root / "data").exists())
@@ -157,21 +157,21 @@ class NativeCliTests(unittest.TestCase):
         result = self.cli("install-user", "--service", env=env)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(log.read_text().splitlines(), ["--user daemon-reload"])
-        desktop = self.root / "data/applications/org.murmur.Controller.desktop"
+        desktop = self.root / "data/applications/org.jarvis.Controller.desktop"
         self.assertIn(f'Exec="{BINARY}" ui', desktop.read_text())
         self.assertEqual(desktop.stat().st_mode & 0o777, 0o644)
-        self.assertIn("KillMode=mixed", (self.root / "config/systemd/user/murmur.service").read_text())
+        self.assertIn("KillMode=mixed", (self.root / "config/systemd/user/jarvis.service").read_text())
 
     def test_model_wrong_checksum_cleans_staging(self):
         archive = self.root / "model.zip"; archive.write_bytes(b"incorrect archive")
         response = self.cli("install-model", "--basic", "--archive", str(archive))
         self.assertEqual(response.returncode, 1)
         self.assertIn("checksum mismatch", response.stderr)
-        root = self.root / "data/murmur/models"
+        root = self.root / "data/jarvis/models"
         self.assertEqual(list(root.iterdir()), [])
 
     def test_models_reused_and_incomplete_destination_preserved(self):
-        model = self.root / "data/murmur/models" / models.MODEL_NAME
+        model = self.root / "data/jarvis/models" / models.MODEL_NAME
         model.mkdir(parents=True)
         (model / "user-note").write_text("preserve")
         response = self.cli("install-model", "--basic")
@@ -198,9 +198,9 @@ class NativeCliTests(unittest.TestCase):
         self.assertEqual(harness.status()["state"], "paused")
 
     def test_checkout_wrapper_uses_native_client(self):
-        if not (ROOT / "src/murmur/bin/jarvis").is_file():
+        if not (ROOT / "src/jarvis/bin/jarvis").is_file():
             self.skipTest("run scripts/build_cli.py")
-        env = dict(self.env, PATH="/usr/bin:/bin", MURMUR_CLI="rust")
+        env = dict(self.env, PATH="/usr/bin:/bin", JARVIS_CLI="rust")
         result = subprocess.run([str(ROOT / "run-jarvis"), "--version"], env=env, text=True, capture_output=True, timeout=5)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("(Rust)", result.stdout)

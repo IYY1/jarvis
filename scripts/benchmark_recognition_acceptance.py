@@ -25,10 +25,10 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from murmur.commands import Parser
-from murmur.config import validate
-from murmur.native_worker import binary_path, prepare
-from murmur.process_memory import snapshot
+from jarvis.commands import Parser
+from jarvis.config import validate
+from jarvis.native_worker import binary_path, prepare
+from jarvis.process_memory import snapshot
 
 REQUIRED = {"command", "recorded_command", "confusable", "unrelated_speech", "music", "game_audio", "background_wake"}
 CAPTURE = '''#!/usr/bin/env python3
@@ -177,7 +177,7 @@ def main():
     config = validate(manifest.get("config", {}))
     config["privacy"]["onboarded"] = True  # only our fake microphone is available to this child
     grammar = Parser(manifest.get("custom_phrases", {})).grammar(manifest.get("apps", ["firefox", "steam"]))
-    with patch.dict(os.environ, MURMUR_VOICE_WORKER="rust"):
+    with patch.dict(os.environ, JARVIS_VOICE_WORKER="rust"):
         _, payload, env = prepare(config, "wake_word", grammar)
     payload["native"]["vosk_fast_path"] = args.vosk_fast_path
     payload["native"]["vosk_finalize_utterances"] = args.finalize_vosk_utterances

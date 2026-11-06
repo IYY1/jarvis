@@ -1,5 +1,5 @@
 {
-  "about": "Arabic command wording (Najdi/Saudi first, then common MSA). Keys are written in folded form: no diacritics or hamza, alef forms as ا, ta marbuta as ه, alef maqsura as ي. Each maps onto an English command the parser already understands; nothing here can name an action of its own. Shared by native/command-phrases and src/murmur/phrases.py.",
+  "about": "Arabic command wording (Najdi/Saudi first, then common MSA). Keys are written in folded form: no diacritics or hamza, alef forms as ا, ta marbuta as ه, alef maqsura as ي. Each maps onto an English command the parser already understands; nothing here can name an action of its own. Shared by native/command-phrases and src/jarvis/phrases.py.",
   "wake_words": ["جارفس", "جارفيس", "جارفز", "جارفيز", "جارفث", "جافيس"],
   "polite_prefixes": ["لو سمحت", "لوسمحت", "الله يخليك", "من فضلك", "ممكن", "تكفي", "ياليت", "يا ليت", "ابيك", "ابغاك", "ابغي", "ابي"],
   "polite_suffixes": ["لو سمحت", "لوسمحت", "الله يخليك", "من فضلك", "تكفي", "يعطيك العافيه", "الله يعافيك", "شكرا", "بسرعه"],

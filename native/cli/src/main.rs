@@ -8,12 +8,12 @@ use jarvis_controller::{ipc, voice, Result};
 use std::{env, io::Write, os::unix::process::CommandExt, path::PathBuf, process::Command};
 
 pub fn controller() -> Result<PathBuf> {
-    if let Some(path) = env::var_os("MURMUR_CONTROLLER_BINARY") {
+    if let Some(path) = env::var_os("JARVIS_CONTROLLER_BINARY") {
         return Ok(PathBuf::from(path));
     }
     let mut candidates = vec![env::current_exe()?.with_file_name("jarvis-controller")];
     if let Some(root) = voice::project_root() {
-        candidates.push(root.join("src/murmur/bin/jarvis-controller"));
+        candidates.push(root.join("src/jarvis/bin/jarvis-controller"));
         candidates.push(root.join("native/controller/target/release/jarvis-controller"));
     }
     candidates

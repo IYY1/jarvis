@@ -15,7 +15,7 @@ from ..host import runtime_dir
 
 
 def endpoint_path():
-    return Path(os.environ.get("MURMUR_ENDPOINT", str(runtime_dir() / "control.json")))
+    return Path(os.environ.get("JARVIS_ENDPOINT", str(runtime_dir() / "control.json")))
 
 
 def publish(port, token):

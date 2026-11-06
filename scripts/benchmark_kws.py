@@ -133,13 +133,13 @@ def probe(binary, config_path, rows, paced):
 
 def vosk(binary, rows):
     from benchmark_recognition_acceptance import run_case
-    from murmur.commands import Parser
-    from murmur.config import validate
-    from murmur.native_worker import prepare
+    from jarvis.commands import Parser
+    from jarvis.config import validate
+    from jarvis.native_worker import prepare
     config = validate({"recognition":{"accurate":False,"noise_suppression":False},"activation":{"wake_phrase":"go forward","command_timeout":3}})
     grammar = Parser({"ten meters":"start recording"}).grammar(["firefox","steam","stremio"])
     config["privacy"]["onboarded"]=True
-    with patch.dict(os.environ,MURMUR_VOICE_WORKER="rust"):
+    with patch.dict(os.environ,JARVIS_VOICE_WORKER="rust"):
         _,payload,env=prepare(config,"wake_word",grammar)
     result=[]
     for row in rows:

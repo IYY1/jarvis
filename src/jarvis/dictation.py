@@ -50,7 +50,7 @@ def split_stop(text: str, stops) -> tuple[str, bool]:
 
 
 # Jarvis's own windows (settings, dictation bar) are never a dictation target.
-OWN_CLASSES = ("org.murmur.controller", "org.murmur.dictation")
+OWN_CLASSES = ("org.jarvis.controller", "org.jarvis.dictation")
 
 
 def language(config, trigger=None) -> str:
@@ -187,7 +187,7 @@ def indicator():
     if layer:
         env["LD_PRELOAD"] = layer
     try:
-        return subprocess.Popen([sys.executable, "-m", "murmur.indicator"], stdin=subprocess.DEVNULL,
+        return subprocess.Popen([sys.executable, "-m", "jarvis.indicator"], stdin=subprocess.DEVNULL,
                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
     except OSError:
         return None

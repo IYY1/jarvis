@@ -83,7 +83,7 @@ its existing Vosk package/library and models.
 
 ```sh
 .venv/bin/python scripts/build_voice_worker.py --test
-MURMUR_VOICE_WORKER=rust ./run-jarvis daemon
+JARVIS_VOICE_WORKER=rust ./run-jarvis daemon
 ```
 
 Building does not change user settings or restart the running service. Python
@@ -209,11 +209,11 @@ explicitly supplied local assets:
 .venv/bin/python scripts/benchmark_rust_voice.py --fixture /tmp/goforward.raw
 .venv/bin/python scripts/benchmark_rust_voice.py --fixture /tmp/goforward.raw --denoise
 .venv/bin/python scripts/benchmark_rust_voice.py --fixture /tmp/goforward.raw --full-worker
-MURMUR_WHISPER_MODEL=/path/to/sherpa-onnx-whisper-small.en \
-MURMUR_WHISPER_DIR=/path/to/sherpa-onnx-whisper-small.en \
-MURMUR_VOSK_MODEL=/path/to/vosk-model-small-en-us-0.15 \
-MURMUR_GTCRN_MODEL=/path/to/gtcrn_simple.onnx \
-MURMUR_SPEECH_TEST_RAW=/tmp/goforward.raw \
+JARVIS_WHISPER_MODEL=/path/to/sherpa-onnx-whisper-small.en \
+JARVIS_WHISPER_DIR=/path/to/sherpa-onnx-whisper-small.en \
+JARVIS_VOSK_MODEL=/path/to/vosk-model-small-en-us-0.15 \
+JARVIS_GTCRN_MODEL=/path/to/gtcrn_simple.onnx \
+JARVIS_SPEECH_TEST_RAW=/tmp/goforward.raw \
   .venv/bin/python -m unittest discover -s tests -v
 ```
 

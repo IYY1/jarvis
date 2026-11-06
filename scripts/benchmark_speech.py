@@ -44,7 +44,7 @@ def fixture(path: pathlib.Path | None) -> bytes:
 
 
 def probe(args) -> dict:
-    from murmur.speech import SpeechEngine
+    from jarvis.speech import SpeechEngine
     start = time.perf_counter()
     engine = SpeechEngine(['go forward ten meters', 'open firefox', 'turn the volume down'])
     load_ms = (time.perf_counter() - start) * 1000

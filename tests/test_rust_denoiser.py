@@ -8,8 +8,8 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 BINARY = ROOT / "native/gtcrn-denoiser/target/release/jarvis-denoise"
-MODEL = os.environ.get("MURMUR_GTCRN_MODEL")
-FIXTURE = os.environ.get("MURMUR_SPEECH_TEST_RAW")
+MODEL = os.environ.get("JARVIS_GTCRN_MODEL")
+FIXTURE = os.environ.get("JARVIS_SPEECH_TEST_RAW")
 
 
 @unittest.skipUnless(BINARY.is_file(), "build the standalone Rust denoiser")

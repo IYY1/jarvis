@@ -118,7 +118,7 @@ async fn request(service: &mut service::Service, payload: Value, reply: service:
                     } else {
                         "disable".into()
                     },
-                    "murmur.service".into(),
+                    "jarvis.service".into(),
                 ],
                 5,
             )
@@ -228,6 +228,7 @@ async fn message(service: &mut service::Service, message: service::Message) {
 }
 
 async fn serve() -> Result<()> {
+    config::migrate_from_old_name();
     config::note_version(env!("CARGO_PKG_VERSION"));
     let config = config::load()?;
     let path = jarvis_controller::ipc::socket_path();
@@ -243,7 +244,7 @@ async fn serve() -> Result<()> {
         .mode(0o600)
         .open(parent.join("service.lock"))?;
     if unsafe { libc::flock(lock.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } != 0 {
-        return err("Murmur service is already running");
+        return err("Jarvis service is already running");
     }
     if path.exists() {
         fs::remove_file(&path)?;

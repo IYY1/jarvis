@@ -47,7 +47,7 @@ class SpeechEngine:
 
     sample_rate = 16000
 
-    def __init__(self, grammar: dict | list[str], wake_phrase: str = "hey murmur",
+    def __init__(self, grammar: dict | list[str], wake_phrase: str = "hey jarvis",
                  sensitivity: float = 0.5, wake_aliases=()):
         """``grammar`` is ``Parser.grammar()`` output, or a plain phrase list."""
         if not math.isfinite(sensitivity) or not 0 <= sensitivity <= 1:
@@ -138,7 +138,7 @@ class SpeechEngine:
         if suffixes:
             top += ["<core> <suffix>"] + (["<prefix> <core> <suffix>"] if prefixes else [])
             rules.append("<suffix> = " + " | ".join(suffixes) + ";")
-        return " ".join(["#JSGF V1.0; grammar murmur;",
+        return " ".join(["#JSGF V1.0; grammar jarvis;",
                          "public <command> = " + " | ".join(top) + ";", *rules])
 
     def _missing_words(self, phrase: str) -> list[str]:

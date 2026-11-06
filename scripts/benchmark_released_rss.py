@@ -28,9 +28,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 from benchmark_whisper_on_demand import rss_mib, whisper_threads
-from murmur.commands import Parser
-from murmur.config import DEFAULTS
-from murmur.native_worker import prepare
+from jarvis.commands import Parser
+from jarvis.config import DEFAULTS
+from jarvis.native_worker import prepare
 
 CAPTURE = """#!/usr/bin/env python3
 import array, os, time
@@ -57,7 +57,7 @@ def session(binary: Path, fixture: Path, idle: float, seconds: float) -> dict:
     config["recognition"].update(accurate=True, noise_suppression=True)
     config["activation"]["wake_phrase"] = "go forward"
     grammar = Parser({"ten meters": "start recording"}).grammar(["firefox", "steam", "stremio"])
-    with patch.dict(os.environ, MURMUR_VOICE_WORKER="rust"):
+    with patch.dict(os.environ, JARVIS_VOICE_WORKER="rust"):
         _argv, payload, env = prepare(config, "wake_word", grammar)
     if payload["native"]["whisper"] is None or payload["native"]["denoiser"] is None:
         raise SystemExit("Install the local Whisper and GTCRN models first")

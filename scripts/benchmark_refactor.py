@@ -30,14 +30,14 @@ ITERATIONS = {"parse_application": 1000, "match_fuzzy": 50, "candidates": 3, "va
 
 def workload(source, case):
     sys.path.insert(0, str(source))
-    from murmur import config
-    from murmur.apps import App
-    from murmur.commands import Parser, closest_match, match_candidates
-    from murmur.hyprland import Hyprland
+    from jarvis import config
+    from jarvis.apps import App
+    from jarvis.commands import Parser, closest_match, match_candidates
+    from jarvis.hyprland import Hyprland
 
     if case.startswith("app_catalog_"):
-        from murmur.apps import AppRegistry, id_stem
-        from murmur.commands import normalize, spoken_numbers
+        from jarvis.apps import AppRegistry, id_stem
+        from jarvis.commands import normalize, spoken_numbers
         count = int(case.removeprefix("app_catalog_"))
         # Model the in-memory registry after scanning desktop entries. File I/O
         # and discovery are outside this catalog-generation measurement.
@@ -63,7 +63,7 @@ def workload(source, case):
 
     if case in ("transcribe_input", "transcribe_input_10s"):
         from types import SimpleNamespace
-        from murmur.transcriber import Transcriber
+        from jarvis.transcriber import Transcriber
         class Stream:
             result = SimpleNamespace(text="fixture")
             def accept_waveform(self, rate, samples):
@@ -128,7 +128,7 @@ def main():
     parser.add_argument("--output", type=Path)
     parser.add_argument("--case", choices=ITERATIONS, help=argparse.SUPPRESS)
     args = parser.parse_args()
-    if not (args.source / "murmur/commands.py").is_file() or not 1 <= args.repeats <= 10:
+    if not (args.source / "jarvis/commands.py").is_file() or not 1 <= args.repeats <= 10:
         parser.error("Supply a Python source directory and 1–10 repeats")
     if args.case:
         print(json.dumps(sample(args.source.resolve(), args.case)))

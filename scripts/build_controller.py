@@ -10,7 +10,7 @@ else:
 
 def main():
     build(__doc__, [("text-input", "jarvis-type"), ("controller", "jarvis-controller")],
-          "Run it directly, or select MURMUR_CONTROLLER=rust with the existing daemon launcher.")
+          "Run it directly, or select JARVIS_CONTROLLER=rust with the existing daemon launcher.")
 
 
 if __name__ == "__main__":

@@ -102,7 +102,7 @@ fn helper() -> Result<std::path::PathBuf> {
     }
     if let Some(root) = crate::voice::project_root() {
         candidates.extend([
-            root.join("src/murmur/bin/jarvis-type"),
+            root.join("src/jarvis/bin/jarvis-type"),
             root.join("native/text-input/target/release/jarvis-type"),
         ]);
     }
@@ -113,7 +113,7 @@ fn helper() -> Result<std::path::PathBuf> {
 }
 
 /// Jarvis's own settings window and dictation bar: never a dictation target.
-const OWN_WINDOWS: [&str; 2] = ["org.murmur.controller", "org.murmur.dictation"];
+const OWN_WINDOWS: [&str; 2] = ["org.jarvis.controller", "org.jarvis.dictation"];
 
 /// The focused window: its address, whether it looks like a secret prompt,
 /// and whether it is Jarvis's own window.
@@ -203,13 +203,13 @@ pub fn split_stop(text: &str, stops: &[String]) -> (String, bool) {
     (text.to_owned(), false)
 }
 
-/// The small always-on-top bar with Stop/Cancel (src/murmur/indicator.py).
+/// The small always-on-top bar with Stop/Cancel (src/jarvis/indicator.py).
 /// gtk4-layer-shell must load before libwayland-client, hence the preload.
 pub fn indicator() -> Option<Child> {
     let python = crate::voice::python().ok()?;
     let mut command = tokio::process::Command::new(python);
     command
-        .args(["-m", "murmur.indicator"])
+        .args(["-m", "jarvis.indicator"])
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null())

@@ -13,8 +13,8 @@ import time
 import unittest
 from unittest.mock import MagicMock, patch
 
-from murmur.recorder import RecorderError
-from murmur.replay_store import DiskReplayBuffer, binary
+from jarvis.recorder import RecorderError
+from jarvis.replay_store import DiskReplayBuffer, binary
 
 
 class StoreDeadlineTests(unittest.TestCase):
@@ -47,8 +47,8 @@ class StoreDeadlineTests(unittest.TestCase):
                 process = MagicMock(stdin=Input(), stdout=Output())
                 process.kill.side_effect = release.set
                 errors = []
-                with patch('murmur.replay_store.binary', return_value='fake-store'), \
-                        patch('murmur.replay_store.subprocess.Popen', return_value=process), \
+                with patch('jarvis.replay_store.binary', return_value='fake-store'), \
+                        patch('jarvis.replay_store.subprocess.Popen', return_value=process), \
                         patch.object(DiskReplayBuffer, 'REQUEST_TIMEOUT', .05, create=True):
                     buffer = DiskReplayBuffer(2, 1024, str(Path(folder) / 'buffer'))
 
@@ -108,7 +108,7 @@ class DiskStoreTests(unittest.TestCase):
                 self.assertEqual(paths[0].stat().st_mode & 0o777, 0o600)
             else:
                 import win32security
-                from murmur.windows.system import user_sid
+                from jarvis.windows.system import user_sid
                 sid = win32security.ConvertSidToStringSid(user_sid())
                 for path in (paths[0], paths[0].parent):
                     acl = win32security.GetFileSecurity(str(path), win32security.DACL_SECURITY_INFORMATION).GetSecurityDescriptorDacl()
@@ -226,7 +226,7 @@ class DiskStoreTests(unittest.TestCase):
                 resource.setrlimit(resource.RLIMIT_FSIZE, (128, 128))
             return original(*args, preexec_fn=limit, **kwargs)
 
-        with patch("murmur.replay_store.subprocess.Popen", side_effect=limited):
+        with patch("jarvis.replay_store.subprocess.Popen", side_effect=limited):
             buffer = self.store(cap=1024)
         buffer.append(b"old", 0)
         with buffer.files() as paths:
@@ -278,8 +278,8 @@ class DiskStoreTests(unittest.TestCase):
         buffer = self.store(seconds=2, cap=len(data) * 6)
         buffer.append(data, 0)
         buffer.append(data, 1)
-        from murmur.windows.capture import Replay
-        from murmur.config import validate
+        from jarvis.windows.capture import Replay
+        from jarvis.config import validate
         from unittest.mock import MagicMock
         capture = Replay(validate({"replay": {"storage": "disk"}}))
         capture._buffer, capture._folder = buffer, self.root
@@ -295,7 +295,7 @@ class DiskStoreTests(unittest.TestCase):
         thread = threading.Thread(target=lambda: (time.sleep(.04), buffer.append(data, 2)))
         thread.start()
         try:
-            with patch("murmur.windows.capture.subprocess.run", side_effect=roll_and_run):
+            with patch("jarvis.windows.capture.subprocess.run", side_effect=roll_and_run):
                 result = capture.save()
         finally:
             thread.join(timeout=2)
@@ -307,8 +307,8 @@ class DiskStoreTests(unittest.TestCase):
 
     @unittest.skipUnless(os.name == "nt" and shutil.which("ffmpeg") and shutil.which("ffprobe"), "Windows named pipes and FFmpeg")
     def test_windows_named_pipe_capture_disk_save_and_stop(self):
-        from murmur import config
-        from murmur.windows import capture
+        from jarvis import config
+        from jarvis.windows import capture
         ffmpeg = shutil.which("ffmpeg")
         cfg = config.validate({
             "recording": {"configured": True, "monitor": "generated", "output_dir": str(self.root), "codec": "h264", "system_audio": False, "microphone": False},

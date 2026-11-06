@@ -59,7 +59,7 @@ def sample(binary, applications):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--binary", type=Path, default=ROOT / "src/murmur/bin/jarvis-controller")
+    parser.add_argument("--binary", type=Path, default=ROOT / "src/jarvis/bin/jarvis-controller")
     parser.add_argument("--applications", type=int, default=1000)
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument("--output", type=Path)

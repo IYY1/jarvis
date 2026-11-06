@@ -78,7 +78,7 @@ def main():
         env=environment(tunables)
         # Only the parent differs in cache policy; all child processes retain
         # an explicit, identical default GLIBC_TUNABLES value.
-        env['MURMUR_KWS_CHILD_GLIBC_TUNABLES']=''
+        env['JARVIS_KWS_CHILD_GLIBC_TUNABLES']=''
         run=subprocess.run([str(hb.resolve()),str(settings.resolve()),str(a.fixture.resolve())],
             capture_output=True,text=True,check=True,timeout=30+a.cycles*35,env=env)
         events=[json.loads(line) for line in run.stdout.splitlines()]

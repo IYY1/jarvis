@@ -13,15 +13,15 @@ import time
 import unittest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from murmur.commands import Parser, POLITE_PREFIXES, POLITE_SUFFIXES, closest_match, match_candidates
-from murmur.config import DEFAULTS
-from murmur.native_worker import binary_path, prepare
+from jarvis.commands import Parser, POLITE_PREFIXES, POLITE_SUFFIXES, closest_match, match_candidates
+from jarvis.config import DEFAULTS
+from jarvis.native_worker import binary_path, prepare
 
 APPS = ["firefox", "dolphin", "discord", "deadlock", "steam", "stremio", "streamio", "tekken eight", "calculator"]
 
 
 def native(config=None, mode="once", grammar=None):
-    with patch.dict(os.environ, MURMUR_VOICE_WORKER="rust"):
+    with patch.dict(os.environ, JARVIS_VOICE_WORKER="rust"):
         return prepare(config or copy.deepcopy(DEFAULTS), mode, grammar or Parser().grammar(APPS))
 
 
@@ -41,21 +41,21 @@ class PreparationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             library = Path(directory)
             (library / "libvosk.so").touch()
-            with patch.dict(os.environ), patch("murmur.native_worker.binary_path", return_value=Path("/built/jarvis-voice")), \
-                    patch("murmur.native_worker.package_dir", return_value=library), \
-                    patch("murmur.native_worker.valid_model", return_value=True), \
-                    patch("murmur.native_worker.accurate_model_ready", return_value=False):
-                os.environ.pop("MURMUR_VOICE_WORKER", None)
+            with patch.dict(os.environ), patch("jarvis.native_worker.binary_path", return_value=Path("/built/jarvis-voice")), \
+                    patch("jarvis.native_worker.package_dir", return_value=library), \
+                    patch("jarvis.native_worker.valid_model", return_value=True), \
+                    patch("jarvis.native_worker.accurate_model_ready", return_value=False):
+                os.environ.pop("JARVIS_VOICE_WORKER", None)
                 argv, payload, _ = prepare(copy.deepcopy(DEFAULTS), "once", {})
             self.assertEqual(argv, ["/built/jarvis-voice"])
             self.assertEqual(payload["native"]["vosk_library"], str(library / "libvosk.so"))
 
     def test_default_source_only_install_uses_python_without_loading_dependencies(self):
-        with patch.dict(os.environ), patch("murmur.native_worker.binary_path", return_value=None), \
-                patch("murmur.native_worker.package_dir", side_effect=AssertionError):
-            os.environ.pop("MURMUR_VOICE_WORKER", None)
+        with patch.dict(os.environ), patch("jarvis.native_worker.binary_path", return_value=None), \
+                patch("jarvis.native_worker.package_dir", side_effect=AssertionError):
+            os.environ.pop("JARVIS_VOICE_WORKER", None)
             argv, payload, _ = prepare(copy.deepcopy(DEFAULTS), "once", {})
-        self.assertEqual(argv, [sys.executable, "-m", "murmur.voice"])
+        self.assertEqual(argv, [sys.executable, "-m", "jarvis.voice"])
         self.assertNotIn("native", payload)
 
     def test_default_preserves_pocketsphinx_and_missing_dependency_fallbacks(self):
@@ -70,33 +70,33 @@ class PreparationTests(unittest.TestCase):
                         (library / "libvosk.so").touch()
                     config = copy.deepcopy(DEFAULTS)
                     config["recognition"]["backend"] = backend
-                    with patch.dict(os.environ), patch("murmur.native_worker.binary_path", return_value=Path("/built/jarvis-voice")), \
-                            patch("murmur.native_worker.package_dir", return_value=package), \
-                            patch("murmur.native_worker.valid_model", return_value=model_ready):
-                        os.environ.pop("MURMUR_VOICE_WORKER", None)
+                    with patch.dict(os.environ), patch("jarvis.native_worker.binary_path", return_value=Path("/built/jarvis-voice")), \
+                            patch("jarvis.native_worker.package_dir", return_value=package), \
+                            patch("jarvis.native_worker.valid_model", return_value=model_ready):
+                        os.environ.pop("JARVIS_VOICE_WORKER", None)
                         argv, payload, _ = prepare(config, "once", {})
-                    self.assertEqual(argv, [sys.executable, "-m", "murmur.voice"])
+                    self.assertEqual(argv, [sys.executable, "-m", "jarvis.voice"])
                     self.assertNotIn("native", payload)
 
     def test_default_meter_can_use_rust_without_recognition_dependencies(self):
-        with patch.dict(os.environ), patch("murmur.native_worker.binary_path", return_value=Path("/built/jarvis-voice")), \
-                patch("murmur.native_worker.package_dir", return_value=None), \
-                patch("murmur.native_worker.accurate_model_ready", return_value=False):
-            os.environ.pop("MURMUR_VOICE_WORKER", None)
+        with patch.dict(os.environ), patch("jarvis.native_worker.binary_path", return_value=Path("/built/jarvis-voice")), \
+                patch("jarvis.native_worker.package_dir", return_value=None), \
+                patch("jarvis.native_worker.accurate_model_ready", return_value=False):
+            os.environ.pop("JARVIS_VOICE_WORKER", None)
             argv, payload, _ = prepare(copy.deepcopy(DEFAULTS), "test", {})
         self.assertEqual(argv, ["/built/jarvis-voice"])
         self.assertEqual(payload["native"]["vosk_library"], "")
 
     def test_python_remains_available_without_rust_or_model_imports(self):
-        with patch.dict(os.environ, MURMUR_VOICE_WORKER="python"), patch("murmur.native_worker.binary_path", side_effect=AssertionError):
+        with patch.dict(os.environ, JARVIS_VOICE_WORKER="python"), patch("jarvis.native_worker.binary_path", side_effect=AssertionError):
             argv, payload, env = prepare(copy.deepcopy(DEFAULTS), "test", {})
-        self.assertEqual(argv, [sys.executable, "-m", "murmur.voice"])
+        self.assertEqual(argv, [sys.executable, "-m", "jarvis.voice"])
         self.assertNotIn("native", payload)
-        self.assertEqual(env["MURMUR_OWNER_PID"], str(os.getpid()))
+        self.assertEqual(env["JARVIS_OWNER_PID"], str(os.getpid()))
 
     def test_explicit_rust_requires_a_built_worker_and_rejects_unknown_selection(self):
         for selection, error in (("rust", "missing"), ("typo", "must be")):
-            with patch.dict(os.environ, MURMUR_VOICE_WORKER=selection), patch("murmur.native_worker.binary_path", return_value=None):
+            with patch.dict(os.environ, JARVIS_VOICE_WORKER=selection), patch("jarvis.native_worker.binary_path", return_value=None):
                 with self.assertRaisesRegex(ValueError, error):
                     prepare(copy.deepcopy(DEFAULTS), "test", {})
 
@@ -107,30 +107,30 @@ class PreparationTests(unittest.TestCase):
             (tools / "jarvis-voice.exe").touch(mode=0o755)
         if library:
             (tools / "libvosk.dll").touch()
-        return patch.multiple("murmur.native_worker", is_windows=lambda: True, app_dir=lambda: Path(directory), EXE=".exe",
+        return patch.multiple("jarvis.native_worker", is_windows=lambda: True, app_dir=lambda: Path(directory), EXE=".exe",
                               python_worker_available=lambda: False, valid_model=lambda _path: True,
                               accurate_model_ready=lambda *_: False)
 
     def test_windows_release_uses_the_bundled_rust_worker_and_vosk_dll(self):
         with tempfile.TemporaryDirectory() as directory, self.windows_release(directory), patch.dict(os.environ):
-            os.environ.pop("MURMUR_VOICE_WORKER", None)
+            os.environ.pop("JARVIS_VOICE_WORKER", None)
             argv, payload, env = prepare(copy.deepcopy(DEFAULTS), "wake_word", Parser().grammar([]))
         tools = Path(directory) / "tools"
         self.assertEqual(argv, [str(tools / "jarvis-voice.exe")])
         self.assertEqual(payload["native"]["vosk_library"], str(tools / "libvosk.dll"))
-        self.assertEqual(env["MURMUR_OWNER_PID"], str(os.getpid()))
+        self.assertEqual(env["JARVIS_OWNER_PID"], str(os.getpid()))
 
     def test_windows_release_without_worker_or_library_explains_reinstall(self):
         for worker, library in ((False, True), (True, False)):
             with self.subTest(worker=worker, library=library), tempfile.TemporaryDirectory() as directory, \
                     self.windows_release(directory, worker=worker, library=library), \
-                    patch("murmur.native_worker.package_dir", return_value=None), patch.dict(os.environ):
-                os.environ.pop("MURMUR_VOICE_WORKER", None)
+                    patch("jarvis.native_worker.package_dir", return_value=None), patch.dict(os.environ):
+                os.environ.pop("JARVIS_VOICE_WORKER", None)
                 with self.assertRaisesRegex(ValueError, "[Rr]einstall"):
                     prepare(copy.deepcopy(DEFAULTS), "wake_word", Parser().grammar([]))
 
     def test_rust_ready_reports_release_voice_availability(self):
-        from murmur.native_worker import rust_ready
+        from jarvis.native_worker import rust_ready
         with tempfile.TemporaryDirectory() as directory, self.windows_release(directory):
             self.assertTrue(rust_ready(copy.deepcopy(DEFAULTS)))
             config = copy.deepcopy(DEFAULTS)
@@ -141,16 +141,16 @@ class PreparationTests(unittest.TestCase):
         config = copy.deepcopy(DEFAULTS)
         config["recognition"].update(accurate=True, speech_model="light")
         ready = []
-        with patch.dict(os.environ, MURMUR_VOICE_WORKER="rust"), \
-                patch("murmur.native_worker.binary_path", return_value=Path("/built/jarvis-voice")), \
-                patch("murmur.native_worker.package_dir", return_value=None), \
-                patch("murmur.native_worker.accurate_model_ready", side_effect=lambda name: ready.append(name) or True):
+        with patch.dict(os.environ, JARVIS_VOICE_WORKER="rust"), \
+                patch("jarvis.native_worker.binary_path", return_value=Path("/built/jarvis-voice")), \
+                patch("jarvis.native_worker.package_dir", return_value=None), \
+                patch("jarvis.native_worker.accurate_model_ready", side_effect=lambda name: ready.append(name) or True):
             _, payload, _ = prepare(config, "test", Parser().grammar([]))
         self.assertEqual(ready, ["whisper-tiny"])
         self.assertTrue(payload["native"]["whisper"]["encoder"].endswith("sherpa-onnx-whisper-tiny.en/tiny.en-encoder.int8.onnx"))
 
     def test_missing_chosen_model_falls_back_to_the_installed_one(self):
-        from murmur.models import usable_model
+        from jarvis.models import usable_model
         config = copy.deepcopy(DEFAULTS)
         for chosen, installed, expected in (("light", {"whisper-tiny", "whisper-small"}, "whisper-tiny"),
                                             ("light", {"whisper-small"}, "whisper-small"),
@@ -158,11 +158,11 @@ class PreparationTests(unittest.TestCase):
                                             ("light", set(), "whisper-tiny")):
             config["recognition"]["speech_model"] = chosen
             with self.subTest(chosen=chosen, installed=installed), \
-                    patch("murmur.models.accurate_model_ready", side_effect=lambda name: name in installed):
+                    patch("jarvis.models.accurate_model_ready", side_effect=lambda name: name in installed):
                 self.assertEqual(usable_model(config), expected)
 
     def test_speech_model_setting_is_validated(self):
-        from murmur.config import validate
+        from jarvis.config import validate
         self.assertEqual(validate({})["recognition"]["speech_model"], "light")
         self.assertEqual(validate({"recognition": {"speech_model": "light"}})["recognition"]["speech_model"], "light")
         with self.assertRaisesRegex(ValueError, "small or light"):
@@ -171,10 +171,10 @@ class PreparationTests(unittest.TestCase):
     def test_rust_whisper_preparation_does_not_require_sherpa(self):
         config = copy.deepcopy(DEFAULTS)
         config["recognition"]["accurate"] = True
-        with patch.dict(os.environ, MURMUR_VOICE_WORKER="rust"), \
-                patch("murmur.native_worker.binary_path", return_value=Path("/built/jarvis-voice")), \
-                patch("murmur.native_worker.package_dir", return_value=None) as packages, \
-                patch("murmur.native_worker.accurate_model_ready", return_value=True):
+        with patch.dict(os.environ, JARVIS_VOICE_WORKER="rust"), \
+                patch("jarvis.native_worker.binary_path", return_value=Path("/built/jarvis-voice")), \
+                patch("jarvis.native_worker.package_dir", return_value=None) as packages, \
+                patch("jarvis.native_worker.accurate_model_ready", return_value=True):
             _, payload, _ = prepare(config, "test", Parser().grammar([]))
         self.assertIsNotNone(payload["native"]["whisper"])
         self.assertEqual(payload["native"]["whisper_idle_seconds"], 60)
@@ -231,9 +231,9 @@ class RustPolicyTests(unittest.TestCase):
                 self.assertIn("Whisper idle duration", json.loads(out.stdout)["message"])
 
 
-FIXTURE = os.environ.get("MURMUR_SPEECH_TEST_RAW")
-MODEL = os.environ.get("MURMUR_VOSK_MODEL")
-WHISPER = os.environ.get("MURMUR_WHISPER_MODEL")
+FIXTURE = os.environ.get("JARVIS_SPEECH_TEST_RAW")
+MODEL = os.environ.get("JARVIS_VOSK_MODEL")
+WHISPER = os.environ.get("JARVIS_WHISPER_MODEL")
 
 
 def whisper_threads(pid):
@@ -387,7 +387,7 @@ class RustEngineTests(unittest.TestCase):
         self.assertTrue(result["passed"], result)
 
     def test_service_selects_rust_and_accepts_its_command_without_dispatching_actions(self):
-        from murmur.daemon import Service
+        from jarvis.daemon import Service
         async def check():
             config = copy.deepcopy(DEFAULTS)
             config["privacy"]["onboarded"] = True
@@ -399,8 +399,8 @@ class RustEngineTests(unittest.TestCase):
                 capture = root / "pw-record"
                 capture.write_text("#!/usr/bin/env python3\nimport os,time\nfrom pathlib import Path\naudio=Path(os.environ['PUBLIC_PCM']).read_bytes()+bytes(64000)\naudio+=bytes((-len(audio))%960)\nfor offset in range(0,len(audio),960):\n os.write(1,audio[offset:offset+960]);time.sleep(.03)\nwhile True: os.write(1,bytes(960));time.sleep(.03)\n")
                 capture.chmod(0o700)
-                with patch.dict(os.environ, MURMUR_VOICE_WORKER="rust", PATH=str(root) + ":" + os.environ.get("PATH", ""), PUBLIC_PCM=FIXTURE), \
-                        patch("murmur.daemon.AppRegistry", return_value=MagicMock(index={})):
+                with patch.dict(os.environ, JARVIS_VOICE_WORKER="rust", PATH=str(root) + ":" + os.environ.get("PATH", ""), PUBLIC_PCM=FIXTURE), \
+                        patch("jarvis.daemon.AppRegistry", return_value=MagicMock(index={})):
                     service = Service(config)
                     service.loop = asyncio.get_running_loop()
                     service.execute = AsyncMock()
@@ -416,8 +416,8 @@ class RustEngineTests(unittest.TestCase):
         asyncio.run(check())
 
     def test_real_vosk_commands_and_one_breath_wake_match_python(self):
-        from murmur.vosk_engine import VoskEngine
-        from murmur.voice import rms
+        from jarvis.vosk_engine import VoskEngine
+        from jarvis.voice import rms
         grammar = Parser({"go forward ten meters": "start recording", "ten meters": "start recording"}).grammar(APPS)
         config = copy.deepcopy(DEFAULTS)
         config["recognition"].update(model_path=MODEL, accurate=False)

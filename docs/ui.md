@@ -51,7 +51,7 @@ On 20 October 2026, GTK 4.24.1/PyGObject construction succeeded for all six page
 - voice and recorder settings round trips;
 - adding and removing a command shortcut, preserving unrelated configuration;
 - command search filtering and page construction;
-- a second `murmur ui --page recording` request routing an existing window to Recorder in an isolated session bus;
+- a second `jarvis ui --page recording` request routing an existing window to Recorder in an isolated session bus;
 - microphone remaining muted and `microphone_open=false` throughout the checks.
 
 A final native-display construction smoke, with IPC disabled and no window presented, also verified the sound-feedback save field and combined-source acknowledgement gating both audio flags. No microphone or recorder calls were made. A further native widget check with explicit status fixtures verified that model-loading events leave speech support unconfirmed, readiness repairs initially incorrect app flags, dictionary limitations and the Stremio alias hint appear, and repeated level-only events do not rebuild application widgets.
@@ -63,9 +63,9 @@ For a construction smoke check without accessing audio, start a temporary `gtk4-
 ```sh
 GDK_BACKEND=broadway BROADWAY_DISPLAY=:18 PYTHONPATH=src python - <<'PY'
 from gi.repository import GLib
-from murmur.ui import Gtk, JarvisWindow
+from jarvis.ui import Gtk, JarvisWindow
 assert Gtk.init_check()
-app = Gtk.Application(application_id="org.murmur.ConstructionCheck")
+app = Gtk.Application(application_id="org.jarvis.ConstructionCheck")
 app.register(None)
 window = JarvisWindow(app)
 assert window.stack.get_pages().get_n_items() == 8

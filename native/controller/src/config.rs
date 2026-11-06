@@ -3,20 +3,20 @@ use crate::{
     policy::{normalize, Parser},
     util, Result,
 };
-use serde_json::Value;
+use serde_json::{json, Value};
 use std::{collections::HashSet, env, fs, path::PathBuf};
 
 pub fn defaults() -> Value {
     serde_json::from_str(include_str!("../data/defaults.json")).unwrap()
 }
 pub fn path() -> PathBuf {
-    env::var_os("MURMUR_CONFIG")
+    env::var_os("JARVIS_CONFIG")
         .map(PathBuf::from)
         .unwrap_or_else(|| {
             env::var_os("XDG_CONFIG_HOME")
                 .map(PathBuf::from)
                 .unwrap_or_else(|| util::home().join(".config"))
-                .join("murmur/config.json")
+                .join("jarvis/config.json")
         })
 }
 fn merge(base: &mut Value, patch: &Value) {
@@ -497,6 +497,61 @@ pub fn repair(data: &Value) -> (Value, Vec<String>) {
         .map(|(section, name, _)| name.map_or(section.clone(), |n| format!("{section}.{n}")))
         .collect();
     (validate(&kept).unwrap_or_else(|_| defaults()), reset)
+}
+/// One-time move from the old name (mirrors migrate.py, which also renames the
+/// launcher and user service): the settings and data folders, and the videos
+/// folder the settings name, then settings that point at them. Skipped when
+/// JARVIS_CONFIG chooses the settings file, and when Jarvis folders exist.
+pub fn migrate_from_old_name() {
+    if env::var_os("JARVIS_CONFIG").is_some() {
+        return;
+    }
+    let old = concat!("mur", "mur"); // spelled apart so a code rename leaves it
+    let home = util::home();
+    let config_home = env::var_os("XDG_CONFIG_HOME").map_or(home.join(".config"), PathBuf::from);
+    let data_home = env::var_os("XDG_DATA_HOME").map_or(home.join(".local/share"), PathBuf::from);
+    let mut moves = vec![];
+    for (from, to) in [
+        (config_home.join(old), config_home.join("jarvis")),
+        (data_home.join(old), data_home.join("jarvis")),
+    ] {
+        if from.is_dir() && !from.is_symlink() && !to.exists() && fs::rename(&from, &to).is_ok() {
+            moves.push((from, to));
+        }
+    }
+    let settings = config_home.join("jarvis/config.json");
+    let Ok(mut data) = fs::read(&settings).map_err(|_| ()).and_then(|b| serde_json::from_slice::<Value>(&b).map_err(|_| ())) else {
+        return;
+    };
+    let expand = |value: &str| value.strip_prefix('~').map_or(PathBuf::from(value), |rest| home.join(rest.trim_start_matches('/')));
+    let output = expand(data["recording"]["output_dir"].as_str().unwrap_or(""));
+    let mut videos_old = String::from(old);
+    videos_old[..1].make_ascii_uppercase();
+    if output.file_name().is_some_and(|n| n == videos_old.as_str()) {
+        let to = output.with_file_name("Jarvis");
+        if output.is_dir() && !to.exists() && fs::rename(&output, &to).is_ok() {
+            moves.push((output, to));
+        }
+    }
+    let mut changed = false;
+    for (section, key) in [("recording", "output_dir"), ("recognition", "model_path"), ("replay", "buffer_dir")] {
+        let Some(value) = data[section][key].as_str().map(str::to_owned) else { continue };
+        let expanded = expand(&value);
+        for (from, to) in &moves {
+            if let Ok(rest) = expanded.strip_prefix(from) {
+                let moved = to.join(rest).to_string_lossy().into_owned();
+                let home = home.to_string_lossy();
+                data[section][key] = json!(if value.starts_with('~') { moved.replacen(home.as_ref(), "~", 1) } else { moved });
+                changed = true;
+            }
+        }
+    }
+    if changed {
+        if let Ok(mut bytes) = serde_json::to_vec(&data) {
+            bytes.push(b'\n');
+            let _ = util::atomic_write(&settings, &bytes);
+        }
+    }
 }
 pub fn load() -> Result<Value> {
     let path = path();

@@ -30,7 +30,7 @@ impl Budget {
                 env::var_os("XDG_DATA_HOME")
                     .map(PathBuf::from)
                     .unwrap_or_else(|| util::home().join(".local/share"))
-                    .join("murmur/replay-buffer")
+                    .join("jarvis/replay-buffer")
             } else {
                 util::expand(configured)
             };

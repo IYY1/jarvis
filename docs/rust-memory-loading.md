@@ -89,7 +89,7 @@ fallback across I/O chunks, and cache-output byte order.
 The full offline Python suite ran **296 tests in 41.414 seconds: 292 passed and
 four Windows-only audio cases skipped on Linux**. It used the new checkout
 binaries, existing local speech models, the public fixture and private fake
-desktop/capture/IPC programs. The new binaries are staged in `src/murmur/bin/`;
+desktop/capture/IPC programs. The new binaries are staged in `src/jarvis/bin/`;
 the installed service was not restarted. Changes remain local and uncommitted.
 
 ## Default selection and CodeRabbit review
@@ -102,12 +102,12 @@ uncommitted work. The raw result is saved in
 
 Linux now prefers the Rust worker when its executable, Vosk library and model
 are available. Windows, PocketSphinx and installations missing those assets
-retain Python; `MURMUR_VOICE_WORKER=python` selects it explicitly. The final
+retain Python; `JARVIS_VOICE_WORKER=python` selects it explicitly. The final
 offline suite ran **300 tests in 41.965 seconds: 296 passed and four Windows-only
 audio cases skipped**. It includes default selection and fallback checks.
 
 A read-only service check confirmed the active worker's executable SHA-256
-matches the benchmarked, staged `src/murmur/bin/jarvis-voice`. It was already
+matches the benchmarked, staged `src/jarvis/bin/jarvis-voice`. It was already
 running that binary, so no restart was necessary. Mute, recording and replay
 state were left untouched. Verification details are saved in
 `build/memory-optimization/default-verification.json`.

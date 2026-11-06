@@ -136,7 +136,7 @@ def install(archive: Path | None = None, destination: Path | None = None) -> Pat
         staging = Path(temporary)
         zipped = staging / "model.zip"
         if archive is None:
-            request = urllib.request.Request(MODEL_URL, headers={"User-Agent": "Murmur-model-setup/0.1"})
+            request = urllib.request.Request(MODEL_URL, headers={"User-Agent": "Jarvis-model-setup/0.1"})
             with urllib.request.urlopen(request, timeout=30) as response, zipped.open("wb") as output:
                 total = 0
                 while chunk := response.read(1024 * 1024):
@@ -245,7 +245,7 @@ def _download(url: str, target: Path, sha256: str, limit: int, progress=None) ->
     import hashlib
     import urllib.request
     digest = hashlib.sha256()
-    request = urllib.request.Request(url, headers={"User-Agent": "Murmur-model-setup/0.2"})
+    request = urllib.request.Request(url, headers={"User-Agent": "Jarvis-model-setup/0.2"})
     with urllib.request.urlopen(request, timeout=60) as response, target.open("wb") as output:
         expected = int(response.headers.get("Content-Length") or 0)
         total = 0

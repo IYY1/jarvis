@@ -20,9 +20,9 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from murmur.process_memory import snapshot
-from murmur.replay_store import DiskReplayBuffer, binary
-from murmur.windows.capture import ReplayBuffer
+from jarvis.process_memory import snapshot
+from jarvis.replay_store import DiskReplayBuffer, binary
+from jarvis.windows.capture import ReplayBuffer
 
 
 def digest(path):

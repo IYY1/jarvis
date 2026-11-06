@@ -185,6 +185,11 @@ def run_waybar(watch, stop: threading.Event, wait=None) -> int:
 
 
 def main():
+    import os
+    if not os.environ.get("JARVIS_CONFIG") and not os.environ.get("JARVIS_NO_MIGRATION"):
+        from .migrate import from_old_name
+        for moved in from_old_name():   # once, after the rename from Murmur
+            print(f"Jarvis: moved {moved}", file=sys.stderr)
     if sys.argv[1:] == ["--background"]:
         from .windows.startup import start_service
         start_service()

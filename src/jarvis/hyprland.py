@@ -21,7 +21,7 @@ class Hyprland:
                 raise CommandError("Hyprland unavailable: " + r.stderr.strip()[:200])
             return json.loads(r.stdout)
         except (FileNotFoundError, subprocess.TimeoutExpired, json.JSONDecodeError) as e:
-            raise CommandError("Cannot reach Hyprland. Start Murmur inside the graphical session.") from e
+            raise CommandError("Cannot reach Hyprland. Start Jarvis inside the graphical session.") from e
 
     # Hyprland 0.55+ can be configured in Lua; then `hyprctl dispatch` takes a
     # Lua dispatcher expression (hl.dsp.*) instead of the old "name args" form.

@@ -312,7 +312,7 @@ pub fn orphaned() -> Vec<u32> {
         }) && argv.iter().any(|s| {
             Path::new(s)
                 .file_name()
-                .is_some_and(|n| n.to_string_lossy().starts_with(".Murmur_"))
+                .is_some_and(|n| n.to_string_lossy().starts_with(".Jarvis_"))
         }) {
             result.push(pid);
         }
@@ -424,15 +424,15 @@ impl Capture {
             .filter(|p| {
                 p.file_name().is_some_and(|s| {
                     let s = s.to_string_lossy();
-                    s.starts_with(".Murmur_") && s.ends_with(".part.mkv")
+                    s.starts_with(".Jarvis_") && s.ends_with(".part.mkv")
                 })
             })
             .collect();
         partials.sort();
         if let Some(pid) = orphans.first() {
-            self.set("error",format!("A recorder from an earlier Murmur session is still running (PID {pid}). Stop it with: kill -INT {pid}. Its partial file stays in the output folder."),None);
+            self.set("error",format!("A recorder from an earlier Jarvis session is still running (PID {pid}). Stop it with: kill -INT {pid}. Its partial file stays in the output folder."),None);
         } else if !partials.is_empty() {
-            self.set("idle",format!("Found {} unfinished recording(s) from an earlier session in {} (.Murmur_*.part.mkv). See docs/recording.md for recovery.",partials.len(),folder.display()),partials.first().map(PathBuf::as_path));
+            self.set("idle",format!("Found {} unfinished recording(s) from an earlier session in {} (.Jarvis_*.part.mkv). See docs/recording.md for recovery.",partials.len(),folder.display()),partials.first().map(PathBuf::as_path));
         }
     }
     async fn start_inner(&mut self, cfg: &Value) -> Result<Value> {
@@ -539,7 +539,7 @@ impl Capture {
             )
         } else {
             if let Some(pid) = orphaned().first() {
-                return err(format!("A recorder from an earlier Murmur session is still running (PID {pid}). Stop it with: kill -INT {pid}"));
+                return err(format!("A recorder from an earlier Jarvis session is still running (PID {pid}). Stop it with: kill -INT {pid}"));
             }
             let mut args = if gpu {
                 let mut a = vec![
@@ -648,8 +648,8 @@ impl Capture {
                 std::process::id(),
                 util::now().to_bits()
             );
-            let output = folder.join(format!("Murmur_{tag}.mkv"));
-            let partial = folder.join(format!(".Murmur_{tag}.part.mkv"));
+            let output = folder.join(format!("Jarvis_{tag}.mkv"));
+            let partial = folder.join(format!(".Jarvis_{tag}.part.mkv"));
             fs::OpenOptions::new()
                 .write(true)
                 .create_new(true)

@@ -18,8 +18,8 @@ desktop application with the acceptance limits below.
 | Native settings | `ui.py`, `style.css` |
 | Installation and reproducible measurements | `scripts/`, `examples/`, `docs/benchmarks/` |
 
-Files above are under `src/murmur/`. This namespace, socket/storage IDs,
-`murmur.service`, recording prefixes and legacy CLI are intentionally retained
+Files above are under `src/jarvis/`. This namespace, socket/storage IDs,
+`jarvis.service`, recording prefixes and legacy CLI are intentionally retained
 for compatibility. Public branding, preferred CLI and launcher are Jarvis.
 
 ## Changes in this preparation

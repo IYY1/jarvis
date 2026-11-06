@@ -18,7 +18,7 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from murmur.models import accurate_model_dir
+from jarvis.models import accurate_model_dir
 from benchmark_transcriber import variants
 
 

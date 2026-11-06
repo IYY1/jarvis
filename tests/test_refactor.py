@@ -5,11 +5,11 @@ import threading
 import unittest
 from unittest.mock import MagicMock, patch
 
-from murmur import client, config
-from murmur.apps import App
-from murmur.hyprland import Hyprland
-from murmur.recorder import RecorderError
-from murmur.replay import Replay
+from jarvis import client, config
+from jarvis.apps import App
+from jarvis.hyprland import Hyprland
+from jarvis.recorder import RecorderError
+from jarvis.replay import Replay
 
 
 class SettingsOwnershipTests(unittest.TestCase):
@@ -49,7 +49,7 @@ class ResponseValidationTests(unittest.TestCase):
         connection = MagicMock()
         connection.__enter__.return_value = connection
         connection.makefile.return_value.__enter__.return_value.readline.return_value = b"[]\n"
-        with patch("murmur.replay.socket.socket", return_value=connection):
+        with patch("jarvis.replay.socket.socket", return_value=connection):
             with self.assertRaisesRegex(RecorderError, "invalid response"):
                 Replay(config.validate({}))._request("save-replay")
 

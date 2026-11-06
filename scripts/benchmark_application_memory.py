@@ -20,7 +20,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from murmur.process_memory import snapshot
+from jarvis.process_memory import snapshot
 
 BUDGET_MIB = {"waiting-replay-off": 150, "waiting-replay-on": 300, "command": 400}
 
@@ -66,7 +66,7 @@ def main():
     if not math.isfinite(args.interval) or not .05 <= args.interval <= 60:
         parser.error("interval must be finite and between 0.05 and 60")
     if args.pid is None:
-        from murmur.client import request
+        from jarvis.client import request
         response = request("status", timeout=2)
         if not response.get("ok") or type(response.get("pid")) is not int:
             parser.error("Service does not supply its PID; update/restart it or pass --pid")

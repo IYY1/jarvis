@@ -61,7 +61,7 @@ pub fn root() -> PathBuf {
     env::var_os("XDG_DATA_HOME")
         .map(PathBuf::from)
         .unwrap_or_else(|| util::home().join(".local/share"))
-        .join("murmur/models")
+        .join("jarvis/models")
 }
 pub fn valid(path: &Path, files: &[&str]) -> bool {
     path.is_dir() && files.iter().all(|f| path.join(f).is_file())

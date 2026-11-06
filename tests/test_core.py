@@ -11,13 +11,13 @@ import time
 import unittest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from murmur.actions import Dispatcher
-from murmur.apps import AppRegistry
-from murmur.commands import CommandError, Intent, Parser, normalize
-from murmur import config
-from murmur.daemon import Service
-from murmur.hyprland import Hyprland
-from murmur.state import Activation
+from jarvis.actions import Dispatcher
+from jarvis.apps import AppRegistry
+from jarvis.commands import CommandError, Intent, Parser, normalize
+from jarvis import config
+from jarvis.daemon import Service
+from jarvis.hyprland import Hyprland
+from jarvis.state import Activation
 
 
 class ParserTests(unittest.TestCase):
@@ -207,8 +207,8 @@ class AppTests(unittest.TestCase):
     def test_launch_uses_desktop_mechanism_and_structured_arguments(self):
         entry = write_entry(self.root, "my browser.desktop", exec_line="firefox %u")
         registry = AppRegistry(roots=[self.root])
-        with patch("murmur.apps.shutil.which", return_value="/usr/bin/gio"), \
-                patch("murmur.apps.subprocess.run", return_value=subprocess.CompletedProcess([], 0, "", "")) as run:
+        with patch("jarvis.apps.shutil.which", return_value="/usr/bin/gio"), \
+                patch("jarvis.apps.subprocess.run", return_value=subprocess.CompletedProcess([], 0, "", "")) as run:
             registry.launch(registry.resolve("browser"))
             self.assertEqual(run.call_args.args[0], ["/usr/bin/gio", "launch", str(entry)])
             self.assertNotIn("shell", run.call_args.kwargs)
@@ -253,7 +253,7 @@ class DispatcherTests(unittest.TestCase):
         self.pause.assert_called_once()
         with self.assertRaises(CommandError):
             self.dispatch.execute(Intent("shell", "echo arbitrary"))
-        with patch("murmur.hyprland.subprocess.run") as run:
+        with patch("jarvis.hyprland.subprocess.run") as run:
             for action, target in (("workspace", "2; anything"), ("focus_address", "0x1; anything"),
                                    ("shell", "x"), ("workspace", True)):
                 with self.assertRaises(CommandError):
@@ -302,7 +302,7 @@ class ServiceConsentTests(unittest.IsolatedAsyncioTestCase):
         # separately exercises the production executor.
         async def inline(function, *args, **kwargs):
             return function(*args, **kwargs)
-        patcher = patch("murmur.daemon.asyncio.to_thread", side_effect=inline)
+        patcher = patch("jarvis.daemon.asyncio.to_thread", side_effect=inline)
         patcher.start()
         self.addCleanup(patcher.stop)
 
@@ -310,7 +310,7 @@ class ServiceConsentTests(unittest.IsolatedAsyncioTestCase):
         registry = MagicMock()
         registry.index = {}
         registry.list.return_value = []
-        with patch("murmur.daemon.AppRegistry", return_value=registry):
+        with patch("jarvis.daemon.AppRegistry", return_value=registry):
             service = Service({"privacy": {"onboarded": onboarded},
                                "activation": {"mode": "push_to_talk"}})
         service.loop = asyncio.get_running_loop()
@@ -318,7 +318,7 @@ class ServiceConsentTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_no_consent_prevents_ipc_unmute_listen_and_microphone_test(self):
         service = self.make_service()
-        with patch("murmur.daemon.asyncio.create_subprocess_exec", new_callable=AsyncMock) as spawn:
+        with patch("jarvis.daemon.asyncio.create_subprocess_exec", new_callable=AsyncMock) as spawn:
             for payload in ({"op": "mute", "muted": False}, {"op": "listen"},
                             {"op": "mic_test", "enabled": True}):
                 with self.subTest(payload=payload), self.assertRaises(CommandError):
@@ -331,8 +331,8 @@ class ServiceConsentTests(unittest.IsolatedAsyncioTestCase):
         service = self.make_service()
         updated = copy.deepcopy(service.config)
         updated["privacy"]["onboarded"] = True
-        with patch("murmur.daemon.configuration.save", side_effect=lambda c: c), \
-                patch("murmur.daemon.asyncio.create_subprocess_exec", new_callable=AsyncMock) as spawn:
+        with patch("jarvis.daemon.configuration.save", side_effect=lambda c: c), \
+                patch("jarvis.daemon.asyncio.create_subprocess_exec", new_callable=AsyncMock) as spawn:
             result = await service.handle({"op": "save_config", "config": updated})
             self.assertTrue(result["ok"])
             spawn.assert_not_called()
@@ -347,7 +347,7 @@ class ServiceConsentTests(unittest.IsolatedAsyncioTestCase):
             started.set()
             await release.wait()
             return worker
-        with patch("murmur.daemon.asyncio.create_subprocess_exec", side_effect=delayed_spawn):
+        with patch("jarvis.daemon.asyncio.create_subprocess_exec", side_effect=delayed_spawn):
             listen = asyncio.create_task(service.handle({"op": "listen"}))
             await asyncio.wait_for(started.wait(), 1)
             mute = asyncio.create_task(service.handle({"op": "mute", "muted": True}))
@@ -369,8 +369,8 @@ class ServiceConsentTests(unittest.IsolatedAsyncioTestCase):
         updated = copy.deepcopy(service.config)
         updated["activation"]["mode"] = "push_to_talk"
         try:
-            with patch("murmur.daemon.configuration.save", side_effect=lambda c: c), \
-                    patch("murmur.daemon.AppRegistry", return_value=service.apps):
+            with patch("jarvis.daemon.configuration.save", side_effect=lambda c: c), \
+                    patch("jarvis.daemon.AppRegistry", return_value=service.apps):
                 await service.handle({"op": "save_config", "config": updated})
             self.assertTrue(worker.terminated, "Switching to push-to-talk must release the old wake microphone")
             self.assertIsNone(service.worker)
@@ -403,7 +403,7 @@ class ServiceConsentTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_queued_wake_resume_does_not_reopen_capture_in_push_to_talk(self):
         service = self.make_service(onboarded=True)
-        with patch("murmur.daemon.asyncio.create_subprocess_exec", new_callable=AsyncMock) as spawn:
+        with patch("jarvis.daemon.asyncio.create_subprocess_exec", new_callable=AsyncMock) as spawn:
             await service.start_worker("wake_word")
             spawn.assert_not_awaited()
         self.assertIsNone(service.worker)
@@ -415,7 +415,7 @@ class ServiceConsentTests(unittest.IsolatedAsyncioTestCase):
         async def spawn(*_args, **_kwargs):
             workers.append(FakeWorker())
             return workers[-1]
-        with patch("murmur.daemon.asyncio.create_subprocess_exec", side_effect=spawn):
+        with patch("jarvis.daemon.asyncio.create_subprocess_exec", side_effect=spawn):
             try:
                 await service.handle({"op": "mic_test", "enabled": True})
                 self.assertTrue(service.status()["mic_test"])
@@ -447,7 +447,7 @@ class ServiceConsentTests(unittest.IsolatedAsyncioTestCase):
         async def spawn(*_args, **_kwargs):
             workers.append(FakeWorker())
             return workers[-1]
-        with patch("murmur.daemon.asyncio.create_subprocess_exec", side_effect=spawn), \
+        with patch("jarvis.daemon.asyncio.create_subprocess_exec", side_effect=spawn), \
                 patch.object(service, "execute", new_callable=AsyncMock) as execute:
             try:
                 worker = await self.ready_wake_worker(service, workers)
@@ -476,7 +476,7 @@ class ServiceConsentTests(unittest.IsolatedAsyncioTestCase):
         async def spawn(*_args, **_kwargs):
             workers.append(FakeWorker())
             return workers[-1]
-        with patch("murmur.daemon.asyncio.create_subprocess_exec", side_effect=spawn), \
+        with patch("jarvis.daemon.asyncio.create_subprocess_exec", side_effect=spawn), \
                 patch.object(service, "execute", new_callable=AsyncMock) as execute:
             try:
                 worker = await self.ready_wake_worker(service, workers)
@@ -514,7 +514,7 @@ class ServiceConsentTests(unittest.IsolatedAsyncioTestCase):
 
 class SettingsStatusTests(unittest.TestCase):
     def test_window_leaves_test_mode_when_the_service_ends_the_test(self):
-        from murmur.ui import JarvisWindow
+        from jarvis.ui import JarvisWindow
         window = MagicMock(closed=False, connected=True, _test_active=True, config={"privacy": {"onboarded": True}})
         window._show_test = lambda active: JarvisWindow._show_test(window, active)
         JarvisWindow._set_status(window, {"ok": True, "status": {"state": "idle", "muted": False, "mic_test": False}})
@@ -523,9 +523,9 @@ class SettingsStatusTests(unittest.TestCase):
         window.level_text.set_text.assert_called_with("Input test is off")
 
     def test_download_button_hidden_when_models_are_installed_before_voice_starts(self):
-        from murmur.ui import JarvisWindow
+        from jarvis.ui import JarvisWindow
         window = MagicMock(closed=False, connected=True, _test_active=False, config=config.validate({}))
-        with patch("murmur.models.describe", return_value={"model_ready": True, "accurate_model_ready": True}):
+        with patch("jarvis.models.describe", return_value={"model_ready": True, "accurate_model_ready": True}):
             JarvisWindow._load_settings(window)
         JarvisWindow._set_status(window, {"ok": True, "status": {"state": "paused", "muted": True, "engine": None}})
         window.install_model_button.set_visible.assert_called_with(False)

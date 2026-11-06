@@ -10,7 +10,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from murmur.clipedit import Edit, EditError, Export, Source, command, probe
+from jarvis.clipedit import Edit, EditError, Export, Source, command, probe
 
 
 def source(duration=30.0, keyint=2.0, audio=1, codec="av1"):

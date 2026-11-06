@@ -20,6 +20,14 @@
 - **Video formats**: Recommended (AV1, else HEVC) / Compatible (H.264 GPU),
   each tested on the selected display's GPU with synthetic frames. CPU H.264
   and legacy VA-API remain only for existing configurations.
+- **Murmur is now Jarvis everywhere**: the Python package (`python -m jarvis`),
+  settings (`~/.config/jarvis`), models and data (`~/.local/share/jarvis`), the
+  default videos folder (`~/Videos/Jarvis`), `Jarvis_…` file names, `JARVIS_…`
+  environment variables, the `jarvis.service` user service and the
+  `org.jarvis.Controller` launcher. The first `jarvis` command or service start
+  moves the old folders (a rename, nothing is copied), updates settings that
+  name them, and replaces the old launcher, service and its overrides;
+  existing recordings keep their names.
 - **Folder for each game** (on by default): clips and recordings of a focused
   Steam, Heroic, Lutris or Wine game go in a folder named after it.
 - **Fixed bitrate by default, matched to resolution and frame rate** until

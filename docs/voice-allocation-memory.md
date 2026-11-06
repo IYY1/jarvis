@@ -109,7 +109,7 @@ normal Win32 WM_CLOSE messages, validated Hyprland addresses and isolated
 controller dispatch against fake desktop clients. No real application is closed
 by the tests. Windows native desktop behavior was mocked on Linux.
 
-The rebuilt binaries are staged atomically in `src/murmur/bin/`. The running
+The rebuilt binaries are staged atomically in `src/jarvis/bin/`. The running
 voice worker was reloaded through Mute/Resume, with its executable hash checked;
 the controller and RAM-replay recorder PIDs were preserved during that first
 activation. The user subsequently approved restarting Jarvis and clearing the

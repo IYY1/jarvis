@@ -14,7 +14,7 @@ def startup_argv():
     return [
         str(python if python.exists() else Path(sys.executable)),
         "-m",
-        "murmur",
+        "jarvis",
         "--background",
     ]
 

@@ -1,13 +1,13 @@
 //! Arabic command wording, mapped onto the English commands the parser already
 //! understands. Recognizing Arabic speech is the transcriber's job; this only
 //! decides whether a transcript is a supported Arabic command. Mirrored by
-//! src/murmur/phrases.py, which reads the same table.
+//! src/jarvis/phrases.py, which reads the same table.
 use crate::{clip_phrase, normalize, number_words, MAX_CLIP_SECONDS};
 use serde_json::Value;
 use std::sync::LazyLock;
 
 static TABLE: LazyLock<Value> = LazyLock::new(|| {
-    serde_json::from_str(include_str!("../../../src/murmur/arabic_commands.json")).unwrap()
+    serde_json::from_str(include_str!("../../../src/jarvis/arabic_commands.json")).unwrap()
 });
 
 fn list(key: &str) -> Vec<&'static str> {

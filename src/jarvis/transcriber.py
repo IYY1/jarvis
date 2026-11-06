@@ -49,7 +49,7 @@ class Transcriber:
         except ImportError as exc:
             raise RuntimeError("sherpa-onnx is not installed; run: pip install -e '.[voice]'") from exc
         if not accurate_model_ready(name):
-            raise RuntimeError("Accurate voice model missing. Install it with: murmur install-model")
+            raise RuntimeError("Accurate voice model missing. Install it with: jarvis install-model")
         spec = ACCURATE_MODELS[name]
         folder = accurate_model_dir(name)
         files = {key: str(folder / value) for key, value in spec["files"].items()}

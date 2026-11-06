@@ -5,8 +5,8 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from murmur import config
-from murmur.recorder import RecorderError, capture_color, sources, verify_video
+from jarvis import config
+from jarvis.recorder import RecorderError, capture_color, sources, verify_video
 
 
 class ColorTests(unittest.TestCase):
@@ -34,7 +34,7 @@ class ColorTests(unittest.TestCase):
                 config.validate({"recording": {"color_mode": invalid}})
 
     def test_source_discovery_retains_color_metadata(self):
-        with patch("murmur.recorder._query", return_value=json.dumps([
+        with patch("jarvis.recorder._query", return_value=json.dumps([
                 {"name": "DP-1", "colorManagementPreset": "hdr", "currentFormat": "XRGB2101010"}])):
             self.assertEqual(sources()[0]["colorManagementPreset"], "hdr")
 
@@ -47,12 +47,12 @@ class HDRValidationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "video.mkv"
             path.write_bytes(b"fixture")
-            with patch("murmur.recorder._query", return_value=json.dumps({"streams": [stream]})):
+            with patch("jarvis.recorder._query", return_value=json.dumps({"streams": [stream]})):
                 verify_video(path, color="hdr")
             for field, value in (("pix_fmt", "yuv420p"), ("color_transfer", "bt709"),
                                  ("color_primaries", "bt709"), ("color_space", "bt709"),
                                  ("color_range", "pc")):
-                with self.subTest(field=field), patch("murmur.recorder._query", return_value=json.dumps(
+                with self.subTest(field=field), patch("jarvis.recorder._query", return_value=json.dumps(
                         {"streams": [{**stream, field: value}]})):
                     with self.assertRaisesRegex(RecorderError, "HDR verification failed"):
                         verify_video(path, color="hdr")

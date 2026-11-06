@@ -23,16 +23,16 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "scripts")]
 from benchmark_whisper_on_demand import session
-from murmur.commands import Parser
-from murmur.config import validate
-from murmur.native_worker import prepare
+from jarvis.commands import Parser
+from jarvis.config import validate
+from jarvis.native_worker import prepare
 
 
 def counters(binary, fixture, fast, free_decoder, commands):
     config = validate({"recognition": {"accurate": True, "noise_suppression": True, "closest_match": free_decoder},
                        "activation": {"wake_phrase": "go forward"}})
     grammar = Parser({"ten meters": "start recording"}).grammar(["firefox", "steam", "stremio"])
-    with patch.dict(os.environ, MURMUR_VOICE_WORKER="rust"):
+    with patch.dict(os.environ, JARVIS_VOICE_WORKER="rust"):
         _, payload, env = prepare(config, "wake_word", grammar)
     if payload["native"]["whisper"] is None:
         raise RuntimeError("Install the local Whisper model before benchmarking")

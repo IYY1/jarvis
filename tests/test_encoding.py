@@ -6,10 +6,10 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from murmur.config import validate
-from murmur.encoding import CODECS, GPU_CODECS, gpu_video_args, storage_estimate
-from murmur.recorder import Recorder
-from murmur.replay import command
+from jarvis.config import validate
+from jarvis.encoding import CODECS, GPU_CODECS, gpu_video_args, storage_estimate
+from jarvis.recorder import Recorder
+from jarvis.replay import command
 
 
 class EncodingTests(unittest.TestCase):
@@ -57,7 +57,7 @@ class EncodingTests(unittest.TestCase):
             self.assertEqual(args[args.index("-f") + 1], "144")
 
     def test_replay_uses_recording_video_unless_it_has_its_own(self):
-        from murmur.encoding import replay_video
+        from jarvis.encoding import replay_video
         same = validate({"recording": {"codec": "av1_10bit", "fps": 60}, "replay": {"fps": 30}})
         self.assertEqual((replay_video(same)["codec"], replay_video(same)["fps"]), ("av1_10bit", 60))
         own = validate({"recording": {"codec": "av1_10bit", "fps": 60},
@@ -72,10 +72,10 @@ class EncodingTests(unittest.TestCase):
 
     def test_saving_while_replay_runs_restarts_it_with_the_new_settings(self):
         from tests.test_rust_controller import BINARY, Harness
-        from murmur.client import restart_note
+        from jarvis.client import restart_note
         if not BINARY.exists():
             self.skipTest("build Rust controller")
-        h = Harness(dry_run=False, MURMUR_TEST_CODEC="av1", config_patch={"recording": {"codec": "av1", "fps": 60}})
+        h = Harness(dry_run=False, JARVIS_TEST_CODEC="av1", config_patch={"recording": {"codec": "av1", "fps": 60}})
         self.addCleanup(h.close)
         self.assertTrue(h.rpc("replay_start")["ok"])
         launches = lambda: [e["args"] for e in h.events("gpu-screen-recorder") if not e.get("event") and "-ipc" in e["args"]]
@@ -95,7 +95,7 @@ class EncodingTests(unittest.TestCase):
         self.assertEqual((result.get("restarted", []), len(launches())), ([], 2))
 
     def test_automatic_bitrate_matches_the_rust_controller(self):
-        from murmur.encoding import auto_bitrate, with_auto_bitrate
+        from jarvis.encoding import auto_bitrate, with_auto_bitrate
         cases = [("av1", 60, "native", 2560, 1440, 17), ("av1", 120, "native", 2560, 1440, 33),
                  ("av1", 60, "1080", 2560, 1440, 9), ("av1", 60, "2160", 2560, 1440, 17),
                  ("h264", 60, "native", 2560, 1440, 24), ("av1", 30, "720", 2560, 1440, 4),
@@ -110,9 +110,9 @@ class EncodingTests(unittest.TestCase):
         for codec in GPU_CODECS:
             cfg = validate({"recording": {"configured": True, "monitor": "DP-1", "codec": codec,
                            "system_audio": True, "audio_device": "game.monitor", "rate_control": "bitrate"}})
-            with patch("murmur.recorder.sources", return_value=[{"name": "DP-1"}]), \
-                    patch("murmur.recorder.audio_sources", return_value=[{"name": "game.monitor", "monitor": True}]), \
-                    patch("murmur.recorder.shutil.which", side_effect=lambda name: "/fake/" + name):
+            with patch("jarvis.recorder.sources", return_value=[{"name": "DP-1"}]), \
+                    patch("jarvis.recorder.audio_sources", return_value=[{"name": "game.monitor", "monitor": True}]), \
+                    patch("jarvis.recorder.shutil.which", side_effect=lambda name: "/fake/" + name):
                 active, _, args = Recorder(cfg)._validate()
             self.assertTrue(active["gpu"])
             self.assertEqual(args[0], "/fake/gpu-screen-recorder")
@@ -122,8 +122,8 @@ class EncodingTests(unittest.TestCase):
     def test_cpu_bitrate_mode_uses_bounded_encoder_buffer_and_keeps_thread_limit(self):
         cfg = validate({"recording": {"configured": True, "monitor": "DP-1", "rate_control": "bitrate", "bitrate_mbps": 6,
                                       "bitrate_auto": False}})
-        with patch("murmur.recorder.sources", return_value=[{"name": "DP-1"}]), \
-                patch("murmur.recorder.shutil.which", side_effect=lambda name: "/fake/" + name):
+        with patch("jarvis.recorder.sources", return_value=[{"name": "DP-1"}]), \
+                patch("jarvis.recorder.shutil.which", side_effect=lambda name: "/fake/" + name):
             active, _, args = Recorder(cfg)._validate()
         self.assertFalse(active["gpu"])
         for param in ("b=6000000", "maxrate=6000000", "bufsize=12000000", "threads=2"):
@@ -131,24 +131,24 @@ class EncodingTests(unittest.TestCase):
         self.assertFalse(any(p.startswith("crf=") for p in args))
 
     def test_wrong_codec_cannot_be_announced_as_the_selected_gpu_format(self):
-        from murmur.recorder import RecorderError, verify_video
+        from jarvis.recorder import RecorderError, verify_video
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "clip.mkv"
             path.write_bytes(b"fake")
             probe = {"streams": [{"codec_type": "video", "codec_name": "h264", "width": 640, "height": 360}]}
-            with patch("murmur.recorder._query", return_value=json.dumps(probe)):
+            with patch("jarvis.recorder._query", return_value=json.dumps(probe)):
                 with self.assertRaisesRegex(RecorderError, "expected av1"):
                     verify_video(path, codec="av1")
                 verify_video(path, codec="h264")
 
     def test_ten_bit_formats_are_verified_as_ten_bit(self):
-        from murmur.recorder import RecorderError, verify_video
+        from jarvis.recorder import RecorderError, verify_video
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "clip.mkv"
             path.write_bytes(b"fake")
             for pixel in ("yuv420p", "yuv420p10le"):
                 probe = {"streams": [{"codec_type": "video", "codec_name": "av1", "width": 640, "height": 360, "pix_fmt": pixel}]}
-                with self.subTest(pixel=pixel), patch("murmur.recorder._query", return_value=json.dumps(probe)):
+                with self.subTest(pixel=pixel), patch("jarvis.recorder._query", return_value=json.dumps(probe)):
                     if pixel == "yuv420p":
                         with self.assertRaisesRegex(RecorderError, "expected 10-bit av1"):
                             verify_video(path, codec="av1_10bit")
@@ -160,7 +160,7 @@ class EncodingTests(unittest.TestCase):
         from tests.test_rust_controller import BINARY, Harness
         if not BINARY.exists():
             self.skipTest("build Rust controller")
-        h = Harness(dry_run=False, MURMUR_TEST_CODEC="av1", config_patch={"recording": {"codec": "av1", "fps": 24, "rate_control": "bitrate", "bitrate_mbps": 6,
+        h = Harness(dry_run=False, JARVIS_TEST_CODEC="av1", config_patch={"recording": {"codec": "av1", "fps": 24, "rate_control": "bitrate", "bitrate_mbps": 6,
                                                                                "bitrate_auto": False}})
         self.addCleanup(h.close)
         self.assertTrue(h.rpc("record_start")["ok"])

@@ -1,4 +1,0 @@
-#!/bin/sh
-# Compatibility entry point for existing Murmur shortcuts.
-set -eu
-exec "$(dirname -- "$(readlink -f -- "$0")")/run-jarvis" "$@"

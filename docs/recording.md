@@ -2,7 +2,7 @@
 
 Jarvis uses `gpu-screen-recorder` for GPU H.264, HEVC and AV1 recording, HDR and instant replay. Existing H.264 CPU/legacy VA-API settings continue to use `wf-recorder` for SDR. Opening recording settings and starting capture are separate actions. The start action launches no window, portal, region selector, or terminal; it names the configured monitor explicitly and disconnects standard input. A compositor permission prompt is still possible if permission has not been established. Complete and test setup outside a game first.
 
-The desktop controls are the normal route. For integration checks with the daemon already running, use `murmur ui --page recording` to open setup, `murmur record start` to capture, and `murmur record stop` to save. `murmur config` shows the current settings. In a source checkout, prefix the equivalent invocations with `PYTHONPATH=src .venv/bin/python -m murmur`.
+The desktop controls are the normal route. For integration checks with the daemon already running, use `jarvis ui --page recording` to open setup, `jarvis record start` to capture, and `jarvis record stop` to save. `jarvis config` shows the current settings. In a source checkout, prefix the equivalent invocations with `PYTHONPATH=src .venv/bin/python -m jarvis`.
 
 ## Backend choice and limits
 
@@ -167,7 +167,7 @@ Example: `recording.codec: "av1"`, `fps: 30`, `rate_control: "bitrate"`, `bitrat
   "recording": {
     "configured": false,
     "monitor": "DP-5",
-    "output_dir": "~/Videos/Murmur",
+    "output_dir": "~/Videos/Jarvis",
     "system_audio": false,
     "microphone": false,
     "audio_device": "",
@@ -212,11 +212,11 @@ The status changes to `recording` once the backend has started; the message accu
 
 Stop sends SIGINT to the owned child, waits for completion, verifies a nonempty video stream using `ffprobe`, flushes the file, then atomically publishes a final `.mkv` name without overwriting another file. Only then does it report **Saved recording**. This is structural validation, not an exhaustive decode or content/privacy check. If the backend hangs, bounded termination follows and the partial file stays marked as partial. Keep the daemon's normal shutdown handler and user service enabled so owned recordings receive a graceful stop. A forced process or machine shutdown cannot guarantee a final trailer.
 
-Crashes and failed finalization retain nonempty hidden `.Murmur_*.part.mkv` files and show the path. Empty partials are removed. Jarvis does not automatically publish them as successful clips or restart capture after a crash. To inspect/recover a retained partial, preserve the original and try:
+Crashes and failed finalization retain nonempty hidden `.Jarvis_*.part.mkv` files and show the path. Empty partials are removed. Jarvis does not automatically publish them as successful clips or restart capture after a crash. To inspect/recover a retained partial, preserve the original and try:
 
 ```sh
-ffprobe -v error -show_streams '/absolute/path/.Murmur_example.part.mkv'
-ffmpeg -n -i '/absolute/path/.Murmur_example.part.mkv' -map 0 -c copy '/absolute/path/recovered.mkv'
+ffprobe -v error -show_streams '/absolute/path/.Jarvis_example.part.mkv'
+ffmpeg -n -i '/absolute/path/.Jarvis_example.part.mkv' -map 0 -c copy '/absolute/path/recovered.mkv'
 ```
 
 Matroska often permits recovery of completed clusters, but recovery is not guaranteed. `-n` prevents an existing recovery file being overwritten. Play the recovery and check the end of the video before deleting the partial. Opening settings does not recover or delete files.
@@ -335,8 +335,8 @@ snapshots and SSD behavior can retain data. A deleted buffer is not a saved clip
 `replay.storage` is `ram` or `disk`; `replay.max_mb` is a 64–16384 MiB budget
 (default 256; Linux disk mode needs at least 512, see below); `replay.buffer_dir`
 is an optional **dedicated private directory**.
-The default Linux path is `$XDG_DATA_HOME/murmur/replay-buffer` or
-`~/.local/share/murmur/replay-buffer`. Linux requires an owned private directory
+The default Linux path is `$XDG_DATA_HOME/jarvis/replay-buffer` or
+`~/.local/share/jarvis/replay-buffer`. Linux requires an owned private directory
 and creates files under a `0700` session directory with a private child umask.
 It refuses tmpfs and ramfs, including this development machine's `/tmp`.
 Choose an actual disk; moving video into RAM-backed temporary files saves no RAM.

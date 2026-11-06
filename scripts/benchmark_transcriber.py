@@ -65,7 +65,7 @@ def main():
         parser.error("fixture must contain complete 16-bit samples")
     import psutil
     import sherpa_onnx
-    from murmur.transcriber import Transcriber, default_threads
+    from jarvis.transcriber import Transcriber, default_threads
     process = psutil.Process()
     start = time.perf_counter()
     engine = Transcriber(memory_efficient=not args.baseline, threads=args.threads, denoise=args.denoise)

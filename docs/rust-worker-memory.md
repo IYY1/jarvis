@@ -113,8 +113,8 @@ Use the **75.90 MiB controlled reduction** to attribute savings to this change.
 Save the existing executables before building a new version, then run:
 
 ```sh
-cp src/murmur/bin/jarvis-voice /tmp/jarvis-voice-before
-cp src/murmur/bin/jarvis-whisper /tmp/jarvis-whisper-before
+cp src/jarvis/bin/jarvis-voice /tmp/jarvis-voice-before
+cp src/jarvis/bin/jarvis-whisper /tmp/jarvis-whisper-before
 .venv/bin/python scripts/build_voice_worker.py --test
 .venv/bin/python scripts/check_rust_optimization.py \
   --fixture /path/to/public.s16le --before /tmp/jarvis-whisper-before \

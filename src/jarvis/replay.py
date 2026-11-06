@@ -121,7 +121,7 @@ class Replay:
                 cfg = replay_video(self.config) if "recording" in self.config else self.config
                 replay = self.config.get("replay", {})
                 if replay.get("storage", "ram") == "disk":
-                    raise RecorderError("Disk replay requires the Rust controller on Linux. Build scripts/build_controller.py and select MURMUR_CONTROLLER=rust.")
+                    raise RecorderError("Disk replay requires the Rust controller on Linux. Build scripts/build_controller.py and select JARVIS_CONTROLLER=rust.")
                 monitor = str(cfg.get("monitor", "")).strip()
                 if not monitor:
                     raise RecorderError("Choose a display in Recorder settings first.")
@@ -132,7 +132,7 @@ class Replay:
                 cfg = with_auto_bitrate(cfg, display)
                 if not shutil.which("ffprobe"):
                     raise RecorderError("ffprobe is missing. Install FFmpeg to validate saved replays.")
-                folder = Path(str(cfg.get("output_dir", "~/Videos/Murmur"))).expanduser().resolve()
+                folder = Path(str(cfg.get("output_dir", "~/Videos/Jarvis"))).expanduser().resolve()
                 folder.mkdir(parents=True, exist_ok=True, mode=0o700)
                 self.ipc.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
                 argv = command({**cfg, "monitor": monitor}, replay, folder, self.ipc, color=color)
@@ -150,7 +150,7 @@ class Replay:
                 self._codec = expected_codec(cfg, color)
                 self._done.clear()
                 self._set("on", f"Instant replay on · {color.upper()} · keeping the last {replay.get('seconds', 120)} seconds in memory.")
-                threading.Thread(target=self._watch, args=(process,), name="murmur-replay", daemon=True).start()
+                threading.Thread(target=self._watch, args=(process,), name="jarvis-replay", daemon=True).start()
         self._notify()
         if error:
             raise error

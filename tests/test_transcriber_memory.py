@@ -8,7 +8,7 @@ import unittest
 import weakref
 from unittest.mock import MagicMock, patch
 
-from murmur import transcriber
+from jarvis import transcriber
 
 
 class TranscriberMemoryTests(unittest.TestCase):

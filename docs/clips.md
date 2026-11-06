@@ -59,7 +59,7 @@ bundling FFmpeg (~200 MB downloads), with only experimental automation
 | --- | --- |
 | Embed or reuse its code | Rejected: Jarvis would have to be distributed under the GPL, and it would bring an Electron runtime into a small native app. |
 | Launch it as a separate app | Supported: **Open in LosslessCut** appears when it is installed (binary or Flathub `no.mifi.losslesscut`). Running a GPL program separately doesn't affect Jarvis's MIT license, as with gpu-screen-recorder. |
-| Implement the needed workflow on FFmpeg | Chosen: trim, cut, split, join, track selection and both export modes, in `src/murmur/clipedit.py` (pure Python and FFmpeg). |
+| Implement the needed workflow on FFmpeg | Chosen: trim, cut, split, join, track selection and both export modes, in `src/jarvis/clipedit.py` (pure Python and FFmpeg). |
 
 Tests: `tests/test_clipedit.py` exports synthetic clips with real FFmpeg
 (fast cuts, track selection, mixing, never overwriting, joining mismatched clips

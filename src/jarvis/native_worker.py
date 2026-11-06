@@ -59,14 +59,14 @@ def prepare(config: dict, mode: str, grammar: dict) -> tuple[list[str], dict, di
     Windows releases ship only the Rust worker.
     """
     from .host import command
-    selected = os.environ.get("MURMUR_VOICE_WORKER")
+    selected = os.environ.get("JARVIS_VOICE_WORKER")
     payload = {"config": config, "mode": mode, "grammar": grammar}
-    env = dict(os.environ, MURMUR_OWNER_PID=str(os.getpid()))
-    python = command("voice") if is_windows() else [sys.executable, "-m", "murmur.voice"]
+    env = dict(os.environ, JARVIS_OWNER_PID=str(os.getpid()))
+    python = command("voice") if is_windows() else [sys.executable, "-m", "jarvis.voice"]
     if selected == "python":
         return python, payload, env
     if selected not in (None, "rust"):
-        raise ValueError("MURMUR_VOICE_WORKER must be python or rust")
+        raise ValueError("JARVIS_VOICE_WORKER must be python or rust")
     binary = binary_path()
     settings = config["recognition"]
     # Linux/source installs fall back to Python, which reports its own missing

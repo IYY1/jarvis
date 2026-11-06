@@ -60,7 +60,7 @@ class Dispatcher:
             return "Opened recording settings"
         if action == "pause":
             self.pause()
-            return "Microphone muted. Resume in Murmur or from your shortcut."
+            return "Microphone muted. Resume in Jarvis or from your shortcut."
         if action == "cancel":
             return "Cancelled"
         raise CommandError("Unsupported action")

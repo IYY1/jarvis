@@ -154,7 +154,7 @@ impl Service {
         Ok(result)
     }
     pub fn status(&self) -> Value {
-        json!({"state":self.activation.state,"message":self.message,"muted":self.muted,"recording":*self.recording_updates.borrow(),"replay":*self.replay_updates.borrow(),"level":self.level,"voice_available":self.voice_available,"unsupported_phrases":self.unsupported,"engine":self.engine,"gate":self.gate,"dry_run":env::var("MURMUR_DRY_RUN").as_deref()==Ok("1"),"microphone_open":self.worker.is_some(),"mic_test":self.worker.as_ref().is_some_and(|w|w.mode=="test"),"dictation":self.dictation.status(),"controller":"rust"})
+        json!({"state":self.activation.state,"message":self.message,"muted":self.muted,"recording":*self.recording_updates.borrow(),"replay":*self.replay_updates.borrow(),"level":self.level,"voice_available":self.voice_available,"unsupported_phrases":self.unsupported,"engine":self.engine,"gate":self.gate,"dry_run":env::var("JARVIS_DRY_RUN").as_deref()==Ok("1"),"microphone_open":self.worker.is_some(),"mic_test":self.worker.as_ref().is_some_and(|w|w.mode=="test"),"dictation":self.dictation.status(),"controller":"rust"})
     }
     pub fn publish(&mut self) {
         self.updates
@@ -205,7 +205,7 @@ impl Service {
             false,
         )?;
         command
-            .env("MURMUR_OWNER_PID", std::process::id().to_string())
+            .env("JARVIS_OWNER_PID", std::process::id().to_string())
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::null());
@@ -521,13 +521,13 @@ impl Service {
             }
         };
         let action = intent["action"].as_str().unwrap().to_owned();
-        let immediate = if env::var("MURMUR_DRY_RUN").as_deref() == Ok("1") {
+        let immediate = if env::var("JARVIS_DRY_RUN").as_deref() == Ok("1") {
             Some(Ok(format!("Dry run: {action}")))
         } else if action == "pause" {
             Some(
                 self.set_mute(true)
                     .await
-                    .map(|_| "Microphone muted. Resume in Murmur or from your shortcut.".into()),
+                    .map(|_| "Microphone muted. Resume in Jarvis or from your shortcut.".into()),
             )
         } else if action == "cancel" {
             Some(Ok("Cancelled".into()))

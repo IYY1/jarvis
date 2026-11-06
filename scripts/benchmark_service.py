@@ -18,7 +18,7 @@ import tempfile
 import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from murmur.config import DEFAULTS
+from jarvis.config import DEFAULTS
 
 
 def main():
@@ -33,20 +33,20 @@ def main():
         p.error("Use 5–600 seconds")
     if args.mode == "wake" and not args.live_microphone:
         p.error("Wake mode opens your input; explicitly pass --live-microphone")
-    with tempfile.TemporaryDirectory(prefix="murmur-benchmark-") as temp:
+    with tempfile.TemporaryDirectory(prefix="jarvis-benchmark-") as temp:
         base = Path(temp)
         cfg = copy.deepcopy(DEFAULTS)
         cfg["privacy"]["onboarded"] = args.mode != "paused"
         cfg["activation"]["mode"] = "wake_word" if args.mode == "wake" else "push_to_talk"
         (base / "config.json").write_text(json.dumps(cfg))
-        env = dict(os.environ, MURMUR_CONFIG=str(base / "config.json"), MURMUR_SOCKET=str(base / "ipc/control.sock"), MURMUR_DRY_RUN="1")
+        env = dict(os.environ, JARVIS_CONFIG=str(base / "config.json"), JARVIS_SOCKET=str(base / "ipc/control.sock"), JARVIS_DRY_RUN="1")
         env["PYTHONPATH"] = str(Path(__file__).resolve().parents[1] / "src")
-        process = subprocess.Popen([sys.executable, "-m", "murmur", "daemon"], env=env,
+        process = subprocess.Popen([sys.executable, "-m", "jarvis", "daemon"], env=env,
                                    stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
         window = None
-        old_socket = os.environ.get("MURMUR_SOCKET")
-        os.environ["MURMUR_SOCKET"] = env["MURMUR_SOCKET"]
-        from murmur.client import request
+        old_socket = os.environ.get("JARVIS_SOCKET")
+        os.environ["JARVIS_SOCKET"] = env["JARVIS_SOCKET"]
+        from jarvis.client import request
         try:
             until = time.monotonic() + 10
             while True:
@@ -71,7 +71,7 @@ def main():
             if status["state"] == "error":
                 raise RuntimeError(status["message"])
             if args.mode == "ui":
-                window = subprocess.Popen([sys.executable, "-m", "murmur", "ui"], env=env,
+                window = subprocess.Popen([sys.executable, "-m", "jarvis", "ui"], env=env,
                                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 time.sleep(2)
                 if window.poll() is not None:
@@ -142,9 +142,9 @@ def main():
                 process.wait()
             process.stderr.close()
             if old_socket is None:
-                os.environ.pop("MURMUR_SOCKET", None)
+                os.environ.pop("JARVIS_SOCKET", None)
             else:
-                os.environ["MURMUR_SOCKET"] = old_socket
+                os.environ["JARVIS_SOCKET"] = old_socket
 
 
 if __name__ == "__main__":

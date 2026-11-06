@@ -1,7 +1,7 @@
 """Vosk engine, closest-match guessing, Jarvis wake word and app-name fixes.
 
-Fake-recognizer tests always run. Real-model tests run when MURMUR_VOSK_MODEL
-points to vosk-model-small-en-us-0.15 (and MURMUR_SPEECH_TEST_RAW to the
+Fake-recognizer tests always run. Real-model tests run when JARVIS_VOSK_MODEL
+points to vosk-model-small-en-us-0.15 (and JARVIS_SPEECH_TEST_RAW to the
 upstream goforward.raw recording for the audio tests).
 """
 
@@ -16,9 +16,9 @@ import types
 import unittest
 from unittest.mock import patch
 
-from murmur import config
-from murmur.apps import AppRegistry, id_stem, spoken_numbers
-from murmur.commands import Parser, closest_match, match_candidates, wake_variants
+from jarvis import config
+from jarvis.apps import AppRegistry, id_stem, spoken_numbers
+from jarvis.commands import Parser, closest_match, match_candidates, wake_variants
 
 APPS = ["firefox", "dolphin", "discord", "deadlock", "steam", "stremio", "tekken eight", "calculator"]
 
@@ -127,8 +127,8 @@ class FakeVoskEngineTests(unittest.TestCase):
     def setUp(self):
         # Import before patching sys.modules: patch.dict removes modules first
         # imported while it is active, which would break later tests.
-        from murmur import models
-        from murmur.vosk_engine import VoskEngine
+        from jarvis import models
+        from jarvis.vosk_engine import VoskEngine
         module = types.SimpleNamespace(Model=FakeModel, KaldiRecognizer=FakeRecognizer, SetLogLevel=lambda _l: None)
         patcher = patch.dict(sys.modules, {"vosk": module})
         patcher.start()
@@ -161,7 +161,7 @@ class FakeVoskEngineTests(unittest.TestCase):
         self.assertEqual(self.engine._wake.fed, 960 * 11)
 
     def test_wake_history_is_discarded_once_at_the_quiet_boundary(self):
-        from murmur.vosk_engine import HANGOVER_FRAMES
+        from jarvis.vosk_engine import HANGOVER_FRAMES
         self.engine.begin_wake()
         self.engine.feed(self.loud)
         with patch.object(self.engine._wake, "Reset") as reset, \
@@ -182,7 +182,7 @@ class FakeVoskEngineTests(unittest.TestCase):
         self.assertEqual(len(self.engine._preroll), 10)
 
     def test_quiet_boundary_does_not_discard_an_armed_command(self):
-        from murmur.vosk_engine import HANGOVER_FRAMES
+        from jarvis.vosk_engine import HANGOVER_FRAMES
         self.engine.begin_command()
         self.engine.feed(self.loud)
         with patch.object(self.engine._command, "Reset") as reset:
@@ -249,8 +249,8 @@ class FakeVoskEngineTests(unittest.TestCase):
 
 
 # ------------------------------------------------------------- real model --
-MODEL = os.environ.get("MURMUR_VOSK_MODEL", "")
-FIXTURE = os.environ.get("MURMUR_SPEECH_TEST_RAW", "")
+MODEL = os.environ.get("JARVIS_VOSK_MODEL", "")
+FIXTURE = os.environ.get("JARVIS_SPEECH_TEST_RAW", "")
 
 
 @unittest.skipUnless(importlib.util.find_spec("vosk"), "optional voice dependency is not installed")
@@ -258,7 +258,7 @@ class VoskImportTests(unittest.TestCase):
     def test_binding_loads_without_download_helpers(self):
         # A clean interpreter: the voice worker never uses vosk's model-download
         # and subtitle helpers, so they must not stay in memory.
-        code = ("import sys; from murmur.vosk_engine import _import_vosk; vosk = _import_vosk(); "
+        code = ("import sys; from jarvis.vosk_engine import _import_vosk; vosk = _import_vosk(); "
                 "print(bool(vosk.Model and vosk.KaldiRecognizer and vosk.SetLogLevel)); "
                 "print(sorted(m for m in ('requests', 'tqdm', 'srt', 'urllib.request') if m in sys.modules)); "
                 "import urllib.request; print(callable(urllib.request.urlretrieve))")
@@ -267,7 +267,7 @@ class VoskImportTests(unittest.TestCase):
         self.assertEqual(out.stdout.split(), ["True", "[]", "True"], out.stderr[-800:])
 
 
-@unittest.skipUnless(MODEL and importlib.util.find_spec("vosk"), "set MURMUR_VOSK_MODEL to vosk-model-small-en-us-0.15")
+@unittest.skipUnless(MODEL and importlib.util.find_spec("vosk"), "set JARVIS_VOSK_MODEL to vosk-model-small-en-us-0.15")
 class RealVoskTests(unittest.TestCase):
     def frames(self, pcm, engine):
         pcm = bytes(16000) + pcm + bytes(64000)
@@ -275,14 +275,14 @@ class RealVoskTests(unittest.TestCase):
         return [pcm[i:i + engine.frame_bytes] for i in range(0, len(pcm), engine.frame_bytes)]
 
     def test_full_grammar_builds_with_real_app_list(self):
-        from murmur.vosk_engine import VoskEngine
+        from jarvis.vosk_engine import VoskEngine
         engine = VoskEngine(Parser().grammar(APPS), "hey jarvis", 0.5, MODEL)
         self.assertIn("firefox", engine.apps)
         self.assertIn("jarvis", engine._wake_forms)
 
-    @unittest.skipUnless(FIXTURE, "set MURMUR_SPEECH_TEST_RAW to upstream goforward.raw")
+    @unittest.skipUnless(FIXTURE, "set JARVIS_SPEECH_TEST_RAW to upstream goforward.raw")
     def test_real_recording_command_and_one_breath_wake(self):
-        from murmur.vosk_engine import VoskEngine
+        from jarvis.vosk_engine import VoskEngine
         pcm = Path(FIXTURE).read_bytes()
         engine = VoskEngine({"phrases": ["go forward ten meters", "ten meters"]}, "go forward", 0.5, MODEL)
         engine.begin_command()
@@ -297,8 +297,8 @@ class RealVoskTests(unittest.TestCase):
     @unittest.skipUnless(FIXTURE, "supply the public fixture")
     def test_repeated_background_quiet_wake_without_room_noise(self):
         import array
-        from murmur.vosk_engine import VoskEngine
-        from murmur.voice import rms
+        from jarvis.vosk_engine import VoskEngine
+        from jarvis.voice import rms
         pcm = Path(FIXTURE).read_bytes()
         pcm += bytes((-len(pcm)) % 960)
         reversed_samples = array.array("h", pcm)
@@ -327,7 +327,7 @@ class HyprlandLuaConfigTests(unittest.TestCase):
     (reported October 2026: "dispatch in lua is a shorthand for hl.dispatch(...)")."""
 
     def setUp(self):
-        from murmur.hyprland import Hyprland
+        from jarvis.hyprland import Hyprland
         Hyprland.syntax = None
         self.addCleanup(setattr, Hyprland, "syntax", None)
         self.Hyprland = Hyprland
@@ -338,7 +338,7 @@ class HyprlandLuaConfigTests(unittest.TestCase):
         def fake_run(argv, **_kwargs):
             calls.append(argv)
             return MagicMock(returncode=0, stdout=responses.pop(0), stderr="")
-        with patch("murmur.hyprland.subprocess.run", side_effect=fake_run), \
+        with patch("jarvis.hyprland.subprocess.run", side_effect=fake_run), \
                 patch.object(self.Hyprland, "_uses_lua_config", return_value=lua_config):
             self.Hyprland().dispatch("focus_address", "0x557e1234")
         return calls
@@ -386,7 +386,7 @@ class AliasCommandTests(unittest.TestCase):
             {"id": "firefox.desktop", "name": "Firefox"}, {"id": "org.mozilla.firefox.desktop", "name": "Firefox"}]
 
     def test_find_app_by_name_id_or_unique_part(self):
-        from murmur.cli import find_app
+        from jarvis.cli import find_app
         self.assertEqual(find_app(self.APPS, "stremio")["id"], "com.stremio.Stremio.desktop")
         self.assertEqual(find_app(self.APPS, "steam.desktop")["id"], "steam.desktop")
         self.assertEqual(find_app(self.APPS, "strem")["id"], "com.stremio.Stremio.desktop")
@@ -398,7 +398,7 @@ class AliasCommandTests(unittest.TestCase):
 
     def test_alias_is_added_through_the_service(self):
         import argparse
-        from murmur.cli import run_alias
+        from jarvis.cli import run_alias
         saved = {}
         def request(op, **kwargs):
             if op == "config":

@@ -56,7 +56,7 @@ raw 32-bit little-endian floating-point audio and must be a new path.
 and retains the model between commands. `--spectra` is an offline numerical
 diagnostic that bypasses the audio transforms.
 
-For application integration, select `MURMUR_VOICE_WORKER=rust` on the daemon
+For application integration, select `JARVIS_VOICE_WORKER=rust` on the daemon
 and enable the existing noise-suppression setting. See [worker selection](rust-voice.md#build-and-select).
 The native worker's `inference.rs` now calls `jarvis_gtcrn::Denoiser::process`;
 it no longer creates a sherpa-onnx speech denoiser. Python remains an available

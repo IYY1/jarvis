@@ -19,7 +19,7 @@ native/gtcrn-denoiser/target/
 native/whisper-recognizer/target/
 native/controller/target/
 native/cli/target/
-src/murmur/bin/
+src/jarvis/bin/
 .env
 .env.*
 *.log

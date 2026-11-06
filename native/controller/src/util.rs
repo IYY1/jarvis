@@ -191,7 +191,7 @@ pub async fn stop(child: &mut Child, signal: i32, seconds: u64) -> Result<bool> 
     Ok(true)
 }
 pub fn desktop_argv(argv: Vec<String>) -> Result<Vec<String>> {
-    if env::var("MURMUR_MANAGED_SERVICE").as_deref() != Ok("1") {
+    if env::var("JARVIS_MANAGED_SERVICE").as_deref() != Ok("1") {
         return Ok(argv);
     }
     let runner = which("systemd-run")

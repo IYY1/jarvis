@@ -9,8 +9,8 @@ import types
 import unittest
 from unittest.mock import patch
 
-from murmur import config
-from murmur.commands import CommandError, Parser, all_wake_variants, closest_match, match_candidates
+from jarvis import config
+from jarvis.commands import CommandError, Parser, all_wake_variants, closest_match, match_candidates
 from tests.test_rust_controller import BINARY, policies
 from tests.test_voice_upgrade import FakeModel, FakeRecognizer, words
 
@@ -56,8 +56,8 @@ class VoiceControlsTests(unittest.TestCase):
         self.assertEqual(config.validate({})['activation']['wake_aliases'], [])
 
     def test_each_wake_name_can_carry_a_bare_app_command(self):
-        from murmur.vosk_engine import VoskEngine
-        from murmur import models  # Import before patch.dict restores sys.modules.
+        from jarvis.vosk_engine import VoskEngine
+        from jarvis import models  # Import before patch.dict restores sys.modules.
         fake = types.SimpleNamespace(Model=FakeModel, KaldiRecognizer=FakeRecognizer, SetLogLevel=lambda _: None)
         with patch.dict(sys.modules, vosk=fake), patch.object(models, 'valid_model', return_value=True):
             engine = VoskEngine(self.parser.grammar(['firefox', 'video']), 'alfred', model_path='/model', wake_aliases=['jarvis'])
@@ -91,18 +91,18 @@ class RustVoiceControlsTests(unittest.TestCase):
         self.assertEqual(actual['result']['grammar'], grammar)
 
 
-@unittest.skipUnless(os.environ.get('MURMUR_VOSK_MODEL') and os.environ.get('MURMUR_SPEECH_TEST_RAW'), 'provide public audio and local Vosk model')
+@unittest.skipUnless(os.environ.get('JARVIS_VOSK_MODEL') and os.environ.get('JARVIS_SPEECH_TEST_RAW'), 'provide public audio and local Vosk model')
 class RealWakeAliasTests(unittest.TestCase):
     def test_secondary_wake_name_and_same_breath_command_match_python(self):
-        from murmur.native_worker import prepare
-        from murmur.vosk_engine import VoskEngine
-        from murmur.voice import rms
+        from jarvis.native_worker import prepare
+        from jarvis.vosk_engine import VoskEngine
+        from jarvis.voice import rms
         c = settings()
         c['activation']['wake_aliases'] = ['go forward']
         c['commands'] = {'go forward ten meters': 'cancel', 'ten meters': 'cancel'}
-        c['recognition'].update(accurate=False, model_path=os.environ['MURMUR_VOSK_MODEL'])
+        c['recognition'].update(accurate=False, model_path=os.environ['JARVIS_VOSK_MODEL'])
         grammar = Parser.from_config(c).grammar(['firefox', 'video'])
-        fixture = os.environ['MURMUR_SPEECH_TEST_RAW']
+        fixture = os.environ['JARVIS_SPEECH_TEST_RAW']
         audio = Path(fixture).read_bytes()
         audio += bytes(((len(audio) + 64000 + 959) // 960) * 960 - len(audio))
         engine = VoskEngine(grammar, 'alfred', model_path=c['recognition']['model_path'], wake_aliases=['go forward'])
@@ -118,7 +118,7 @@ class RealWakeAliasTests(unittest.TestCase):
                 break
         engine.close()
         self.assertEqual([e['kind'] for e in expected], ['wake', 'command'])
-        with patch.dict(os.environ, MURMUR_VOICE_WORKER='rust'):
+        with patch.dict(os.environ, JARVIS_VOICE_WORKER='rust'):
             argv, payload, env = prepare(c, 'once', grammar)
         request = json.dumps(payload) + '\n' + json.dumps({'path': fixture, 'session': 'wake'}) + '\n'
         out = subprocess.run(argv + ['--engine'], input=request, env=env, text=True, capture_output=True, timeout=30, check=True)

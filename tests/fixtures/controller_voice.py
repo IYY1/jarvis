@@ -7,7 +7,7 @@ import time
 
 
 def log(event, **fields):
-    fd = os.open(os.environ["MURMUR_TEST_LOG"], os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)
+    fd = os.open(os.environ["JARVIS_TEST_LOG"], os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)
     try:
         os.write(fd, (json.dumps({"program": "voice", "event": event, "pid": os.getpid(), **fields}) + "\n").encode())
     finally:
@@ -20,7 +20,7 @@ def emit(**event):
 
 payload = json.loads(sys.stdin.readline())
 log("start", payload=payload)
-scenario = os.environ.get("MURMUR_TEST_VOICE", "normal")
+scenario = os.environ.get("JARVIS_TEST_VOICE", "normal")
 if scenario == "delayed":
     time.sleep(1)
 if scenario == "invalid":

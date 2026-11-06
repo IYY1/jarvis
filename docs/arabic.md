@@ -97,7 +97,7 @@ sounds, therefore cannot become an Arabic command.
 
 ## Arabic commands
 
-The wording table is `src/murmur/arabic_commands.json`, shared by the Rust and
+The wording table is `src/jarvis/arabic_commands.json`, shared by the Rust and
 Python parsers (`tests/fixtures/arabic_command_cases.json` keeps both in step).
 Transcripts are folded first: no diacritics or tatweel, one alef, ة→ه, ى→ي, and
 Arabic-Indic digits as Western digits. Then:

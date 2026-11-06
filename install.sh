@@ -39,14 +39,14 @@ die() { printf '\033[1;31merror:\033[0m %s\n' "$*" >&2; exit 1; }
 
 uninstall() {
     [ -x "$dir/run-jarvis" ] || die "no Jarvis installation at $dir"
-    if systemctl --user cat murmur.service >/dev/null 2>&1; then
-        systemctl --user disable --now murmur.service || true
+    if systemctl --user cat jarvis.service >/dev/null 2>&1; then
+        systemctl --user disable --now jarvis.service || true
     fi
     rm -f -- "$desktop" "$unit"
     systemctl --user daemon-reload 2>/dev/null || true
     [ "$(readlink -- "$link" 2>/dev/null)" != "$dir/run-jarvis" ] || rm -f -- "$link"
     rm -rf -- "$dir"
-    say "Removed Jarvis. Settings, models and recordings remain in $data/murmur and $config/murmur."
+    say "Removed Jarvis. Settings, models and recordings remain in $data/jarvis and $config/jarvis."
 }
 
 install_packages() {
@@ -115,8 +115,8 @@ main() {
     py=$dir/.venv/bin/python
     data=${XDG_DATA_HOME:-$HOME/.local/share}
     config=${XDG_CONFIG_HOME:-$HOME/.config}
-    desktop=$data/applications/org.murmur.Controller.desktop
-    unit=$config/systemd/user/murmur.service
+    desktop=$data/applications/org.jarvis.Controller.desktop
+    unit=$config/systemd/user/jarvis.service
     if [ "$uninstall" = 1 ]; then
         uninstall
         return
@@ -158,7 +158,7 @@ main() {
     fi
 
     say "Downloading and verifying voice models"
-    "$py" -m murmur install-model "${models[@]}"
+    "$py" -m jarvis install-model "${models[@]}"
 
     say "Adding the app launcher and the disabled user service"
     "$py" "$dir/scripts/install_user.py" --service "${replace[@]}"

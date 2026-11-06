@@ -12,16 +12,16 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 BINARY = ROOT / "native/whisper-recognizer/target/release/jarvis-whisper"
-MODEL = os.environ.get("MURMUR_WHISPER_MODEL")
-FIXTURE = os.environ.get("MURMUR_SPEECH_TEST_RAW")
-TINY = os.environ.get("MURMUR_WHISPER_TINY_MODEL")
-BASE = os.environ.get("MURMUR_WHISPER_BASE_MODEL")
+MODEL = os.environ.get("JARVIS_WHISPER_MODEL")
+FIXTURE = os.environ.get("JARVIS_SPEECH_TEST_RAW")
+TINY = os.environ.get("JARVIS_WHISPER_TINY_MODEL")
+BASE = os.environ.get("JARVIS_WHISPER_BASE_MODEL")
 
 
 @unittest.skipUnless(BINARY.is_file(), "build the standalone Rust recognizer")
 class RustWhisperBinaryTests(unittest.TestCase):
     def test_does_not_link_an_external_recognition_runtime(self):
-        for path in (BINARY, ROOT / "src/murmur/bin/jarvis-voice"):
+        for path in (BINARY, ROOT / "src/jarvis/bin/jarvis-voice"):
             if not path.is_file():
                 continue
             linked = subprocess.check_output(["ldd", str(path)], text=True).lower()
@@ -58,12 +58,12 @@ class RustWhisperProfileTests(unittest.TestCase):
                         self.assertTrue(row["reference_identical"], row)
 
     def test_mismatched_encoder_and_decoder_are_rejected_without_panicking(self):
-        from murmur.commands import Parser
-        from murmur.config import DEFAULTS
-        from murmur.native_worker import prepare
+        from jarvis.commands import Parser
+        from jarvis.config import DEFAULTS
+        from jarvis.native_worker import prepare
         config = copy.deepcopy(DEFAULTS)
         config["recognition"].update(accurate=True, noise_suppression=False)
-        with patch.dict(os.environ, MURMUR_VOICE_WORKER="rust"):
+        with patch.dict(os.environ, JARVIS_VOICE_WORKER="rust"):
             argv, payload, env = prepare(config, "test", Parser().grammar([]))
         payload["native"]["whisper"] = {
             "encoder": str(Path(TINY) / "tiny.en-encoder.int8.onnx"),
@@ -79,20 +79,20 @@ class RustWhisperProfileTests(unittest.TestCase):
 
 @unittest.skipUnless(BINARY.is_file() and MODEL and FIXTURE, "supply Whisper model and public fixture")
 class RustWhisperInferenceTests(unittest.TestCase):
-    @unittest.skipUnless(os.environ.get("MURMUR_GTCRN_MODEL"), "supply GTCRN model")
+    @unittest.skipUnless(os.environ.get("JARVIS_GTCRN_MODEL"), "supply GTCRN model")
     def test_minimum_length_denoised_command_matches_reference(self):
-        from murmur.commands import Parser
-        from murmur.config import DEFAULTS
-        from murmur.native_worker import prepare
-        from murmur.transcriber import Transcriber, release_unused_memory
+        from jarvis.commands import Parser
+        from jarvis.config import DEFAULTS
+        from jarvis.native_worker import prepare
+        from jarvis.transcriber import Transcriber, release_unused_memory
         config = copy.deepcopy(DEFAULTS)
         config["recognition"].update(accurate=True, noise_suppression=True)
-        with patch.dict(os.environ, MURMUR_VOICE_WORKER="rust"):
+        with patch.dict(os.environ, JARVIS_VOICE_WORKER="rust"):
             argv, payload, env = prepare(config, "test", Parser().grammar([]))
         root = Path(MODEL)
         payload["native"]["whisper"] = {key: str(root / f"small.en-{name}") for key, name in
                                         (("encoder", "encoder.int8.onnx"), ("decoder", "decoder.int8.onnx"), ("tokens", "tokens.txt"))}
-        payload["native"]["denoiser"] = os.environ["MURMUR_GTCRN_MODEL"]
+        payload["native"]["denoiser"] = os.environ["JARVIS_GTCRN_MODEL"]
         pcm = bytes(6400)
         reference = Transcriber(denoise=True)
         self.assertIsNotNone(reference._denoiser)
@@ -110,7 +110,7 @@ class RustWhisperInferenceTests(unittest.TestCase):
         self.assertEqual(result[-1]["text"], expected)
 
     def test_matches_reference_across_commands_and_resets_caches(self):
-        from murmur.transcriber import Transcriber, release_unused_memory
+        from jarvis.transcriber import Transcriber, release_unused_memory
         from scripts.benchmark_transcriber import variants
         cases = variants(Path(FIXTURE).read_bytes())
         reference = Transcriber()

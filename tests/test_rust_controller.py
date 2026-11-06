@@ -19,8 +19,8 @@ import time
 import unittest
 from unittest.mock import patch
 
-from murmur import config, commands
-from murmur.apps import App, AppRegistry
+from jarvis import config, commands
+from jarvis.apps import App, AppRegistry
 
 ROOT = Path(__file__).resolve().parents[1]
 BINARY = ROOT / "native/controller/target/release/jarvis-controller"
@@ -192,16 +192,16 @@ class Harness:
         worker = self.root / "voice"
         worker.write_bytes((FIXTURES / "controller_voice.py").read_bytes()); worker.chmod(0o755)
         self.env = dict(os.environ, HOME=str(self.root), XDG_DATA_HOME=str(self.root / "data"), XDG_DATA_DIRS=str(self.root / "system"),
-                        XDG_CONFIG_HOME=str(self.root / "config"), MURMUR_CONFIG=str(self.config_path), MURMUR_SOCKET=str(self.socket),
-                        MURMUR_RUST_VOICE_BINARY=str(real_worker or worker), MURMUR_VOSK_LIBRARY=str(real_library or library), MURMUR_MANAGED_SERVICE="0",
-                        MURMUR_TEST_LOG=str(self.log), MURMUR_DRY_RUN="1" if dry_run else "0",
+                        XDG_CONFIG_HOME=str(self.root / "config"), JARVIS_CONFIG=str(self.config_path), JARVIS_SOCKET=str(self.socket),
+                        JARVIS_RUST_VOICE_BINARY=str(real_worker or worker), JARVIS_VOSK_LIBRARY=str(real_library or library), JARVIS_MANAGED_SERVICE="0",
+                        JARVIS_TEST_LOG=str(self.log), JARVIS_DRY_RUN="1" if dry_run else "0",
                         PATH=str(self.bin) + ":" + os.environ.get("PATH", ""))
         self.env.update(environment)
         if pcm:
             capture = self.bin / "pw-record"
             capture.write_bytes((FIXTURES / "controller_pcm_capture.py").read_bytes())
             capture.chmod(0o755)
-            self.env["MURMUR_TEST_PCM"] = str(pcm)
+            self.env["JARVIS_TEST_PCM"] = str(pcm)
         self.output = (self.root / "stderr").open("w+")
         self.process = subprocess.Popen(controller_argv or [str(BINARY)], env=self.env, stdout=self.output, stderr=self.output)
         self.wait(lambda: self.socket.exists())
@@ -304,7 +304,7 @@ class ControllerServiceTests(unittest.TestCase):
 
     def test_cli_status_and_allowlisted_execution_keep_the_existing_api(self):
         h = self.start()
-        result = subprocess.run([sys.executable, "-m", "murmur", "status"], env=h.env, capture_output=True, text=True, timeout=5)
+        result = subprocess.run([sys.executable, "-m", "jarvis", "status"], env=h.env, capture_output=True, text=True, timeout=5)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(json.loads(result.stdout)["status"]["controller"], "rust")
         self.assertEqual(h.rpc("commands")["commands"], commands.REFERENCE)
@@ -317,12 +317,12 @@ class ControllerServiceTests(unittest.TestCase):
         self.assertTrue(h.rpc("recording_devices")["ok"])
 
     def test_existing_daemon_launcher_execs_rust_without_a_python_parent(self):
-        h = self.start(controller_argv=[sys.executable, "-m", "murmur", "daemon"], MURMUR_CONTROLLER="rust")
+        h = self.start(controller_argv=[sys.executable, "-m", "jarvis", "daemon"], JARVIS_CONTROLLER="rust")
         self.assertTrue(Path(f"/proc/{h.process.pid}/exe").readlink().name.startswith("jarvis-controller"))
         self.assertNotIn("libpython", Path(f"/proc/{h.process.pid}/maps").read_text().lower())
 
     def test_listen_and_cancel_keep_the_same_worker_and_stale_events_do_not_dispatch(self):
-        h = self.start(onboarded=True, MURMUR_TEST_VOICE="stale")
+        h = self.start(onboarded=True, JARVIS_TEST_VOICE="stale")
         h.wait(lambda: h.status()["engine"] is not None)
         pid = h.events("voice")[0]["pid"]
         self.assertTrue(h.rpc("listen")["ok"])
@@ -336,7 +336,7 @@ class ControllerServiceTests(unittest.TestCase):
         self.assertFalse(h.status()["microphone_open"])
 
     def test_mute_wins_while_the_worker_is_loading(self):
-        h = self.start(onboarded=True, MURMUR_TEST_VOICE="delayed")
+        h = self.start(onboarded=True, JARVIS_TEST_VOICE="delayed")
         h.wait(lambda: bool(h.events("voice")))
         self.assertTrue(h.rpc("mute", muted=True)["ok"])
         time.sleep(.1)
@@ -345,7 +345,7 @@ class ControllerServiceTests(unittest.TestCase):
         self.assertEqual(h.status()["state"], "paused")
 
     def test_push_to_talk_dispatches_its_result_before_reaping_the_worker(self):
-        h = self.start(onboarded=True, dry_run=False, MURMUR_TEST_VOICE="command",
+        h = self.start(onboarded=True, dry_run=False, JARVIS_TEST_VOICE="command",
                        config_patch={"activation": {"mode": "push_to_talk"}})
         self.assertFalse(h.status()["microphone_open"])
         self.assertTrue(h.rpc("listen")["ok"])
@@ -355,7 +355,7 @@ class ControllerServiceTests(unittest.TestCase):
         self.assertEqual(len([v for v in h.events("voice") if v["event"] == "start"]), 1)
 
     def test_missing_native_dependencies_report_an_error_without_starting_voice(self):
-        h = self.start(onboarded=True, MURMUR_VOSK_LIBRARY="/not/a/real/vosk/library")
+        h = self.start(onboarded=True, JARVIS_VOSK_LIBRARY="/not/a/real/vosk/library")
         h.wait(lambda: h.status()["state"] == "error")
         self.assertFalse(h.status()["microphone_open"])
         self.assertEqual(h.events("voice"), [])
@@ -363,7 +363,7 @@ class ControllerServiceTests(unittest.TestCase):
     def test_bad_worker_output_becomes_an_error_without_a_restart_loop(self):
         for scenario in ("invalid", "oversized", "exit"):
             with self.subTest(scenario=scenario):
-                h = self.start(onboarded=True, MURMUR_TEST_VOICE=scenario)
+                h = self.start(onboarded=True, JARVIS_TEST_VOICE=scenario)
                 h.wait(lambda: h.status()["state"] == "error")
                 self.assertEqual(len([v for v in h.events("voice") if v["event"] == "start"]), 1)
                 self.assertIsNone(h.process.poll())
@@ -398,7 +398,7 @@ class ControllerServiceTests(unittest.TestCase):
 
     def test_parent_death_signal_stops_voice_after_hard_controller_failure(self):
         # The default fixture also exits when the control pipe closes; this one does not.
-        h = self.start(onboarded=True, MURMUR_TEST_VOICE="linger")
+        h = self.start(onboarded=True, JARVIS_TEST_VOICE="linger")
         h.wait(lambda: h.status()["engine"] is not None)
         pid = h.events("voice")[0]["pid"]
         # An already-exited worker would pass without exercising PR_SET_PDEATHSIG.
@@ -429,7 +429,7 @@ class ControllerServiceTests(unittest.TestCase):
             else:
                 os.kill(pid, signal.SIGKILL)
                 self.fail("Capture survived the controller's death")
-        partials = list((h.root / "videos").glob(".Murmur_*.part.mkv"))
+        partials = list((h.root / "videos").glob(".Jarvis_*.part.mkv"))
         self.assertEqual(len(partials), 1)
         self.assertGreater(partials[0].stat().st_size, 0)
 
@@ -439,7 +439,7 @@ class ControllerServiceTests(unittest.TestCase):
         self.assertTrue(h.rpc("set_startup", enabled=True)["ok"])
         before["startup"] = True
         self.assertEqual(h.rpc("config")["config"], before)
-        self.assertEqual(h.events("systemctl")[0]["args"], ["--user", "enable", "murmur.service"])
+        self.assertEqual(h.events("systemctl")[0]["args"], ["--user", "enable", "jarvis.service"])
         self.assertEqual(json.loads(h.config_path.read_text()), before)
         self.assertFalse(h.rpc("set_startup", enabled="yes")["ok"])
 
@@ -459,7 +459,7 @@ class ControllerServiceTests(unittest.TestCase):
         stopped = h.rpc("record_stop"); self.assertTrue(stopped["ok"], stopped)
         path = Path(h.status()["recording"]["file"])
         self.assertTrue(path.exists()); self.assertFalse(path.name.startswith("."))
-        self.assertEqual(len(list(path.parent.glob("Murmur_*.mkv"))), 2)
+        self.assertEqual(len(list(path.parent.glob("Jarvis_*.mkv"))), 2)
         self.assertEqual(list(path.parent.glob("*.part.mkv")), [])
         self.assertEqual(path.stat().st_mode & 0o777, 0o600)
 
@@ -548,7 +548,7 @@ class ControllerServiceTests(unittest.TestCase):
 
     def test_disk_replay_invalid_hdr_clip_survives_verification_and_cleanup(self):
         h = self.start(dry_run=False, config_patch={"replay": {"storage": "disk", "max_mb": 512}},
-                       MURMUR_TEST_COLOR="hdr", MURMUR_TEST_BAD_HDR="1")
+                       JARVIS_TEST_COLOR="hdr", JARVIS_TEST_BAD_HDR="1")
         self.assertTrue(h.rpc("replay_start")["ok"])
         h.wait(lambda: (h.socket.parent / "replay.sock").exists())
         result = h.rpc("replay_save")
@@ -561,7 +561,7 @@ class ControllerServiceTests(unittest.TestCase):
         self.assertEqual(clip.read_bytes(), b"fake replay 1")
         self.assertTrue(h.rpc("replay_stop")["ok"])
         self.assertEqual(clip.read_bytes(), b"fake replay 1")
-        self.assertEqual(list((h.root / "data/murmur/replay-buffer").glob("session-*")), [])
+        self.assertEqual(list((h.root / "data/jarvis/replay-buffer").glob("session-*")), [])
 
     def test_disk_replay_publishes_to_a_different_filesystem(self):
         shared_memory = Path("/dev/shm")
@@ -594,7 +594,7 @@ class ControllerServiceTests(unittest.TestCase):
         for reason in ("pressure", "exit"):
             with self.subTest(reason=reason):
                 h = self.start(dry_run=False, config_patch={"replay": {"storage": "disk", "max_mb": 512}},
-                               MURMUR_TEST_VERIFY_DELAY="1.2")
+                               JARVIS_TEST_VERIFY_DELAY="1.2")
                 self.assertTrue(h.rpc("replay_start")["ok"])
                 h.wait(lambda: (h.socket.parent / "replay.sock").exists())
                 event = next(e for e in h.events("gpu-screen-recorder") if "-ipc" in e["args"])
@@ -628,8 +628,8 @@ class ControllerServiceTests(unittest.TestCase):
 
     def test_disk_budget_and_write_failure_stop_only_the_owned_recorder(self):
         # The fake buffer file is sparse, so this needs no real disk space.
-        for environment, expected in (({"MURMUR_TEST_REPLAY_BYTES": str(513 * 1024**2)}, "size budget"),
-                                      ({"MURMUR_TEST_REPLAY_WRITE_ERROR": "1"}, "could not write")):
+        for environment, expected in (({"JARVIS_TEST_REPLAY_BYTES": str(513 * 1024**2)}, "size budget"),
+                                      ({"JARVIS_TEST_REPLAY_WRITE_ERROR": "1"}, "could not write")):
             with self.subTest(environment=environment):
                 h = self.start(dry_run=False, config_patch={"replay": {"storage": "disk", "max_mb": 512}}, **environment)
                 self.assertTrue(h.rpc("replay_start")["ok"])
@@ -637,13 +637,13 @@ class ControllerServiceTests(unittest.TestCase):
                 self.assertIn(expected, h.status()["replay"]["message"])
                 event = next(e for e in h.events("gpu-screen-recorder") if "-ipc" in e["args"])
                 self.assertTrue(exited(event["pid"]))
-                self.assertEqual(list((h.root / "data/murmur/replay-buffer").glob("session-*")), [])
+                self.assertEqual(list((h.root / "data/jarvis/replay-buffer").glob("session-*")), [])
 
     def test_disk_budget_holds_a_full_recorder_file_and_refuses_smaller_budgets(self):
         # GSR fills a 256 MiB file (overshooting by its last packet) before it
         # can remove anything, so 512 MiB must keep running while 256 cannot.
         h = self.start(dry_run=False, config_patch={"replay": {"storage": "disk", "max_mb": 512}},
-                       MURMUR_TEST_REPLAY_BYTES=str(257 * 1024**2))
+                       JARVIS_TEST_REPLAY_BYTES=str(257 * 1024**2))
         self.assertTrue(h.rpc("replay_start")["ok"])
         h.wait(lambda: (h.socket.parent / "replay.sock").exists())
         time.sleep(1)
@@ -654,7 +654,7 @@ class ControllerServiceTests(unittest.TestCase):
         self.assertFalse(response["ok"])
         self.assertIn("at least 512 MiB", response["error"])
         self.assertFalse(any("-ipc" in e["args"] for e in small.events("gpu-screen-recorder")))
-        self.assertFalse((small.root / "data/murmur/replay-buffer").exists())
+        self.assertFalse((small.root / "data/jarvis/replay-buffer").exists())
 
     def test_disk_replay_cleans_crash_leftovers_on_next_start(self):
         h = self.start(dry_run=False, config_patch={"replay": {"storage": "disk", "max_mb": 512}})
@@ -680,7 +680,7 @@ class ControllerServiceTests(unittest.TestCase):
         # GSR has no RAM byte cap and its RSS includes encoder overhead, so an
         # RSS limit would end replay rather than shorten it.
         h = self.start(dry_run=False, config_patch={"replay": {"max_mb": 64}},
-                       MURMUR_TEST_REPLAY_RAM_BYTES=str(65 * 1024**2))
+                       JARVIS_TEST_REPLAY_RAM_BYTES=str(65 * 1024**2))
         self.assertTrue(h.rpc("replay_start")["ok"])
         h.wait(lambda: (h.socket.parent / "replay.sock").exists())
         time.sleep(1)
@@ -689,7 +689,7 @@ class ControllerServiceTests(unittest.TestCase):
         self.assertTrue(h.rpc("replay_stop")["ok"])
 
     def test_status_and_mute_remain_responsive_during_video_verification(self):
-        h = self.start(onboarded=True, dry_run=False, MURMUR_TEST_VERIFY_DELAY=".7")
+        h = self.start(onboarded=True, dry_run=False, JARVIS_TEST_VERIFY_DELAY=".7")
         h.wait(lambda: h.status()["engine"] is not None)
         self.assertTrue(h.rpc("record_start")["ok"])
         h.wait(lambda: bool(h.events("wf-recorder")))
@@ -704,7 +704,7 @@ class ControllerServiceTests(unittest.TestCase):
         thread.join(timeout=3); self.assertTrue(result[0]["ok"], result)
 
     def test_device_discovery_does_not_block_mute_or_status(self):
-        h = self.start(onboarded=True, MURMUR_TEST_QUERY_DELAY=".7")
+        h = self.start(onboarded=True, JARVIS_TEST_QUERY_DELAY=".7")
         h.wait(lambda: h.status()["engine"] is not None)
         result = []
         thread = threading.Thread(target=lambda: result.append(h.rpc("devices")))
@@ -717,7 +717,7 @@ class ControllerServiceTests(unittest.TestCase):
         thread.join(timeout=3); self.assertTrue(result[0]["ok"], result)
 
     def test_hdr_verification_failure_retains_the_partial_recording(self):
-        h = self.start(dry_run=False, MURMUR_TEST_COLOR="hdr", MURMUR_TEST_BAD_HDR="1")
+        h = self.start(dry_run=False, JARVIS_TEST_COLOR="hdr", JARVIS_TEST_BAD_HDR="1")
         self.assertTrue(h.rpc("record_start")["ok"])
         h.wait(lambda: bool(h.events("gpu-screen-recorder")))
         result = h.rpc("record_stop"); self.assertFalse(result["ok"])
@@ -742,7 +742,7 @@ class ControllerServiceTests(unittest.TestCase):
 
     def test_clips_and_recordings_of_a_focused_game_go_in_its_folder(self):
         window = json.dumps({"class": "steam_app_1422450", "title": "Deadlock", "pid": os.getpid()})
-        h = self.start(dry_run=False, MURMUR_TEST_ACTIVE_WINDOW=window)
+        h = self.start(dry_run=False, JARVIS_TEST_ACTIVE_WINDOW=window)
         steam = h.root / ".local/share/Steam/steamapps"
         steam.mkdir(parents=True)
         (steam / "appmanifest_1422450.acf").write_text('"AppState"\n{\n\t"appid"\t\t"1422450"\n\t"name"\t\t"Deadlock"\n}\n')
@@ -764,7 +764,7 @@ class ControllerServiceTests(unittest.TestCase):
         reply = h.rpc("execute", phrase="quit jarvis")
         self.assertTrue(reply["ok"], reply)
         self.assertEqual(h.process.wait(timeout=25), 0)
-        videos = list((h.root / "videos").glob("Murmur_*.mkv"))
+        videos = list((h.root / "videos").glob("Jarvis_*.mkv"))
         self.assertEqual(len(videos), 1)                       # finalized, not a .part file
         self.assertEqual(list((h.root / "videos").glob("*.part.mkv")), [])
 
@@ -772,7 +772,7 @@ class ControllerServiceTests(unittest.TestCase):
         for pixel, ok in (("yuv420p", False), ("yuv420p10le", True)):
             with self.subTest(pixel=pixel):
                 h = self.start(dry_run=False, config_patch={"recording": {"codec": "av1_10bit"}},
-                               MURMUR_TEST_CODEC="av1", MURMUR_TEST_PIX_FMT=pixel)
+                               JARVIS_TEST_CODEC="av1", JARVIS_TEST_PIX_FMT=pixel)
                 self.assertTrue(h.rpc("record_start")["ok"])
                 h.wait(lambda: bool(h.events("gpu-screen-recorder")))
                 args = h.events("gpu-screen-recorder")[0]["args"]
@@ -783,16 +783,16 @@ class ControllerServiceTests(unittest.TestCase):
                     self.assertIn("expected 10-bit av1", h.status()["recording"]["message"])
 
 
-@unittest.skipUnless(BINARY.is_file() and os.environ.get("MURMUR_SPEECH_TEST_RAW")
-                     and os.environ.get("MURMUR_VOSK_MODEL") and os.environ.get("MURMUR_WHISPER_MODEL")
-                     and os.environ.get("MURMUR_GTCRN_MODEL"), "supply the public fixture and local voice models")
+@unittest.skipUnless(BINARY.is_file() and os.environ.get("JARVIS_SPEECH_TEST_RAW")
+                     and os.environ.get("JARVIS_VOSK_MODEL") and os.environ.get("JARVIS_WHISPER_MODEL")
+                     and os.environ.get("JARVIS_GTCRN_MODEL"), "supply the public fixture and local voice models")
 class ControllerRealVoiceTests(unittest.TestCase):
     def test_real_rust_voice_and_denoiser_accept_a_fixture_without_actions(self):
-        from murmur.native_worker import binary_path, package_dir
+        from jarvis.native_worker import binary_path, package_dir
         worker = binary_path()
         if worker is None or package_dir("vosk") is None:
             self.skipTest("build the Rust voice worker and install Vosk")
-        models = Path(os.environ["MURMUR_VOSK_MODEL"]).parent
+        models = Path(os.environ["JARVIS_VOSK_MODEL"]).parent
         # A private config/socket and fake paced pw-record use the actual native
         # worker/weights. Dry-run dispatch prevents any desktop or recorder action.
         patch_config = {"activation": {"wake_phrase": "go forward"},
@@ -800,7 +800,7 @@ class ControllerRealVoiceTests(unittest.TestCase):
                         "commands": {"ten meters": "cancel"}}
         h = Harness(onboarded=True, accurate=True, config_patch=patch_config,
                     real_worker=worker, real_library=package_dir("vosk") / "libvosk.so",
-                    real_model=os.environ["MURMUR_VOSK_MODEL"], pcm=os.environ["MURMUR_SPEECH_TEST_RAW"],
+                    real_model=os.environ["JARVIS_VOSK_MODEL"], pcm=os.environ["JARVIS_SPEECH_TEST_RAW"],
                     XDG_DATA_HOME=str(models.parents[1]))
         self.addCleanup(h.close)
         h.wait(lambda: h.status()["engine"] is not None, seconds=15)

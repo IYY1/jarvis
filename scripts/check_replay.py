@@ -20,15 +20,15 @@ import tempfile
 import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from murmur.config import DEFAULTS
+from jarvis.config import DEFAULTS
 
 
 FAKE_CAPTURE = '''#!/usr/bin/env python3
 import os,sys,time,math,struct
 from pathlib import Path
-data=Path(os.environ['MURMUR_FIXTURE']).read_bytes()
-command_start=int(os.environ['MURMUR_COMMAND_START'])
-threshold=float(os.environ['MURMUR_ENDPOINT_RMS'])
+data=Path(os.environ['JARVIS_FIXTURE']).read_bytes()
+command_start=int(os.environ['JARVIS_COMMAND_START'])
+threshold=float(os.environ['JARVIS_ENDPOINT_RMS'])
 # Select the final energetic frame across the WHOLE command fixture before
 # playback; an early recognition cannot accidentally redefine this endpoint.
 last_energy=None
@@ -42,7 +42,7 @@ for i in range(0,len(data),960):
 if last_energy is None:
     raise RuntimeError('No command energy above the endpoint proxy threshold')
 # Wait for the status observer so even delayed subscription sees the wake.
-ready=Path(os.environ['MURMUR_PLAYBACK_READY'])
+ready=Path(os.environ['JARVIS_PLAYBACK_READY'])
 until=time.monotonic()+15
 while not ready.exists():
     if time.monotonic()>until:
@@ -56,7 +56,7 @@ for i in range(0,len(data),960):
     sys.stdout.buffer.write(data[i:i+960].ljust(960,b'\\0'))
     sys.stdout.buffer.flush()
     if i==last_energy:
-        Path(os.environ['MURMUR_SPEECH_END']).write_text(str(emitted+.03))
+        Path(os.environ['JARVIS_SPEECH_END']).write_text(str(emitted+.03))
     time.sleep(.03)
 time.sleep(2)
 '''
@@ -76,7 +76,7 @@ def main():
     audio = args.raw.read_bytes()
     if len(audio) % 2:
         p.error("Fixture must contain complete 16-bit samples")
-    with tempfile.TemporaryDirectory(prefix="murmur-replay-") as temp:
+    with tempfile.TemporaryDirectory(prefix="jarvis-replay-") as temp:
         base = Path(temp)
         cfg = copy.deepcopy(DEFAULTS)
         cfg["privacy"]["onboarded"] = True
@@ -93,23 +93,23 @@ def main():
         fake = base / "pw-record"
         fake.write_text(FAKE_CAPTURE)
         fake.chmod(0o700)
-        env = dict(os.environ, MURMUR_CONFIG=str(base / "config.json"),
-                   MURMUR_SOCKET=str(base / "ipc/control.sock"), MURMUR_DRY_RUN="1",
-                   MURMUR_FIXTURE=str(base / "input.raw"),
-                   MURMUR_COMMAND_START=str(len(prefix)), MURMUR_ENDPOINT_RMS=str(args.endpoint_rms),
-                   MURMUR_PLAYBACK_READY=str(base / "playback-ready"),
-                   MURMUR_SPEECH_END=str(base / "speech-end.txt"))
+        env = dict(os.environ, JARVIS_CONFIG=str(base / "config.json"),
+                   JARVIS_SOCKET=str(base / "ipc/control.sock"), JARVIS_DRY_RUN="1",
+                   JARVIS_FIXTURE=str(base / "input.raw"),
+                   JARVIS_COMMAND_START=str(len(prefix)), JARVIS_ENDPOINT_RMS=str(args.endpoint_rms),
+                   JARVIS_PLAYBACK_READY=str(base / "playback-ready"),
+                   JARVIS_SPEECH_END=str(base / "speech-end.txt"))
         env["PATH"] = str(base) + os.pathsep + env["PATH"]
         env["PYTHONPATH"] = str(Path(__file__).resolve().parents[1] / "src")
-        old_socket = os.environ.get("MURMUR_SOCKET")
-        os.environ["MURMUR_SOCKET"] = env["MURMUR_SOCKET"]
-        from murmur.client import request
+        old_socket = os.environ.get("JARVIS_SOCKET")
+        os.environ["JARVIS_SOCKET"] = env["JARVIS_SOCKET"]
+        from jarvis.client import request
         daemon = None
         subscriber = None
         try:
-            daemon = subprocess.Popen([sys.executable, "-m", "murmur", "daemon"], env=env, stderr=subprocess.PIPE)
+            daemon = subprocess.Popen([sys.executable, "-m", "jarvis", "daemon"], env=env, stderr=subprocess.PIPE)
             until = time.monotonic() + 5
-            while not Path(env["MURMUR_SOCKET"]).exists():
+            while not Path(env["JARVIS_SOCKET"]).exists():
                 if daemon.poll() is not None:
                     raise RuntimeError("Replay daemon did not start: " + daemon.stderr.read().decode()[:1000])
                 if time.monotonic() > until:
@@ -117,7 +117,7 @@ def main():
                 time.sleep(.05)
             subscriber = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             subscriber.settimeout(.25)
-            subscriber.connect(env["MURMUR_SOCKET"])
+            subscriber.connect(env["JARVIS_SOCKET"])
             subscriber.sendall(b'{"op":"watch"}\n')
             if not args.wake:
                 assert request("listen")["ok"]
@@ -173,9 +173,9 @@ def main():
             if subscriber:
                 subscriber.close()
             if old_socket is None:
-                os.environ.pop("MURMUR_SOCKET", None)
+                os.environ.pop("JARVIS_SOCKET", None)
             else:
-                os.environ["MURMUR_SOCKET"] = old_socket
+                os.environ["JARVIS_SOCKET"] = old_socket
             if daemon:
                 if daemon.poll() is None:
                     daemon.send_signal(signal.SIGTERM)

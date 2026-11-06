@@ -10,8 +10,8 @@ from .host import is_windows
 
 def socket_path() -> str:
     runtime = os.environ.get("XDG_RUNTIME_DIR")
-    base = Path(runtime) / "murmur" if runtime else Path(f"/tmp/murmur-{os.getuid()}")
-    return os.environ.get("MURMUR_SOCKET", str(base / "control.sock"))
+    base = Path(runtime) / "jarvis" if runtime else Path(f"/tmp/jarvis-{os.getuid()}")
+    return os.environ.get("JARVIS_SOCKET", str(base / "control.sock"))
 
 
 @contextmanager
@@ -44,10 +44,10 @@ def request(op: str, timeout: float | None = None, **kwargs) -> dict:
         with sock.makefile("rb") as f:
             line = f.readline(1048577)
         if not line or len(line) > 1048576:
-            raise ConnectionError("Invalid response from Murmur service")
+            raise ConnectionError("Invalid response from Jarvis service")
         response = json.loads(line)
         if not isinstance(response, dict):
-            raise ConnectionError("Invalid response from Murmur service")
+            raise ConnectionError("Invalid response from Jarvis service")
         return response
 
 
