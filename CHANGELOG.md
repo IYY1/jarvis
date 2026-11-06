@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Windows: recordings and clips on an HDR display are kept instead of failing
+  verification, and all captures label their color correctly. FFmpeg was writing
+  the RGB labels that screen capture reports, over the ones Jarvis asked for.
 - Windows: HEVC and AV1 work on NVIDIA again. The encoder test used a frame below
   NVENC's minimum size, so both were reported as unavailable. HDR displays were
   affected in every format, because HDR capture needs HEVC or AV1.

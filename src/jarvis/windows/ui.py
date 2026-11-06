@@ -68,7 +68,7 @@ class Tabs:
         current = getattr(self.window, "current", None)
         if current in self.window.canvases:
             self.window.canvases[current].yview_moveto(0)
-        self.window.root.after_idle(self.window.rewrap)
+            self.window.rewrap()
 
 
 class Window:
@@ -331,7 +331,7 @@ class Window:
             self.nav[name].configure(style="NavOn.TButton" if name == key else "Nav.TButton")
         self.pages[key].pack(fill="both", expand=True)
         self.current = key
-        self.root.after_idle(self.rewrap)
+        self.rewrap()
         self.load_apps()
 
     def load_apps(self):
@@ -361,6 +361,7 @@ class Window:
                 label.configure(wraplength=width)
 
     def rewrap(self):
+        self.root.update_idletasks()   # labels just shown need their width first
         for label in self.wrapped:
             self.wrap(label)
 

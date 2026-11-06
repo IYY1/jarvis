@@ -372,8 +372,27 @@ class EncoderTests(unittest.TestCase):
         self.assertIn(
             "ddagrab=output_idx=2:framerate=30:output_fmt=8bit:allow_fallback=0", args
         )
-        self.assertNotIn("-vf", args)
+        # Frames stay on the GPU, and carry the color they really have, not ddagrab's RGB.
+        filters = args[args.index("-vf") + 1]
+        self.assertNotIn("hwdownload", filters)
+        self.assertIn("colorspace=bt709", filters)
+        self.assertNotIn("-pix_fmt", args)
         self.assertEqual((color, codec), ("sdr", "h264"))
+
+    def test_hdr_frames_are_labeled_as_hdr(self):
+        display = dict(self.display, hdr_known=True, colorManagementPreset="hdr")
+        args, color, _ = encoding.command(dict(self.cfg, codec="av1", color_mode="hdr"), display, "ffmpeg.exe", "nvenc")
+        filters = args[args.index("-vf") + 1]
+        self.assertEqual(color, "hdr")
+        self.assertIn("color_trc=smpte2084", filters)
+        self.assertIn("colorspace=bt2020nc", filters)
+
+    def test_software_conversion_names_the_matrix_it_labels(self):
+        args, _, _ = encoding.command(dict(self.cfg, resolution="720"), dict(self.display, width=2560, height=1440), "ffmpeg.exe", "nvenc")
+        filters = args[args.index("-vf") + 1]
+        self.assertIn("hwdownload", filters)
+        self.assertIn("out_color_matrix=bt709", filters)
+        self.assertIn("colorspace=bt709", filters)
 
     def test_audio_is_only_added_for_explicit_pipe(self):
         args, _, _ = encoding.command(

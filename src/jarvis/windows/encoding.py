@@ -197,6 +197,14 @@ def select_encoder(cfg, display, codec):
     )
 
 
+def color_labels(color):
+    """The filter that labels frames. FFmpeg takes color details from the frames it
+    receives over its own output options, and ddagrab calls its frames full-range RGB."""
+    if color == "hdr":
+        return "setparams=range=tv:colorspace=bt2020nc:color_primaries=bt2020:color_trc=smpte2084"
+    return "setparams=range=tv:colorspace=bt709:color_primaries=bt709:color_trc=bt709"
+
+
 def output_size(cfg, display):
     from ..encoding import RESOLUTIONS
     width, height = int(display.get("width") or 1920), int(display.get("height") or 1080)
@@ -257,22 +265,28 @@ def command(cfg, display, binary, family, *, audio_pipes=()):
     # Native-size 8-bit NVENC/AMF keep D3D11 frames on the GPU. Scaling and
     # SDR-to-10-bit conversion explicitly download/process frames; encoding
     # remains on the requested GPU, with no silent software fallback.
-    if family in ("qsv", "mf", "cpu") or scaled or (ten_bit and color == "sdr"):
+    hardware_frames = not (family in ("qsv", "mf", "cpu") or scaled or (ten_bit and color == "sdr"))
+    if hardware_frames:
+        args += ["-vf", color_labels(color)]
+    else:
         filters = ["hwdownload", "format=x2bgr10le" if color == "hdr" else "format=bgra"]
-        if scaled or color == "hdr":
-            resize = f"scale={width}:{height}" if scaled else "scale"
-            if color == "hdr":
-                resize += ":" if scaled else "="
-                resize += "in_range=full:out_range=limited:in_color_matrix=bt2020:out_color_matrix=bt2020"
-            filters.append(resize)
+        resize = f"scale={width}:{height}" if scaled else "scale"
+        resize += ":" if scaled else "="
+        # Name the conversion, so the labels below are true of the pixels.
+        if color == "hdr":
+            resize += "in_range=full:out_range=limited:in_color_matrix=bt2020:out_color_matrix=bt2020"
+        else:
+            resize += "in_range=full:out_range=limited:out_color_matrix=bt709"
+        filters.append(resize)
         filters.append("format=" + ("p010le" if ten_bit else "yuv420p" if family == "cpu" else "nv12"))
+        filters.append(color_labels(color))
         args += ["-vf", ",".join(filters)]
     if family == "qsv":
         args += [
             "-init_hw_device",
             f"qsv=encoder:hw,child_device={display['adapter']},child_device_type=d3d11va",
         ]
-    args += encoder_options(dict(cfg, _ten_bit=ten_bit, _hardware_frames="-vf" not in args), family, codec)
+    args += encoder_options(dict(cfg, _ten_bit=ten_bit, _hardware_frames=hardware_frames), family, codec)
     args += ["-g", str(fps), "-bf", "0", "-force_key_frames", "expr:gte(t,n_forced*1)"]
     if color == "hdr":
         args += [
