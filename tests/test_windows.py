@@ -86,6 +86,55 @@ class SettingsWindowTests(unittest.TestCase):
             self.window.show(old)
             self.assertEqual(self.window.current, new)
 
+    def test_clips_only_this_survives_late_silence_detection(self):
+        from jarvis.clipedit import Source
+        panel = self.window.clips
+        pending = []
+        panel.work = lambda run, done: pending.append((run, done))
+        source = Source("clip.mkv", 3, {}, [
+            {"name": "Firefox", "codec_name": "opus"},
+            {"name": "Discord", "codec_name": "opus"}], [0])
+        panel.loaded((source, None))
+        panel.only(1)
+        pending[0][1](([-91, -91], None))
+        self.assertEqual(panel.selection(), [1], "a late scan must keep the user's choice")
+        panel.keep_all(False)
+        self.assertEqual(panel.selection(), [])
+        panel.keep_all(True)
+        self.assertEqual(panel.selection(), [0, 1])
+
+    def test_clips_export_keeps_discord_and_mutes_firefox(self):
+        import hashlib
+        import shutil
+        import subprocess
+        if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
+            self.skipTest("needs FFmpeg")
+        with tempfile.TemporaryDirectory(prefix="jarvis-clip-ui-") as folder:
+            path = Path(folder) / "clip's العربية.mkv"
+            subprocess.run(["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "color=size=160x90:rate=10",
+                "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=48000",
+                "-f", "lavfi", "-i", "sine=frequency=880:sample_rate=48000",
+                "-t", "1", "-map", "0:v", "-map", "1:a", "-map", "2:a",
+                "-c:v", "libx264", "-threads", "1", "-c:a", "libopus", str(path)], check=True)
+            (path.parent / f".{path.name}.tracks.json").write_text(json.dumps({"tracks": ["Firefox", "Discord"]}))
+            original = hashlib.sha256(path.read_bytes()).hexdigest()
+            panel = self.window.clips
+            panel.work = lambda run, done: done((run(), None))
+            panel.open(path)
+            panel.only(1)
+            panel.export_copy()
+            exported = next(path.parent.glob("* edit 1.mkv"))
+            self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), original)
+            data = json.loads(subprocess.run(["ffprobe", "-v", "error", "-show_streams", "-of", "json", str(exported)],
+                                             capture_output=True, text=True, check=True).stdout)
+            self.assertEqual(len([s for s in data["streams"] if s["codec_type"] == "audio"]), 1)
+            def sound(file, track):
+                return subprocess.run(["ffmpeg", "-v", "error", "-i", str(file), "-map", f"0:a:{track}",
+                                       "-f", "hash", "-"], capture_output=True, check=True).stdout
+            self.assertEqual(sound(exported, 0), sound(path, 1))
+            self.assertNotEqual(sound(exported, 0), sound(path, 0))
+
+
     def test_a_change_saves_on_its_own_while_the_service_is_off(self):
         self.window.variable("replay", "sound").set(False)
         self.window.variable("replay", "seconds").set("300")

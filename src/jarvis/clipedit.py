@@ -65,8 +65,19 @@ class Segment:
         return self.end - self.start
 
 
+def _executable(argv: list[str]) -> list[str]:
+    from .host import is_windows, tool
+    if is_windows():
+        resolved = tool(argv[0])
+        if not resolved:
+            raise EditError(f"{argv[0]} is missing. Reinstall the complete Jarvis app.")
+        return [resolved, *argv[1:]]
+    return argv
+
+
 def _run(argv: list[str], timeout: float = 60) -> str:
-    result = subprocess.run(argv, capture_output=True, text=True, timeout=timeout)
+    from .host import child_options
+    result = subprocess.run(_executable(argv), capture_output=True, text=True, timeout=timeout, **child_options())
     if result.returncode:
         raise EditError((result.stderr.strip().splitlines() or ["FFmpeg failed"])[-1][:300])
     return result.stdout
@@ -94,8 +105,9 @@ def loudness(path: str | Path, count: int, timeout: float = 120) -> list[float |
         return []
     graph = ";".join(f"[0:a:{i}]volumedetect[o{i}]" for i in range(count))
     maps = [arg for i in range(count) for arg in ("-map", f"[o{i}]")]
-    result = subprocess.run(["ffmpeg", "-nostats", "-hide_banner", "-vn", "-i", str(path), "-filter_complex", graph,
-                             *maps, "-f", "null", "-"], capture_output=True, text=True, timeout=timeout)
+    from .host import child_options
+    result = subprocess.run(_executable(["ffmpeg", "-nostats", "-hide_banner", "-vn", "-i", str(path), "-filter_complex", graph,
+                             *maps, "-f", "null", "-"]), capture_output=True, text=True, timeout=timeout, **child_options())
     peaks: dict[int, float] = {}
     for line in result.stderr.splitlines():
         found = re.search(r"Parsed_volumedetect_(\d+) .*max_volume: (-?[\d.]+|-inf) dB", line)
@@ -275,7 +287,7 @@ def command(edit: Edit, output: Path, mode: str, tracks: list[int], mix: bool, w
         listing = workdir / "segments.ffconcat"
         lines = ["ffconcat version 1.0"]
         for start, segment in zip(edit.fast_starts(), edit.segments):
-            path = edit.sources[segment.source].path.replace("'", "'\\''")
+            path = edit.sources[segment.source].path.replace("\\", "/").replace("'", "'\\''")
             lines += [f"file '{path}'", f"inpoint {start:.6f}", f"outpoint {segment.end:.6f}"]
         listing.write_text("\n".join(lines) + "\n")
         argv += ["-f", "concat", "-safe", "0", "-i", str(listing), "-map", "0:v:0"]
@@ -365,6 +377,9 @@ class Export:
             self._process.terminate()
 
     def run(self) -> Path:
+        from .host import child_options
+        if self._cancelled.is_set():
+            raise EditError("Export cancelled; the original is unchanged")
         total = max(self.edit.duration, 0.1)
         with tempfile.TemporaryDirectory(prefix="jarvis-edit-") as work:
             work = Path(work)
@@ -372,8 +387,10 @@ class Export:
             argv = command(self.edit, staging, self.mode, self.tracks, self.mix, work)
             errors = work / "ffmpeg.log"
             with errors.open("w") as log, \
-                    subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=log, text=True) as process:
+                    subprocess.Popen(_executable(argv), stdout=subprocess.PIPE, stderr=log, text=True, **child_options()) as process:
                 self._process = process
+                if self._cancelled.is_set():
+                    process.terminate()
                 for line in process.stdout:
                     key, _, value = line.strip().partition("=")
                     if key == "out_time_us" and value.isdigit():

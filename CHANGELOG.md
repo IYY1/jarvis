@@ -18,6 +18,9 @@
   sound when replay starts, and each app heard before, gets its own track (up to
   eight), so a clip can keep Discord and mute Firefox. Discord's voice shows as
   Discord, not “WEBRTC VoiceEngine”. Linux; Windows separates one program.
+- **Windows Clips page**: open saved clips, mute individual tracks, keep only
+  one, detect silence, trim start/end and export a new copy using the bundled
+  FFmpeg tools. Export and probing do not block settings saves.
 - **Clips Sound tracks, LosslessCut-style**: a row per track with its format,
   Keep, **Only this**, Keep all / Mute all; tracks with no sound in the clip are
   marked and start off.

@@ -53,7 +53,9 @@ No Discord moderation is included. The same Windows app can still be opened
 by name like other installed applications.
 
 New in 0.4.0: sidebar settings, apply-as-you-change controls, three color
-presets, Arabic speech support, dictation, the Clips editor and track mutes.
+presets, Arabic speech support, dictation and a Clips page. Open a saved clip,
+choose the sound tracks to keep, optionally trim its start/end, then Export copy.
+Fast mode copies video; Exact mode re-encodes on the CPU. The original is kept.
 Separate app tracks on Windows require Windows 11 and support one program
 plus the rest of system sound and the microphone. Linux supports up to eight
 apps. Arabic uses an optional model download; English models are bundled.

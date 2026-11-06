@@ -26,7 +26,7 @@ from ..encoding import storage_estimate
 
 # Sidebar order: (page, title).
 NAVIGATION = [("dashboard", "Home"), ("voice", "Voice"), ("commands", "Commands"),
-              ("applications", "Apps"), ("recording", "Capture"), ("general", "General"),
+              ("applications", "Apps"), ("recording", "Capture"), ("clips", "Clips"), ("general", "General"),
               ("diagnostics", "Diagnostics")]
 PAGE_ALIASES = {"activation": "voice", "replay": "recording", "privacy": "general"}   # older links
 
@@ -883,6 +883,10 @@ class Window:
         path.mkdir(parents=True, exist_ok=True)
         os.startfile(path)
 
+    def build_clips(self, p):
+        from .clips import ClipsPanel
+        self.clips = ClipsPanel(self, p)
+
     def build_general(self, p):
         self.subtitle(p, "Colors, privacy, startup and your settings file.")
         look = self.group(p, "Colors", "Three color combinations from Sanzo Wada's A Dictionary of Color Combinations (1933).")
@@ -1039,6 +1043,7 @@ class Window:
             self.call("shutdown", lambda _: self.close())
 
     def close(self):
+        self.clips.close()
         if self.save_timer:   # a change still waiting for its pause
             self.root.after_cancel(self.save_timer)
             self.save()
