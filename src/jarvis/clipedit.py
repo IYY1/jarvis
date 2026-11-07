@@ -270,6 +270,31 @@ def _vaapi_device(codec: str) -> str | None:
     return None
 
 
+def _windows_encoder(codec: str, hdr: bool, kbps: int) -> list[str] | None:
+    """Encoder arguments for the graphics card recording uses (NVIDIA, AMD or Intel,
+    tested the same way), in the source's own format; None when no card can encode it.
+    The bundled Windows FFmpeg has no CPU AV1 or HEVC encoder."""
+    from .recorder import RecorderError
+    from .windows import encoding
+    from .windows.capture import chosen_display
+    from .windows.displays import sources
+
+    display = chosen_display(sources(), "")
+    if display is None:
+        return None
+    cfg = {"codec": codec + ("_10bit" if hdr else ""), "encoder": "auto", "color_mode": "sdr"}
+    try:
+        _, family = encoding.select_encoder(cfg, display, codec)
+    except RecorderError:
+        return None
+    args = encoding.encoder_options({"rate_control": "bitrate", "bitrate_mbps": max(1, round(kbps / 1000)),
+                                     "_ten_bit": hdr}, family, codec)
+    if family == "qsv":
+        args = ["-init_hw_device", f"qsv=encoder:hw,child_device={display['adapter']},child_device_type=d3d11va",
+                *args]
+    return args
+
+
 def command(edit: Edit, output: Path, mode: str, tracks: list[int], mix: bool, workdir: Path) -> list[str]:
     """The FFmpeg command for an export (see the module docstring)."""
     if mode not in ("fast", "exact"):
@@ -307,11 +332,22 @@ def command(edit: Edit, output: Path, mode: str, tracks: list[int], mix: bool, w
     used = sorted({s.source for s in edit.segments})
     index = {source: i for i, source in enumerate(used)}
     for source in used:
-        argv += ["-i", edit.sources[source].path]
+        # The Windows FFmpeg has no software AV1 decoder, and AV1 is what Jarvis
+        # records by default: decode on the graphics card (FFmpeg falls back to
+        # software for other formats if the card can't).
+        argv += [*(["-hwaccel", "d3d11va"] if is_windows() else []), "-i", edit.sources[source].path]
     width, height = first.video["width"], first.video["height"]
     hdr = first.video.get("color_transfer") in ("smpte2084", "arib-std-b67")
     codec = first.video.get("codec_name") if first.video.get("codec_name") in ("h264", "hevc", "av1") else "h264"
-    device = _vaapi_device(codec + ("_10bit" if hdr else ""))
+    windows_encoder = None
+    if is_windows():
+        # Exact export used VA-API (Linux AMD/Intel) or the CPU; on Windows that meant
+        # slow H.264 even on NVIDIA, and HDR clips failed: there is no libsvtav1 here.
+        kbps_hint = max(1000, int(os.path.getsize(first.path) * 8 / first.duration / 1000 * 1.1))
+        windows_encoder = _windows_encoder(codec, hdr, kbps_hint)
+        if windows_encoder is None and hdr:
+            raise EditError("No graphics card encoder can make HDR video here; choose Fast, or update the graphics driver")
+    device = None if is_windows() else _vaapi_device(codec + ("_10bit" if hdr else ""))
     pixel = "p010" if hdr else "nv12"
     graph, labels = [], []
     for i, s in enumerate(edit.segments):
@@ -336,7 +372,13 @@ def command(edit: Edit, output: Path, mode: str, tracks: list[int], mix: bool, w
     # Aim for the source's own bitrate, so an edit is about as large per
     # second as the original rather than re-encoded at an arbitrary quality.
     kbps = max(1000, int(os.path.getsize(first.path) * 8 / first.duration / 1000 * 1.1))
-    if device:
+    if windows_encoder:
+        if windows_encoder[0] == "-init_hw_device":   # Intel needs its device before the inputs
+            argv[1:1] = windows_encoder[:2]
+            windows_encoder = windows_encoder[2:]
+        video_out = "[v]"
+        encoder = windows_encoder
+    elif device:
         graph.append(f"[v]format={pixel},hwupload[vout]")
         video_out = "[vout]"
         encoder = ["-c:v", f"{codec}_vaapi", "-rc_mode", "VBR", "-b:v", f"{kbps}k", "-maxrate", f"{kbps * 2}k"]

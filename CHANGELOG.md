@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Windows: Exact clip export uses the graphics card (NVIDIA, AMD or Intel, picked
+  the way recording picks it) and keeps the clip's format. It looked for a Linux
+  VA-API device, so it fell back to slow CPU H.264, failed on AV1 clips (the
+  Windows FFmpeg has no software AV1 decoder) and on every HDR clip (no
+  libsvtav1). A 6-second 2K clip now exports in about 2 seconds, HDR included.
 - Windows: Jarvis has its own icon, the window's blue rings and white dot, on the
   program, its shortcuts, the taskbar and the tray, instead of the packager's default.
 - Windows: colors on an HDR display look right. Screen capture on an HDR desktop

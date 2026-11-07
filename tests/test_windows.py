@@ -715,6 +715,39 @@ class ReplayBudgetWarningTests(unittest.TestCase):
         self.assertEqual(replay_budget_warning({'rate_control': 'quality', 'bitrate_mbps': 500}, self.replay, 2), '')
 
 
+class ClipExportTests(unittest.TestCase):
+    """Exact export on Windows: the graphics card decodes and encodes, in the source's format."""
+
+    def edit(self, folder, codec, transfer=None):
+        from jarvis.clipedit import Edit, Source
+        clip = Path(folder) / "clip.mkv"
+        clip.write_bytes(bytes(2_000_000))
+        video = {"codec_name": codec, "width": 2560, "height": 1440, "pix_fmt": "yuv420p", "r_frame_rate": "60/1"}
+        if transfer:
+            video["color_transfer"] = transfer
+        return Edit.of(Source(path=str(clip), duration=8.0, video=video, audio=[], keyframes=[0.0]))
+
+    def test_av1_is_decoded_and_encoded_on_the_card(self):
+        from jarvis import clipedit
+        nvenc = encoding.encoder_options({"rate_control": "bitrate", "bitrate_mbps": 2}, "nvenc", "av1")
+        with tempfile.TemporaryDirectory() as folder, patch("jarvis.host.is_windows", return_value=True), \
+                patch.object(clipedit, "_windows_encoder", return_value=nvenc) as chosen:
+            argv = clipedit.command(self.edit(folder, "av1"), Path(folder) / "o.mkv", "exact", [], False, Path(folder))
+        chosen.assert_called_once_with("av1", False, 2200)
+        self.assertEqual(argv[argv.index("-i") - 2:argv.index("-i")], ["-hwaccel", "d3d11va"])
+        self.assertEqual(argv[argv.index("-c:v") + 1], "av1_nvenc")
+        self.assertNotIn("libx264", argv)
+        self.assertNotIn("libsvtav1", argv)   # not in the Windows FFmpeg
+
+    def test_hdr_without_a_card_encoder_says_so_instead_of_a_missing_encoder(self):
+        from jarvis import clipedit
+        with tempfile.TemporaryDirectory() as folder, patch("jarvis.host.is_windows", return_value=True), \
+                patch.object(clipedit, "_windows_encoder", return_value=None):
+            with self.assertRaisesRegex(clipedit.EditError, "graphics card"):
+                clipedit.command(self.edit(folder, "hevc", "smpte2084"), Path(folder) / "o.mkv", "exact", [], False,
+                                 Path(folder))
+
+
 class IconTests(unittest.TestCase):
     def test_packaged_icon_is_the_window_mark_in_every_size(self):
         import struct
