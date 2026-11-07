@@ -27,6 +27,7 @@ from .home import Home
 from .system import release_unused_memory
 
 RELEASE_MEMORY_AFTER_MS = 4000
+MAX_SEPARATE_APPS = 4   # config.validate allows this many
 
 # Sidebar order: (page, title).
 NAVIGATION = [("dashboard", "Home"), ("voice", "Voice"), ("commands", "Apps & commands"),
@@ -931,10 +932,20 @@ class Window:
         extra = self.group(tabs["replay"], "Separate sound and storage")
         self.choice(extra, "Sound tracks", "replay", "audio_tracks",
                     {"One mixed track": "mixed", "Separate tracks (Windows 11)": "separate"},
-                    "Separate tracks keep the game, one program and your microphone apart, so you can mute one later.")
+                    "Separate tracks give each program you tick below, the rest of the desktop and your "
+                    "microphone a track of their own, after a first track with them all mixed, so clips play "
+                    "anywhere and you can mute one later. For replay and recordings.")
         self.separate_app = tk.StringVar(value=", ".join(self.config["replay"]["separate_apps"]))
-        self.text(extra, "Program on its own track", variable=self.separate_app,
-                  detail="Its file name without .exe, for example firefox. Start it before replay.")
+        self.wide(extra, self.wrapping(ttk.Label(
+            extra, style="Caption.TLabel", justify="left",
+            text=f"Programs on their own track, up to {MAX_SEPARATE_APPS}. They may start later or close. "
+                 "To keep everything else out, turn off Game sound above: then only the programs you tick "
+                 "and your microphone are recorded.")))
+        self.sound_apps = self.wide(extra, ttk.Frame(extra, style="Card.TFrame", borderwidth=0))
+        self.sound_app_labels = {}
+        self.buttons(extra, [("Find programs with sound", self.find_sound_apps)])
+        self.show_sound_apps([])
+        self.find_sound_apps()
         self.choice(extra, "Storage", "replay", "storage", {"RAM": "ram", "Disk (continuous writes)": "disk"},
                     "Disk writes about 1–10 GB an hour and needs a local NTFS or ReFS disk.")
         self.text(extra, "Disk folder", "replay", "buffer_dir", detail="Optional. Empty uses the app-data folder.")
@@ -953,6 +964,44 @@ class Window:
     def estimate(self):
         if hasattr(self, "video"):
             self.video.estimate()
+
+    def find_sound_apps(self):
+        from .audio import apps_with_sound
+        self.submit(apps_with_sound, self.show_sound_apps)
+
+    def show_sound_apps(self, found):
+        """Ticked programs first, then those with sound now, then those heard before."""
+        for app in found:
+            self.sound_app_labels[app["name"].casefold()] = app["label"]
+        ticked = [n.strip() for n in self.separate_app.get().split(",") if n.strip()]
+        names = list(ticked)
+        for app in found:
+            if app["name"].casefold() not in {n.casefold() for n in names}:
+                names.append(app["name"])
+        for child in self.sound_apps.winfo_children():
+            child.destroy()
+        playing = {a["name"].casefold() for a in found if a.get("playing")}
+        for name in names:
+            chosen = tk.BooleanVar(value=name.casefold() in {n.casefold() for n in ticked})
+            label = self.sound_app_labels.get(name.casefold(), name)
+            text = label + ("  · playing now" if name.casefold() in playing else "")
+            ttk.Checkbutton(self.sound_apps, text=text, variable=chosen,
+                            command=lambda n=name, v=chosen: self.tick_sound_app(n, v)).pack(anchor="w", pady=2)
+        if not names:
+            ttk.Label(self.sound_apps, text="No programs with sound found. Play something, then find them again.",
+                      style="Caption.TLabel").pack(anchor="w")
+
+    def tick_sound_app(self, name, chosen):
+        ticked = [n.strip() for n in self.separate_app.get().split(",") if n.strip()]
+        ticked = [n for n in ticked if n.casefold() != name.casefold()]
+        if chosen.get():
+            if len(ticked) >= MAX_SEPARATE_APPS:
+                chosen.set(False)
+                self.say(f"Up to {MAX_SEPARATE_APPS} programs can have their own track.", error=True)
+                return
+            ticked.append(name)
+        self.separate_app.set(", ".join(ticked))
+        self.changed(400)
 
     def load_displays(self, result):
         names = [d["name"] for d in result["monitors"]]

@@ -21,26 +21,53 @@ def format_for(cfg, color):
 PROCESS_LOOPBACK_BUILD = 20348
 
 
-def audio_plan(cfg, replay=None, build=0):
+MIXED_TITLE = "All sound"
+
+
+def audio_plan(cfg, replay=None, build=0, labels=None, recording=False):
     """Audio inputs for one capture: [(title or None, worker config)].
 
-    Recordings and mixed replays use one mixed input. Separate replay tracks
-    keep the game, one program and the microphone apart; Windows can exclude
-    only one process tree from the game track, so one program is supported."""
-    if not replay or replay.get("audio_tracks", "mixed") != "separate":
+    With one mixed track (the default) there is one mixed input. With separate
+    tracks, each chosen program, the rest of the desktop and the microphone get
+    their own input: a program you don't choose is only ever heard in the
+    desktop track, so turn "Game sound" off to keep it out completely.
+
+    The desktop track holds everything except the program when one is chosen;
+    Windows can leave out only one process tree, so with several programs it
+    holds all desktop sound, programs included. A recording uses the replay's
+    track layout with its own sound switches. ``labels`` names programs."""
+    if replay and recording:
+        replay = dict(replay, game_audio=bool(cfg.get("system_audio")), microphone=bool(cfg.get("microphone")))
+    silent = recording and not (cfg.get("system_audio") or cfg.get("microphone"))
+    if silent or not replay or replay.get("audio_tracks", "mixed") != "separate":
         return [(None, cfg)] if cfg.get("system_audio") or cfg.get("microphone") else []
-    from ..replay import track_names, valid_app_name
+    from ..replay import valid_app_name
 
     if build < PROCESS_LOOPBACK_BUILD:
-        raise RecorderError("Separate replay tracks need Windows 11 (build 20348 or later). "
+        raise RecorderError("Separate sound tracks need Windows 11 (build 20348 or later). "
                             "Choose One mixed track in Replay settings.")
     apps = [a for a in replay.get("separate_apps", []) if valid_app_name(a)]
-    if len(apps) > 1:
-        raise RecorderError("On Windows, one program can have its own replay track. Keep one in Replay settings.")
-    kinds = ([{"kind": "game", "app": apps[0] if apps else ""}] if replay.get("game_audio", True) else [])
-    kinds += [{"kind": "app", "app": a} for a in apps]
-    kinds += [{"kind": "microphone"}] if replay.get("microphone", True) else []
-    return [(name, dict(cfg, track=track)) for name, track in zip(track_names(replay), kinds)]
+    labels = {k.casefold(): v for k, v in (labels or {}).items()}
+    tracks = []
+    if replay.get("game_audio", True):
+        if len(apps) == 1:
+            tracks.append(("Everything else", {"kind": "game", "app": apps[0], "in_mix": True}))
+        else:
+            tracks.append(("All desktop sound" if apps else "Game and desktop sound",
+                           {"kind": "game", "app": "", "in_mix": True}))
+    in_desktop = replay.get("game_audio", True) and len(apps) > 1
+    tracks += [(labels.get(a.casefold(), a), {"kind": "app", "app": a, "in_mix": not in_desktop}) for a in apps]
+    if replay.get("microphone", True):
+        tracks.append(("Microphone", {"kind": "microphone", "in_mix": True}))
+    return [(title, dict(cfg, track=track)) for title, track in tracks]
+
+
+def mixed_inputs(plan):
+    """Which of the plan's tracks the first, mixed track adds up: none for one
+    track. A clip then plays everything chosen in any player, and the separate
+    tracks after it stay for editing."""
+    mix = [i for i, (_, c) in enumerate(plan) if c.get("track", {}).get("in_mix")]
+    return mix if len(mix) > 1 else []
 
 
 def encoder_options(cfg, family, codec):
@@ -294,9 +321,10 @@ def output_size(cfg, display):
     return max(2, int(width * ratio) // 2 * 2), max(2, int(height * ratio) // 2 * 2)
 
 
-def command(cfg, display, binary, family, *, audio_pipes=(), screen_pipe=None):
+def command(cfg, display, binary, family, *, audio_pipes=(), screen_pipe=None, mix=()):
     """``audio_pipes``: [(pipe, title or None)], one audio track each.
-    ``screen_pipe``: where the worker's screen mode sends a display in HDR mode."""
+    ``screen_pipe``: where the worker's screen mode sends a display in HDR mode.
+    ``mix``: indexes into ``audio_pipes`` added up into a first track before them."""
     validate_encoding(cfg)
     color = windows_color(cfg, display)
     if in_hdr_mode(display) and not screen_pipe:
@@ -345,10 +373,17 @@ def command(cfg, display, binary, family, *, audio_pipes=(), screen_pipe=None):
     for pipe, _ in audio_pipes:
         args += ["-thread_queue_size", "64", "-f", "s16le", "-ar", "48000", "-ac", "2", "-i", pipe]
     args += ["-map", "0:v:0"]
+    first = 0
+    if len(mix) > 1:
+        # Summed like the system mixer, with a limiter so loud moments together don't clip.
+        inputs = "".join(f"[{i + 1}:a]" for i in mix)
+        args += ["-filter_complex", f"{inputs}amix=inputs={len(mix)}:normalize=0:dropout_transition=0,"
+                 "alimiter=limit=0.97:level=0[mix]", "-map", "[mix]", "-metadata:s:a:0", f"title={MIXED_TITLE}"]
+        first = 1
     for index, (_, title) in enumerate(audio_pipes):
         args += ["-map", f"{index + 1}:a:0"]
         if title:
-            args += [f"-metadata:s:a:{index}", f"title={title}"]
+            args += [f"-metadata:s:a:{index + first}", f"title={title}"]
     args += ["-c:a", "aac", "-b:a", "160k"] if audio_pipes else ["-an"]
     # Native-size 8-bit NVENC/AMF keep D3D11 frames on the GPU. Scaling and
     # SDR-to-10-bit conversion explicitly download/process frames; encoding

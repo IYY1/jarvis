@@ -238,6 +238,7 @@ class _Capture:
         self._lock = threading.RLock()
         self._process, self._segments, self._buffer = None, None, None
         self._audio = []  # [(audio worker process, track title or None)]
+        self._mixed = False  # a first track adds up the others
         self._screen = None  # the worker's screen mode, for a display in HDR mode
         self._done = threading.Event()
         self._done.set()
@@ -327,13 +328,20 @@ class _Capture:
                     + uuid.uuid4().hex[:10]
                 )
                 prefix = r"\\.\pipe\Jarvis-" + uuid.uuid4().hex
+                tracks = self.config["replay"]
+                labels = {}
+                if tracks.get("audio_tracks") == "separate" and tracks.get("separate_apps"):
+                    from .audio import apps_with_sound
+                    labels = {a["name"]: a["label"] for a in apps_with_sound()}
                 plan = encoding.audio_plan(
-                    cfg, self.config["replay"] if self.replay else None,
-                    sys.getwindowsversion().build if hasattr(sys, "getwindowsversion") else 0)
+                    cfg, tracks, sys.getwindowsversion().build if hasattr(sys, "getwindowsversion") else 0,
+                    labels, recording=not self.replay)
                 pipes = [(f"{prefix}-audio{i}", title) for i, (title, _) in enumerate(plan)]
+                mix = encoding.mixed_inputs(plan)
+                self._mixed = bool(mix)
                 screen_pipe = f"{prefix}-video" if encoding.in_hdr_mode(display) else None
                 argv, self._color, self._codec = encoding.command(
-                    cfg, display, binary, family, audio_pipes=pipes, screen_pipe=screen_pipe
+                    cfg, display, binary, family, audio_pipes=pipes, screen_pipe=screen_pipe, mix=mix
                 )
                 self._folder = folder
                 self._error, self._requested, self._forced = None, False, False
@@ -401,7 +409,7 @@ class _Capture:
                     "on" if self.replay else "recording",
                     f"{'Replay' if self.replay else 'Recorder'} running · {self._codec.upper()} · {self._color.upper()} · {family}"
                     + (f" · {self.config['replay']['storage']} · {self.config['replay']['max_mb']} MiB budget"
-                       + replay_budget_warning(cfg, self.config["replay"], len(plan)) if self.replay else ""),
+                       + replay_budget_warning(cfg, self.config["replay"], len(plan) + bool(mix)) if self.replay else ""),
                     partial,
                 )
                 threading.Thread(
@@ -585,7 +593,7 @@ class Replay(_Capture):
                     self._color,
                     self._codec,
                 )
-                titles = [title for _, title in self._audio if title]
+                titles = [encoding.MIXED_TITLE] * self._mixed + [title for _, title in self._audio if title]
             length = self.config["replay"]["seconds"]
             # Wait for the current independent segment so the requested moment
             # is included. This may add up to one second of later video.

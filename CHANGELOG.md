@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Windows: pick which programs' sound goes into a video. Replay settings list the
+  programs with sound (by their own names, such as "Marvel Rivals"), and up to
+  four ticked ones each get a track of their own, in replays and recordings, next
+  to the desktop and the microphone. With Game sound off only the ticked programs
+  and the microphone are recorded. A first "All sound" track adds up the others
+  (with a limiter), so a clip plays everything in any player; the clip editor can
+  still keep or drop each track. A ticked program may start later or close: its
+  track stays silent and picks it up. Per-program capture never worked before: the
+  worker freed Windows' activation settings it didn't own and froze, so replay
+  with a program on its own track had no sound from it.
 - Voice: fast talkers are understood. A command said in the same breath as
   "Jarvis" lost its first sound, because the wake name's end is placed late; the
   cut now keeps 80 ms more. When Whisper can't make a command out of what it
