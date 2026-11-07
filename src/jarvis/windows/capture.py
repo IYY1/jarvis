@@ -136,11 +136,14 @@ class ReplayBuffer:
 
 
 def audio_failure(process, title):
-    """The reason an audio worker ended, from the last line it wrote."""
+    """The reason an audio worker ended, from the last line it wrote. The packaged
+    worker ends with PyInstaller's own "[PYI-...] Failed to execute script" line,
+    which says nothing; the exception is the line before it."""
     try:
         lines = process.stderr.read(8192).decode(errors="replace").strip().splitlines()
     except (OSError, ValueError):
         lines = []
+    lines = [line for line in lines if line.strip() and not line.startswith("[PYI-")]
     reason = lines[-1].split(": ", 1)[-1] if lines else ""  # drop "RuntimeError: "
     track = f"The {title} track" if title else "Recording audio"
     return f"{track} stopped: {reason}" if reason else f"{track} stopped unexpectedly; check Windows audio permissions"

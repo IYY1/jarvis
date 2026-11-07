@@ -477,6 +477,12 @@ class EncoderTests(unittest.TestCase):
         self.assertEqual(audio_failure(process, "firefox"),
                          "The firefox track stopped: firefox is not running. Start it before instant replay.")
         self.assertIn("unexpectedly", audio_failure(types.SimpleNamespace(stderr=io.BytesIO(b"")), None))
+        # Found in a real game test: the packaged worker's last line is PyInstaller's.
+        packaged = types.SimpleNamespace(stderr=io.BytesIO(
+            b"Traceback ...\nRuntimeError: Audio capture overflowed; reduce system load and try again\n"
+            b"[PYI-32356:ERROR] Failed to execute script 'console' due to unhandled exception!\n"))
+        self.assertEqual(audio_failure(packaged, None),
+                         "Recording audio stopped: Audio capture overflowed; reduce system load and try again")
 
     def test_240fps_scaled_ten_bit_sdr_is_explicit_and_verified(self):
         self.cfg.update(codec='av1_10bit', fps=240, resolution='1080')

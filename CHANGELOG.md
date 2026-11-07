@@ -16,6 +16,15 @@
   speed. NVIDIA encoding keeps one reference frame, about 40 MB less video memory
   at 2K for the same picture. A replay buffer kept in RAM is left alone, so it is
   never written to the page file.
+- Windows: recording and replay keep going through a permission prompt, such as the
+  one a game launcher raises. Video now holds the last picture while Windows shows
+  the prompt and resumes right after it; before, the HDR capture stayed frozen for
+  the rest of the session and kept a CPU core busy.
+- Windows: a still screen on an HDR display no longer falls behind. It delivered
+  about 37 frames a second of 60, and FFmpeg then stopped taking sound until the
+  audio worker gave up ("Audio capture could not keep up"). Sound also waits up to
+  5 seconds for FFmpeg instead of 1.2, and a failed audio worker now says why
+  instead of "Failed to execute script".
 - Windows: Start no longer replaces settings that changed while the window was open.
 - Windows: "Primary display" now works. The window offers it, but capture refused
   it with "Choose a connected recording display".

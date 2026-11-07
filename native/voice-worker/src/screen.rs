@@ -558,7 +558,9 @@ float4 ps_pointer(V i) : SV_Target {
 
     /// Everything sized to the desktop, remade when the display mode changes.
     struct Desk {
-        duplication: IDXGIOutputDuplication,
+        /// None only while waiting to get the desktop back: Windows wants the lost
+        /// duplication released before a new one is made.
+        duplication: Option<IDXGIOutputDuplication>,
         width: u32,
         height: u32,
         scene: ID3D11Texture2D,
@@ -576,6 +578,25 @@ float4 ps_pointer(V i) : SV_Target {
 
     const FLOAT: DXGI_FORMAT = DXGI_FORMAT_R16G16B16A16_FLOAT;
 
+    /// Duplication works only from the desktop the user sees. After the secure desktop
+    /// (a permission prompt, Ctrl+Alt+Del) this thread must be moved back to it, or
+    /// every new duplication is lost at once.
+    fn attach_input_desktop() {
+        use windows::Win32::System::StationsAndDesktops::{
+            CloseDesktop, OpenInputDesktop, SetThreadDesktop, DESKTOP_ACCESS_FLAGS,
+            DESKTOP_CONTROL_FLAGS,
+        };
+        const GENERIC_ALL: u32 = 0x1000_0000;
+        unsafe {
+            if let Ok(desktop) =
+                OpenInputDesktop(DESKTOP_CONTROL_FLAGS(0), false, DESKTOP_ACCESS_FLAGS(GENERIC_ALL))
+            {
+                let _ = SetThreadDesktop(desktop);
+                let _ = CloseDesktop(desktop);
+            }
+        }
+    }
+
     fn open_desk(gpu: &Gpu) -> Result<Desk> {
         unsafe {
             let duplication = gpu.output.DuplicateOutput1(&gpu.device, 0, &[FLOAT])?;
@@ -584,7 +605,7 @@ float4 ps_pointer(V i) : SV_Target {
             let scene = texture(gpu, width, height, FLOAT, D3D11_BIND_SHADER_RESOURCE)?;
             Ok(Desk {
                 scene_view: view(gpu, &scene, FLOAT)?,
-                duplication,
+                duplication: Some(duplication),
                 width,
                 height,
                 scene,
@@ -675,8 +696,11 @@ float4 ps_pointer(V i) : SV_Target {
         let mut data = vec![0u8; info.PointerShapeBufferSize as usize];
         let mut needed = 0;
         let mut shape = DXGI_OUTDUPL_POINTER_SHAPE_INFO::default();
+        let Some(duplication) = &desk.duplication else {
+            return;
+        };
         if unsafe {
-            desk.duplication.GetFramePointerShape(
+            duplication.GetFramePointerShape(
                 data.len() as u32,
                 data.as_mut_ptr() as *mut _,
                 &mut needed,
@@ -896,9 +920,9 @@ float4 ps_pointer(V i) : SV_Target {
     }
 
     fn run_on_pipe(job: &Job, pipe: HANDLE, size: usize) -> Result<()> {
-        let (gpu, _white) = open_gpu(job)?;
+        let (mut gpu, _white) = open_gpu(job)?;
         let mut desk = open_desk(&gpu)?;
-        let output = open_output(&gpu, job)?;
+        let mut output = open_output(&gpu, job)?;
         prepare(&gpu);
         let mut frame = vec![0u8; size];
         let mut pointer = Pointer {
@@ -924,16 +948,33 @@ float4 ps_pointer(V i) : SV_Target {
         let mut next_slot = 0;
         let mut waiting: VecDeque<usize> = VecDeque::new();
         let mut fresh = true; // the first frame is sent however the desktop looks
+        // Reopened, then lost again before a single frame: back off, and after a few
+        // in a row start over with a new device, as Microsoft's duplication sample does.
+        let mut quick_losses: u32 = 0;
+        let mut since_reopen: u32 = 1;
+        // JARVIS_SCREEN_TRACE=1: every two seconds, what Desktop Duplication did.
+        let trace = std::env::var_os("JARVIS_SCREEN_TRACE").is_some();
+        let (mut traced, mut lost, mut reopened_count, mut failed, mut acquired) =
+            (Instant::now(), 0u32, 0u32, 0u32, 0u32);
+        let mut last_error = String::new();
         loop {
+            if trace && traced.elapsed().as_secs() >= 2 {
+                eprintln!(
+                    "{:.0}s acquired {acquired} lost {lost} reopened {reopened_count} reopen-failed {failed} last {last_error}",
+                    start.elapsed().as_secs_f64()
+                );
+                traced = Instant::now();
+                (acquired, lost, reopened_count, failed) = (0, 0, 0, 0);
+            }
+            let duplication = desk.duplication.clone().ok_or("Screen capture lost its desktop")?;
             let until_repeat = (sent + 1) as f64 * period - start.elapsed().as_secs_f64();
             let wait = (until_repeat * 1000.0).ceil().clamp(1.0, 50.0) as u32;
             let mut info = DXGI_OUTDUPL_FRAME_INFO::default();
             let mut resource = None;
-            match unsafe {
-                desk.duplication
-                    .AcquireNextFrame(wait, &mut info, &mut resource)
-            } {
+            match unsafe { duplication.AcquireNextFrame(wait, &mut info, &mut resource) } {
                 Ok(()) => {
+                    acquired += 1;
+                    since_reopen += 1;
                     update_pointer(&gpu, &desk, &info, &mut pointer);
                     if info.LastPresentTime != 0 {
                         if let Some(image) = &resource {
@@ -947,7 +988,7 @@ float4 ps_pointer(V i) : SV_Target {
                     }
                     drop(resource);
                     unsafe {
-                        let _ = desk.duplication.ReleaseFrame();
+                        let _ = duplication.ReleaseFrame();
                     }
                 }
                 Err(error) if error.code() == DXGI_ERROR_WAIT_TIMEOUT => {}
@@ -955,8 +996,25 @@ float4 ps_pointer(V i) : SV_Target {
                     if error.code() == DXGI_ERROR_ACCESS_LOST
                         || error.code() == DXGI_ERROR_INVALID_CALL =>
                 {
+                    lost += 1;
+                    last_error = format!("{:?}", error.code());
+                    drop(duplication);
+                    desk.duplication = None;
+                    quick_losses = if since_reopen == 0 { quick_losses + 1 } else { 0 };
+                    if quick_losses > 0 {
+                        // Paced below by holding frames; at most a quarter second.
+                        let pause = (10u64 << quick_losses.min(5)).min(250);
+                        std::thread::sleep(std::time::Duration::from_millis(pause));
+                    }
                     // A mode change, or the secure desktop. Hold the last picture
                     // until Windows lets us back, keeping the frame count honest.
+                    // Pictures already counted go first, in order.
+                    while let Some(slot) = waiting.pop_front() {
+                        read_back(&gpu, &output, job, slot, &mut frame)?;
+                        if !send(pipe, &frame) {
+                            return Ok(());
+                        }
+                    }
                     loop {
                         let due = frames_due(start.elapsed().as_secs_f64(), job.fps);
                         while due > sent + 1 {
@@ -965,14 +1023,30 @@ float4 ps_pointer(V i) : SV_Target {
                             }
                             sent += 1;
                         }
+                        attach_input_desktop();
+                        if quick_losses >= 4 {
+                            // Start over on a new device. Its staging ring is new too.
+                            waiting.clear();
+                            let (renewed, _) = open_gpu(job)?;
+                            gpu = renewed;
+                            output = open_output(&gpu, job)?;
+                            prepare(&gpu);
+                            quick_losses = 0;
+                        }
                         match open_desk(&gpu) {
                             Ok(reopened) => {
+                                reopened_count += 1;
+                                since_reopen = 0;
                                 desk = reopened;
                                 pointer.view = None;
                                 pointer.visible = false;
                                 break;
                             }
-                            Err(_) => std::thread::sleep(std::time::Duration::from_millis(100)),
+                            Err(error) => {
+                                failed += 1;
+                                last_error = error.to_string();
+                                std::thread::sleep(std::time::Duration::from_millis(100))
+                            }
                         }
                     }
                     continue;
@@ -1003,11 +1077,20 @@ float4 ps_pointer(V i) : SV_Target {
                 }
             }
             // Nothing new on screen, or we fell behind: keep the count with what we have.
+            // Pictures still on the GPU were counted when drawn, so they go out first
+            // without counting again; only the repeat of the newest one counts. (Counting
+            // them twice left a still screen at 37 frames a second of 60, and FFmpeg
+            // then stopped taking sound until the audio worker gave up.)
             let due = frames_due(start.elapsed().as_secs_f64(), job.fps);
-            while should_send(false, due, sent) {
-                if let Some(slot) = waiting.pop_front() {
+            if should_send(false, due, sent) {
+                while let Some(slot) = waiting.pop_front() {
                     read_back(&gpu, &output, job, slot, &mut frame)?;
+                    if !send(pipe, &frame) {
+                        return Ok(());
+                    }
                 }
+            }
+            while should_send(false, due, sent) {
                 if !send(pipe, &frame) {
                     return Ok(());
                 }

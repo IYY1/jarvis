@@ -132,7 +132,9 @@ class PCMStream:
     def __init__(
         self, engine, pa, device, *, rate=48000, channels=2, silence_on_idle=False
     ):
-        self.queue = queue.Queue(maxsize=60)
+        # 5 s of 20 ms packets, under 1 MB: FFmpeg pauses reading sound while video
+        # catches up (a game loading, a permission prompt), and 1.2 s ended recordings.
+        self.queue = queue.Queue(maxsize=250)
         self.error = None
         self.target_rate, self.target_channels = rate, channels
         self.silence_on_idle = silence_on_idle
