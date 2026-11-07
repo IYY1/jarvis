@@ -715,6 +715,49 @@ class ReplayBudgetWarningTests(unittest.TestCase):
         self.assertEqual(replay_budget_warning({'rate_control': 'quality', 'bitrate_mbps': 500}, self.replay, 2), '')
 
 
+class TaskManagerGroupTests(unittest.TestCase):
+    """Helpers run under the service's file name, so Task Manager shows one Jarvis row."""
+
+    def setUp(self):
+        self.folder = tempfile.TemporaryDirectory()
+        self.root = Path(self.folder.name)
+        (self.root / "tools").mkdir()
+        self.worker = self.root / "tools" / "jarvis-voice.exe"
+        self.worker.write_bytes(b"MZ worker")
+        self.patches = [patch.object(host, "is_windows", return_value=True),
+                        patch.object(host, "data_dir", return_value=self.root / "data"),
+                        patch.object(host.sys, "frozen", True, create=True)]
+        for p in self.patches:
+            p.start()
+
+    def tearDown(self):
+        for p in reversed(self.patches):
+            p.stop()
+        self.folder.cleanup()
+
+    def test_a_helper_runs_as_a_hard_link_named_like_the_service(self):
+        link = host.grouped(self.worker)
+        self.assertEqual(link, self.root / "data" / "bin" / "jarvis-voice" / "JarvisConsole.exe")
+        self.assertTrue(os.path.samefile(link, self.worker))
+        self.assertEqual(host.grouped(self.worker), link)   # kept while it is the same file
+
+    def test_a_replaced_program_gets_a_fresh_link_and_a_foreign_file_is_never_run(self):
+        link = host.grouped(self.worker)
+        self.worker.unlink()
+        self.worker.write_bytes(b"MZ new version")
+        self.assertTrue(os.path.samefile(host.grouped(self.worker), self.worker))
+        link.unlink()
+        link.write_bytes(b"MZ something else")   # not a link to the program any more
+        self.assertTrue(os.path.samefile(host.grouped(self.worker), self.worker))
+        self.assertEqual(link.read_bytes(), b"MZ new version")
+
+    def test_no_link_possible_means_the_original_path(self):
+        with patch.object(host.os, "link", side_effect=OSError("cross-device")):
+            self.assertEqual(host.grouped(self.worker), self.worker)
+        with patch.object(host.sys, "frozen", False, create=True):
+            self.assertEqual(host.grouped(self.worker), self.worker)
+
+
 class AutomaticFormatTests(unittest.TestCase):
     """codec "auto": the best format the GPU encodes, so older GPUs record without a setting change."""
     sdr = {"name": r"\\.\DISPLAY2", "adapter": 0, "output": 1, "vendor": 0x10DE, "colorManagementPreset": "srgb",

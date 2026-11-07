@@ -305,7 +305,8 @@ def app_audio_to_pipe(program, include, pipe):
         raise RuntimeError("The Windows voice worker is missing; reinstall the complete Jarvis package")
     output = PipeWriter(pipe)
     with output_closed(output):
-        process = subprocess.Popen([str(worker), "--app-audio"], stdin=subprocess.PIPE,
+        from ..host import grouped
+        process = subprocess.Popen([str(grouped(worker)), "--app-audio"], stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, **child_options())
         try:
             process.stdin.write(json.dumps({"process": program, "include": include}).encode() + b"\n")

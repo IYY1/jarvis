@@ -58,6 +58,33 @@ def tool(name):
     return shutil.which(name)
 
 
+GROUP_NAME = "JarvisConsole.exe"
+
+
+def grouped(path):
+    """Windows release: ``path`` under the service's own file name, so Task Manager
+    lists it inside Jarvis's row. Task Manager groups a process with its parent only
+    when both run a file of the same name (tested on Windows 11; descriptions and
+    AppUserModelIDs don't count). The name is a hard link in the data folder: the
+    same file, no extra space, remade whenever the program's file is replaced, and
+    used only while it is still that very file. Anything else: ``path`` itself."""
+    if path is None or not is_windows() or not getattr(sys, "frozen", False):
+        return path
+    path = Path(path)
+    if path.name.lower() == GROUP_NAME.lower():
+        return path
+    link = data_dir() / "bin" / path.stem / GROUP_NAME
+    try:
+        if link.is_file() and os.path.samefile(link, path):
+            return link
+        link.parent.mkdir(parents=True, exist_ok=True)
+        link.unlink(missing_ok=True)
+        os.link(path, link)
+        return link if os.path.samefile(link, path) else path
+    except OSError:
+        return path
+
+
 def command(mode, *args):
     """Use the console worker in frozen Windows builds; never spawn the GUI recursively."""
     if getattr(sys, "frozen", False):

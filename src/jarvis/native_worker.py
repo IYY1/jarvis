@@ -112,4 +112,5 @@ def prepare(config: dict, mode: str, grammar: dict) -> tuple[list[str], dict, di
         raise ValueError("Arabic dictation needs the Arabic and English language setting and the Arabic model")
     native["dictation_language"] = language if native.get("arabic") else "en"
     payload["native"] = native
-    return [str(binary)], payload, env
+    from .host import grouped
+    return [str(grouped(binary))], payload, env

@@ -14,7 +14,7 @@ import threading
 import time
 import uuid
 
-from ..host import child_options, command as worker_command, tool
+from ..host import child_options, command as worker_command, grouped, tool
 from ..recorder import RecorderError, verify_video
 from ..replay import write_track_names
 from ..encoding import replay_fit_seconds, replay_video, with_auto_bitrate
@@ -173,7 +173,7 @@ def start_screen(request):
     if worker is None:
         raise RecorderError("The Windows voice worker is missing; reinstall the complete Jarvis package")
     process = subprocess.Popen(
-        [str(worker), "--screen"],
+        [str(grouped(worker)), "--screen"],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

@@ -8,8 +8,11 @@
   one-frame test, cached), so NVIDIA before RTX 40 and AMD before RX 7000 record
   without changing a setting; real HDR takes only AV1 or HEVC, and with no GPU
   encoder ordinary video falls back to CPU H.264. Saved formats are kept.
-- Windows: Task Manager and file properties name the programs "Jarvis" and
-  "Jarvis voice and screen" instead of JarvisConsole and jarvis-voice.
+- Windows: Task Manager shows Jarvis's background work as one "Jarvis" row: the
+  voice and screen worker, FFmpeg and the replay disk store run under the service's
+  file name (a hard link in the data folder, remade when the program is updated),
+  because Task Manager only groups processes whose files share a name. File
+  properties name the programs "Jarvis" and "Jarvis voice and screen".
 - Windows: Exact clip export uses the graphics card (NVIDIA, AMD or Intel, picked
   the way recording picks it) and keeps the clip's format. It looked for a Linux
   VA-API device, so it fell back to slow CPU H.264, failed on AV1 clips (the
