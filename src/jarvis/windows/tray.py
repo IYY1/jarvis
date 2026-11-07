@@ -35,6 +35,25 @@ class Tray:
             if self.hwnd:
                 win32gui.PostMessage(self.hwnd, win32con.WM_APP + 2, 0, 0)
 
+    @staticmethod
+    def _mark():
+        """The Jarvis mark built into the packaged program, small size; Windows'
+        generic application icon when running from source."""
+        import sys
+        import win32con
+        import win32gui
+
+        if getattr(sys, "frozen", False):
+            try:
+                large, small = win32gui.ExtractIconEx(sys.executable, 0, 1)
+                for handle in large:
+                    win32gui.DestroyIcon(handle)
+                if small:
+                    return small[0]
+            except Exception:
+                pass
+        return win32gui.LoadIcon(0, win32con.IDI_APPLICATION)
+
     def _run(self):
         import win32api
         import win32con
@@ -42,6 +61,7 @@ class Tray:
 
         callback = win32con.WM_APP + 1
         taskbar_created = win32gui.RegisterWindowMessage("TaskbarCreated")
+        mark = self._mark()
 
         def icon(add=False):
             win32gui.Shell_NotifyIcon(
@@ -51,7 +71,7 @@ class Tray:
                     0,
                     win32gui.NIF_ICON | win32gui.NIF_MESSAGE | win32gui.NIF_TIP,
                     callback,
-                    win32gui.LoadIcon(0, win32con.IDI_APPLICATION),
+                    mark,
                     self.tooltip,
                 ),
             )

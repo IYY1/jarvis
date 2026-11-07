@@ -102,6 +102,7 @@ console = EXE(
     exclude_binaries=True,
     name="JarvisConsole",
     console=True,
+    icon=str(root / "packaging/windows/jarvis.ico"),
     debug=False,
     strip=False,
     upx=False,
@@ -115,6 +116,8 @@ gui = EXE(
     exclude_binaries=True,
     name="Jarvis",
     console=False,
+    # The window's mark (look.logo_ico); a test keeps this file in step with it.
+    icon=str(root / "packaging/windows/jarvis.ico"),
     debug=False,
     strip=False,
     upx=False,

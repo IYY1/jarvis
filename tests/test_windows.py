@@ -715,6 +715,25 @@ class ReplayBudgetWarningTests(unittest.TestCase):
         self.assertEqual(replay_budget_warning({'rate_control': 'quality', 'bitrate_mbps': 500}, self.replay, 2), '')
 
 
+class IconTests(unittest.TestCase):
+    def test_packaged_icon_is_the_window_mark_in_every_size(self):
+        import struct
+        from jarvis.windows.look import ICON_SIZES, logo_ico
+
+        icon = logo_ico()
+        stored = Path(__file__).resolve().parents[1] / "packaging" / "windows" / "jarvis.ico"
+        self.assertEqual(stored.read_bytes(), icon, "regenerate packaging/windows/jarvis.ico from look.logo_ico()")
+        reserved, kind, count = struct.unpack("<HHH", icon[:6])
+        self.assertEqual((reserved, kind, count), (0, 1, len(ICON_SIZES)))
+        for index, size in enumerate(ICON_SIZES):
+            width, height, *_, length, offset = struct.unpack("<BBBBHHII", icon[6 + 16 * index:22 + 16 * index])
+            self.assertEqual((width or 256, height or 256), (size, size))
+            png = icon[offset:offset + length]
+            self.assertEqual(png[:8], b"\x89PNG\r\n\x1a\n")
+            self.assertEqual(struct.unpack(">II", png[16:24]), (size, size))
+            self.assertEqual(png[25], 6, "RGBA, so the corners are see-through")
+
+
 class ServiceMemoryTests(unittest.TestCase):
     def releases(self, state, storage, rounds=3):
         import asyncio
