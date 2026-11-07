@@ -52,6 +52,12 @@ DEFAULTS = {
                "own_video": False, "codec": "av1", "fps": 60, "resolution": "native", "rate_control": "bitrate",
                "quality_preset": "very_high", "bitrate_mbps": 8, "bitrate_auto": True},
 }
+if sys.platform == "win32":
+    # Windows picks the best format the GPU encodes when capture starts (see
+    # windows/encoding.resolve_codec), so a new install records on any GPU without
+    # choosing one. Saved settings keep whatever format they name.
+    DEFAULTS["recording"]["codec"] = "auto"
+    DEFAULTS["replay"]["codec"] = "auto"
 # Sections that existed in earlier versions and are now ignored.
 LEGACY_SECTIONS: tuple[str, ...] = ()
 # Free-form mappings; their keys are user phrases, not setting names.
@@ -208,9 +214,9 @@ def validate(data: dict) -> dict:
         raise ValueError("Invalid replay buffer directory")
     if not all(isinstance(c["replay"][key], bool) for key in ("autostart", "game_audio", "microphone", "sound", "own_video")):
         raise ValueError("Replay switches must be true or false")
-    from .encoding import GPU_CODECS, REPLAY_VIDEO
+    from .encoding import AUTO, GPU_CODECS, REPLAY_VIDEO
     validate_encoding({key: c["replay"][key] for key in REPLAY_VIDEO})
-    if c["replay"]["codec"] not in GPU_CODECS:
+    if c["replay"]["codec"] not in (*GPU_CODECS, *AUTO):
         raise ValueError("Replay records with a GPU format: choose AV1, HEVC or H.264")
     if c["replay"]["audio_tracks"] not in ("mixed", "separate"):
         raise ValueError("Replay audio tracks must be mixed or separate")

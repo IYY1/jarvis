@@ -46,6 +46,7 @@ class VideoSettings:
             more.next_row = 0
             p = self.details(p, more)
             window.choice(p, "Format", section, "codec", {
+                "Automatic · best for this GPU": "auto",
                 "H.264 · easy sharing": "h264", "HEVC": "hevc", "AV1": "av1",
                 "HEVC 10-bit · SDR": "hevc_10bit", "AV1 10-bit · SDR": "av1_10bit",
                 **({"H.264 · CPU compatibility": "libx264"} if section == "recording" else {})})
@@ -92,7 +93,7 @@ class VideoSettings:
         v = self.window.variable
         for name, (kind, resolution, fps, rate, quality) in PRESETS.items():
             codec = str(v(section, "codec").get())
-            codecs = {"best": ("av1", "hevc", "h264"), "ten": ("av1_10bit", "hevc_10bit")}.get(kind, (kind,))
+            codecs = {"best": ("auto", "av1", "hevc", "h264"), "ten": ("av1_10bit", "hevc_10bit")}.get(kind, (kind,))
             if (codec in codecs and str(v(section, "resolution").get()) == resolution and int(float(v(section, "fps").get())) == fps
                     and v(section, "rate_control").get() == rate and bool(v(section, "bitrate_auto").get())):
                 self.presets[section].set(name)
@@ -110,7 +111,7 @@ class VideoSettings:
             return
         kind, resolution, fps, rate, quality = PRESETS[choice]
         if kind == "best":
-            codec = next((c for c in ("av1", "hevc", "h264") if self.formats.get(c)), "h264")
+            codec = "auto"   # chosen when capture starts, so it needs no format test first
         elif kind == "ten":
             codec = next((c for c in ("av1_10bit", "hevc_10bit") if self.formats.get(c)), "av1_10bit")
         else:

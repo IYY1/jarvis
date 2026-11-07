@@ -15,8 +15,11 @@ from jarvis.replay import command
 class EncodingTests(unittest.TestCase):
     def test_old_settings_keep_software_quality_and_new_options_are_validated(self):
         r = validate({})["recording"]
-        # Fixed bitrate that follows resolution and frame rate is the default.
-        self.assertEqual((r["codec"], r["quality"], r["rate_control"], r["bitrate_auto"]), ("libx264", 23, "bitrate", True))
+        # Fixed bitrate that follows resolution and frame rate is the default. Windows
+        # picks the GPU's best format by itself ("auto"); Linux keeps CPU H.264.
+        import sys
+        default = "auto" if sys.platform == "win32" else "libx264"
+        self.assertEqual((r["codec"], r["quality"], r["rate_control"], r["bitrate_auto"]), (default, 23, "bitrate", True))
         cases = [("codec", v) for v in (*CODECS, "bogus", None, [])]
         cases += [(key, v) for key in ("bitrate_mbps", "fps") for v in (True, 0, 1, 8.0, 60, 100, 101, 120, 240, 241, 500, 501)]
         cases += [("resolution", v) for v in ("native", "2160", "1440", "1080", "720", "1600", 1080)]
@@ -129,7 +132,7 @@ class EncodingTests(unittest.TestCase):
 
     def test_cpu_bitrate_mode_uses_bounded_encoder_buffer_and_keeps_thread_limit(self):
         cfg = validate({"recording": {"configured": True, "monitor": "DP-1", "rate_control": "bitrate", "bitrate_mbps": 6,
-                                      "bitrate_auto": False}})
+                                      "bitrate_auto": False, "codec": "libx264"}})
         with patch("jarvis.recorder.sources", return_value=[{"name": "DP-1"}]), \
                 patch("jarvis.recorder.shutil.which", side_effect=lambda name: "/fake/" + name):
             active, _, args = Recorder(cfg)._validate()

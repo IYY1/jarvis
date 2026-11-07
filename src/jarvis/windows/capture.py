@@ -293,6 +293,7 @@ class _Capture:
         display = chosen_display(sources(), cfg["monitor"])
         if display is None:
             raise RecorderError("Choose a connected recording display")
+        cfg = encoding.resolve_codec(cfg, display)   # "auto": the best format this GPU encodes
         color = encoding.windows_color(cfg, display)
         cfg["fps"] = encoding.capped_fps(cfg["fps"], display)
         cfg = dict(with_auto_bitrate(cfg, display))

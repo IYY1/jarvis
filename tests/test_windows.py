@@ -272,7 +272,7 @@ class SettingsWindowTests(unittest.TestCase):
         self.finish()
         saved = config.load()
         self.assertEqual(saved['recording']['fps'], 240)
-        self.assertEqual(saved['recording']['codec'], 'av1')
+        self.assertEqual(saved['recording']['codec'], 'auto')   # the GPU's best, chosen when capture starts
         self.assertTrue(saved['recording']['bitrate_auto'])
         self.assertTrue(saved['replay']['own_video'])
         self.assertEqual((saved['replay']['fps'], saved['replay']['resolution']), (30, '1080'))
@@ -713,6 +713,49 @@ class ReplayBudgetWarningTests(unittest.TestCase):
 
     def test_quality_rate_control_makes_no_prediction(self):
         self.assertEqual(replay_budget_warning({'rate_control': 'quality', 'bitrate_mbps': 500}, self.replay, 2), '')
+
+
+class AutomaticFormatTests(unittest.TestCase):
+    """codec "auto": the best format the GPU encodes, so older GPUs record without a setting change."""
+    sdr = {"name": r"\\.\DISPLAY2", "adapter": 0, "output": 1, "vendor": 0x10DE, "colorManagementPreset": "srgb",
+           "hdr_known": True, "width": 2560, "height": 1440, "left": -2560, "top": 0}
+    hdr = dict(sdr, colorManagementPreset="hdr")
+
+    def resolve(self, display, works, **cfg):
+        def select(candidate, _display, name):
+            if name not in works:
+                raise RecorderError(f"No usable {name} GPU encoder")
+            return "ffmpeg.exe", "nvenc"
+        with patch.object(encoding, "select_encoder", side_effect=select) as tried:
+            return encoding.resolve_codec({"codec": "auto", "encoder": "auto", "color_mode": "auto", **cfg}, display), tried
+
+    def test_newest_gpu_gets_av1_and_older_ones_step_down(self):
+        for works, expected in ((("av1", "hevc", "h264"), "av1"), (("hevc", "h264"), "hevc"), (("h264",), "h264")):
+            with self.subTest(works=works):
+                cfg, _ = self.resolve(self.sdr, works)
+                self.assertEqual(cfg["codec"], expected)
+                self.assertEqual(cfg["encoder"], "auto")
+
+    def test_no_gpu_encoder_falls_back_to_cpu_h264_for_ordinary_video_only(self):
+        cfg, _ = self.resolve(self.sdr, ())
+        self.assertEqual((cfg["codec"], cfg["encoder"]), ("libx264", "cpu"))
+        with self.assertRaisesRegex(RecorderError, "HDR"):
+            self.resolve(self.hdr, ("h264",), color_mode="hdr")
+
+    def test_real_hdr_skips_h264(self):
+        cfg, tried = self.resolve(self.hdr, ("hevc", "h264"), color_mode="hdr")
+        self.assertEqual(cfg["codec"], "hevc")
+        self.assertNotIn("h264", [call.args[2] for call in tried.call_args_list])
+
+    def test_a_chosen_format_is_left_alone(self):
+        with patch.object(encoding, "select_encoder") as tried:
+            self.assertEqual(encoding.resolve_codec({"codec": "hevc_10bit"}, self.sdr)["codec"], "hevc_10bit")
+        tried.assert_not_called()
+
+    def test_new_windows_installs_default_to_auto_and_it_validates(self):
+        defaults = config.validate({})
+        self.assertEqual((defaults["recording"]["codec"], defaults["replay"]["codec"]), ("auto", "auto"))
+        config.validate({"replay": {"codec": "auto", "own_video": True}})
 
 
 class ClipExportTests(unittest.TestCase):

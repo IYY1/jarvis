@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Windows: a new "Automatic · best for this GPU" format, the default for new
+  installs and for the Recommended, high frame rate and 1080p presets. When capture
+  starts it picks the first of AV1, HEVC and H.264 the GPU really encodes (a
+  one-frame test, cached), so NVIDIA before RTX 40 and AMD before RX 7000 record
+  without changing a setting; real HDR takes only AV1 or HEVC, and with no GPU
+  encoder ordinary video falls back to CPU H.264. Saved formats are kept.
+- Windows: Task Manager and file properties name the programs "Jarvis" and
+  "Jarvis voice and screen" instead of JarvisConsole and jarvis-voice.
 - Windows: Exact clip export uses the graphics card (NVIDIA, AMD or Intel, picked
   the way recording picks it) and keeps the clip's format. It looked for a Linux
   VA-API device, so it fell back to slow CPU H.264, failed on AV1 clips (the

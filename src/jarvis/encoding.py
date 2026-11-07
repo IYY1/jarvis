@@ -1,9 +1,16 @@
 """Small shared recording choices; legacy settings keep their existing behavior."""
+import sys
+
 CODECS = ("libx264", "h264_vaapi", "h264", "hevc", "av1", "hevc_10bit", "av1_10bit")
 CODEC_LABELS = ("H.264 · CPU (compatible)", "H.264 · VA-API (legacy)",
                 "H.264 · GPU (easy sharing)", "HEVC · GPU (smaller files)",
                 "AV1 · GPU (best compression, recent GPUs)", "HEVC 10-bit · GPU (no banding)",
                 "AV1 10-bit · GPU (best quality, recent GPUs)")
+# "auto", Windows only: the first of these the GPU encodes, chosen when capture
+# starts, so a GPU without AV1 (NVIDIA before RTX 40, AMD before RX 7000) still
+# records. Linux and its Rust controller don't know it, and keep rejecting it.
+AUTO_CODECS = ("av1", "hevc", "h264")
+AUTO = ("auto",) if sys.platform == "win32" else ()
 # Formats GPU Screen Recorder encodes. The 10-bit ones record SDR without
 # banding; HDR capture is always 10-bit whichever family is chosen.
 GPU_CODECS = ("h264", "hevc", "av1", "hevc_10bit", "av1_10bit")
@@ -54,7 +61,7 @@ def validate_encoding(cfg):
         value = cfg.get(key, {"fps": 30, "quality": 23, "bitrate_mbps": 8}[key])
         if type(value) is not int or not low <= value <= high:
             raise ValueError(f"Recording {key} must be an integer from {low} to {high}")
-    if cfg.get("codec", "libx264") not in CODECS:
+    if cfg.get("codec", "libx264") not in (*CODECS, *AUTO):
         raise ValueError("Choose H.264, HEVC or AV1 recording encoding")
     if cfg.get("rate_control", "quality") not in ("quality", "bitrate"):
         raise ValueError("Recording rate control must be quality or bitrate")

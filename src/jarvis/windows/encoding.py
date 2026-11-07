@@ -3,7 +3,7 @@
 from functools import lru_cache
 from pathlib import Path
 import subprocess
-from ..encoding import validate_encoding
+from ..encoding import AUTO_CODECS, validate_encoding
 from ..host import child_options, tool
 from ..recorder import RecorderError, capture_color
 
@@ -199,6 +199,29 @@ def select_encoder(cfg, display, codec):
     raise RecorderError(
         f"No usable {'CPU H.264' if cpu else codec.upper() + ' GPU'} encoder. Update the graphics driver, select another format, or explicitly choose CPU H.264. No CPU fallback was used."
     )
+
+
+def resolve_codec(cfg, display):
+    """``cfg`` with "auto" replaced by the best format this display's GPU encodes:
+    AV1, then HEVC, then H.264, each tested with a one-frame encode (cached). HDR
+    video needs 10-bit HEVC or AV1. With no GPU encoder at all, SDR falls back to
+    CPU H.264, as choosing it by hand would."""
+    if cfg.get("codec") != "auto":
+        return cfg
+    for codec in AUTO_CODECS:
+        candidate = dict(cfg, codec=codec)
+        color = windows_color(candidate, display)
+        name = format_for(candidate, color)
+        if color == "hdr" and name == "h264":
+            continue
+        try:
+            select_encoder(candidate, display, name)
+            return candidate
+        except RecorderError:
+            continue
+    if windows_color(dict(cfg, codec="h264"), display) == "hdr":
+        raise RecorderError("No GPU encoder for HDR video here (it needs HEVC or AV1). Update the graphics driver, or record ordinary video.")
+    return dict(cfg, codec="libx264", encoder="cpu")
 
 
 def in_hdr_mode(display):
