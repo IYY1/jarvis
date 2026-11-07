@@ -32,6 +32,16 @@ pub fn silence_needed(elapsed_ms: u64, written: u64, idle_ms: u64) -> u64 {
     (elapsed_ms * RATE / 1000).saturating_sub(written)
 }
 
+/// Sound starting again after a quiet spell is only noticed when its packet
+/// arrives, up to IDLE_MS after the last padding: without this it would land
+/// that much early. Frames of silence to write first so a packet of `frames`
+/// ends at wall time; nothing for ordinary packet jitter.
+pub const LATE_FRAMES: u64 = RATE * 30 / 1000;
+pub fn silence_before(elapsed_ms: u64, written: u64, frames: u64) -> u64 {
+    let behind = (elapsed_ms * RATE / 1000).saturating_sub(written + frames);
+    if behind > LATE_FRAMES { behind } else { 0 }
+}
+
 pub fn run(request: &serde_json::Value) -> Result<()> {
     if request["list"] == true {
         #[cfg(windows)]
@@ -71,7 +81,7 @@ pub fn run(request: &serde_json::Value) -> Result<()> {
 
 #[cfg(windows)]
 mod windows_loopback {
-    use super::{silence_needed, FRAME_BYTES, RATE};
+    use super::{silence_before, silence_needed, FRAME_BYTES, RATE};
     use crate::Result;
     use std::io::Write;
     use std::time::{Duration, Instant};
@@ -462,8 +472,14 @@ mod windows_loopback {
                         let mut flags = 0;
                         capture.GetBuffer(&mut data, &mut frames, &mut flags, None, None)?;
                         let bytes = frames as usize * FRAME_BYTES;
-                        let ok =
-                            if flags & AUDCLNT_BUFFERFLAGS_SILENT.0 as u32 != 0 || data.is_null() {
+                        let late = silence_before(
+                            track.start.elapsed().as_millis() as u64,
+                            track.written,
+                            frames as u64,
+                        );
+                        track.written += late;
+                        let ok = send_silence(out, late as usize * FRAME_BYTES)
+                            && if flags & AUDCLNT_BUFFERFLAGS_SILENT.0 as u32 != 0 || data.is_null() {
                                 send_silence(out, bytes)
                             } else {
                                 send(out, std::slice::from_raw_parts(data, bytes))
@@ -511,6 +527,17 @@ mod tests {
         assert_eq!(silence_needed(1500, 48000, 500), 24000);
         // Never negative when ahead of the clock.
         assert_eq!(silence_needed(1000, 50000, 500), 0);
+    }
+
+    #[test]
+    fn sound_after_a_quiet_spell_lands_at_its_own_time() {
+        // Padded to 1.000 s, then a 10 ms packet arrives at 1.059 s: it covers
+        // 1.049..1.059, so 49 ms of silence go first, not none.
+        assert_eq!(silence_before(1059, 48000, 480), 2352);
+        // Ordinary jitter while sound flows: a packet 20 ms late inserts nothing.
+        assert_eq!(silence_before(1030, 48000, 480), 0);
+        // Ahead of the clock: nothing.
+        assert_eq!(silence_before(1000, 49000, 480), 0);
     }
 
     #[test]

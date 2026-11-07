@@ -83,8 +83,9 @@ def _run(argv: list[str], timeout: float = 60) -> str:
     return result.stdout
 
 
-def track_names(path: str | Path, count: int) -> list[str]:
-    """Names Jarvis stored when it saved the replay, else "Audio 1", "Audio 2"…"""
+def track_names(path: str | Path, count: int, titles: list | None = None) -> list[str]:
+    """Names Jarvis stored when it saved the replay, else each track's own
+    title (recordings keep theirs in the file), else "Audio 1", "Audio 2"…"""
     path = Path(path)
     try:
         names = json.loads((path.parent / f".{path.name}.tracks.json").read_text(encoding="utf-8"))["tracks"]
@@ -92,7 +93,16 @@ def track_names(path: str | Path, count: int) -> list[str]:
             return names
     except (OSError, ValueError, KeyError, TypeError):
         pass
-    return [f"Audio {i + 1}" for i in range(count)]
+    titles = list(titles or [])[:count]
+    titles += [None] * (count - len(titles))
+    return [t.strip() if isinstance(t, str) and t.strip() else f"Audio {i + 1}" for i, t in enumerate(titles)]
+
+
+def _titles(argv: list[str], names: list[str]) -> list[str]:
+    """Name the exported audio tracks, which filters and mixing leave unnamed."""
+    for index, name in enumerate(names):
+        argv += [f"-metadata:s:a:{index}", f"title={name}"]
+    return argv
 
 
 SILENT_DB = -90.0   # volumedetect reports digital silence as -91 dB
@@ -120,14 +130,16 @@ def probe(path: str | Path) -> Source:
     path = str(Path(path).resolve())
     data = json.loads(_run(["ffprobe", "-v", "error", "-show_entries",
                             "format=duration:stream=index,codec_type,codec_name,width,height,pix_fmt,"
-                            "r_frame_rate,channels,sample_rate,color_transfer,color_primaries,color_space,color_range",
+                            "r_frame_rate,channels,sample_rate,color_transfer,color_primaries,color_space,color_range"
+                            ":stream_tags=title",
                             "-of", "json", path]))
     duration = float(data.get("format", {}).get("duration") or 0)
     video = [s for s in data.get("streams", []) if s.get("codec_type") == "video"]
     audio = [s for s in data.get("streams", []) if s.get("codec_type") == "audio"]
     if not video or duration <= 0:
         raise EditError(f"{Path(path).name} has no video to edit")
-    for name, stream in zip(track_names(path, len(audio)), audio):
+    titles = [(s.get("tags") or {}).get("title") for s in audio]
+    for name, stream in zip(track_names(path, len(audio), titles), audio):
         stream["name"] = name
     packets = _run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "packet=pts_time,flags",
                     "-of", "csv=p=0", path], timeout=300)
@@ -302,6 +314,9 @@ def command(edit: Edit, output: Path, mode: str, tracks: list[int], mix: bool, w
     if not edit.segments:
         raise EditError("Nothing left to export")
     first = edit.sources[edit.segments[0].source]
+    names = [first.audio[t].get("name") or f"Audio {t + 1}" if t < len(first.audio) else f"Audio {t + 1}" for t in tracks]
+    if mix and len(tracks) > 1:
+        names = [" + ".join(names)]
     argv = ["ffmpeg", "-hide_banner", "-nostdin", "-v", "error", "-progress", "pipe:1", "-nostats", "-n"]
     from .host import is_windows
     # The bundled Windows FFmpeg includes AAC, but does not include libopus.
@@ -326,7 +341,7 @@ def command(edit: Edit, output: Path, mode: str, tracks: list[int], mix: bool, w
             for t in tracks:
                 argv += ["-map", f"0:a:{t}"]
             argv += ["-c", "copy"]
-        return argv + ["-avoid_negative_ts", "make_zero", "-movflags", "+faststart", str(output)]
+        return _titles(argv, names) + ["-avoid_negative_ts", "make_zero", "-movflags", "+faststart", str(output)]
 
     # Exact: decode, trim on the chosen times, scale joined clips to the first size, re-encode.
     used = sorted({s.source for s in edit.segments})
@@ -401,6 +416,7 @@ def command(edit: Edit, output: Path, mode: str, tracks: list[int], mix: bool, w
                  "-colorspace", "bt2020nc", "-color_range", "tv"]
     if tracks:
         argv += audio_codec
+        _titles(argv, names)
     return argv + ["-movflags", "+faststart", str(output)]
 
 

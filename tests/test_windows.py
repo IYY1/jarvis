@@ -87,6 +87,36 @@ class SettingsWindowTests(unittest.TestCase):
             self.window.show(old)
             self.assertEqual(self.window.current, new)
 
+    def test_programs_with_sound_are_ticked_into_their_own_tracks(self):
+        from jarvis.windows.ui import MAX_SEPARATE_APPS
+        window = self.window
+        found = [{"name": "Marvel-Win64-Shipping", "label": "Marvel Rivals", "playing": True},
+                 {"name": "Discord", "label": "Discord", "playing": True},
+                 {"name": "Spotify", "label": "Spotify", "playing": False}]
+        window.separate_app.set("steam")   # ticked before, not playing now: still listed first
+        window.show_sound_apps(found)
+        boxes = window.sound_apps.winfo_children()
+        self.assertEqual([b.cget("text") for b in boxes],
+                         ["steam", "Marvel Rivals  · playing now", "Discord  · playing now", "Spotify"])
+        self.assertEqual([str(b.instate(["selected"])) for b in boxes], ["True", "False", "False", "False"])
+        with patch.object(window, "changed") as changed:
+            boxes[1].invoke()   # tick Marvel Rivals
+            self.assertEqual(window.separate_app.get(), "steam, Marvel-Win64-Shipping")
+            boxes[0].invoke()   # untick steam
+            self.assertEqual(window.separate_app.get(), "Marvel-Win64-Shipping")
+            changed.assert_called()
+        # Saving keeps the names, which validate.
+        self.assertEqual(window.settings()["replay"]["separate_apps"], ["Marvel-Win64-Shipping"])
+        # No more than the settings allow.
+        window.separate_app.set(", ".join(f"app{i}" for i in range(MAX_SEPARATE_APPS)))
+        window.show_sound_apps(found)
+        marvel = next(b for b in window.sound_apps.winfo_children() if b.cget("text").startswith("Marvel"))
+        with patch.object(window, "changed"), patch.object(window, "say") as said:
+            marvel.invoke()
+        self.assertFalse(marvel.instate(["selected"]))
+        self.assertNotIn("Marvel", window.separate_app.get())
+        said.assert_called()
+
     def status(self, **changes):
         return {"status": {"state": "idle", "muted": False, "microphone_open": True, "message": "",
                            "recording": {"state": "idle"}, "replay": {"state": "off"}, "dictation": {}, **changes}}
