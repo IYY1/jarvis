@@ -471,8 +471,10 @@ impl Engine {
         self.utterance_bytes = 0;
         self.open_text.clear();
         self.wake_audio.clear();
+        self.wake_audio.shrink_to(32000);
         self.wake_start = self.stream_bytes;
         self.command_audio.clear();
+        self.command_audio.shrink_to(32000);
         self.speech_frames = 0;
         self.quiet_run = 0;
         Ok(())
@@ -523,11 +525,11 @@ impl Engine {
         if self.vosk_fast_path {
             return;
         }
-        if let Some(whisper) = &mut self.whisper {
-            whisper.prepare();
-        }
         if let Some(arabic) = &mut self.arabic {
             arabic.prepare();
+        }
+        if let Some(whisper) = &mut self.whisper {
+            whisper.prepare();
         }
     }
     pub fn recognition_stats(&self) -> Value {

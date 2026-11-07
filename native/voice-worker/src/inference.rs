@@ -7,6 +7,9 @@ use libloading::Library;
 use serde_json::Value;
 use std::ffi::{c_char, c_int, c_void, CStr, CString};
 use std::rc::Rc;
+use std::sync::Mutex;
+
+static LOAD_LOCK: Mutex<()> = Mutex::new(());
 
 type Handle = *mut c_void;
 struct Api {
@@ -168,6 +171,7 @@ impl Transcriber {
         Self::load(files, config.denoiser.as_deref(), config.threads as usize)
     }
     pub fn load(files: &WhisperFiles, denoiser: Option<&str>, threads: usize) -> Result<Self> {
+        let _guard = LOAD_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let recognizer = Recognizer::load(&files.encoder, &files.decoder, &files.tokens, threads)?;
         if recognizer.multilingual() {
             return Err("Commands use an English Whisper model; Arabic uses the Arabic model".into());
@@ -222,6 +226,7 @@ pub struct Arabic {
 }
 impl Arabic {
     pub fn load(directory: &str) -> Result<Self> {
+        let _guard = LOAD_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let recognizer = jarvis_moonshine::Recognizer::load(directory)?;
         trim();
         Ok(Self { recognizer })
@@ -230,7 +235,9 @@ impl Arabic {
         if pcm.len() > 640000 {
             return Err("Arabic audio exceeds twenty seconds".into());
         }
-        let text = self.recognizer.transcribe(&samples(pcm))?;
+        let samples = samples(pcm);
+        let text = self.recognizer.transcribe(&samples)?;
+        drop(samples);
         trim();
         Ok(text)
     }

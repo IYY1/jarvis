@@ -20,6 +20,13 @@ fn memory() -> Value {
     json!({"rss_mib":mib("VmRSS:"),"peak_rss_mib":mib("VmHWM:")})
 }
 
+fn trim() {
+    #[cfg(all(target_os = "linux", target_env = "gnu"))]
+    unsafe {
+        libc::malloc_trim(0);
+    }
+}
+
 fn run() -> TractResult<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
     if args == ["--version"] {
@@ -40,6 +47,7 @@ fn run() -> TractResult<()> {
     }
     let start = Instant::now();
     let model = Recognizer::load(dir)?;
+    trim();
     println!(
         "{}",
         json!({"event":"ready","load_seconds":start.elapsed().as_secs_f64(),"memory":memory()})
@@ -61,9 +69,11 @@ fn run() -> TractResult<()> {
             .collect();
         let start = Instant::now();
         let text = model.transcribe(&samples)?;
+        let seconds = start.elapsed().as_secs_f64();
+        trim();
         println!(
             "{}",
-            json!({"event":"result","text":text,"seconds":start.elapsed().as_secs_f64(),"memory":memory()})
+            json!({"event":"result","text":text,"seconds":seconds,"memory":memory()})
         );
     }
     Ok(())

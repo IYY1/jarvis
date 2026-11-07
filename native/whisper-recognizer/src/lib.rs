@@ -102,6 +102,10 @@ impl Recognizer {
         let f = model.symbols.sym("F");
         model.set_input_fact(0, f32::fact([1.to_dim(), 80.to_dim(), f.to_dim()]).into())?;
         let encoder = plan(model.into_optimized()?, &pool)?;
+        #[cfg(all(target_os = "linux", target_env = "gnu"))]
+        unsafe {
+            libc::malloc_trim(0);
+        }
 
         let (p, embedding) = model::load(&decoder, 280 * 1024 * 1024, true)?;
         let embedding = embedding.ok_or_else(|| format_err!("Missing embedding"))?;
@@ -148,6 +152,10 @@ impl Recognizer {
             &pool,
         )?;
         drop(p);
+        #[cfg(all(target_os = "linux", target_env = "gnu"))]
+        unsafe {
+            libc::malloc_trim(0);
+        }
 
         let table = TokenTable::load(tokens.as_ref(), profile.vocabulary().text_tokens)?;
         Ok(Self {
