@@ -1115,7 +1115,15 @@ impl Engine {
                 // learned from. Only after it failed, so ordinary speech costs nothing.
                 if accurate_match.is_none() && audio.len() >= 9600 {
                     for factor in SLOWER {
-                        let slowed = spoken(phrase(&model.transcribe(&crate::stretch::slower(&audio, factor))?));
+                        // Whisper takes at most ten seconds; a long stretch of talk is
+                        // not a quick command anyway. A failed retry never stops listening.
+                        if audio.len() as f64 * factor > 320000.0 {
+                            break;
+                        }
+                        let Ok(text) = model.transcribe(&crate::stretch::slower(&audio, factor)) else {
+                            break;
+                        };
+                        let slowed = spoken(phrase(&text));
                         let found = self.matcher.closest(&slowed);
                         crate::trace(serde_json::json!({"step":"whisper slowed","factor":factor,"text":slowed,"match":found}));
                         if let Some(found) = found {
