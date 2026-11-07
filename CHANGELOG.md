@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+- Windows: colors on an HDR display look right. Screen capture on an HDR desktop
+  returned clipped, washed-out-then-oversaturated colors, and NVENC encoded them
+  with the wrong matrix, so games such as Marvel Rivals looked glaring. The voice
+  worker now captures HDR displays itself (`jarvis-voice --screen`): the desktop's
+  true colors are tone mapped to normal video on the GPU, or kept as real HDR10
+  with `color_mode=hdr`, and the pointer is drawn in. It also delivers more frames
+  on fast displays: 240 Hz keeps about 232 new frames a second instead of about 200.
+- Windows: much less memory. Jarvis hands back pages it isn't using once it has
+  started: a recording on an HDR display drops from about 220 MB of RAM to about
+  85, one on an SDR display to about 25; idle, the service, window and voice
+  worker hold a few MB each instead of about 22, 25 and 130, with the same command
+  speed. NVIDIA encoding keeps one reference frame, about 40 MB less video memory
+  at 2K for the same picture. A replay buffer kept in RAM is left alone, so it is
+  never written to the page file.
+- Windows: Start no longer replaces settings that changed while the window was open.
 - Windows: "Primary display" now works. The window offers it, but capture refused
   it with "Choose a connected recording display".
 - Windows: recordings and replays now reach the frame rate you choose. Audio that

@@ -364,6 +364,16 @@ class EncoderTests(unittest.TestCase):
             if family == "cpu":
                 self.assertIn("libx264", args)
 
+    def test_nvenc_keeps_one_reference_frame_in_every_codec_and_mode(self):
+        for codec in ("h264", "hevc", "av1"):
+            for mode in ("bitrate", "quality"):
+                args = encoding.encoder_options(dict(self.cfg, rate_control=mode), "nvenc", codec)
+                self.assertEqual(args[args.index("-dpb_size") + 1], "1")
+                # NVENC H.264 rejects one reference frame while B-frames are on,
+                # and the encoder test uses these options alone.
+                self.assertEqual(args[args.index("-bf") + 1], "0")
+        self.assertNotIn("-dpb_size", encoding.encoder_options(self.cfg, "amf", "h264"))
+
     def test_capture_uses_dxgi_adapter_and_output_not_monitor_number(self):
         args, color, codec = encoding.command(
             self.cfg, self.display, "ffmpeg.exe", "nvenc"
@@ -381,7 +391,7 @@ class EncoderTests(unittest.TestCase):
 
     def test_hdr_frames_are_labeled_as_hdr(self):
         display = dict(self.display, hdr_known=True, colorManagementPreset="hdr")
-        args, color, _ = encoding.command(dict(self.cfg, codec="av1", color_mode="hdr"), display, "ffmpeg.exe", "nvenc")
+        args, color, _ = encoding.command(dict(self.cfg, codec="av1", color_mode="hdr"), display, "ffmpeg.exe", "nvenc", screen_pipe="p")
         filters = args[args.index("-vf") + 1]
         self.assertEqual(color, "hdr")
         self.assertIn("color_trc=smpte2084", filters)
@@ -491,12 +501,12 @@ class EncoderTests(unittest.TestCase):
             encoding.command(self.cfg, self.display, "ffmpeg.exe", "nvenc")
         self.display["colorManagementPreset"] = "hdr"
         args, color, codec = encoding.command(
-            self.cfg, self.display, "ffmpeg.exe", "nvenc"
+            self.cfg, self.display, "ffmpeg.exe", "nvenc", screen_pipe="p"
         )
         self.assertEqual((color, codec), ("hdr", "hevc"))
         for metadata in ("bt2020", "smpte2084", "bt2020nc"):
             self.assertIn(metadata, args)
-        self.assertTrue(any("output_fmt=10bit" in arg for arg in args))
+        self.assertEqual(args[args.index("-pixel_format") + 1], "p010le")
 
     def test_auto_never_guesses_unknown_hdr_state(self):
         self.display["hdr_known"] = False
@@ -697,6 +707,38 @@ class ReplayBudgetWarningTests(unittest.TestCase):
 
     def test_quality_rate_control_makes_no_prediction(self):
         self.assertEqual(replay_budget_warning({'rate_control': 'quality', 'bitrate_mbps': 500}, self.replay, 2), '')
+
+
+class ServiceMemoryTests(unittest.TestCase):
+    def releases(self, state, storage, rounds=3):
+        import asyncio
+        import gc
+        from jarvis import daemon
+
+        service = types.SimpleNamespace(replay=MagicMock(), config={'replay': {'storage': storage}})
+        service.replay.status.return_value = {'state': state}
+        sleeps = []
+
+        async def sleep(seconds):
+            sleeps.append(seconds)
+            if len(sleeps) > rounds:
+                raise asyncio.CancelledError
+
+        released = MagicMock()
+        with patch('jarvis.windows.system.release_unused_memory', released), \
+                patch.object(daemon.asyncio, 'sleep', sleep), patch.object(gc, 'freeze'):
+            with self.assertRaises(asyncio.CancelledError):
+                asyncio.run(daemon.keep_memory_low(service))
+        return released.call_count
+
+    def test_released_at_start_and_every_ten_minutes_without_a_ram_replay(self):
+        self.assertEqual(self.releases('off', 'ram'), 3)
+        self.assertEqual(self.releases('on', 'disk'), 3)
+
+    def test_never_released_while_replay_holds_the_screen_in_ram(self):
+        for state in ('on', 'starting', 'error'):
+            with self.subTest(state=state):
+                self.assertEqual(self.releases(state, 'ram'), 0)
 
 
 class TransportTests(unittest.TestCase):
@@ -929,6 +971,73 @@ class AudioTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(RuntimeError, "no audio"):
                 microphone.read(480)
+
+    def test_a_display_in_hdr_mode_makes_ordinary_video_unless_asked(self):
+        from jarvis.windows.encoding import windows_color
+        hdr = {"colorManagementPreset": "hdr", "hdr_known": True}
+        self.assertEqual(windows_color({"color_mode": "auto"}, hdr), "sdr")
+        self.assertEqual(windows_color({"color_mode": "sdr"}, hdr), "sdr")
+        self.assertEqual(windows_color({"color_mode": "hdr"}, hdr), "hdr")
+        self.assertEqual(windows_color({"color_mode": "auto"}, {"colorManagementPreset": "srgb"}), "sdr")
+
+    def test_hdr_mode_reads_the_workers_picture_instead_of_grabbing_the_screen(self):
+        from jarvis.windows.encoding import command, screen_request
+        from jarvis.recorder import RecorderError
+        hdr = {"name": "d", "output": 1, "adapter": 0, "width": 2560, "height": 1440, "hdr_known": True, "colorManagementPreset": "hdr"}
+        cfg = {"codec": "av1", "fps": 165, "bitrate_mbps": 40, "rate_control": "bitrate", "color_mode": "auto", "resolution": "native"}
+        with self.assertRaisesRegex(RecorderError, "screen capture"):
+            command(cfg, hdr, "ffmpeg.exe", "nvenc")
+        args, color, codec = command(cfg, hdr, "ffmpeg.exe", "nvenc", screen_pipe="the-pipe")
+        self.assertEqual((color, codec), ("sdr", "av1"))
+        self.assertFalse(any("ddagrab" in a for a in args))
+        self.assertEqual(args[args.index("-pixel_format") + 1], "nv12")
+        self.assertEqual(args[args.index("-video_size") + 1], "2560x1440")
+        self.assertEqual(args[args.index("-framerate") + 1], "165")
+        self.assertEqual(args[args.index("-i") + 1], "the-pipe")
+        self.assertIn("colorspace=bt709", args[args.index("-vf") + 1])
+        self.assertEqual(screen_request(cfg, hdr, "the-pipe", color), {
+            "pipe": "the-pipe", "adapter": 0, "output": 1, "width": 2560, "height": 1440, "fps": 165, "hdr": False, "ten_bit": False})
+
+        real = dict(cfg, color_mode="hdr")
+        args, color, _ = command(real, hdr, "ffmpeg.exe", "nvenc", screen_pipe="the-pipe")
+        self.assertEqual(color, "hdr")
+        self.assertEqual(args[args.index("-pixel_format") + 1], "p010le")
+        self.assertIn("smpte2084", args[args.index("-vf") + 1])
+        self.assertTrue(screen_request(real, hdr, "the-pipe", color)["hdr"])
+
+        small = dict(cfg, resolution="1080")
+        args, _, _ = command(small, hdr, "ffmpeg.exe", "nvenc", screen_pipe="the-pipe")
+        self.assertEqual(args[args.index("-video_size") + 1], "1920x1080")
+        self.assertEqual(screen_request(small, hdr, "p", "sdr")["width"], 1920)
+
+    def test_capture_can_prepare_on_either_kind_of_display(self):
+        from jarvis import config as settings
+        from jarvis.windows import capture
+        cfg = settings.validate({})
+        cfg["recording"].update(monitor="d", configured=True, codec="av1", fps=240, game_folders=False)
+        for preset, refresh, fps in (("hdr", 240, 240), ("srgb", 144, 144)):
+            display = {"name": "d", "output": 0, "adapter": 0, "width": 2560, "height": 1440, "left": 0, "top": 0, "vendor": 0x10DE,
+                       "hdr_known": True, "refresh": refresh, "colorManagementPreset": preset}
+            with tempfile.TemporaryDirectory() as folder, patch.object(capture, "sources", return_value=[display]), \
+                    patch.object(capture.encoding, "select_encoder", return_value=("ffmpeg.exe", "nvenc")) as select:
+                cfg["recording"]["output_dir"] = folder
+                ready, chosen, binary, family, _ = capture.Recorder(cfg)._validated()
+            self.assertIs(chosen, display)
+            self.assertEqual(ready["fps"], fps)
+            self.assertEqual(select.call_args.args[2], "av1")
+
+    def test_screen_mode_failures_say_why(self):
+        from jarvis.windows.capture import screen_failure, wait_for_screen
+        from jarvis.recorder import RecorderError
+        said = b'{"event":"error","message":"Capture of a rotated display isn\'t supported"}\n'
+        self.assertIn("rotated", screen_failure(types.SimpleNamespace(stderr=io.BytesIO(said))))
+        self.assertIn("unexpectedly", screen_failure(types.SimpleNamespace(stderr=io.BytesIO(b""))))
+        ready = types.SimpleNamespace(stdout=io.BytesIO(b"ready\n"))
+        wait_for_screen(ready)
+        self.assertTrue(ready.stdout.closed)
+        failed = types.SimpleNamespace(stdout=io.BytesIO(b""), stderr=io.BytesIO(said), wait=lambda timeout: 1)
+        with self.assertRaisesRegex(RecorderError, "rotated"):
+            wait_for_screen(failed)
 
     def test_no_chosen_display_means_the_primary_one(self):
         from jarvis.windows.capture import chosen_display

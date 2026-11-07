@@ -22,9 +22,11 @@ import tkinter.font as tkfont
 from .. import config, palettes
 from ..client import TIMEOUTS, request, restart_note, save_config_restarting, watch
 from ..commands import REFERENCE
-from ..encoding import storage_estimate
 from . import look
 from .home import Home
+from .system import release_unused_memory
+
+RELEASE_MEMORY_AFTER_MS = 4000
 
 # Sidebar order: (page, title).
 NAVIGATION = [("dashboard", "Home"), ("voice", "Voice"), ("commands", "Apps & commands"),
@@ -609,20 +611,28 @@ class Window:
             return
         try:
             value = self.settings()
+            edited = value != self.config
             value['recording']['configured'] = True
             config.validate(value)
         except ValueError as error:
             self.say(str(error), error=True)
             return
         def run():
-            saved = save_config_restarting(value)
+            # Pressing Start changes nothing else: unedited, this window's copy may be
+            # older than the service's, and must not overwrite it.
+            wanted = value
+            if not edited:
+                wanted = request('config', timeout=5)['config']
+                if wanted['recording']['configured']:
+                    return wanted, request('record_start', timeout=20)
+                wanted['recording']['configured'] = True
+            saved = save_config_restarting(wanted)
             if not saved.get('ok'):
                 raise ValueError(saved.get('error', 'Could not save recording settings'))
-            started = request('record_start', timeout=20)
-            return saved, started
+            return wanted, request('record_start', timeout=20)
         def done(result):
             saved, started = result
-            self.config = value
+            self.config = saved
             self.variable('recording', 'configured').set(True)
             self.received(started)
             self.say(started.get('error') or started.get('message') or 'Recording started.', error=not started.get('ok'))
@@ -1138,5 +1148,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     root = tk.Tk()
     Window(root, args.page)
+    # Building every page touches far more memory than showing one needs.
+    root.after(RELEASE_MEMORY_AFTER_MS, release_unused_memory)
     root.mainloop()
     return 0

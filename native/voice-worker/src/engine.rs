@@ -1,4 +1,4 @@
-use crate::inference::{trim, Arabic, Decoder, Model, Text, Transcriber};
+use crate::inference::{release_unused, trim, Arabic, Decoder, Model, Text, Transcriber};
 use crate::matching::{phrase, wording, Matcher};
 use crate::on_demand::{Loader, OnDemand};
 use crate::{NativeConfig, Result};
@@ -682,6 +682,7 @@ impl Engine {
         }
         if released {
             trim();
+            release_unused();
         }
         Ok(())
     }

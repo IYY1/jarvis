@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import gc
 import json
 import os
 from pathlib import Path
@@ -79,6 +80,10 @@ class TimestampedLog:
 
     def __getattr__(self, name):
         return getattr(self.stream, name)
+
+
+MEMORY_FIRST_RELEASE_SECONDS = 5
+MEMORY_RELEASE_SECONDS = 600
 
 
 class Service:
@@ -718,6 +723,30 @@ def devices():
         for n in nodes if (p := n.get("info", {}).get("props", {})).get("media.class") == "Audio/Source" and "node.name" in p]
 
 
+async def keep_memory_low(service):
+    """Windows only: what starting up touched goes back, and stays back.
+
+    Never while instant replay holds its buffer in RAM: Windows would write those
+    pages to the page file, the disk writing RAM mode exists to avoid, and read
+    them back for every clip.
+    """
+    from .windows.system import release_unused_memory
+
+    def screen_in_ram():
+        return (service.replay.status()["state"] != "off"
+                and service.config.get("replay", {}).get("storage", "ram") == "ram")
+
+    # Long-lived objects need no more garbage-collection passes, which would touch
+    # their pages again and again.
+    await asyncio.sleep(MEMORY_FIRST_RELEASE_SECONDS)
+    gc.collect()
+    gc.freeze()
+    while True:
+        if not screen_in_ram():
+            release_unused_memory()
+        await asyncio.sleep(MEMORY_RELEASE_SECONDS)
+
+
 async def serve():
     service = Service()
     service.loop = asyncio.get_running_loop()
@@ -829,8 +858,11 @@ async def serve():
             except (CommandError, RuntimeError, OSError) as exc:
                 service.activation.error()
                 service.message = f"Voice control could not start: {exc}"
+        memory = asyncio.create_task(keep_memory_low(service)) if is_windows() else None
         async with server:
             await service.stopping.wait()
+        if memory:
+            memory.cancel()
     finally:
         server.close()
         await server.wait_closed()

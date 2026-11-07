@@ -15,7 +15,7 @@ import time
 import uuid
 
 from ..host import child_options, command as worker_command, tool
-from ..recorder import RecorderError, capture_color, verify_video
+from ..recorder import RecorderError, verify_video
 from ..replay import write_track_names
 from ..encoding import replay_fit_seconds, replay_video, with_auto_bitrate
 from . import encoding
@@ -23,6 +23,8 @@ from . import encoding
 
 READY = "ready"   # the first line a capture audio worker prints (windows/audio.py)
 AUDIO_START_SECONDS = 10
+TRIM_AFTER_SECONDS = (3, 30)   # once started, and once settled
+TRIM_EVERY_SECONDS = 300
 
 
 def audio_sources():
@@ -144,12 +146,52 @@ def audio_failure(process, title):
     return f"{track} stopped: {reason}" if reason else f"{track} stopped unexpectedly; check Windows audio permissions"
 
 
-def wait_for_audio(process, title, seconds=AUDIO_START_SECONDS):
-    """Hold FFmpeg back until the audio worker's sound is flowing.
+def screen_failure(process):
+    """The reason the worker's screen mode ended, from its last line."""
+    try:
+        lines = process.stderr.read(8192).decode(errors="replace").strip().splitlines()
+    except (OSError, ValueError):
+        lines = []
+    for line in reversed(lines):
+        try:
+            message = json.loads(line).get("message")
+        except (ValueError, AttributeError):
+            continue
+        if message:
+            return f"Screen capture stopped: {message}"
+    return "Screen capture stopped unexpectedly; check the graphics driver"
 
-    Sound that starts after video leaves video permanently ahead of it, and FFmpeg
-    then discards most of the frames. Also, the worker's pipe must exist by now.
-    """
+
+def start_screen(request):
+    """The worker's screen mode, for a display in HDR mode. Waits until it can capture."""
+    from ..native_worker import binary_path
+
+    worker = binary_path()
+    if worker is None:
+        raise RecorderError("The Windows voice worker is missing; reinstall the complete Jarvis package")
+    process = subprocess.Popen(
+        [str(worker), "--screen"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        **child_options(),
+    )
+    process.stdin.write(json.dumps(request).encode() + b"\n")
+    process.stdin.close()
+    return process
+
+
+def wait_for_screen(process, seconds=AUDIO_START_SECONDS):
+    outcome = _wait_ready(process, seconds)
+    if outcome == "late":
+        raise RecorderError("Screen capture did not start; check the graphics driver")
+    if outcome == "ended":
+        process.wait(timeout=5)
+        raise RecorderError(screen_failure(process))
+
+
+def _wait_ready(process, seconds):
+    """Read the worker's "ready" line: "ready", "late", or "ended" without one."""
     ready = threading.Event()
 
     def watch():
@@ -163,12 +205,26 @@ def wait_for_audio(process, title, seconds=AUDIO_START_SECONDS):
     reader.start()
     reader.join(seconds)
     if reader.is_alive():
+        return "late"
+    if ready.is_set():
+        process.stdout.close()
+        return "ready"
+    return "ended"
+
+
+def wait_for_audio(process, title, seconds=AUDIO_START_SECONDS):
+    """Hold FFmpeg back until the audio worker's sound is flowing.
+
+    Sound that starts after video leaves video permanently ahead of it, and FFmpeg
+    then discards most of the frames. Also, the worker's pipe must exist by now.
+    """
+    outcome = _wait_ready(process, seconds)
+    if outcome == "late":
         track = f"The {title} track" if title else "Recording audio"
         raise RecorderError(f"{track} did not start; check Windows audio devices and permissions")
-    if not ready.is_set():
+    if outcome == "ended":
         process.wait(timeout=5)
         raise RecorderError(audio_failure(process, title))
-    process.stdout.close()
 
 
 class _Capture:
@@ -179,6 +235,7 @@ class _Capture:
         self._lock = threading.RLock()
         self._process, self._segments, self._buffer = None, None, None
         self._audio = []  # [(audio worker process, track title or None)]
+        self._screen = None  # the worker's screen mode, for a display in HDR mode
         self._done = threading.Event()
         self._done.set()
         self._requested, self._forced, self._error = False, False, None
@@ -233,7 +290,7 @@ class _Capture:
         display = chosen_display(sources(), cfg["monitor"])
         if display is None:
             raise RecorderError("Choose a connected recording display")
-        color = capture_color(cfg, display)
+        color = encoding.windows_color(cfg, display)
         cfg["fps"] = encoding.capped_fps(cfg["fps"], display)
         cfg = dict(with_auto_bitrate(cfg, display))
         if self.replay:
@@ -270,8 +327,9 @@ class _Capture:
                     cfg, self.config["replay"] if self.replay else None,
                     sys.getwindowsversion().build if hasattr(sys, "getwindowsversion") else 0)
                 pipes = [(f"{prefix}-audio{i}", title) for i, (title, _) in enumerate(plan)]
+                screen_pipe = f"{prefix}-video" if encoding.in_hdr_mode(display) else None
                 argv, self._color, self._codec = encoding.command(
-                    cfg, display, binary, family, audio_pipes=pipes
+                    cfg, display, binary, family, audio_pipes=pipes, screen_pipe=screen_pipe
                 )
                 self._folder = folder
                 self._error, self._requested, self._forced = None, False, False
@@ -320,6 +378,11 @@ class _Capture:
                     self._audio.append((audio, title))
                     audio.stdin.write(json.dumps(worker_cfg).encode() + b"\n")
                     audio.stdin.close()
+                if screen_pipe:
+                    self._screen = start_screen(
+                        encoding.screen_request(cfg, display, screen_pipe, self._color)
+                    )
+                    wait_for_screen(self._screen)
                 for audio, title in self._audio:
                     wait_for_audio(audio, title)
                 self._process = subprocess.Popen(
@@ -372,15 +435,23 @@ class _Capture:
             target=drain, args=(process.stderr,), daemon=True
         )
         diagnostics.start()
+        started = time.monotonic()
+        trims = iter(TRIM_AFTER_SECONDS)
+        next_trim = next(trims)
         try:
             while process.poll() is None:
                 # This wait is a process wait, not a frame/desktop polling loop.
                 try:
                     process.wait(timeout=0.5)
                 except subprocess.TimeoutExpired:
+                    if time.monotonic() - started >= next_trim:
+                        self._release_memory(process)
+                        next_trim = next(trims, next_trim + TRIM_EVERY_SECONDS)
                     stopped = next((a for a in self._audio if a[0].poll() is not None), None)
                     if not self._requested and stopped is not None:
                         self._abort(audio_failure(*stopped))
+                    if not self._requested and self._screen is not None and self._screen.poll() is not None:
+                        self._abort(screen_failure(self._screen))
             diagnostics.join(timeout=2)
             if self._error:
                 raise RecorderError(self._error)
@@ -416,6 +487,19 @@ class _Capture:
                 self._process = None
             self._done.set()
 
+    def _release_memory(self, process):
+        """FFmpeg and the workers touch far more memory starting up than they use."""
+        from .system import release_unused_memory
+
+        children = [process] + [audio for audio, _ in self._audio]
+        if self._screen is not None:
+            children.append(self._screen)
+        for child in children:
+            try:
+                release_unused_memory(int(child._handle))
+            except (AttributeError, OSError, ValueError):
+                pass
+
     def _cleanup(self):
         if self._segments:
             self._segments.close()
@@ -431,6 +515,17 @@ class _Capture:
             if audio.stderr:
                 audio.stderr.close()
         self._audio = []
+        if self._screen is not None:
+            if self._screen.poll() is None:
+                self._screen.terminate()
+            try:
+                self._screen.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                self._screen.kill()
+                self._screen.wait()
+            if self._screen.stderr:
+                self._screen.stderr.close()
+            self._screen = None
         if self._buffer:
             self._buffer.close()
             self._buffer = None

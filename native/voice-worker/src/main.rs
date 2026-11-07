@@ -6,6 +6,7 @@ mod inference;
 mod input;
 mod matching;
 mod on_demand;
+mod screen;
 mod worker;
 use serde::Deserialize;
 use serde_json::{json, Value};
@@ -304,6 +305,7 @@ fn run() -> Result<()> {
             "--transcribe",
             "--engine",
             "--app-audio",
+            "--screen",
             "--decoder-history",
             "--match",
             "--version",
@@ -312,7 +314,7 @@ fn run() -> Result<()> {
     }) || args.len() > 1
     {
         return Err(
-            "Use --transcribe, --engine, --decoder-history, --match, --app-audio, --version, or no arguments for microphone worker"
+            "Use --transcribe, --engine, --decoder-history, --match, --app-audio, --screen, --version, or no arguments for microphone worker"
                 .into(),
         );
     }
@@ -329,6 +331,10 @@ fn run() -> Result<()> {
     if args.first().is_some_and(|a| a == "--app-audio") {
         let request = read_line(&mut reader, 4096)?.ok_or("Application audio request required")?;
         return app_audio::run(&serde_json::from_slice(&request)?);
+    }
+    if args.first().is_some_and(|a| a == "--screen") {
+        let request = read_line(&mut reader, 4096)?.ok_or("Screen capture request required")?;
+        return screen::run(&serde_json::from_slice(&request)?);
     }
     if args.first().is_some_and(|a| a == "--match") {
         return policy(&mut reader);
@@ -361,8 +367,11 @@ fn run() -> Result<()> {
 }
 fn main() {
     if let Err(error) = run() {
-        if std::env::args().nth(1).as_deref() == Some("--app-audio") {
-            // stdout carries the audio stream in this mode.
+        if matches!(
+            std::env::args().nth(1).as_deref(),
+            Some("--app-audio") | Some("--screen")
+        ) {
+            // stdout carries the audio stream, or the "ready" line, in these modes.
             eprintln!("{}", json!({"event":"error","message":error.to_string()}));
             std::process::exit(1);
         }

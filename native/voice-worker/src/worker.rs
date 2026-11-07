@@ -277,6 +277,8 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
     ready(engine.as_ref(), listening, deadline)?;
     if mode == "dictation" {
         begin_dictation(&mut engine, &mut dictation, &mut dictation_deadline, None)?;
+    } else if engine.is_some() {
+        crate::inference::release_unused();
     }
     let minimum = config["audio"]["vad_rms"]
         .as_f64()
