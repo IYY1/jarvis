@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Windows: Jarvis has its own icon, the window's blue rings and white dot, on the
+  program, its shortcuts, the taskbar and the tray, instead of the packager's default.
 - Windows: colors on an HDR display look right. Screen capture on an HDR desktop
   returned clipped, washed-out-then-oversaturated colors, and NVENC encoded them
   with the wrong matrix, so games such as Marvel Rivals looked glaring. The voice
