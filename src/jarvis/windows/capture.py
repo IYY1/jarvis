@@ -145,6 +145,10 @@ def audio_failure(process, title):
         lines = []
     lines = [line for line in lines if line.strip() and not line.startswith("[PYI-")]
     reason = lines[-1].split(": ", 1)[-1] if lines else ""  # drop "RuntimeError: "
+    try:
+        reason = json.loads(lines[-1])["message"]   # the native worker's {"event":"error",...}
+    except (IndexError, ValueError, KeyError, TypeError):
+        pass
     track = f"The {title} track" if title else "Recording audio"
     return f"{track} stopped: {reason}" if reason else f"{track} stopped unexpectedly; check Windows audio permissions"
 
@@ -380,6 +384,12 @@ class _Capture:
                     argv[argv.index("-n")] = "-y"
                     argv += ["-f", "matroska", str(partial)]
                 for (pipe, title), (_, worker_cfg) in zip(pipes, plan):
+                    track = worker_cfg.get("track") or {}
+                    if track.get("app") and track.get("kind") in ("app", "game"):
+                        # A program's sound goes from the native worker straight to FFmpeg.
+                        from .audio import start_app_audio
+                        self._audio.append((start_app_audio(track["app"], track["kind"] == "app", pipe), title))
+                        continue
                     audio = subprocess.Popen(
                         worker_command("audio", pipe),
                         stdin=subprocess.PIPE,

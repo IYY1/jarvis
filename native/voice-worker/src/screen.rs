@@ -96,7 +96,7 @@ pub fn run(request: &serde_json::Value) -> Result<()> {
 }
 
 #[cfg(windows)]
-mod windows_capture {
+pub(crate) mod windows_capture {
     use super::{frame_size, frames_due, planes, should_send};
     use crate::Result;
     use std::collections::VecDeque;
@@ -315,7 +315,7 @@ float4 ps_pointer(V i) : SV_Target {
         3.0
     }
 
-    fn private_pipe(name: &str, frame_bytes: usize) -> Result<HANDLE> {
+    pub(crate) fn private_pipe(name: &str, frame_bytes: usize) -> Result<HANDLE> {
         unsafe {
             // Only the owner: this pipe carries the user's screen.
             let mut descriptor = PSECURITY_DESCRIPTOR::default();

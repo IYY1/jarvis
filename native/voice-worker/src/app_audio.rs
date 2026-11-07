@@ -50,13 +50,21 @@ pub fn run(request: &serde_json::Value) -> Result<()> {
     let include = request["include"]
         .as_bool()
         .ok_or("Say whether to include or exclude the program")?;
+    let pipe = match request.get("pipe") {
+        None => None,
+        Some(pipe) => Some(
+            pipe.as_str()
+                .filter(|p| p.starts_with(r"\\.\pipe\Jarvis-") && p.len() <= 240)
+                .ok_or("The program's sound needs a private pipe")?,
+        ),
+    };
     #[cfg(windows)]
     {
-        windows_loopback::capture(process, include)
+        windows_loopback::capture(process, include, pipe)
     }
     #[cfg(not(windows))]
     {
-        let _ = (process, include);
+        let _ = (process, include, pipe);
         Err("Per-application audio capture is only implemented on Windows".into())
     }
 }
@@ -68,7 +76,7 @@ mod windows_loopback {
     use std::io::Write;
     use std::time::{Duration, Instant};
     use windows::core::{implement, IUnknown, Interface, Ref, HRESULT, PCWSTR, PWSTR};
-    use windows::Win32::Foundation::{CloseHandle, HANDLE, S_OK, WAIT_OBJECT_0};
+    use windows::Win32::Foundation::{CloseHandle, ERROR_PIPE_CONNECTED, HANDLE, S_OK, WAIT_OBJECT_0};
     use windows::Win32::Media::Audio::{
         eRender, AudioSessionStateActive, IAudioSessionControl2, IAudioSessionManager2,
         IMMDeviceEnumerator, MMDeviceEnumerator, DEVICE_STATE_ACTIVE,
@@ -83,7 +91,8 @@ mod windows_loopback {
         WAVEFORMATEX, WAVE_FORMAT_PCM,
     };
     use windows::Win32::System::Com::StructuredStorage::PROPVARIANT;
-    use windows::Win32::Storage::FileSystem::{GetFileVersionInfoSizeW, GetFileVersionInfoW, VerQueryValueW};
+    use windows::Win32::Storage::FileSystem::{GetFileVersionInfoSizeW, GetFileVersionInfoW, VerQueryValueW, WriteFile};
+    use windows::Win32::System::Pipes::ConnectNamedPipe;
     use windows::Win32::System::Com::{CoCreateInstance, CoInitializeEx, IAgileObject, IAgileObject_Impl, BLOB, CLSCTX_ALL, COINIT_MULTITHREADED};
     use windows::Win32::System::Diagnostics::ToolHelp::{
         CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W,
@@ -316,11 +325,47 @@ mod windows_loopback {
         }
     }
 
-    pub fn capture(name: &str, include: bool) -> Result<()> {
+    /// FFmpeg's end of a private pipe; a failed write means it has closed.
+    struct PipeOut(HANDLE);
+    impl Write for PipeOut {
+        fn write(&mut self, data: &[u8]) -> std::io::Result<usize> {
+            let mut written = 0;
+            unsafe { WriteFile(self.0, Some(data), Some(&mut written), None) }
+                .map_err(std::io::Error::other)?;
+            Ok(written as usize)
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+
+    /// To stdout, or with `pipe` straight to FFmpeg: "ready" once the pipe
+    /// exists, and the track's clock starts when FFmpeg connects.
+    pub fn capture(name: &str, include: bool, pipe: Option<&str>) -> Result<()> {
         unsafe {
             CoInitializeEx(None, COINIT_MULTITHREADED).ok()?;
         }
-        let mut out = std::io::stdout().lock();
+        let Some(pipe) = pipe else {
+            return capture_to(name, include, &mut std::io::stdout().lock());
+        };
+        let handle = crate::screen::windows_capture::private_pipe(pipe, 65536)?;
+        let result = (|| -> Result<()> {
+            println!("ready");
+            std::io::stdout().flush()?;
+            if let Err(error) = unsafe { ConnectNamedPipe(handle, None) } {
+                if error.code() != ERROR_PIPE_CONNECTED.to_hresult() {
+                    return Err(error.into());
+                }
+            }
+            capture_to(name, include, &mut PipeOut(handle))
+        })();
+        unsafe {
+            let _ = CloseHandle(handle);
+        }
+        result
+    }
+
+    fn capture_to(name: &str, include: bool, out: &mut impl Write) -> Result<()> {
         let mut track = Track { start: Instant::now(), written: 0 };
         loop {
             let program = root_process(name);
@@ -332,7 +377,7 @@ mod windows_loopback {
                     // Silent until it starts.
                     let looked = Instant::now();
                     while looked.elapsed() < LOOK_EVERY {
-                        if !track.catch_up(&mut out) {
+                        if !track.catch_up(out) {
                             return Ok(());
                         }
                         std::thread::sleep(Duration::from_millis(20));
@@ -340,7 +385,7 @@ mod windows_loopback {
                     continue;
                 }
             };
-            match follow(target, include, program.is_none().then_some(name), &mut out, &mut track) {
+            match follow(target, include, program.is_none().then_some(name), out, &mut track) {
                 Ok(Followed::ReaderClosed) => return Ok(()),
                 Ok(Followed::Changed) => continue,
                 // It closed while Windows was starting its capture: look again.

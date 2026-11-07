@@ -511,6 +511,28 @@ class EncoderTests(unittest.TestCase):
             b"[PYI-32356:ERROR] Failed to execute script 'console' due to unhandled exception!\n"))
         self.assertEqual(audio_failure(packaged, None),
                          "Recording audio stopped: Audio capture overflowed; reduce system load and try again")
+        # A program's track runs on the native worker, which reports in JSON.
+        native = types.SimpleNamespace(stderr=io.BytesIO(
+            b'{"event":"error","message":"Windows refused per-app audio (x). It needs Windows 11."}\n'))
+        self.assertEqual(audio_failure(native, "Discord"),
+                         "The Discord track stopped: Windows refused per-app audio (x). It needs Windows 11.")
+
+    def test_program_tracks_start_the_native_worker_on_the_pipe(self):
+        from jarvis.windows import audio
+        started = []
+
+        class Process:
+            def __init__(self, argv, **options):
+                started.append(argv)
+                self.stdin = io.BytesIO()
+                self.stdin.close = lambda: started.append(json.loads(self.stdin.getvalue()))
+
+        with patch("jarvis.native_worker.binary_path", return_value=Path("jarvis-voice.exe")), \
+                patch("jarvis.host.grouped", side_effect=lambda path, *_: path), \
+                patch("subprocess.Popen", Process):
+            audio.start_app_audio("Discord", True, r"\\.\pipe\Jarvis-t-audio1")
+        self.assertEqual(started, [[str(Path("jarvis-voice.exe")), "--app-audio"],
+                                   {"process": "Discord", "include": True, "pipe": r"\\.\pipe\Jarvis-t-audio1"}])
 
     def test_240fps_scaled_ten_bit_sdr_is_explicit_and_verified(self):
         self.cfg.update(codec='av1_10bit', fps=240, resolution='1080')

@@ -315,6 +315,23 @@ def apps_with_sound(timeout=5):
             and a["name"].casefold() not in OWN_PROGRAMS]
 
 
+def start_app_audio(program, include, pipe):
+    """The native worker writing one program's sound (``include``), or all but
+    it, straight into FFmpeg's ``pipe``: it says "ready" once the pipe exists."""
+    import subprocess
+    from ..host import child_options, grouped
+    from ..native_worker import binary_path
+
+    worker = binary_path()
+    if worker is None:
+        raise RuntimeError("The Windows voice worker is missing; reinstall the complete Jarvis package")
+    process = subprocess.Popen([str(grouped(worker)), "--app-audio"], stdin=subprocess.PIPE,
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE, **child_options())
+    process.stdin.write(json.dumps({"process": program, "include": include, "pipe": pipe}).encode() + b"\n")
+    process.stdin.close()
+    return process
+
+
 def app_audio_to_pipe(program, include, pipe):
     """One program's sound (``include``) or everything except it, from the
     voice worker's process-loopback mode, relayed into an FFmpeg pipe."""
