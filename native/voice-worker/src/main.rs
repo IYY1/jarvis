@@ -7,6 +7,7 @@ mod input;
 mod matching;
 mod on_demand;
 mod screen;
+mod stretch;
 mod worker;
 use serde::Deserialize;
 use serde_json::{json, Value};

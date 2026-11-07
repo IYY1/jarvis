@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Voice: fast talkers are understood. A command said in the same breath as
+  "Jarvis" lost its first sound, because the wake name's end is placed late; the
+  cut now keeps 80 ms more. When Whisper can't make a command out of what it
+  heard, it hears it again slowed to 1.5x and then 2x the length at the same pitch,
+  so ordinary speech costs nothing extra. On spoken test commands at 1.7x normal
+  speed 16 of 16 are understood (was 15), at 2.2x 12 (was 10), at 2.7x 7 (was 1);
+  normal speed is unchanged and nothing runs from speech without a command.
 - Windows: a new "Automatic Â· best for this GPU" format, the default for new
   installs and for the Recommended, high frame rate and 1080p presets. When capture
   starts it picks the first of AV1, HEVC and H.264 the GPU really encodes (a

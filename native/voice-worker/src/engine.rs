@@ -165,6 +165,12 @@ fn may_answer_early(intent: &str) -> bool {
 const HELD_AUDIO: usize = 320000;
 /// Silence that ends speech: 20 frames of 30 ms.
 const END_OF_SPEECH_FRAMES: usize = 20;
+/// How much slower Whisper hears a command it couldn't follow, in turn.
+const SLOWER: [f64; 2] = [1.5, 2.0];
+/// Seconds of the wake name kept before a command said in the same breath.
+/// Measured on spoken commands up to 2.7x normal speed: 0.08 understood the most
+/// (0.16 left too much of the name in, nothing lost the command's first sound).
+const TAIL_MARGIN: f64 = 0.08;
 
 /// Older audio first, keeping only the newest `HELD_AUDIO` bytes.
 fn joined_audio(held: &[u8], latest: &[u8]) -> Vec<u8> {
@@ -969,9 +975,10 @@ impl Engine {
                 .iter()
                 .filter_map(|w| w["conf"].as_f64())
                 .min_by(f64::total_cmp);
-            let cut = ((name.last().unwrap()["end"].as_f64().unwrap_or(0.0) * 16000.0) as usize
-                * 2)
-            .saturating_sub(start);
+            // Vosk's end of the name runs late on fast speech and took the start of
+            // the command with it ("clip that" reached Whisper as "with that").
+            let end = (name.last().unwrap()["end"].as_f64().unwrap_or(0.0) - TAIL_MARGIN).max(0.0);
+            let cut = ((end * 16000.0) as usize * 2).saturating_sub(start);
             let tail = &audio[(cut - cut % 2).min(audio.len())..];
             crate::trace(serde_json::json!({"step":"command in the same breath","text":text,"confidence":conf,
                 "tail_seconds":tail.len() as f64 / 32000.0,"accepted":!text.contains("[unk]") && self.matcher.accepts(&text)}));
@@ -1102,6 +1109,20 @@ impl Engine {
                     if let Some(found) = self.matcher.closest(&alone) {
                         accurate = alone;
                         accurate_match = Some(found);
+                    }
+                }
+                // Fast talkers: Whisper tiny mishears speech much quicker than it
+                // learned from. Only after it failed, so ordinary speech costs nothing.
+                if accurate_match.is_none() && audio.len() >= 9600 {
+                    for factor in SLOWER {
+                        let slowed = spoken(phrase(&model.transcribe(&crate::stretch::slower(&audio, factor))?));
+                        let found = self.matcher.closest(&slowed);
+                        crate::trace(serde_json::json!({"step":"whisper slowed","factor":factor,"text":slowed,"match":found}));
+                        if let Some(found) = found {
+                            accurate = slowed;
+                            accurate_match = Some(found);
+                            break;
+                        }
                     }
                 }
                 crate::trace(serde_json::json!({"step":"whisper","text":accurate,"match":accurate_match,
