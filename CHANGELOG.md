@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Windows: a new "Automatic · best for this GPU" format, the default for new
+- Windows: a new "Automatic Â· best for this GPU" format, the default for new
   installs and for the Recommended, high frame rate and 1080p presets. When capture
   starts it picks the first of AV1, HEVC and H.264 the GPU really encodes (a
   one-frame test, cached), so NVIDIA before RTX 40 and AMD before RX 7000 record
@@ -12,7 +12,9 @@
   voice and screen worker, FFmpeg and the replay disk store run under the service's
   file name (a hard link in the data folder, remade when the program is updated),
   because Task Manager only groups processes whose files share a name. File
-  properties name the programs "Jarvis" and "Jarvis voice and screen".
+  properties name the programs "Jarvis" and "Jarvis voice and screen"; FFmpeg,
+  which carries no name of its own, runs from a copy named "Jarvis video encoder"
+  (about 28 MB in the data folder, remade when FFmpeg changes).
 - Windows: Exact clip export uses the graphics card (NVIDIA, AMD or Intel, picked
   the way recording picks it) and keeps the clip's format. It looked for a Linux
   VA-API device, so it fell back to slow CPU H.264, failed on AV1 clips (the
@@ -89,9 +91,9 @@
 - Build: the installer script now builds on Windows, and the lock file accepts
   the srt archive published on PyPI.
 
-## 0.4.1 — 2026-11-06
+## 0.4.1 â€” 2026-11-06
 
-- Windows: expose 1–240 fps, 120/240 fps presets, resolution limits, automatic
+- Windows: expose 1â€“240 fps, 120/240 fps presets, resolution limits, automatic
   bitrate, per-profile video settings for replay, and game folders.
 - Windows: implement scaled GPU encoding and verified 10-bit SDR output;
   scaling/conversion use CPU processing, encoding uses the selected GPU.
@@ -99,24 +101,24 @@
   language, quiet timeout, stop phrases and copying held text.
 - Windows Clips: keep/remove sections, split, join, undo and preview in player.
 
-## 0.4.0 — 2026-11-06
+## 0.4.0 â€” 2026-11-06
 
 - **Redesigned settings window** (Linux and Windows): a sidebar with seven
   pages (Home, Voice, Commands, Apps, Capture, Clips, General), one-line
-  setting rows with an ⓘ for the details, live status at the top of Home and
-  Capture, Mute and a menu in the header, and **Quit Jarvis…** asking first.
+  setting rows with an â“˜ for the details, live status at the top of Home and
+  Capture, Mute and a menu in the header, and **Quit Jarvisâ€¦** asking first.
   The Apps list is about a third as tall, and Windows shortcuts are a list
   instead of JSON ([details](docs/ui.md)).
 - **Settings apply as they change**: no more Save buttons. Switches and lists
   save at once, numbers after a pause, text on Enter or when you leave the
   field; a message confirms each save, errors stay until dismissed.
 - **Three color presets** from Sanzo Wada's *A Dictionary of Color
-  Combinations*, two dark and one light (General → Colors), each checked for
+  Combinations*, two dark and one light (General â†’ Colors), each checked for
   WCAG AA contrast.
 - **Every app on its own replay track**: with Separate tracks, each app playing
   sound when replay starts, and each app heard before, gets its own track (up to
   eight), so a clip can keep Discord and mute Firefox. Discord's voice shows as
-  Discord, not “WEBRTC VoiceEngine”. Linux; Windows separates one program.
+  Discord, not â€œWEBRTC VoiceEngineâ€. Linux; Windows separates one program.
 - **Windows Clips page**: open saved clips, mute individual tracks, keep only
   one, detect silence, trim start/end and export a new copy using the bundled
   FFmpeg tools. Export and probing do not block settings saves.
@@ -130,12 +132,12 @@
   a running instant replay and cleared it; those settings no longer restart a
   capture. The voice-model download button also stays hidden now when Arabic
   is on.
-- **Arabic commands and dictation** (Voice → Language → Arabic and English),
+- **Arabic commands and dictation** (Voice â†’ Language â†’ Arabic and English),
   using Moonshine Streaming Tiny Arabic (MIT) on Jarvis's Rust/tract runtime.
   Ten models were compared on Saudi TV speech; it was the most accurate
-  permissively licensed one (Najdi WER 52% vs 85–93% for multilingual Whisper
+  permissively licensed one (Najdi WER 52% vs 85â€“93% for multilingual Whisper
   base/tiny). Install with `jarvis install-model --arabic` ([details](docs/arabic.md)).
-- **Dictation**: “Jarvis, listen to me”, `jarvis dictate`, Ctrl+D or the new
+- **Dictation**: â€œJarvis, listen to meâ€, `jarvis dictate`, Ctrl+D or the new
   buttons type speech into the focused field through the Wayland input method
   (password fields refused) with a virtual-keyboard fallback; a top-of-screen
   bar has Stop/Cancel; focus changes stop typing ([details](docs/dictation.md)).
@@ -150,7 +152,7 @@
   and legacy VA-API remain only for existing configurations.
 - **Murmur is now Jarvis everywhere**: the Python package (`python -m jarvis`),
   settings (`~/.config/jarvis`), models and data (`~/.local/share/jarvis`), the
-  default videos folder (`~/Videos/Jarvis`), `Jarvis_…` file names, `JARVIS_…`
+  default videos folder (`~/Videos/Jarvis`), `Jarvis_â€¦` file names, `JARVIS_â€¦`
   environment variables, the `jarvis.service` user service and the
   `org.jarvis.Controller` launcher. The first `jarvis` command or service start
   moves the old folders (a rename, nothing is copied), updates settings that
@@ -160,9 +162,9 @@
   Steam, Heroic, Lutris or Wine game go in a folder named after it.
 - **Fixed bitrate by default, matched to resolution and frame rate** until
   you set your own; size control and quality live under Advanced.
-- **Commands & apps** is one page: a short “Say this” list on top, every
+- **Commands & apps** is one page: a short â€œSay thisâ€ list on top, every
   phrase and your shortcuts folded away.
-- **Close Jarvis** by voice (“close yourself”, “quit Jarvis”, سكّر نفسك) or the
+- **Close Jarvis** by voice (â€œclose yourselfâ€, â€œquit Jarvisâ€, Ø³ÙƒÙ‘Ø± Ù†ÙØ³Ùƒ) or the
   Quit Jarvis button; a running recording is saved first.
 - **Clips: mute tracks** with one switch per track.
 - **Dictation stops 3 seconds after you stop talking** (was 20).
@@ -170,27 +172,27 @@
 - **Settings survive updates**: values a new version rejects are reset one by
   one instead of stopping the service; the original and the previous
   version's settings are kept in `backups/`. **Export/import** with
-  `jarvis settings` or Overview → Your settings.
+  `jarvis settings` or Overview â†’ Your settings.
 - **Replay's own video settings** (optional; same as recording by default),
   and **Save applies capture changes at once**: a running recording is saved
-  and restarted, a running replay restarts, instead of “stop it first”.
+  and restarted, a running replay restarts, instead of â€œstop it firstâ€.
 - **Capture presets**: Recommended (AV1 where supported), High quality (AV1
-  10-bit at the new Maximum quality), High frame rate · 120 fps, Small files ·
-  1080p and Compatible · H.264, with format, resolution (display's own, 4K, 2K,
+  10-bit at the new Maximum quality), High frame rate Â· 120 fps, Small files Â·
+  1080p and Compatible Â· H.264, with format, resolution (display's own, 4K, 2K,
   1080p, 720p), frame rate (up to 240 fps) and bitrate (up to 500 Mbps) under
   Advanced.
 - **Arabic switch**: **Turn on Arabic** on Overview and `jarvis language`.
-- **Dictation language follows the phrase**: اسمعني dictates Arabic, “listen”
+- **Dictation language follows the phrase**: Ø§Ø³Ù…Ø¹Ù†ÙŠ dictates Arabic, â€œlistenâ€
   English; the Start dictation button no longer locks onto Jarvis's own window.
-- **Dictation**: “Jarvis, listen” starts it too, and text that can't be typed
+- **Dictation**: â€œJarvis, listenâ€ starts it too, and text that can't be typed
   (no text field, focus moved, an app without text input) is put on the
   clipboard so Ctrl+V pastes it; password-field text never is.
 - **Separate replay tracks on Windows 11**: the game, one program and the
   microphone on their own tracks through Windows process loopback. Not yet run
   on Windows; Windows 10 is refused with a message.
-- **Add programs**: `jarvis add-app` (Linux and Windows) and **Add program…**
+- **Add programs**: `jarvis add-app` (Linux and Windows) and **Add programâ€¦**
   on Windows, which suggests portable programs it finds and hides installers.
-- **AV1 10-bit and HEVC 10-bit for SDR** (Choose a format…): no banding in dark
+- **AV1 10-bit and HEVC 10-bit for SDR** (Choose a formatâ€¦): no banding in dark
   scenes and gradients, at nearly the size of 8-bit; saved files are verified
   as 10-bit ([details](docs/recording.md)).
 - **Apps**: Snap apps are discovered; installers and uninstallers are hidden;
@@ -199,13 +201,13 @@
 - **Settings window**: practical Overview (voice, dictation, capture state and
   the latest action), direct page names, and advanced capture settings folded away.
 
-- **Clip a length**: “clip the last 25 seconds”, “clip last 2 minutes” or
-  “save the last minute” saves only the end of the replay buffer (1–59
-  seconds or 1–30 minutes); “clip that” still saves all of it.
+- **Clip a length**: â€œclip the last 25 secondsâ€, â€œclip last 2 minutesâ€ or
+  â€œsave the last minuteâ€ saves only the end of the replay buffer (1â€“59
+  seconds or 1â€“30 minutes); â€œclip thatâ€ still saves all of it.
 - **Longer replays**: the buffer can now keep up to 30 minutes (was 10).
   RAM replays hold the whole buffer in memory; use disk storage for long ones.
-- **Close words**: Settings → Applications → Close words chooses what you say
-  to close an app (“quit Firefox”); several words can be listed.
+- **Close words**: Settings â†’ Applications â†’ Close words chooses what you say
+  to close an app (â€œquit Firefoxâ€); several words can be listed.
 - **Lower standby memory**: Vosk now finalizes each utterance, freeing decoder
   feature history that grew by about 45 MiB while waiting
   ([measurements](docs/vosk-finalization.md)).
@@ -213,24 +215,24 @@
   them for every program (CachyOS), the worker's idle floor was 16 MiB higher
   at the same speed ([measurements](docs/benchmarks/voice-worker-thp-2026-11-05.json)).
 
-## 0.3.1 — 2026-11-01
+## 0.3.1 â€” 2026-11-01
 
 - **Light command model, now the default**: commands use Whisper tiny.en
   instead of small.en. On Linux the voice worker's peak fell from 546 to
   280 MiB and commands finished in 0.16 s instead of 0.33 s after speech.
-  Settings → Voice → Command model → Small switches back
+  Settings â†’ Voice â†’ Command model â†’ Small switches back
   ([details](docs/light-model.md)). Model downloads and the Windows installer
   include both models (about 790 MB instead of 680 MB); if only one is
   installed, Jarvis uses it.
 
-## 0.3.0 — 2026-11-01
+## 0.3.0 â€” 2026-11-01
 
 ### Windows
 
 - **Native voice worker**: speech recognition uses the same Rust worker as
   Linux, with WASAPI microphone capture. Whisper loads only after the wake word
   and unloads after 60 seconds idle. Measured on Windows 10, the whole app waits
-  in 165 MiB instead of 599 MiB (−72%), peaks at 533 instead of 777 MiB, and is
+  in 165 MiB instead of 599 MiB (âˆ’72%), peaks at 533 instead of 777 MiB, and is
   listening 1.2 s after starting instead of 2.4 s
   ([measurements](docs/windows-memory.md)). Each command takes about 0.3 s
   longer to recognize; this regression is under investigation.
@@ -253,7 +255,7 @@
 - Build and test container in `packaging/container/` for the Linux tests and the
   Windows installer.
 
-## 0.2.0 — 2026-10-26
+## 0.2.0 â€” 2026-10-26
 
 ### New
 
@@ -263,11 +265,11 @@
   replay. Tested under Wine, not yet on real Windows hardware; see
   [Windows setup](docs/windows.md).
 - **Brightness by voice**: name each monitor in **Displays**, pick a main
-  monitor and say “dim Samsung” or “set KTC brightness to 60 percent”. Uses
+  monitor and say â€œdim Samsungâ€ or â€œset KTC brightness to 60 percentâ€. Uses
   `ddcutil` on Linux and WMI or DDC/CI on Windows.
-- **Custom wake names**: up to eight, such as “Alfred” alongside “Jarvis”.
-- **Launch words**: each app voice name can use its own verb (“watch video”)
-  or none (“Jarvis, Firefox”).
+- **Custom wake names**: up to eight, such as â€œAlfredâ€ alongside â€œJarvisâ€.
+- **Launch words**: each app voice name can use its own verb (â€œwatch videoâ€)
+  or none (â€œJarvis, Firefoxâ€).
 - **Recording choices**: GPU H.264, HEVC or AV1, size or quality budgets, an
   FPS slider with storage estimates, and HDR with AV1 as well as HEVC.
 - **One-line Arch Linux installer** (`install.sh`) that also updates and
@@ -286,7 +288,7 @@
   creep during long sessions.
 - Optional Rust background controller and a Rust `jarvis` command-line client.
 
-## 0.1.0 — 2026-10-21
+## 0.1.0 â€” 2026-10-21
 
 First public version: offline voice control for Hyprland on Linux with Vosk
 wake detection and Whisper small.en commands, app launching and aliases,

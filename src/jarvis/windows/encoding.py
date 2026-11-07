@@ -166,7 +166,8 @@ def _probe(binary, stamp, family, codec, adapter, cpu, ten_bit=False):
 
 
 def select_encoder(cfg, display, codec):
-    binary = grouped(tool("ffmpeg"))   # capture runs as long as recording does: inside Jarvis's row
+    # Capture runs as long as recording does: inside Jarvis's row, under a clear name.
+    binary = grouped(tool("ffmpeg"), "Jarvis video encoder")
     if not binary or not tool("ffprobe"):
         raise RecorderError(
             "FFmpeg/ffprobe is missing; reinstall the complete Windows package"

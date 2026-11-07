@@ -751,6 +751,29 @@ class TaskManagerGroupTests(unittest.TestCase):
         self.assertTrue(os.path.samefile(host.grouped(self.worker), self.worker))
         self.assertEqual(link.read_bytes(), b"MZ new version")
 
+    def test_a_program_without_a_name_gets_a_named_copy_and_the_original_never_changes(self):
+        import shutil
+        import sys
+        import win32api
+        program = self.root / "tools" / "ffmpeg.exe"
+        shutil.copyfile(getattr(sys, "_base_executable", sys.executable), program)   # any real program
+        original = program.read_bytes()
+        old = host.grouped(program)   # an earlier version linked it: the same file as the original
+        copy = host.grouped(program, "Jarvis video encoder")
+        self.assertEqual(copy, old)
+        self.assertEqual(program.read_bytes(), original)
+        self.assertFalse(os.path.samefile(copy, program))
+        lang, page = win32api.GetFileVersionInfo(str(copy), "\\VarFileInfo\\Translation")[0]
+        self.assertEqual(win32api.GetFileVersionInfo(str(copy), f"\\StringFileInfo\\{lang:04X}{page:04X}\\FileDescription"),
+                         "Jarvis video encoder")
+        with patch.object(host, "_set_description") as stamped:
+            self.assertEqual(host.grouped(program, "Jarvis video encoder"), copy)
+        stamped.assert_not_called()   # kept until the program changes
+        os.utime(program, ns=(1, 1))
+        with patch.object(host, "_set_description") as stamped:
+            host.grouped(program, "Jarvis video encoder")
+        stamped.assert_called_once()
+
     def test_no_link_possible_means_the_original_path(self):
         with patch.object(host.os, "link", side_effect=OSError("cross-device")):
             self.assertEqual(host.grouped(self.worker), self.worker)
