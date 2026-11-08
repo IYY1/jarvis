@@ -626,31 +626,13 @@ class EncoderTests(unittest.TestCase):
             with self.subTest(bad=bad), self.assertRaises(ValueError):
                 config.validate({"replay": bad})
 
-    def test_app_audio_is_relayed_and_its_error_reported(self):
+    def test_program_tracks_never_go_through_the_python_relay(self):
+        # They run on the native worker straight into FFmpeg (start_app_audio).
         from jarvis.windows import audio
-        import subprocess
-        import sys
-        popen = subprocess.Popen
-        with tempfile.TemporaryDirectory() as folder:
-            # A Python stand-in for jarvis-voice.exe, so this runs on Linux and Windows.
-            worker = Path(folder) / "jarvis-voice.py"
-            worker.write_text(
-                "import sys\n"
-                "open(sys.argv[0] + '.request', 'w').write(sys.stdin.readline())\n"
-                "sys.stdout.buffer.write(b'PCMDATA!'); sys.stdout.flush()\n"
-                "sys.stderr.write('{\"event\":\"error\",\"message\":\"firefox is not running.\"}\\n')\n"
-                "sys.exit(1)\n")
-            pipe = MagicMock()
-            with patch("jarvis.native_worker.binary_path", return_value=worker), \
-                    patch("jarvis.windows.pipes.PipeWriter", pipe), \
-                    patch("subprocess.Popen", side_effect=lambda argv, **kw: popen([sys.executable, *argv], **kw)), \
-                    patch("sys.stdout", io.StringIO()) as told:
-                with self.assertRaisesRegex(RuntimeError, "firefox is not running"):
-                    audio.track_to_pipe({"track": {"kind": "game", "app": "firefox"}}, r"\\.\pipe\Jarvis-x")
-            self.assertEqual(told.getvalue(), "ready\n")   # it did flow, then the worker failed
-            pipe.return_value.close.assert_called_once()
-            self.assertEqual(json.loads((Path(folder) / "jarvis-voice.py.request").read_text()),
-                             {"process": "firefox", "include": False})
+        self.assertFalse(hasattr(audio, "app_audio_to_pipe"))
+        for track in ({"kind": "app", "app": "Discord"}, {"kind": "game", "app": "firefox"}, {"kind": "video"}):
+            with self.subTest(track=track), self.assertRaisesRegex(RuntimeError, "Unknown replay audio track"):
+                audio.track_to_pipe({"track": track}, r"\\.\pipe\Jarvis-x")
 
     def test_audio_failure_names_the_track_and_reason(self):
         from jarvis.windows.capture import audio_failure
@@ -1013,6 +995,13 @@ class AutomaticFormatTests(unittest.TestCase):
            "hdr_known": True, "width": 2560, "height": 1440, "left": -2560, "top": 0}
     hdr = dict(sdr, colorManagementPreset="hdr")
 
+    def test_a_first_install_starts_on_automatic(self):
+        # No settings file yet: load() used to switch recordings to H.264.
+        with tempfile.TemporaryDirectory() as folder:
+            fresh = config.load(Path(folder) / "config.json")
+        self.assertEqual((fresh["recording"]["codec"], fresh["replay"]["codec"]), ("auto", "auto"))
+        self.assertEqual(fresh["recording"]["output_dir"], "~/Videos/Jarvis")
+
     def resolve(self, display, works, **cfg):
         def select(candidate, _display, name):
             if name not in works:
@@ -1190,7 +1179,7 @@ class HostTests(unittest.TestCase):
             patch.object(host, "is_windows", return_value=True),
         ):
             value = config.load(Path(directory) / "absent.json")
-        self.assertEqual(value["recording"]["codec"], "h264")
+        self.assertEqual(value["recording"]["codec"], "auto")   # the best format the GPU encodes
         self.assertEqual(value["recording"]["rate_control"], "bitrate")
         self.assertFalse(value["recording"]["configured"])
         self.assertFalse(value["privacy"]["onboarded"])

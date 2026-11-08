@@ -334,57 +334,13 @@ def start_app_audio(program, include, pipe):
     return process
 
 
-def app_audio_to_pipe(program, include, pipe):
-    """One program's sound (``include``) or everything except it, from the
-    voice worker's process-loopback mode, relayed into an FFmpeg pipe."""
-    import subprocess
-    from .pipes import PipeWriter
-    from ..host import child_options
-    from ..native_worker import binary_path
-
-    worker = binary_path()
-    if worker is None:
-        raise RuntimeError("The Windows voice worker is missing; reinstall the complete Jarvis package")
-    output = PipeWriter(pipe)
-    with output_closed(output):
-        from ..host import grouped
-        process = subprocess.Popen([str(grouped(worker)), "--app-audio"], stdin=subprocess.PIPE,
-                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, **child_options())
-        try:
-            process.stdin.write(json.dumps({"process": program, "include": include}).encode() + b"\n")
-            process.stdin.close()
-            chunk = process.stdout.read(3840)   # sound is flowing, or the worker has failed
-            if chunk:
-                connecting = threading.Thread(target=output.connect, daemon=True)
-                connecting.start()
-                print(READY, flush=True)
-                while chunk and connecting.is_alive():
-                    chunk = process.stdout.read(3840)
-            if chunk:
-                connecting.join()
-                output.write(bytes(3840))  # the sound's clock starts now
-                while chunk := process.stdout.read(3840):
-                    output.write(chunk)
-            detail = process.stderr.read(4096).decode(errors="replace")
-            message = next((json.loads(line).get("message") for line in detail.splitlines()
-                            if line.startswith("{")), detail.strip())
-            raise RuntimeError(message or f"Audio capture for {program} stopped")
-        finally:
-            if process.poll() is None:
-                process.kill()
-            process.wait()
-            process.stdout.close()
-            process.stderr.close()
-
-
 def track_to_pipe(config, pipe):
-    """One replay track, unmixed: "game" (everything except ``app``, or all
-    system sound), "app" (only that program) or "microphone"."""
+    """One track, unmixed: "game" (all desktop sound) or "microphone". A
+    program's own track runs on the native worker, straight into FFmpeg
+    (start_app_audio), never through here."""
     track = config["track"]
     kind, program = track.get("kind"), track.get("app", "")
-    if kind == "app" or (kind == "game" and program):
-        return app_audio_to_pipe(program, kind == "app", pipe)
-    if kind not in ("game", "microphone"):
+    if program or kind not in ("game", "microphone"):
         raise RuntimeError("Unknown replay audio track")
     from .pipes import PipeWriter
 

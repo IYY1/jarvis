@@ -59,7 +59,8 @@ class ClipsPanel:
         self.mode = tk.StringVar(value="Fast (keyframes)")
         window.row(output, "Cut mode", ttk.Combobox(output, textvariable=self.mode,
                    values=("Fast (keyframes)", "Exact (re-encode)"), state="readonly", width=24),
-                   "Fast copies video and may begin at an earlier keyframe. Exact re-encodes on the CPU on Windows.")
+                   "Fast copies video and may begin at an earlier keyframe. Exact re-encodes on the graphics card, "
+                   "in the clip's own format.")
         self.progress = tk.StringVar(value="")
         window.line(output, ttk.Label(output, textvariable=self.progress, style="Caption.TLabel", wraplength=520))
         window.buttons(output, [("Export copy", self.export_copy, "Primary.TButton"), ("Cancel export", self.cancel)])

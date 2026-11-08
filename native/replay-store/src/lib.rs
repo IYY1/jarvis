@@ -306,9 +306,18 @@ fn write_segment(input: &mut impl Read, output: &mut impl Write, bytes: u64) -> 
     output.flush()
 }
 
+/// The longest replay settings allow (config.py: 10–1800 seconds, 30 minutes).
+/// It was 600 here after settings went to 1800, so disk replays over ten
+/// minutes would not start.
+pub const MAX_SECONDS: usize = 1800;
+
+fn limits_ok(seconds: usize, cap: u64) -> bool {
+    (1..=MAX_SECONDS).contains(&seconds) && cap != 0
+}
+
 impl Store {
     pub fn new(session: Session, seconds: usize, cap: u64) -> io::Result<Self> {
-        if seconds == 0 || seconds > 600 || cap == 0 {
+        if !limits_ok(seconds, cap) {
             return Err(error("Invalid replay storage limits."));
         }
         Ok(Self {
@@ -447,6 +456,15 @@ mod tests {
             let error = write_segment(&mut &b"video"[..], &mut Full { flush_only }, 5).unwrap_err();
             assert_eq!(error.kind(), io::ErrorKind::StorageFull);
         }
+    }
+
+    #[test]
+    fn replays_as_long_as_settings_allow_are_accepted() {
+        assert!(limits_ok(1800, 1 << 30));   // 30 minutes, the settings' longest
+        assert!(limits_ok(601, 1 << 30));
+        assert!(!limits_ok(1801, 1 << 30));
+        assert!(!limits_ok(0, 1 << 30));
+        assert!(!limits_ok(120, 0));
     }
 
     #[test]

@@ -332,7 +332,9 @@ def load(path: Path | None = None) -> dict:
         defaults = copy.deepcopy(DEFAULTS)
         from .host import is_windows
         if is_windows():
-            defaults["recording"].update(codec="h264", rate_control="bitrate", output_dir="~/Videos/Jarvis")
+            # The format stays DEFAULTS' "auto" (best the GPU encodes); naming H.264
+            # here made every first install skip Automatic.
+            defaults["recording"].update(rate_control="bitrate", output_dir="~/Videos/Jarvis")
         return defaults
     if path.stat().st_size > 65536:
         raise ValueError("Configuration exceeds 64 KiB")
