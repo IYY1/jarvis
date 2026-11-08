@@ -34,6 +34,13 @@ pub trait Input {
     fn detail(&mut self) -> String;
 }
 
+/// The microphone's Windows name in a saved setting: settings store
+/// "input:<name>", and a bare name (typed, or edited down to it) means the same.
+#[cfg_attr(not(windows), allow(dead_code))]
+fn microphone_name(id: &str) -> &str {
+    id.strip_prefix("input:").unwrap_or(id).trim()
+}
+
 pub fn open(config: &Value, control: bool) -> Result<Box<dyn Input>> {
     let device = config["audio"]["device"].as_str().unwrap_or("").to_owned();
     if let Some(path) = std::env::var_os("JARVIS_TEST_CAPTURE_FILE") {
@@ -426,7 +433,7 @@ mod wasapi {
                 .GetDefaultAudioEndpoint(eCapture, eConsole)
                 .map_err(|_| "No Windows microphone is available; connect or enable an input device".into());
         }
-        let wanted = id.strip_prefix("input:").ok_or("The selected Windows audio device is unavailable or ambiguous; refresh audio devices")?;
+        let wanted = super::microphone_name(id);
         let all = enumerator
             .EnumAudioEndpoints(eCapture, DEVICE_STATE_ACTIVE)
             .map_err(friendly)?;
@@ -515,6 +522,16 @@ mod wasapi {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_microphone_is_found_with_or_without_its_id_prefix() {
+        // Found on the user's PC: the setting edited down to the bare name left
+        // Jarvis not listening ("unavailable or ambiguous").
+        let name = "Microphone (PD400X Podcast Microphone)";
+        assert_eq!(microphone_name("input:Microphone (PD400X Podcast Microphone)"), name);
+        assert_eq!(microphone_name(name), name);
+        assert_eq!(microphone_name(" Microphone (PD400X Podcast Microphone) "), name);
+    }
 
     fn producer() -> (Producer, Receiver<Message>, Arc<AtomicUsize>) {
         let (tx, rx) = channel();

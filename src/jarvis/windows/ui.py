@@ -28,6 +28,13 @@ from .system import release_unused_memory
 
 RELEASE_MEMORY_AFTER_MS = 4000
 MAX_SEPARATE_APPS = 4   # config.validate allows this many
+DEFAULT_MICROPHONE = "Default Windows microphone"
+
+
+def microphone_name(device_id):
+    """A saved microphone setting as the list shows it: its name, without the "input:" id prefix."""
+    return device_id.removeprefix("input:") if device_id else DEFAULT_MICROPHONE
+
 
 # Sidebar order: (page, title).
 NAVIGATION = [("dashboard", "Home"), ("voice", "Voice"), ("commands", "Apps & commands"),
@@ -342,6 +349,10 @@ class Window:
         if getattr(self, "current", None) == "commands" and self.online and not self.apps_loaded:
             self.apps_loaded = True
             self.call("apps", self.show_apps)
+        # The microphones, by name, the first time the Voice page is open.
+        if getattr(self, "current", None) == "voice" and self.online and not getattr(self, "inputs_loaded", False):
+            self.inputs_loaded = True
+            self.call("devices", lambda result: self.load_inputs(result, quiet=True))
 
     def scroll(self, event):
         if not isinstance(event.widget, (ttk.Combobox, ttk.Treeview, tk.Text, ttk.Spinbox)):
@@ -682,11 +693,15 @@ class Window:
         self.voice_controls = VoiceControls(self, tabs["language"], tabs["dictation"])
 
         microphone = self.group(tabs["wake"], "Microphone")
-        self.mic_choice = ttk.Combobox(microphone, textvariable=self.variable("audio", "device"), width=26)
-        self.mic_choice.bind("<<ComboboxSelected>>", lambda _: self.changed(300))
-        self.mic_choice.bind("<Return>", lambda _: self.changed(0))
-        self.mic_choice.bind("<FocusOut>", lambda _: self.changed(0))
-        self.row(microphone, "Input", self.mic_choice, "Empty uses your Windows default input.")
+        # The list shows each microphone's own name; the setting keeps Windows's
+        # "input:" id for it, which the voice worker looks the device up by.
+        self.mic_ids = {DEFAULT_MICROPHONE: ""}
+        self.variable("audio", "device")   # saved with the other settings
+        self.mic_name = tk.StringVar(value=microphone_name(self.config["audio"]["device"]))
+        self.mic_choice = ttk.Combobox(microphone, textvariable=self.mic_name, state="readonly", width=30,
+                                       values=list(dict.fromkeys([DEFAULT_MICROPHONE, self.mic_name.get()])))
+        self.mic_choice.bind("<<ComboboxSelected>>", lambda _: self.pick_microphone())
+        self.row(microphone, "Input", self.mic_choice, f"{DEFAULT_MICROPHONE} follows your Windows setting.")
         self.buttons(microphone, [("Refresh inputs", lambda: self.call("devices", self.load_inputs)),
                                   ("Test microphone", lambda: self.call("mic_test", enabled=True)),
                                   ("End test", lambda: self.call("mic_test", enabled=False))])
@@ -704,9 +719,22 @@ class Window:
         self.number(tuning, "Wake sensitivity", "activation", "sensitivity", 0, 1, 0.05, "Higher hears quieter wake names, but triggers more often.")
         self.number(tuning, "Minimum command score", "activation", "confidence", 0, 1, 0.05, "Lower accepts more, including mistakes.")
 
-    def load_inputs(self, result):
-        self.mic_choice.configure(values=[item["id"] for item in result["devices"]])
-        self.say(f"Found {len(result['devices'])} inputs. Pick one from the Input list.")
+    def load_inputs(self, result, quiet=False):
+        self.mic_ids = {DEFAULT_MICROPHONE: ""}
+        for item in result["devices"]:
+            if item["id"]:
+                self.mic_ids[microphone_name(item["id"])] = item["id"]
+        names = list(self.mic_ids)
+        if self.mic_name.get() not in names:   # the saved one is unplugged: still show it
+            names.append(self.mic_name.get())
+        self.mic_choice.configure(values=names)
+        if not quiet:
+            self.say(f"Found {len(self.mic_ids) - 1} microphones. Pick one from the Input list.")
+
+    def pick_microphone(self):
+        name = self.mic_name.get()
+        self.variable("audio", "device").set(self.mic_ids.get(name, "" if name == DEFAULT_MICROPHONE else f"input:{name}"))
+        self.changed(300)
 
     def build_commands(self, p):
         tabs = self.tabs(p, [("apps", "Apps"), ("say", "What you can say"), ("shortcuts", "Your shortcuts")])

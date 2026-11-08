@@ -87,6 +87,24 @@ class SettingsWindowTests(unittest.TestCase):
             self.window.show(old)
             self.assertEqual(self.window.current, new)
 
+    def test_microphones_are_listed_by_name_and_saved_by_id(self):
+        window = self.window
+        window.load_inputs({"devices": [{"id": "", "name": "Default Windows microphone"},
+                                        {"id": "input:Microphone (PD400X)", "name": "Microphone (PD400X)"},
+                                        {"id": "input:Headset Microphone (Arctis)", "name": "Headset Microphone (Arctis)"}]})
+        self.assertEqual(list(window.mic_choice.cget("values")),
+                         ["Default Windows microphone", "Microphone (PD400X)", "Headset Microphone (Arctis)"])
+        with patch.object(window, "changed"):
+            window.mic_name.set("Microphone (PD400X)")
+            window.pick_microphone()
+            self.assertEqual(window.settings()["audio"]["device"], "input:Microphone (PD400X)")
+            window.mic_name.set("Default Windows microphone")
+            window.pick_microphone()
+            self.assertEqual(window.settings()["audio"]["device"], "")
+        from jarvis.windows.ui import microphone_name
+        self.assertEqual(microphone_name("input:Microphone (PD400X)"), "Microphone (PD400X)")
+        self.assertEqual(microphone_name(""), "Default Windows microphone")
+
     def test_programs_with_sound_are_ticked_into_their_own_tracks(self):
         from jarvis.windows.ui import MAX_SEPARATE_APPS
         window = self.window
