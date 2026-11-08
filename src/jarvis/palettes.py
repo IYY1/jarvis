@@ -120,7 +120,53 @@ GRAPHITE = {
         "on-live": "#0b0d12", "focus": "#6aa1ff", "error-bg": mix(_GRAPHITE_BG, "#f0616d", 0.22), "error-text": "#ff9aa2",
     },
 }
-ALL_PRESETS: dict[str, dict] = {"graphite": GRAPHITE, **PRESETS}
+def _plain(name, dark, swatches, **roles):
+    """A theme from plain role colors, like Graphite."""
+    bg = roles["bg"]
+    roles.setdefault("live-soft", mix(bg, roles["live"], 0.16))
+    roles.setdefault("error-bg", mix(bg, "#f0616d", 0.22 if dark else 0.14))
+    return {"name": name, "number": None, "dark": dark, "swatches": swatches, "roles": roles}
+
+
+# Midnight: deep navy with Jarvis's cyan. OLED: true black, best on OLED screens.
+# Light: a clean daytime theme. None of these are from the book.
+MIDNIGHT = _plain("Midnight", True, {"Cyan": "#4cc2ff", "Card": "#141b2d", "Page": "#0d1220", "Rail": "#090d18"},
+                  bg="#0d1220", surface="#090d18", card="#141b2d", inset="#0d1220", control="#1e2740",
+                  **{"control-hover": "#27324f", "control-active": "#2f3b5c", "line": "#222b42", "line-strong": "#3a4666",
+                     "text": "#eef2fa", "text-muted": "#9aa6c0", "text-disabled": "#5d6884", "disabled": "#151c2e",
+                     "accent": "#4cc2ff", "accent-hover": "#74d0ff", "accent-text": "#86d6ff", "on-accent": "#061019",
+                     "selected": "#1d3557", "live": "#3dd68c", "live-text": "#3dd68c", "on-live": "#061019",
+                     "focus": "#74d0ff", "error-text": "#ff9aa2"})
+OLED = _plain("OLED black", True, {"Blue": "#4c8dff", "Card": "#0c0c0e", "Page": "#000000", "Line": "#1c1c20"},
+              bg="#000000", surface="#000000", card="#0c0c0e", inset="#000000", control="#18181c",
+              **{"control-hover": "#222227", "control-active": "#2b2b31", "line": "#1c1c20", "line-strong": "#3a3a42",
+                 "text": "#f5f5f7", "text-muted": "#a1a1aa", "text-disabled": "#62626b", "disabled": "#111114",
+                 "accent": "#4c8dff", "accent-hover": "#6aa1ff", "accent-text": "#7fb0ff", "on-accent": "#000000",
+                 "selected": "#16233d", "live": "#3dd68c", "live-text": "#3dd68c", "on-live": "#000000",
+                 "focus": "#6aa1ff", "error-text": "#ff9aa2"})
+LIGHT = _plain("Light", False, {"Blue": "#2f6fe4", "Card": "#ffffff", "Page": "#f4f5f8", "Rail": "#e9ebf0"},
+               bg="#f4f5f8", surface="#e9ebf0", card="#ffffff", inset="#f4f5f8", control="#e6e8ee",
+               **{"control-hover": "#dcdfe7", "control-active": "#d0d4de", "line": "#e1e4ea", "line-strong": "#c5cad5",
+                  "text": "#161a22", "text-muted": "#5b6475", "text-disabled": "#9aa1ae", "disabled": "#eceef2",
+                  "accent": "#2f6fe4", "accent-hover": "#255fcc", "accent-text": "#2459bd", "on-accent": "#ffffff",
+                  "selected": "#dce7fb", "live": "#137a47", "live-text": "#0f6a3d", "on-live": "#ffffff",
+                  "focus": "#2f6fe4", "error-text": "#b4232f"})
+ALL_PRESETS: dict[str, dict] = {"graphite": GRAPHITE, "midnight": MIDNIGHT, "oled": OLED, "light": LIGHT, **PRESETS}
+# Not a palette: follow Windows' own light or dark setting, read when the window opens.
+SYSTEM = "system"
+
+
+def resolve(name: str) -> str:
+    """The palette to paint with: "system" becomes Light or Graphite as Windows is set."""
+    if name != SYSTEM:
+        return name if name in ALL_PRESETS else DEFAULT
+    try:
+        import winreg
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize") as key:
+            light = winreg.QueryValueEx(key, "AppsUseLightTheme")[0] == 1
+    except (ImportError, OSError):
+        light = False
+    return "light" if light else "graphite"
 
 
 def preference_path() -> Path:
@@ -134,11 +180,11 @@ def chosen(default: str = DEFAULT) -> str:
         name = str(json.loads(preference_path().read_text(encoding="utf-8")).get("palette", default))
     except (OSError, ValueError, AttributeError):
         return default
-    return name if name in ALL_PRESETS else default
+    return name if name in ALL_PRESETS or name == SYSTEM else default
 
 
 def choose(name: str) -> None:
-    if name not in ALL_PRESETS:
+    if name not in ALL_PRESETS and name != SYSTEM:
         raise ValueError(f"Unknown color preset {name!r}")
     path = preference_path()
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)

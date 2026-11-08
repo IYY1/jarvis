@@ -8,6 +8,16 @@ from .. import clipedit
 from .encoding import MIXED_TITLE
 
 
+def clip_row(path, stat, folder):
+    """A library row: the clip, its game (the folder Jarvis sorted it into), when, how big."""
+    from datetime import datetime
+
+    game = path.parent.name if path.parent != folder else ""
+    size = stat.st_size / 1048576
+    return (path.name, game, datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M"),
+            f"{size / 1024:.1f} GB" if size >= 1024 else f"{size:.0f} MB")
+
+
 class ClipsPanel:
     def __init__(self, window, page):
         self.window = window
@@ -24,10 +34,13 @@ class ClipsPanel:
         library = window.group(self.tabs["library"], "Clips", "Open a saved recording or replay. Already mixed sound cannot be separated.")
         window.buttons(library, [("Open clip…", self.choose), ("Refresh recordings", self.refresh),
                                  ("Open recordings folder", window.open_folder)])
-        self.library = ttk.Treeview(library, columns=("file",), show="headings", height=5, selectmode="browse")
-        self.library.heading("file", text="Saved recordings and replays · newest first")
-        self.library.column("file", width=520, stretch=True)
-        window.line(library, self.library)
+        self.library = ttk.Treeview(library, columns=("clip", "game", "saved", "size"), show="headings", height=8,
+                                    selectmode="browse")
+        for column, title, width, anchor in (("clip", "Clip · newest first", 330, "w"), ("game", "Game", 140, "w"),
+                                             ("saved", "Saved", 130, "w"), ("size", "Size", 80, "e")):
+            self.library.heading(column, text=title, anchor=anchor)
+            self.library.column(column, width=width, stretch=column == "clip", anchor=anchor)
+        window.wide(library, self.library)   # the card's whole width
         self.library.bind("<Double-1>", self.open_selected)
         self.library.bind("<Return>", self.open_selected)
         window.buttons(library, [("Open selected", self.open_selected)])
@@ -81,26 +94,27 @@ class ClipsPanel:
         self.scanning = True
         folder = Path(self.window.variable("recording", "output_dir").get()).expanduser()
         def scan():
-            files = [p for p in folder.rglob("*") if p.is_file() and p.suffix.lower() in (".mp4", ".mkv", ".webm", ".mov")
-                     and not p.name.startswith(".")]
-            return sorted(files, key=lambda p: p.stat().st_mtime, reverse=True)[:200]
+            files = [(p, p.stat()) for p in folder.rglob("*") if p.is_file()
+                     and p.suffix.lower() in (".mp4", ".mkv", ".webm", ".mov") and not p.name.startswith(".")]
+            return sorted(files, key=lambda f: f[1].st_mtime, reverse=True)[:200]
         def done(outcome):
             self.scanning = False
-            files, error = outcome
+            found, error = outcome
             if error:
                 self.window.say(error, error=True)
                 return
-            self.files = files
+            self.files = [path for path, _ in found]
             self.library.delete(*self.library.get_children())
-            for i, path in enumerate(files):
-                self.library.insert("", "end", iid=str(i), values=(str(path.relative_to(folder)),))
-            if not files:
-                self.window.say("No recordings found. Open clip… can choose a file from another folder.")
+            for i, (path, stat) in enumerate(found):
+                self.library.insert("", "end", iid=str(i), values=clip_row(path, stat, folder))
+            if not found:
+                self.library.insert("", "end", iid="empty", values=(
+                    "No clips yet. Say \"clip that\" during a game, or Open clip… for another folder.", "", "", ""))
         self.work(scan, done)
 
     def open_selected(self, _event=None):
         selected = self.library.selection()
-        if selected:
+        if selected and selected[0].isdigit():
             self.open(self.files[int(selected[0])])
 
     def choose(self):

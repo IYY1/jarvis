@@ -87,6 +87,45 @@ class SettingsWindowTests(unittest.TestCase):
             self.window.show(old)
             self.assertEqual(self.window.current, new)
 
+    def test_the_wheel_over_a_dropdown_scrolls_the_page_instead_of_changing_it(self):
+        window = self.window
+        window.show("recording")
+        box = window.display_choice
+        before = box.get()
+        handler = self.root.bind_class("TCombobox", "<MouseWheel>")
+        self.assertIn("scroll_not_choose", handler)
+        event = types.SimpleNamespace(widget=box, delta=-120)
+        with patch.object(window.canvases["recording"], "yview_scroll") as scrolled:
+            self.assertEqual(window.scroll_not_choose(event), "break")
+        scrolled.assert_called_once_with(1, "units")
+        self.assertEqual(box.get(), before)
+
+    def test_themes_include_like_windows_and_choosing_graphite_works(self):
+        from jarvis import palettes
+        for name in ("midnight", "oled", "light"):
+            self.assertIn(name, palettes.ALL_PRESETS)
+        with patch("winreg.QueryValueEx", return_value=(1, 4)):
+            self.assertEqual(palettes.resolve(palettes.SYSTEM), "light")
+        with patch("winreg.QueryValueEx", return_value=(0, 4)):
+            self.assertEqual(palettes.resolve(palettes.SYSTEM), "graphite")
+        window = self.window
+        with patch.object(palettes, "choose"), patch.object(window, "say") as said:
+            window.palette_setting = "light"
+            window.choose_palette("graphite")   # raised a KeyError before: Graphite isn't one of the book's
+            said.assert_called_with("Colors: Graphite.")
+            window.choose_palette(palettes.SYSTEM)
+            self.assertEqual(window.palette_setting, palettes.SYSTEM)
+            self.assertIn(window.palette, ("light", "graphite"))
+
+    def test_the_clip_library_shows_game_date_and_size(self):
+        from jarvis.windows.clips import clip_row
+        folder = Path("C:/Videos/Jarvis")
+        stat = types.SimpleNamespace(st_size=536732682, st_mtime=time.mktime((2026, 11, 8, 5, 13, 0, 0, 0, -1)))
+        self.assertEqual(clip_row(folder / "MarvelRivals" / "Replay_x.mkv", stat, folder),
+                         ("Replay_x.mkv", "MarvelRivals", "2026-11-08 05:13", "512 MB"))
+        self.assertEqual(clip_row(folder / "Jarvis_y.mkv", types.SimpleNamespace(st_size=3 * 1024 ** 3, st_mtime=stat.st_mtime),
+                                  folder)[1:], ("", "2026-11-08 05:13", "3.0 GB"))
+
     def test_displays_are_listed_by_their_own_names_and_saved_by_device(self):
         window = self.window
         monitors = [{"name": "\\\\.\\DISPLAY1", "label": "ASUS XG27AQDMG (2560×1440, 240 Hz)"},

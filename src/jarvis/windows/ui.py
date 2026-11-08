@@ -54,6 +54,57 @@ PRIVACY_FACTS = [
 ]
 
 
+def icon_bits(key):
+    """A 16×16 one-colour icon for a sidebar page, drawn from simple shapes, as XBM
+    data: a few dozen bytes each, so the sidebar costs no image files."""
+    pixels = [[False] * 16 for _ in range(16)]
+
+    def dot(x, y):
+        if 0 <= x < 16 and 0 <= y < 16:
+            pixels[int(y)][int(x)] = True
+
+    def box(x0, y0, x1, y1, fill=True):
+        for y in range(y0, y1 + 1):
+            for x in range(x0, x1 + 1):
+                if fill or x in (x0, x1) or y in (y0, y1):
+                    dot(x, y)
+
+    def ring(cx, cy, outer, inner=0.0):
+        for y in range(16):
+            for x in range(16):
+                d = ((x + 0.5 - cx) ** 2 + (y + 0.5 - cy) ** 2) ** 0.5
+                if inner <= d <= outer:
+                    dot(x, y)
+
+    if key == "dashboard":                      # a house
+        for i in range(8):
+            dot(7 - i, 1 + i), dot(8 + i, 1 + i), dot(7 - i, 2 + i), dot(8 + i, 2 + i)
+        box(3, 8, 12, 14, fill=False), box(3, 9, 3, 14), box(12, 9, 12, 14), box(7, 10, 8, 14)
+    elif key == "voice":                        # a microphone
+        box(6, 1, 9, 8), dot(5, 2), dot(10, 2), box(5, 2, 5, 8), box(10, 2, 10, 8)
+        for y in range(6, 11):
+            dot(3, y), dot(12, y)
+        box(4, 11, 4, 11), box(11, 11, 11, 11), box(5, 12, 10, 12), box(7, 13, 8, 14), box(5, 15, 10, 15)
+    elif key == "commands":                     # four tiles
+        box(2, 2, 6, 6), box(9, 2, 13, 6), box(2, 9, 6, 13), box(9, 9, 13, 13)
+    elif key == "recording":                    # record
+        ring(8, 8, 7.2, 5.6), ring(8, 8, 3.4)
+    elif key == "clips":                        # a video: frame and play mark
+        box(1, 3, 14, 12, fill=False), box(1, 4, 14, 4), box(1, 11, 14, 11)
+        for i, x in enumerate(range(6, 11)):   # a play triangle, narrowing to the right
+            box(x, 5 + i // 2, x, 10 - i // 2)
+    elif key == "general":                      # sliders
+        for y, knob in ((3, 10), (8, 5), (13, 9)):
+            box(1, y, 14, y), box(knob - 1, y - 2, knob + 1, y + 2)
+    rows = []
+    for row in pixels:
+        value = sum(1 << x for x, on in enumerate(row) if on)
+        rows += [value & 0xFF, value >> 8]
+    # Tk reads the braces only as words of their own.
+    return ("#define i_width 16\n#define i_height 16\nstatic unsigned char i_bits[] = {\n"
+            + ", ".join(f"0x{b:02x}" for b in rows) + "\n};\n")
+
+
 class VolumeSlider(tk.Canvas):
     """A volume slider like Medal's: a thin track filled up to the value, and a
     round knob. ``on_change`` follows the drag; ``on_done`` gets the final value."""
@@ -131,7 +182,8 @@ class Window:
         self.save_timer = None
         self.toast_timer = None
         self.status = {}
-        self.palette = palettes.chosen("graphite")
+        self.palette_setting = palettes.chosen("graphite")   # may be "system": follow Windows
+        self.palette = palettes.resolve(self.palette_setting)   # what the window is painted with
         self.shapes = None
         self.apps_loaded = False
         self.wrapped = []          # labels that wrap to their width
@@ -150,8 +202,13 @@ class Window:
         rail.pack_propagate(False)
         self.brand(rail)
         self.controls(rail)
+        self.nav_icons = {}   # page: (icon in the muted colour, icon in the text colour)
         for key, title in NAVIGATION:
-            button = ttk.Button(rail, text=title, style="Nav.TButton", command=lambda key=key: self.show(key))
+            r = palettes.roles(self.palette)
+            self.nav_icons[key] = (tk.BitmapImage(data=icon_bits(key), foreground=r["text-muted"]),
+                                   tk.BitmapImage(data=icon_bits(key), foreground=r["text"]))
+            button = ttk.Button(rail, text="  " + title, image=self.nav_icons[key][0], compound="left",
+                                style="Nav.TButton", command=lambda key=key: self.show(key))
             button.pack(fill="x", pady=1)
             self.nav[key] = button
         self.content = ttk.Frame(body)
@@ -161,6 +218,8 @@ class Window:
         self.toast()
         self.show(page)
         root.bind_all("<MouseWheel>", self.scroll)
+        for widget_class in ("TCombobox", "TSpinbox"):
+            root.bind_class(widget_class, "<MouseWheel>", self.scroll_not_choose)
         root.bind("<Control-m>", lambda _: self.toggle_mute())
         root.bind("<Control-space>", lambda _: self.listen())
         root.protocol("WM_DELETE_WINDOW", self.close)
@@ -174,6 +233,9 @@ class Window:
     def apply_theme(self):
         r = palettes.roles(self.palette)
         s, f = self.style, self.family
+        for muted, bright in getattr(self, "nav_icons", {}).values():   # the sidebar icons follow the colours
+            muted.configure(foreground=r["text-muted"])
+            bright.configure(foreground=r["text"])
         if "clam" in s.theme_names():
             s.theme_use("clam")
         self.root.configure(background=r["bg"])
@@ -278,16 +340,19 @@ class Window:
         look.title_bar(self.root, r["surface"], r["text"], palettes.ALL_PRESETS[self.palette]["dark"])
 
     def choose_palette(self, name):
-        if self.loading or name == self.palette:
+        if self.loading or name == self.palette_setting:
             return
-        self.palette = name
+        self.palette_setting = name
+        self.palette = palettes.resolve(name)
         self.apply_theme()
         try:
             palettes.choose(name)
         except OSError as error:
             self.say(f"The colors changed, but couldn't be kept for next time: {error}", error=True)
             return
-        self.say(f"Colors: {palettes.PRESETS[name]['name']}.")
+        # Graphite and the new themes aren't in PRESETS (the book's): this raised for them.
+        label = "Like Windows" if name == palettes.SYSTEM else palettes.ALL_PRESETS[name]["name"]
+        self.say(f"Colors: {label}.")
 
     def tk_widget(self, widget, **roles):
         """Register a plain Tk widget so theme changes recolor it."""
@@ -341,11 +406,17 @@ class Window:
         scrollbar.grid(row=0, column=1, sticky="ns")
         inner = ttk.Frame(canvas, padding=(28, 18, 28, 24))
         item = canvas.create_window(0, 0, anchor="n", window=inner)
-        inner.bind("<Configure>", lambda _, view=canvas: view.configure(scrollregion=view.bbox("all")))
+
+        def region(view=canvas, content=inner):
+            # Never shorter than the view: a short page (Voice) otherwise slid
+            # down, leaving a gap above its title.
+            view.configure(scrollregion=(0, 0, view.winfo_width(), max(content.winfo_reqheight(), view.winfo_height())))
+        inner.bind("<Configure>", lambda _: region())
         def fit(event, view=canvas, item=item):
             width = min(event.width, 1000)   # lines stay readable in a wide window
             view.itemconfigure(item, width=width)
             view.coords(item, event.width / 2, 0)
+            region()
         canvas.bind("<Configure>", fit)
         inner.columnconfigure(0, weight=1)
         ttk.Label(inner, text=title, style="Title.TLabel").grid(row=0, column=0, sticky="w")
@@ -373,7 +444,8 @@ class Window:
         key = key if key in self.pages else "dashboard"
         for name, frame in self.pages.items():
             frame.pack_forget()
-            self.nav[name].configure(style="NavOn.TButton" if name == key else "Nav.TButton")
+            self.nav[name].configure(style="NavOn.TButton" if name == key else "Nav.TButton",
+                                     image=self.nav_icons[name][1 if name == key else 0])
         self.pages[key].pack(fill="both", expand=True)
         self.current = key
         self.rewrap()
@@ -396,8 +468,14 @@ class Window:
             self.call("devices", lambda result: self.load_inputs(result, quiet=True))
 
     def scroll(self, event):
-        if not isinstance(event.widget, (ttk.Combobox, ttk.Treeview, tk.Text, ttk.Spinbox)):
+        if not isinstance(event.widget, (ttk.Treeview, tk.Text)):   # lists and text scroll themselves
             self.canvases[self.current].yview_scroll(-int(event.delta / 120), "units")
+
+    def scroll_not_choose(self, event):
+        """The wheel over a dropdown or number box scrolls the page: by default Tk
+        changed the setting under the pointer while you only scrolled past it."""
+        self.scroll(event)
+        return "break"
 
     def wrapping(self, label):
         """A label that wraps to its width, once it can be seen.
@@ -1199,21 +1277,26 @@ class Window:
     def build_general(self, p):
         tabs = self.tabs(p, [("general", "General"), ("privacy", "Privacy"), ("diagnostics", "Diagnostics")])
         self.build_diagnostics(tabs["diagnostics"])
-        themes = self.group(tabs["general"], "Colors", "Graphite, or a combination from Sanzo Wada's A Dictionary of Color Combinations (1933).")
+        themes = self.group(tabs["general"], "Colors", "Jarvis's own themes, or a combination from Sanzo Wada's "
+                                                       "A Dictionary of Color Combinations (1933).")
         swatches = ttk.Frame(themes, style="Card.TFrame", borderwidth=0)
-        self.palette_choice = tk.StringVar(value=self.palette)
-        for column, (key, preset) in enumerate(palettes.ALL_PRESETS.items()):
+        self.palette_choice = tk.StringVar(value=self.palette_setting)
+        light, dark = palettes.LIGHT["roles"], palettes.GRAPHITE["roles"]
+        follow = {"name": "Like Windows", "number": None, "dark": None,   # half Light, half Graphite
+                  "swatches": {"Light page": light["bg"], "Light card": light["card"],
+                               "Dark card": dark["card"], "Dark page": dark["bg"]}}
+        for index, (key, preset) in enumerate([(palettes.SYSTEM, follow), *palettes.ALL_PRESETS.items()]):
             cell = ttk.Frame(swatches, style="Card.TFrame", borderwidth=0)
-            cell.grid(row=0, column=column, padx=(0, 16), sticky="w")
-            strip = tk.Canvas(cell, width=180, height=34, highlightthickness=0, borderwidth=0)
+            cell.grid(row=index // 3, column=index % 3, padx=(0, 18), pady=(0, 14), sticky="w")
+            strip = tk.Canvas(cell, width=210, height=34, highlightthickness=0, borderwidth=0)
             colors = list(preset["swatches"].values())
-            for index, color in enumerate(colors):
-                strip.create_rectangle(180 * index / len(colors), 0, 180 * (index + 1) / len(colors), 34, fill=color, width=0)
+            for i, color in enumerate(colors):
+                strip.create_rectangle(210 * i / len(colors), 0, 210 * (i + 1) / len(colors), 34, fill=color, width=0)
             strip.pack(anchor="w")
             ttk.Radiobutton(cell, text=preset["name"], value=key, variable=self.palette_choice, style="Swatch.TRadiobutton",
                             command=lambda key=key: self.choose_palette(key)).pack(anchor="w", pady=(6, 0))
-            kind = "dark" if preset["dark"] else "light"
-            ttk.Label(cell, text=f"No. {preset['number']} · {kind}" if preset["number"] else kind.capitalize(),
+            kind = "Light or dark, as Windows is set" if preset["dark"] is None else "dark" if preset["dark"] else "light"
+            ttk.Label(cell, text=f"No. {preset['number']} · {kind}" if preset["number"] else kind[0].upper() + kind[1:],
                       style="Caption.TLabel").pack(anchor="w")
         self.line(themes, swatches)
 
