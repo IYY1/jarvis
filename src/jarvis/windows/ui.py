@@ -30,6 +30,7 @@ RELEASE_MEMORY_AFTER_MS = 4000
 MAX_SEPARATE_APPS = 4   # config.validate allows this many
 DEFAULT_MICROPHONE = "Default Windows microphone"
 PRIMARY_DISPLAY = "Looking for displays…"   # shown only until the service lists them
+SEE_THROUGH = "#ff00fe"   # the message window's corners: Windows shows what's behind wherever this colour is
 
 
 def microphone_name(device_id):
@@ -238,7 +239,7 @@ class Window:
         for muted, bright in getattr(self, "nav_icons", {}).values():   # the sidebar icons follow the colours
             muted.configure(foreground=r["text-muted"])
             bright.configure(foreground=r["text"])
-        if getattr(self, "bubble", None) is not None and self.bubble.winfo_manager():
+        if getattr(self, "toast_shown", False):
             self.draw_toast()
         if "clam" in s.theme_names():
             s.theme_use("clam")
@@ -602,11 +603,41 @@ class Window:
         return frame
 
     def toast(self):
-        """A rounded message at the bottom: a green edge and ✓ when something worked, red and ! when it didn't."""
-        self.bubble = tk.Canvas(self.root, highlightthickness=0, borderwidth=0)
+        """A rounded message at the bottom: a green edge and ✓ when something worked, red and ! when it didn't.
+
+        It's a borderless window of its own whose corners Windows leaves see-through:
+        a widget inside the main window can't be transparent, so its corners would
+        show as a box. Made once, kept hidden, and moved with the main window."""
+        self.toast_window = tk.Toplevel(self.root)
+        self.toast_window.withdraw()
+        self.toast_window.overrideredirect(True)
+        self.toast_window.transient(self.root)
+        try:
+            self.toast_window.attributes("-transparentcolor", SEE_THROUGH)
+        except tk.TclError:   # not Windows: the corners show the key colour's neighbour, the page
+            pass
+        self.bubble = tk.Canvas(self.toast_window, highlightthickness=0, borderwidth=0, background=SEE_THROUGH)
+        self.bubble.pack()
         self.notice = tk.StringVar()
-        self.toast_error = False
+        self.toast_error = self.toast_shown = False
         self.bubble.tag_bind("close", "<Button-1>", lambda _: self.hide_toast())
+        # Follow the window, and hide while it's minimised. A tag only the main window carries:
+        # binding on the window itself would also run for every widget inside it that changes size.
+        self.root.bindtags((*self.root.bindtags(), "JarvisToast"))
+        for sequence in ("<Configure>", "<Map>", "<Unmap>"):
+            self.root.bind_class("JarvisToast", sequence, lambda _: self.place_toast())
+
+    def place_toast(self):
+        if not self.toast_shown or self.root.state() in ("iconic", "withdrawn"):
+            self.toast_window.withdraw()
+            return
+        width, height = int(self.bubble.cget("width")), int(self.bubble.cget("height"))
+        x = self.root.winfo_rootx() + (self.root.winfo_width() - width) // 2
+        y = self.root.winfo_rooty() + self.root.winfo_height() - height - 18
+        self.toast_window.geometry(f"{width}x{height}+{x}+{y}")
+        if self.toast_window.state() != "normal":
+            self.toast_window.deiconify()
+        self.toast_window.lift(self.root)
 
     def draw_toast(self):
         r, c, f = palettes.roles(self.palette), self.bubble, self.family
@@ -617,7 +648,7 @@ class Window:
         x0, y0, x1, y1 = c.bbox(words)
         height = max(44, y1 - y0 + 22)
         width = x1 + 44
-        c.configure(width=width, height=height, background=r["bg"])
+        c.configure(width=width, height=height)
         a, b, w, h = 2, 2, width - 2, height - 2   # a capsule: two half circles joined by straight edges
         d = h - b
         for box in ((a, b, a + d, h), (w - d, b, w, h)):
@@ -640,8 +671,8 @@ class Window:
         self.notice.set(text)
         self.toast_error = error
         self.draw_toast()
-        self.bubble.place(relx=0.5, rely=1.0, anchor="s", y=-18)
-        self.bubble.tk.call("raise", self.bubble._w)   # Canvas.lift raises a drawn item, not the widget
+        self.toast_shown = True
+        self.place_toast()
         if self.toast_timer:
             self.root.after_cancel(self.toast_timer)
             self.toast_timer = None
@@ -650,7 +681,8 @@ class Window:
 
     def hide_toast(self):
         self.toast_timer = None
-        self.bubble.place_forget()
+        self.toast_shown = False
+        self.toast_window.withdraw()
 
     # Service -------------------------------------------------------------
 

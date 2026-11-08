@@ -347,7 +347,12 @@ class SettingsWindowTests(unittest.TestCase):
         self.assertIsNone(window.toast_timer)   # a refusal stays until it's closed
         self.assertTrue(bubble.find_withtag("close") and bubble.tag_bind("close", "<Button-1>"))   # ✕ closes it
         window.hide_toast()
-        self.assertFalse(bubble.winfo_manager())
+        self.assertFalse(window.toast_shown)
+        self.assertEqual(window.toast_window.state(), "withdrawn")
+        # Its corners are see-through, so no box shows behind the capsule.
+        from jarvis.windows.ui import SEE_THROUGH
+        self.assertEqual(bubble.cget("background"), SEE_THROUGH)
+        self.assertEqual(str(window.toast_window.attributes("-transparentcolor")), SEE_THROUGH)
 
     def test_quality_is_picked_from_tiles_named_by_level(self):
         from jarvis.windows.video_settings import tile_text
