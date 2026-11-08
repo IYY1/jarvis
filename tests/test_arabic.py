@@ -114,6 +114,24 @@ class DictationPolicyTests(unittest.TestCase):
         self.assertEqual(language(cfg("ar_en", "en"), "اسمعني"), "en")
         self.assertEqual(language(cfg("ar_en", "ar"), "listen"), "ar")
 
+    def test_spoken_arabic_dictates_arabic_though_the_worker_sends_english(self):
+        """The worker sends اسمعني as “listen to me”; the language follows what was heard."""
+        import asyncio
+        from unittest.mock import AsyncMock, MagicMock, patch
+        from jarvis.daemon import Service
+        with patch("jarvis.daemon.AppRegistry", return_value=MagicMock(index={})):
+            service = Service({"privacy": {"onboarded": True}, "activation": {"mode": "push_to_talk"},
+                               "recognition": {"language": "ar_en"}})
+        events = [{"event": "ready", "listening": True},
+                  {"event": "command", "text": "listen to me", "heard": "اسمعني", "closest_match": True,
+                   "confidence": 1.0}]
+        proc = MagicMock(wait=AsyncMock())
+        proc.stdout.readline = AsyncMock(side_effect=[json.dumps(e).encode() + b"\n" for e in events] + [b""])
+        service.worker = proc
+        with patch.object(service, "start_dictation", AsyncMock()) as start:
+            asyncio.run(service.read_voice(proc, "once"))
+        start.assert_awaited_once_with("اسمعني")
+
     def test_dictation_settings_are_validated(self):
         defaults = config.validate({})["dictation"]
         self.assertEqual(defaults["language"], "auto")
@@ -195,6 +213,46 @@ class ArabicDictationWorkerTests(unittest.TestCase):
                 proc.stdout.close()
                 self.assertTrue(texts, "no dictation text")
                 self.assertEqual(arabic(texts[0]), language == "ar", texts)
+
+
+@unittest.skipUnless(os.environ.get("JARVIS_ARABIC_MODEL") and os.environ.get("JARVIS_ARABIC_TEST_WAKE"),
+                     "set JARVIS_ARABIC_MODEL and JARVIS_ARABIC_TEST_WAKE (a folder of “Jarvis اسمعني” .s16le clips)")
+class ArabicWakeCommandWorkerTests(unittest.TestCase):
+    def test_jarvis_esmaani_in_one_breath_starts_arabic_dictation(self):
+        """The Arabic word right after “Jarvis” keeps its first syllable (اسمعني, not “معني”)."""
+        from jarvis import native_worker
+        built = ROOT / "native/voice-worker/target/release/jarvis-voice"
+        binary = built if built.is_file() else native_worker.binary_path()
+        if binary is None:
+            self.skipTest("build the Rust voice worker first")
+        clips = sorted(Path(os.environ["JARVIS_ARABIC_TEST_WAKE"]).glob("*.s16le"))
+        self.assertTrue(clips, "no .s16le clips in JARVIS_ARABIC_TEST_WAKE")
+        c = config.validate({"privacy": {"onboarded": True}, "recognition": {"language": "ar_en"},
+                             "activation": {"mode": "wake_word"}})
+        with unittest.mock.patch("jarvis.native_worker.arabic_model_dir",
+                                 return_value=Path(os.environ["JARVIS_ARABIC_MODEL"])):
+            _, payload, env = native_worker.prepare(c, "wake_word", Parser.from_config(c).grammar([]))
+        for clip in clips:
+            with self.subTest(clip=clip.name), tempfile.NamedTemporaryFile(suffix=".s16le") as capture:
+                capture.write(b"\0" * 32000 + clip.read_bytes() + b"\0" * 96000)
+                capture.flush()
+                proc = subprocess.Popen([str(binary)], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                        stderr=subprocess.DEVNULL, text=True,
+                                        env=dict(env, JARVIS_TEST_CAPTURE_FILE=capture.name,
+                                                 JARVIS_OWNER_PID=str(os.getpid())))
+                proc.stdin.write(json.dumps(payload) + "\n")
+                proc.stdin.flush()
+                result = None
+                for line in proc.stdout:
+                    event = json.loads(line)
+                    if event.get("event") in ("command", "heard", "timeout"):
+                        result = event
+                        break
+                proc.terminate()
+                proc.wait(timeout=10)
+                proc.stdout.close()
+                self.assertEqual((result or {}).get("text"), "listen to me", result)
+                self.assertEqual(result.get("recognition_pass"), "arabic", result)
 
 
 if __name__ == "__main__":

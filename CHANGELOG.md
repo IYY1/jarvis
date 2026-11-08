@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- Saying اسمعني now dictates Arabic. The voice worker passes the phrase on as
+  the English command “listen to me”, and dictation picked its language from
+  that instead of from what was heard, so it always dictated English.
+- “Jarvis, اسمعني” in one breath is caught far more often. English wake-word
+  timing often swallowed the first syllable (the Arabic model then heard
+  “ما عليه” or “مالي”), so the Arabic pass now also hears the 100 ms before
+  the cut. Spellings the Arabic model writes for “Jarvis” (جاردس, جار بس…)
+  and for اسمعني (اسماني, اسمالي, سمعني) were added from real recordings.
+
 ## 0.4.1 — 2026-11-06
 
 - Windows: expose 1–240 fps, 120/240 fps presets, resolution limits, automatic

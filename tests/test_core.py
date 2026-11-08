@@ -464,7 +464,7 @@ class ServiceConsentTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual((service.activation.state, service.activation.deadline), ("listening", deadline))
                 worker.send(event="command", text="open firefox", confidence=0.9, captured_at=time.monotonic())
                 await until(lambda: execute.await_count)
-                execute.assert_awaited_once_with("open firefox")
+                execute.assert_awaited_once_with("open firefox", None)
                 self.assertEqual(service.activation.state, "idle")
                 self.assertIs(service.worker, worker)
             finally:
