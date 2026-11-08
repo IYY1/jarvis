@@ -87,6 +87,34 @@ class SettingsWindowTests(unittest.TestCase):
             self.window.show(old)
             self.assertEqual(self.window.current, new)
 
+    def test_displays_are_listed_by_their_own_names_and_saved_by_device(self):
+        window = self.window
+        monitors = [{"name": "\\\\.\\DISPLAY1", "label": "ASUS XG27AQDMG (2560×1440, 240 Hz)"},
+                    {"name": "\\\\.\\DISPLAY2", "label": "ASUS VG27B (2560×1440, 144 Hz)"}]
+        with patch.object(window, "changed"):
+            window.load_displays({"monitors": monitors})
+            self.assertEqual(list(window.display_choice.cget("values")),
+                             ["Primary display", "ASUS XG27AQDMG (2560×1440, 240 Hz)", "ASUS VG27B (2560×1440, 144 Hz)"])
+            window.display_name.set("ASUS VG27B (2560×1440, 144 Hz)")
+            window.pick_display()
+            self.assertEqual(window.settings()["recording"]["monitor"], "\\\\.\\DISPLAY2")
+            # Listed again later, the saved one shows by name.
+            window.load_displays({"monitors": monitors}, quiet=True)
+            self.assertEqual(window.display_name.get(), "ASUS VG27B (2560×1440, 144 Hz)")
+            window.display_name.set("Primary display")
+            window.pick_display()
+            self.assertEqual(window.settings()["recording"]["monitor"], "")
+
+    def test_a_display_is_named_by_its_maker_and_model(self):
+        from jarvis.windows.displays import display_label, maker
+        code = (ord("A") - 64) << 10 | (ord("U") - 64) << 5 | (ord("S") - 64)
+        self.assertEqual(maker(code), "ASUS")
+        self.assertEqual(maker(((code & 0xFF) << 8) | (code >> 8)), "ASUS")   # byte-swapped
+        self.assertEqual(maker(0), "")
+        display = {"name": "\\\\.\\DISPLAY2", "width": 2560, "height": 1440, "refresh": 144}
+        self.assertEqual(display_label(display, {"\\\\.\\DISPLAY2": "ASUS VG27B"}), "ASUS VG27B (2560×1440, 144 Hz)")
+        self.assertEqual(display_label(display), "Display 2 (2560×1440, 144 Hz)")   # no name from Windows
+
     def test_microphones_are_listed_by_name_and_saved_by_id(self):
         window = self.window
         window.load_inputs({"devices": [{"id": "", "name": "Default Windows microphone"},

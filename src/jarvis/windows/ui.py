@@ -29,6 +29,7 @@ from .system import release_unused_memory
 RELEASE_MEMORY_AFTER_MS = 4000
 MAX_SEPARATE_APPS = 4   # config.validate allows this many
 DEFAULT_MICROPHONE = "Default Windows microphone"
+PRIMARY_DISPLAY = "Primary display"
 
 
 def microphone_name(device_id):
@@ -349,6 +350,10 @@ class Window:
         if getattr(self, "current", None) == "commands" and self.online and not self.apps_loaded:
             self.apps_loaded = True
             self.call("apps", self.show_apps)
+        # The displays, by name, the first time the Capture page is open.
+        if getattr(self, "current", None) == "recording" and self.online and not getattr(self, "displays_loaded", False):
+            self.displays_loaded = True
+            self.call("monitors", lambda result: self.load_displays(result, quiet=True))
         # The microphones, by name, the first time the Voice page is open.
         if getattr(self, "current", None) == "voice" and self.online and not getattr(self, "inputs_loaded", False):
             self.inputs_loaded = True
@@ -930,8 +935,16 @@ class Window:
         self.home.record_buttons.append(controls.winfo_children()[0])
 
         source = self.group(tabs["recording"], "Source and files", "Changes apply right away: a running recording is saved and continues in a new file.")
-        self.display_choice = self.choice(source, "Display", "recording", "monitor", {self.config["recording"]["monitor"] or "Primary display":
-                                                                                     self.config["recording"]["monitor"]})
+        # The list shows each display's own name; the setting keeps Windows's device
+        # name (\\.\DISPLAY1), which capture finds the display by.
+        saved = self.config["recording"]["monitor"]
+        self.variable("recording", "monitor")   # saved with the other settings
+        self.display_ids = {PRIMARY_DISPLAY: ""}
+        self.display_name = tk.StringVar(value=saved or PRIMARY_DISPLAY)
+        self.display_choice = ttk.Combobox(source, textvariable=self.display_name, state="readonly", width=34,
+                                           values=list(dict.fromkeys([PRIMARY_DISPLAY, self.display_name.get()])))
+        self.display_choice.bind("<<ComboboxSelected>>", lambda _: self.pick_display())
+        self.row(source, "Display", self.display_choice)
         self.choice(source, "Color", "recording", "color_mode", {"Automatic": "auto", "SDR": "sdr", "HDR": "hdr"})
         self.text(source, "Save to", "recording", "output_dir")
         self.buttons(source, [("Refresh displays", lambda: self.call("monitors", self.load_displays)), ("Choose folder…", self.browse)])
@@ -1031,10 +1044,25 @@ class Window:
         self.separate_app.set(", ".join(ticked))
         self.changed(400)
 
-    def load_displays(self, result):
-        names = [d["name"] for d in result["monitors"]]
+    def load_displays(self, result, quiet=False):
+        from .displays import display_label
+        self.display_ids = {PRIMARY_DISPLAY: ""}
+        for display in result["monitors"]:
+            self.display_ids[display.get("label") or display_label(display)] = display["name"]
+        saved = self.variable("recording", "monitor").get()
+        shown = next((label for label, name in self.display_ids.items() if name == saved), saved or PRIMARY_DISPLAY)
+        self.display_name.set(shown)
+        names = list(self.display_ids)
+        if shown not in names:   # the saved display is unplugged: still show it
+            names.append(shown)
         self.display_choice.configure(values=names)
-        self.say(f"Found {len(names)} displays.")
+        if not quiet:
+            self.say(f"Found {len(result['monitors'])} displays.")
+
+    def pick_display(self):
+        label = self.display_name.get()
+        self.variable("recording", "monitor").set(self.display_ids.get(label, label if label != PRIMARY_DISPLAY else ""))
+        self.changed(300)
 
     def browse(self):
         directory = filedialog.askdirectory(parent=self.root, title="Save recordings in")
