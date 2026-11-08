@@ -7,6 +7,61 @@ phrase, versus 469 MiB with Whisper kept loaded; see
 [on-demand Whisper](whisper-on-demand.md). The dated comparisons below
 retain their original scope and baselines.
 
+## Linux voice path with Arabic on (2026-11-08)
+
+Configuration as on the live machine: wake names jarvis/alfred, Arabic and
+English (Moonshine Streaming Tiny Arabic beside Whisper tiny.en), GTCRN on,
+closest match on, eight threads. Fresh sequential workers, paced fake
+microphone, three alternating runs per arm; the fixture is the user-confirmed
+"Jarvis, clip that" recording. Base `84515ef`, Ryzen 7 7800X3D.
+
+| Worker, medians | Base | After |
+| --- | ---: | ---: |
+| Ready after start | 0.24 s | 0.23 s |
+| RSS / anonymous RSS waiting for the wake name | 141.3 / 125.3 MiB | 141.2 / 125.3 MiB |
+| Peak RSS | 363.3 MiB | 363.9 MiB |
+| RSS after release | 172.6 MiB | 173.4 MiB |
+| Command latency, models loaded (6 commands) | 1,163.5 ms | 1,137.9 ms |
+| Command latency, first after start (3 commands) | 1,370.9 ms | 1,347.0 ms |
+| "listen" to all models loaded (5 runs, `--load`) | 686.5 ms | 589.1 ms |
+| Silent idle CPU | 0.07% of a core | 0.07% of a core |
+
+Three changes: Moonshine's matrix products use a thread pool (its decode
+time over 250 Arabic files fell from 45.7 to 24.2 s); GTCRN denoises
+Whisper's input while Moonshine listens; GTCRN compiles while Whisper loads.
+Transcripts are unchanged: 274/274 Moonshine and Whisper transcripts and all
+464 `--engine` results (Vosk, Moonshine, GTCRN and Whisper together) were
+identical between the base and final binaries; total `--engine` time over
+those requests fell from 188.7 to 165.4 s.
+
+Memory did not move. Waiting memory is the Vosk model and its three
+decoders (about 125 MiB anonymous, ~2 MiB of it the free decoder); the
+first command adds ~15 MiB that stays, almost all from the free decoder's
+first use. Most command latency is Vosk's endpoint wait (about 1.05 s after
+the last voiced frame on this fixture); recognition after it takes about
+130 ms. Loading Moonshine and Whisper in parallel cut the load to 401 ms but
+raised the peak by about 2.4 MiB, so it was left out.
+[Raw results](benchmarks/linux-voice-2026-11-08.json); reproduce with
+`scripts/benchmark_linux_voice.py` (`--engine` for the unpaced timings,
+`--load` for load time, `--equality` for the output comparison). The load
+row is that committed `--load` run (about −97 ms); an earlier ad-hoc probe
+gave 699.1 → 588.5 ms.
+
+Two side effects. Total worker CPU per paced run rose from 2.27 to 2.41 s
+(+6%); silent idle CPU is unchanged. In the per-commit runs the rise first
+appears with the Moonshine thread pool (2.29 → 2.35 s), while the early
+denoise thread moved nothing (2.36 → 2.36 s). All paced runs use the
+English "clip that" fixture, so no command matched in Arabic. Such a
+command also spends about 40 ms of CPU on a denoise whose result is
+discarded; these runs neither exercised nor measured that. A panic
+inside GTCRN on the denoise thread now surfaces as an error event
+("Denoiser stopped unexpectedly") instead of unwinding the engine thread.
+
+The Moonshine thread pool, the early denoise thread and tract's
+multithread-mm feature in the Moonshine crate are in shared code, not
+limited to Linux. They are unverified on Windows and must be re-measured
+in the Windows validation week.
+
 ## Catalog and temporary-buffer refactor (2026-10-30)
 
 Application command catalogs now try each display name before looking up its

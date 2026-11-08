@@ -13,6 +13,7 @@ else:
 def main():
     build(__doc__, [("gtcrn-denoiser", "jarvis-denoise"),
                     ("whisper-recognizer", "jarvis-whisper"),
+                    ("moonshine-recognizer", "jarvis-moonshine"),
                     ("voice-worker", "jarvis-voice")],
           "Rust is preferred when available on Linux; JARVIS_VOICE_WORKER=python selects compatibility mode.")
 

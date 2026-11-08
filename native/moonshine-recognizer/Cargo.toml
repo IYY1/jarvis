@@ -8,6 +8,8 @@ description = "Arabic speech recognition with Moonshine Streaming Tiny on tract 
 
 [dependencies]
 tract-onnx = { version = "=0.23.9", default-features = false }
+tract-linalg = { version = "=0.23.9", features = ["multithread-mm"] }
+rayon = "1"
 serde_json = "1"
 libc = "0.2"
 

@@ -348,7 +348,9 @@ name = "jarvis-moonshine"
 version = "0.4.1"
 dependencies = [
  "libc",
+ "rayon",
  "serde_json",
+ "tract-linalg",
  "tract-onnx",
 ]
 
