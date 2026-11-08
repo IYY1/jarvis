@@ -42,7 +42,20 @@ the last voiced frame on this fixture); recognition after it takes about
 130 ms. Loading Moonshine and Whisper in parallel cut the load to 401 ms but
 raised the peak by about 2.4 MiB, so it was left out.
 [Raw results](benchmarks/linux-voice-2026-11-08.json); reproduce with
-`scripts/benchmark_linux_voice.py` (`--engine` for the unpaced timings).
+`scripts/benchmark_linux_voice.py` (`--engine` for the unpaced timings,
+`--load` for load time, `--equality` for the output comparison). A re-run of
+`--load` gave 686.5 → 589.1 ms.
+
+Two side effects. Total worker CPU per paced run rose from 2.27 to 2.41 s
+(+6%), because a command that Arabic matches still spends about 40 ms on
+GTCRN work that is then discarded; silent idle CPU is unchanged. A panic
+inside GTCRN on the denoise thread now surfaces as an error event
+("Denoiser stopped unexpectedly") instead of unwinding the engine thread.
+
+The Moonshine thread pool, the early denoise thread and tract's
+multithread-mm feature in the Moonshine crate are in shared code, not
+limited to Linux. They are unverified on Windows and must be re-measured
+in the Windows validation week.
 
 ## Catalog and temporary-buffer refactor (2026-10-30)
 
