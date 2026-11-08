@@ -155,6 +155,9 @@ LIGHT = _plain("Light", False, {"Blue": "#2f6fe4", "Card": "#ffffff", "Page": "#
                   "selected": "#dce7fb", "live": "#137a47", "live-text": "#0f6a3d", "on-live": "#ffffff",
                   "focus": "#2f6fe4", "error-text": "#b4232f"})
 ALL_PRESETS: dict[str, dict] = {"graphite": GRAPHITE, "light": LIGHT, "cyberpunk": CYBERPUNK, "pixel": PIXEL, **PRESETS}
+# The Windows window offers one theme per look. Violet & cinnamon and Grenadine & slate green
+# are muted darks like Graphite there; the Linux window still has every book preset.
+WINDOWS = ("graphite", "light", "cyberpunk", "pixel", "190")
 # Not a palette: follow Windows' own light or dark setting, read when the window opens.
 SYSTEM = "system"
 

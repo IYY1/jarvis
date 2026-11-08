@@ -104,6 +104,17 @@ class SettingsWindowTests(unittest.TestCase):
         from jarvis import palettes
         for name in ("light", "cyberpunk", "pixel"):
             self.assertIn(name, palettes.ALL_PRESETS)
+        # The Windows picker: one theme per look. The two muted book darks stay for the Linux window only.
+        self.assertEqual([palettes.ALL_PRESETS[k]["name"] for k in palettes.WINDOWS],
+                         ["Graphite", "Light", "Cyberpunk", "Pixel art", "Ivory & English red"])
+        widgets, offered = [self.window.root], []
+        while widgets:
+            widget = widgets.pop(0)
+            widgets += widget.winfo_children()
+            if widget.winfo_class() == "TRadiobutton" and str(widget.cget("style")) == "Swatch.TRadiobutton":
+                offered.append(str(widget.cget("text")))
+        self.assertEqual(sorted(offered), sorted(["Like Windows", "Graphite", "Light", "Cyberpunk", "Pixel art",
+                                                  "Ivory & English red"]))
         # One theme per look: no two share a background and an accent so close they look alike
         # (Midnight and OLED were dropped for looking like Graphite).
         def distance(x, y):
@@ -140,21 +151,30 @@ class SettingsWindowTests(unittest.TestCase):
 
     def test_displays_are_listed_by_their_own_names_and_saved_by_device(self):
         window = self.window
-        monitors = [{"name": "\\\\.\\DISPLAY1", "label": "ASUS XG27AQDMG (2560×1440, 240 Hz)"},
-                    {"name": "\\\\.\\DISPLAY2", "label": "ASUS VG27B (2560×1440, 144 Hz)"}]
+        monitors = [{"name": "\\\\.\\DISPLAY1", "label": "ASUS XG27AQDMG (2560×1440, 240 Hz)", "left": 0, "top": 0},
+                    {"name": "\\\\.\\DISPLAY2", "label": "ASUS VG27B (2560×1440, 144 Hz)", "left": 2560, "top": 0}]
+        main = "ASUS XG27AQDMG (2560×1440, 240 Hz) · main"
         with patch.object(window, "changed"):
+            window.variable("recording", "monitor").set("")
             window.load_displays({"monitors": monitors})
-            self.assertEqual(list(window.display_choice.cget("values")),
-                             ["Primary display", "ASUS XG27AQDMG (2560×1440, 240 Hz)", "ASUS VG27B (2560×1440, 144 Hz)"])
+            # No "Primary display": every screen by its own name, and nothing saved shows the main one.
+            self.assertEqual(list(window.display_choice.cget("values")), [main, "ASUS VG27B (2560×1440, 144 Hz)"])
+            self.assertEqual(window.display_name.get(), main)
             window.display_name.set("ASUS VG27B (2560×1440, 144 Hz)")
             window.pick_display()
             self.assertEqual(window.settings()["recording"]["monitor"], "\\\\.\\DISPLAY2")
             # Listed again later, the saved one shows by name.
             window.load_displays({"monitors": monitors}, quiet=True)
             self.assertEqual(window.display_name.get(), "ASUS VG27B (2560×1440, 144 Hz)")
-            window.display_name.set("Primary display")
+            window.display_name.set(main)
             window.pick_display()
-            self.assertEqual(window.settings()["recording"]["monitor"], "")
+            self.assertEqual(window.settings()["recording"]["monitor"], "\\\\.\\DISPLAY1")
+            # Unplugged: still shown, by number, and kept.
+            window.variable("recording", "monitor").set("\\\\.\\DISPLAY3")
+            window.load_displays({"monitors": monitors}, quiet=True)
+            self.assertEqual(window.display_name.get(), "Display 3 · not connected")
+            window.pick_display()
+            self.assertEqual(window.settings()["recording"]["monitor"], "\\\\.\\DISPLAY3")
 
     def test_a_display_is_named_by_its_maker_and_model(self):
         from jarvis.windows.displays import display_label, maker
@@ -304,6 +324,30 @@ class SettingsWindowTests(unittest.TestCase):
         video.apply("recording")
         self.assertEqual((variable("recording", "resolution").get(), int(float(variable("recording", "fps").get())),
                           variable("recording", "codec").get()), ("720", 60, "auto"))
+
+    def test_messages_are_rounded_green_when_done_and_red_when_refused(self):
+        window = self.window
+        bubble = window.bubble
+
+        def drawn():
+            edges = {bubble.itemcget(i, "outline" if bubble.type(i) == "arc" else "fill").lower()
+                     for i in bubble.find_withtag("edge")}
+            self.assertEqual(sorted(bubble.type(i) for i in bubble.find_withtag("edge")), ["arc", "arc", "line", "line"])
+            self.assertEqual(len(edges), 1)   # one colour all round
+            marks = [bubble.itemcget(i, "text") for i in bubble.find_all() if bubble.type(i) == "text"]
+            return edges.pop(), marks
+        window.say("Saved.")
+        edge, marks = drawn()
+        self.assertIn(edge, ("#3dd68c", "#137a47"))
+        self.assertEqual(marks, ["Saved.", "✓", "✕"])
+        window.say("Couldn't save.", error=True)
+        edge, marks = drawn()
+        self.assertIn(edge, ("#ff6b6b", "#c62828"))
+        self.assertIn("!", marks)
+        self.assertIsNone(window.toast_timer)   # a refusal stays until it's closed
+        self.assertTrue(bubble.find_withtag("close") and bubble.tag_bind("close", "<Button-1>"))   # ✕ closes it
+        window.hide_toast()
+        self.assertFalse(bubble.winfo_manager())
 
     def test_quality_is_picked_from_tiles_named_by_level(self):
         from jarvis.windows.video_settings import tile_text

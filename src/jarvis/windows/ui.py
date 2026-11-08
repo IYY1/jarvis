@@ -29,7 +29,7 @@ from .system import release_unused_memory
 RELEASE_MEMORY_AFTER_MS = 4000
 MAX_SEPARATE_APPS = 4   # config.validate allows this many
 DEFAULT_MICROPHONE = "Default Windows microphone"
-PRIMARY_DISPLAY = "Primary display"
+PRIMARY_DISPLAY = "Looking for displays…"   # shown only until the service lists them
 
 
 def microphone_name(device_id):
@@ -183,6 +183,8 @@ class Window:
         self.toast_timer = None
         self.status = {}
         self.palette_setting = palettes.chosen("graphite")   # may be "system": follow Windows
+        if self.palette_setting not in (*palettes.WINDOWS, palettes.SYSTEM):   # a theme this window no longer offers
+            self.palette_setting = "graphite"
         self.palette = palettes.resolve(self.palette_setting)   # what the window is painted with
         self.shapes = None
         self.apps_loaded = False
@@ -236,6 +238,8 @@ class Window:
         for muted, bright in getattr(self, "nav_icons", {}).values():   # the sidebar icons follow the colours
             muted.configure(foreground=r["text-muted"])
             bright.configure(foreground=r["text"])
+        if getattr(self, "bubble", None) is not None and self.bubble.winfo_manager():
+            self.draw_toast()
         if "clam" in s.theme_names():
             s.theme_use("clam")
         self.root.configure(background=r["bg"])
@@ -257,15 +261,12 @@ class Window:
                   "Pill.TLabel": (r["control"], r["text-muted"], (f, 9, "bold")),
                   "PillLive.TLabel": (r["live"], r["on-live"], (f, 9, "bold")),
                   "PillCalm.TLabel": (r["selected"], r["text"], (f, 9, "bold")),
-                  "PillOff.TLabel": (r["error-bg"], r["error-text"], (f, 9, "bold")),
-                  "Toast.TLabel": (r["text"], r["bg"], (f, 10, "bold")), "ToastError.TLabel": (r["error-bg"], r["error-text"], (f, 10, "bold"))}
+                  "PillOff.TLabel": (r["error-bg"], r["error-text"], (f, 9, "bold"))}
         for name, (background, foreground, font) in labels.items():
             s.configure(name, background=background, foreground=foreground, font=font)
         for name in ("Pill.TLabel", "PillLive.TLabel", "PillCalm.TLabel", "PillOff.TLabel"):
             s.configure(name, padding=(10, 3))
         s.configure("Key.TLabel", padding=(8, 2))
-        s.configure("Toast.TFrame", background=r["text"])
-        s.configure("ToastError.TFrame", background=r["error-bg"])
         buttons = {"TButton": (r["control"], r["text"], r["line-strong"], r["control-hover"]),
                    "Primary.TButton": (r["accent"], r["on-accent"], r["accent"], r["accent-hover"]),
                    "Danger.TButton": (r["error-bg"], r["error-text"], r["error-text"], r["error-bg"]),
@@ -274,8 +275,7 @@ class Window:
                    "Nav.TButton": (r["surface"], r["text-muted"], r["surface"], r["control"]),
                    "NavOn.TButton": (r["selected"], r["text"], r["selected"], r["selected"]),
                    "Header.TButton": (r["control"], r["text"], r["line-strong"], r["control-hover"]),
-                   "Muted.TButton": (r["live-soft"], r["live-text"], r["live"], r["live-soft"]),
-                   "Toast.TButton": (r["text"], r["bg"], r["text"], r["text"])}
+                   "Muted.TButton": (r["live-soft"], r["live-text"], r["live"], r["live-soft"])}
         for name, (background, foreground, border, hover) in buttons.items():
             s.configure(name, background=background, foreground=foreground, bordercolor=border, lightcolor=background,
                         darkcolor=background, relief="flat", padding=(12, 4), font=(f + " Semibold", 10))
@@ -283,7 +283,6 @@ class Window:
                   foreground=[("disabled", r["text-disabled"])], bordercolor=[("focus", r["focus"])])
         s.configure("Nav.TButton", anchor="w", padding=(12, 6), borderwidth=0)
         s.configure("NavOn.TButton", anchor="w", padding=(12, 6), borderwidth=0)
-        s.configure("Toast.TButton", padding=(8, 2))
         for name in ("TCheckbutton", "TRadiobutton"):
             s.configure(name, background=r["card"], foreground=r["text"], indicatorbackground=r["inset"],
                         indicatorforeground=r["on-accent"], upperbordercolor=r["line-strong"], lowerbordercolor=r["line-strong"],
@@ -603,22 +602,46 @@ class Window:
         return frame
 
     def toast(self):
-        self.bubble = ttk.Frame(self.root, style="Toast.TFrame", padding=(16, 8, 6, 8))
+        """A rounded message at the bottom: a green edge and ✓ when something worked, red and ! when it didn't."""
+        self.bubble = tk.Canvas(self.root, highlightthickness=0, borderwidth=0)
         self.notice = tk.StringVar()
-        self.notice_label = ttk.Label(self.bubble, textvariable=self.notice, style="Toast.TLabel", wraplength=640)
-        self.notice_label.pack(side="left")
-        self.dismiss = ttk.Button(self.bubble, text="✕", width=3, style="Toast.TButton", command=self.hide_toast)
-        self.dismiss.pack(side="left", padx=(12, 0))
+        self.toast_error = False
+        self.bubble.tag_bind("close", "<Button-1>", lambda _: self.hide_toast())
+
+    def draw_toast(self):
+        r, c, f = palettes.roles(self.palette), self.bubble, self.family
+        light = palettes.luminance(r["card"]) > 0.4
+        edge = ("#c62828" if light else "#ff6b6b") if self.toast_error else ("#137a47" if light else "#3dd68c")
+        c.delete("all")
+        words = c.create_text(48, 0, text=self.notice.get(), font=(f, 10, "bold"), fill=r["text"], anchor="w", width=560)
+        x0, y0, x1, y1 = c.bbox(words)
+        height = max(44, y1 - y0 + 22)
+        width = x1 + 44
+        c.configure(width=width, height=height, background=r["bg"])
+        a, b, w, h = 2, 2, width - 2, height - 2   # a capsule: two half circles joined by straight edges
+        d = h - b
+        for box in ((a, b, a + d, h), (w - d, b, w, h)):
+            c.create_oval(*box, fill=r["card"], outline="")
+        c.create_rectangle(a + d / 2, b, w - d / 2, h, fill=r["card"], outline="")
+        c.create_arc(a, b, a + d, h, start=90, extent=180, style="arc", outline=edge, width=2, tags="edge")
+        c.create_arc(w - d, b, w, h, start=-90, extent=180, style="arc", outline=edge, width=2, tags="edge")
+        for y in (b, h):
+            c.create_line(a + d / 2, y, w - d / 2, y, fill=edge, width=2, tags="edge")
+        c.tag_raise(words)
+        c.coords(words, 48, height / 2)
+        c.create_oval(16, height / 2 - 11, 38, height / 2 + 11, fill=edge, outline=edge)
+        c.create_text(27, height / 2, text="!" if self.toast_error else "✓", font=(f, 11, "bold"), fill=r["card"])
+        c.create_text(width - 22, height / 2, text="✕", font=(f, 10), fill=r["text-muted"], tags="close")
 
     def say(self, text, error=False):
         """Results fade after a few seconds; errors stay until dismissed or replaced."""
         if self.stop.is_set() or not text:
             return
         self.notice.set(text)
-        self.bubble.configure(style="ToastError.TFrame" if error else "Toast.TFrame")
-        self.notice_label.configure(style="ToastError.TLabel" if error else "Toast.TLabel")
+        self.toast_error = error
+        self.draw_toast()
         self.bubble.place(relx=0.5, rely=1.0, anchor="s", y=-18)
-        self.bubble.lift()
+        self.bubble.tk.call("raise", self.bubble._w)   # Canvas.lift raises a drawn item, not the widget
         if self.toast_timer:
             self.root.after_cancel(self.toast_timer)
             self.toast_timer = None
@@ -1060,10 +1083,10 @@ class Window:
         # name (\\.\DISPLAY1), which capture finds the display by.
         saved = self.config["recording"]["monitor"]
         self.variable("recording", "monitor")   # saved with the other settings
-        self.display_ids = {PRIMARY_DISPLAY: ""}
-        self.display_name = tk.StringVar(value=saved or PRIMARY_DISPLAY)
-        self.display_choice = ttk.Combobox(source, textvariable=self.display_name, state="readonly", width=34,
-                                           values=list(dict.fromkeys([PRIMARY_DISPLAY, self.display_name.get()])))
+        self.display_ids = {PRIMARY_DISPLAY: saved}   # until the displays are listed, moments after the page opens
+        self.display_name = tk.StringVar(value=PRIMARY_DISPLAY)
+        self.display_choice = ttk.Combobox(source, textvariable=self.display_name, state="readonly", width=44,
+                                           values=[PRIMARY_DISPLAY])
         self.display_choice.bind("<<ComboboxSelected>>", lambda _: self.pick_display())
         self.row(source, "Display", self.display_choice)
         self.choice(source, "Color", "recording", "color_mode", {"Automatic": "auto", "SDR": "sdr", "HDR": "hdr"})
@@ -1247,23 +1270,28 @@ class Window:
         self.changed(400)
 
     def load_displays(self, result, quiet=False):
+        """Every display by its own name, the main one marked. Nothing saved means the main display."""
         from .displays import display_label
-        self.display_ids = {PRIMARY_DISPLAY: ""}
-        for display in result["monitors"]:
-            self.display_ids[display.get("label") or display_label(display)] = display["name"]
+        monitors = result["monitors"]
+        main = next((d for d in monitors if (d.get("left"), d.get("top")) == (0, 0)), monitors[0] if monitors else None)
+        self.display_ids = {}
+        for display in monitors:
+            self.display_ids[(display.get("label") or display_label(display)) + (" · main" if display is main else "")] = display["name"]
         saved = self.variable("recording", "monitor").get()
-        shown = next((label for label, name in self.display_ids.items() if name == saved), saved or PRIMARY_DISPLAY)
+        wanted = saved or (main["name"] if main else "")
+        shown = next((label for label, name in self.display_ids.items() if name == wanted), None)
+        if shown is None:   # the saved display is unplugged: still show it, by number rather than device path
+            shown = (saved.replace("\\\\.\\", "").replace("DISPLAY", "Display ") + " · not connected") if saved else PRIMARY_DISPLAY
+            self.display_ids[shown] = saved
         self.display_name.set(shown)
         names = list(self.display_ids)
-        if shown not in names:   # the saved display is unplugged: still show it
-            names.append(shown)
         self.display_choice.configure(values=names)
         if not quiet:
             self.say(f"Found {len(result['monitors'])} displays.")
 
     def pick_display(self):
         label = self.display_name.get()
-        self.variable("recording", "monitor").set(self.display_ids.get(label, label if label != PRIMARY_DISPLAY else ""))
+        self.variable("recording", "monitor").set(self.display_ids.get(label, ""))
         self.changed(300)
 
     def browse(self):
@@ -1292,7 +1320,7 @@ class Window:
         follow = {"name": "Like Windows", "number": None, "dark": None,   # half Light, half Graphite
                   "swatches": {"Light page": light["bg"], "Light card": light["card"],
                                "Dark card": dark["card"], "Dark page": dark["bg"]}}
-        for index, (key, preset) in enumerate([(palettes.SYSTEM, follow), *palettes.ALL_PRESETS.items()]):
+        for index, (key, preset) in enumerate([(palettes.SYSTEM, follow), *((k, palettes.ALL_PRESETS[k]) for k in palettes.WINDOWS)]):
             cell = ttk.Frame(swatches, style="Card.TFrame", borderwidth=0)
             cell.grid(row=index // 3, column=index % 3, padx=(0, 18), pady=(0, 14), sticky="w")
             strip = tk.Canvas(cell, width=210, height=34, highlightthickness=0, borderwidth=0)
