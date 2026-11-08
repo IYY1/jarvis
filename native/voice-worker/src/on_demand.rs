@@ -84,6 +84,15 @@ impl<T: Send + 'static> OnDemand<T> {
         }
         Err("Whisper did not load".into())
     }
+    /// The value if it is already loaded, without waiting for or collecting a
+    /// background load (`maintain` collects those), and without touching the
+    /// idle clock.
+    pub fn ready(&self) -> Option<Arc<T>> {
+        match &self.slot {
+            Slot::Ready(value, _) => Some(value.clone()),
+            _ => None,
+        }
+    }
     pub fn load_count(&self) -> u64 {
         self.loads
     }
@@ -229,6 +238,24 @@ mod tests {
         loading.trim_every = Duration::ZERO;
         loading.prepare();
         assert!(!loading.maintain(false).unwrap());
+    }
+
+    #[test]
+    fn ready_never_waits_loads_or_refreshes_the_idle_clock() {
+        let (load, loads) = counting(Duration::from_millis(300));
+        let mut value = OnDemand::new(load, Some(Duration::from_millis(500))).unwrap();
+        assert!(value.ready().is_none(), "empty");
+        value.prepare();
+        let start = Instant::now();
+        assert!(value.ready().is_none(), "still loading");
+        assert!(start.elapsed() < Duration::from_millis(100), "ready waited");
+        assert_eq!(*value.get().unwrap(), 1);
+        assert_eq!(*value.ready().unwrap(), 1);
+        sleep(Duration::from_millis(600));
+        assert!(value.ready().is_some());
+        assert!(value.maintain(false).unwrap(), "ready() kept the value alive");
+        assert!(value.ready().is_none());
+        assert_eq!(loads.load(Ordering::SeqCst), 1);
     }
 
     #[test]

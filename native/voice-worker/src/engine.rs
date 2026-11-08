@@ -795,6 +795,20 @@ impl Engine {
                 return Ok(Some(recognition));
             }
         }
+        // While Moonshine listens, denoise Whisper's input on another thread
+        // when Whisper is already loaded: GTCRN takes about as long as the
+        // Arabic pass, and English commands need both. An Arabic match leaves
+        // the thread to finish on its own; its result is then unused.
+        let early = match (&self.whisper, &self.arabic) {
+            (Some(whisper), Some(_)) if !audio.is_empty() => whisper.ready().and_then(|model| {
+                let audio = audio.clone();
+                std::thread::Builder::new()
+                    .name("jarvis-denoise".into())
+                    .spawn(move || model.command_input(&audio).map_err(|e| e.to_string()))
+                    .ok()
+            }),
+            _ => None,
+        };
         // Arabic first: its transcript is accepted only when it is one of the
         // supported Arabic commands, so English speech (which this model
         // writes as Arabic-script sounds) falls through to Whisper unchanged.
@@ -822,7 +836,15 @@ impl Engine {
         if let Some(whisper) = &mut self.whisper {
             if !audio.is_empty() {
                 self.whisper_commands += 1;
-                let accurate = phrase(&whisper.get()?.transcribe(&audio)?);
+                let model = whisper.get()?;
+                let accurate = phrase(&match early {
+                    Some(denoising) => model.transcribe_input(
+                        denoising
+                            .join()
+                            .map_err(|_| "Denoiser stopped unexpectedly")??,
+                    )?,
+                    None => model.transcribe(&audio)?,
+                });
                 let accurate_match = self.matcher.closest(&accurate);
                 if accurate_match.is_some() || heard_match.is_none() {
                     if !accurate.is_empty() {

@@ -188,10 +188,17 @@ impl Transcriber {
         })
     }
     pub fn transcribe(&self, pcm: &[u8]) -> Result<String> {
+        let input = self.command_input(pcm)?;
+        self.transcribe_input(input)
+    }
+    /// Command audio as Whisper hears it: scaled and, with GTCRN on,
+    /// denoised; None when it is too short to transcribe. Split from
+    /// `transcribe` so a command can be denoised while Moonshine listens.
+    pub fn command_input(&self, pcm: &[u8]) -> Result<Option<Vec<f32>>> {
         if pcm.len() > 320000 {
             return Err("Command audio exceeds ten seconds".into());
         }
-        self.recognize(pcm)
+        self.input(pcm)
     }
     /// Dictated speech, up to 20 seconds per segment.
     pub fn dictate(&self, pcm: &[u8]) -> Result<Text> {
@@ -199,18 +206,25 @@ impl Transcriber {
             return Err("Dictation segment exceeds twenty seconds".into());
         }
         Ok(Text {
-            text: self.recognize(pcm)?,
+            text: self.transcribe_input(self.input(pcm)?)?,
             language: "en",
         })
     }
-    fn recognize(&self, pcm: &[u8]) -> Result<String> {
+    fn input(&self, pcm: &[u8]) -> Result<Option<Vec<f32>>> {
         if pcm.len() < 6400 {
-            return Ok(String::new());
+            return Ok(None);
         }
         let mut samples = samples(pcm);
         if let Some(denoiser) = &self.denoiser {
             samples = denoiser.process(&samples)?;
         }
+        Ok(Some(samples))
+    }
+    /// Whisper's transcript of `command_input`'s result.
+    pub fn transcribe_input(&self, input: Option<Vec<f32>>) -> Result<String> {
+        let Some(samples) = input else {
+            return Ok(String::new());
+        };
         let text = self.recognizer.transcribe(&samples)?;
         drop(samples);
         trim();
