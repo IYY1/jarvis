@@ -611,7 +611,7 @@ class Window:
         self.toast_window = tk.Toplevel(self.root)
         self.toast_window.withdraw()
         self.toast_window.overrideredirect(True)
-        self.toast_window.transient(self.root)
+        self.toast_tied = False   # tied to the main window when first shown: tied before that window is on screen, it never shows
         try:
             self.toast_window.attributes("-transparentcolor", SEE_THROUGH)
         except tk.TclError:   # not Windows: the corners show the key colour's neighbour, the page
@@ -619,25 +619,37 @@ class Window:
         self.bubble = tk.Canvas(self.toast_window, highlightthickness=0, borderwidth=0, background=SEE_THROUGH)
         self.bubble.pack()
         self.notice = tk.StringVar()
-        self.toast_error = self.toast_shown = False
-        self.bubble.tag_bind("close", "<Button-1>", lambda _: self.hide_toast())
-        # Follow the window, and hide while it's minimised. A tag only the main window carries:
-        # binding on the window itself would also run for every widget inside it that changes size.
+        self.toast_error = self.toast_shown = self.toast_waiting = False
+        self.bubble.bind("<Button-1>", lambda _: self.hide_toast())   # a click anywhere on it, ✕ included, closes it
+        # Follow the window. A tag only the main window carries: binding on the window itself
+        # would also run for every widget inside it that changes size.
         self.root.bindtags((*self.root.bindtags(), "JarvisToast"))
-        for sequence in ("<Configure>", "<Map>", "<Unmap>"):
+        for sequence in ("<Configure>", "<Map>"):
             self.root.bind_class("JarvisToast", sequence, lambda _: self.place_toast())
 
-    def place_toast(self):
-        if not self.toast_shown or self.root.state() in ("iconic", "withdrawn"):
-            self.toast_window.withdraw()
+    def place_toast(self, show=False):
+        """Keep the message at the bottom middle of the window; `show` when a message arrives.
+
+        Moving, resizing, minimising and restoring only move it: Windows hides and brings back a
+        window's own windows with it, and showing it here too would fight that. Raising isn't done
+        here either: a raise counts as a change and would call this again, forever."""
+        if not self.toast_shown:
+            return
+        if not self.root.winfo_ismapped():   # minimised: show it when the window is back
+            self.toast_waiting = self.toast_waiting or show
             return
         width, height = int(self.bubble.cget("width")), int(self.bubble.cget("height"))
         x = self.root.winfo_rootx() + (self.root.winfo_width() - width) // 2
         y = self.root.winfo_rooty() + self.root.winfo_height() - height - 18
-        self.toast_window.geometry(f"{width}x{height}+{x}+{y}")
-        if self.toast_window.state() != "normal":
+        where = f"{width}x{height}+{x}+{y}"
+        if self.toast_window.geometry() != where:
+            self.toast_window.geometry(where)
+        if show or self.toast_waiting:
+            self.toast_waiting = False
+            if not self.toast_tied:
+                self.toast_window.transient(self.root)   # owned by the main window, so Windows keeps it above it
+                self.toast_tied = True
             self.toast_window.deiconify()
-        self.toast_window.lift(self.root)
 
     def draw_toast(self):
         r, c, f = palettes.roles(self.palette), self.bubble, self.family
@@ -672,7 +684,7 @@ class Window:
         self.toast_error = error
         self.draw_toast()
         self.toast_shown = True
-        self.place_toast()
+        self.place_toast(show=True)
         if self.toast_timer:
             self.root.after_cancel(self.toast_timer)
             self.toast_timer = None
@@ -681,7 +693,7 @@ class Window:
 
     def hide_toast(self):
         self.toast_timer = None
-        self.toast_shown = False
+        self.toast_shown = self.toast_waiting = False
         self.toast_window.withdraw()
 
     # Service -------------------------------------------------------------

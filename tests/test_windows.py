@@ -345,7 +345,8 @@ class SettingsWindowTests(unittest.TestCase):
         self.assertIn(edge, ("#ff6b6b", "#c62828"))
         self.assertIn("!", marks)
         self.assertIsNone(window.toast_timer)   # a refusal stays until it's closed
-        self.assertTrue(bubble.find_withtag("close") and bubble.tag_bind("close", "<Button-1>"))   # ✕ closes it
+        self.assertTrue(bubble.find_withtag("close"))
+        self.assertTrue(bubble.bind("<Button-1>"))   # a click on it closes it (clicked for real in a shown window)
         window.hide_toast()
         self.assertFalse(window.toast_shown)
         self.assertEqual(window.toast_window.state(), "withdrawn")
