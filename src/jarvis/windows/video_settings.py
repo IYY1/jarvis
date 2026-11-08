@@ -15,6 +15,20 @@ PRESETS = {
 }
 
 
+def sound_tracks(window):
+    """How many sound tracks a replay keeps with the settings on screen (see
+    encoding.audio_plan): the sources, plus "All sound" when they are separate."""
+    v = window.variable
+    if v("replay", "sources").get() == "specific":
+        programs = [n for n in getattr(window, "separate_app", tk.StringVar()).get().split(",") if n.strip()]
+        sources = bool(v("replay", "game_track").get()) + len(programs) + bool(v("replay", "microphone").get())
+    else:
+        sources = bool(v("replay", "game_audio").get()) + bool(v("replay", "microphone").get())
+    if sources > 1:
+        return sources + 1 if v("replay", "audio_tracks").get() == "separate" else 1
+    return sources
+
+
 class VideoSettings:
     def __init__(self, window, card):
         self.window, self.formats, self.panels, self.presets = window, {}, {}, {}
@@ -152,7 +166,7 @@ class VideoSettings:
         cfg["fps"], cfg["bitrate_mbps"] = int(float(cfg["fps"])), int(float(cfg["bitrate_mbps"]))
         if cfg["bitrate_auto"]:
             cfg["bitrate_mbps"] = auto_bitrate(cfg, self.display["width"], self.display["height"])
-        tracks = bool(v("replay", "game_audio").get()) + bool(v("replay", "microphone").get())
+        tracks = sound_tracks(window)
         seconds, budget = int(float(v("replay", "seconds").get())), int(float(v("replay", "max_mb").get()))
         fit = replay_fit_seconds(cfg, budget, tracks)
         window.replay_fit.set(

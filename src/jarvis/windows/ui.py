@@ -1039,8 +1039,10 @@ class Window:
         for key in ("bitrate_mbps", "rate_control"):
             self.variable("recording", key).trace_add("write", lambda *_: self.estimate())
         for section, key in (("replay", "seconds"), ("replay", "max_mb"), ("replay", "own_video"), ("replay", "game_audio"),
-                             ("replay", "microphone")):
+                             ("replay", "microphone"), ("replay", "sources"), ("replay", "game_track"),
+                             ("replay", "audio_tracks")):
             self.variable(section, key).trace_add("write", lambda *_: self.estimate())
+        self.separate_app.trace_add("write", lambda *_: self.estimate())
         self.estimate()
 
     def estimate(self):

@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import filedialog, ttk
 
 from .. import clipedit
+from .encoding import MIXED_TITLE
 
 
 class ClipsPanel:
@@ -31,7 +32,9 @@ class ClipsPanel:
         self.library.bind("<Return>", self.open_selected)
         window.buttons(library, [("Open selected", self.open_selected)])
 
-        editor = window.group(self.tabs["sound"], "Sound tracks", "Separate tracks must be enabled before capture. Windows 11 separates one program from the rest of system sound.")
+        editor = window.group(self.tabs["sound"], "Sound tracks",
+                              "Clips have their own tracks when Separate audio tracks is on (Capture › Recording audio). "
+                              "\"All sound\" holds every sound together: untick a sound and it is left out of the mix.")
         self.name = tk.StringVar(value="Open a clip to choose its tracks.")
         window.line(editor, ttk.Label(editor, textvariable=self.name, style="Card.TLabel", wraplength=520))
         window.buttons(editor, [("Keep all", lambda: self.keep_all(True)), ("Mute all", lambda: self.keep_all(False))])
@@ -139,7 +142,7 @@ class ClipsPanel:
             self.tracks.append((keep, details))
             title = f"{track['name']} · {track.get('codec_name', 'audio')} · {track.get('channels', '?')} channels · {track.get('sample_rate', '?')} Hz"
             ttk.Checkbutton(self.track_box, text=title, variable=keep,
-                            command=lambda i=i: self.touched.add(i)).grid(row=i * 2, column=0, sticky="w", pady=(6, 0))
+                            command=lambda i=i: self.ticked(i)).grid(row=i * 2, column=0, sticky="w", pady=(6, 0))
             ttk.Button(self.track_box, text="Only this", command=lambda i=i: self.only(i)).grid(row=i * 2, column=1, padx=(12, 0))
             ttk.Label(self.track_box, textvariable=details, style="Caption.TLabel").grid(row=i * 2 + 1, column=0, sticky="w", padx=(24, 0), pady=(0, 6))
         if source.audio:
@@ -158,6 +161,20 @@ class ClipsPanel:
                             self.tracks[i][0].set(False)
                 self.progress.set("Choose the tracks to keep, then Export copy.")
             self.work(lambda: clipedit.loudness(source.path, len(source.audio)), checked)
+
+    def ticked(self, index):
+        """Leaving a sound out of a clip whose first track is "All sound" (which
+        holds that sound too) drops "All sound" and mixes the tracks kept, so the
+        copy plays everything else, without it, in any player."""
+        self.touched.add(index)
+        audio = self.source.audio if self.source else []
+        if (index and not self.tracks[index][0].get() and audio
+                and audio[0].get("name") == MIXED_TITLE and self.tracks[0][0].get()):
+            self.tracks[0][0].set(False)
+            self.touched.add(0)
+            self.mix.set(True)
+            self.progress.set(f"\"{MIXED_TITLE}\" also holds {audio[index].get('name', 'that sound')}, so it is left out; "
+                              "the tracks you keep are mixed into one.")
 
     def only(self, index):
         for i, (keep, _detail) in enumerate(self.tracks):

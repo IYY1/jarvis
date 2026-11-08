@@ -290,6 +290,45 @@ class SettingsWindowTests(unittest.TestCase):
         panel.keep_all(True)
         self.assertEqual(panel.selection(), [0, 1])
 
+    def test_replay_estimate_counts_the_sound_tracks_it_will_keep(self):
+        from jarvis.windows.video_settings import sound_tracks
+        window, v = self.window, self.window.variable
+        with patch.object(window, "changed"):
+            v("replay", "game_audio").set(True)
+            v("replay", "microphone").set(True)
+            v("replay", "audio_tracks").set("mixed")
+            self.assertEqual(sound_tracks(window), 1)
+            v("replay", "audio_tracks").set("separate")
+            self.assertEqual(sound_tracks(window), 3)   # all sound, desktop, microphone
+            v("replay", "sources").set("specific")
+            v("replay", "game_track").set(True)
+            window.separate_app.set("Spotify, Discord")
+            self.assertEqual(sound_tracks(window), 5)   # all sound, game, Spotify, Discord, microphone
+            v("replay", "microphone").set(False)
+            v("replay", "game_track").set(False)
+            window.separate_app.set("Discord")
+            self.assertEqual(sound_tracks(window), 1)
+
+    def test_clips_leaving_a_sound_out_drops_all_sound_and_mixes_the_rest(self):
+        from jarvis.clipedit import Source
+        panel = self.window.clips
+        panel.work = lambda run, done: None
+        source = Source("clip.mkv", 3, {}, [{"name": n, "codec_name": "aac"} for n in
+                                            ("All sound", "Game audio", "Spotify", "Discord", "Microphone")], [0])
+        panel.loaded((source, None))
+        self.assertEqual(panel.selection(), [0, 1, 2, 3, 4])
+        panel.tracks[2][0].set(False)   # untick Spotify, as a click does
+        panel.ticked(2)
+        self.assertEqual(panel.selection(), [1, 3, 4])
+        self.assertTrue(panel.mix.get())
+        # Clips without an "All sound" track are left as chosen.
+        plain = Source("clip.mkv", 3, {}, [{"name": "Firefox"}, {"name": "Discord"}], [0])
+        panel.loaded((plain, None))
+        panel.mix.set(False)
+        panel.tracks[1][0].set(False)
+        panel.ticked(1)
+        self.assertEqual((panel.selection(), panel.mix.get()), ([0], False))
+
     def test_clips_export_keeps_discord_and_mutes_firefox(self):
         import hashlib
         import shutil
