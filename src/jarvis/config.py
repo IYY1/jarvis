@@ -58,6 +58,11 @@ if sys.platform == "win32":
     # choosing one. Saved settings keep whatever format they name.
     DEFAULTS["recording"]["codec"] = "auto"
     DEFAULTS["replay"]["codec"] = "auto"
+    # Which sounds go into a capture (see windows/encoding.audio_plan): "all"
+    # desktop sound, or only "specific" ones: the game running (game_track), the
+    # programs in separate_apps and the microphone. volumes: percent per source,
+    # by "game", "desktop", "microphone" or a program's name; 100 when unset.
+    DEFAULTS["replay"].update(sources="all", game_track=True, volumes={})
 # Sections that existed in earlier versions and are now ignored.
 LEGACY_SECTIONS: tuple[str, ...] = ()
 # Free-form mappings; their keys are user phrases, not setting names.
@@ -226,6 +231,15 @@ def validate(data: dict) -> dict:
     from .replay import valid_app_name
     if not all(isinstance(app, str) and valid_app_name(app) for app in apps):
         raise ValueError("App audio names may use letters, digits, spaces, dots, dashes and underscores")
+    if "sources" in c["replay"]:   # Windows (see DEFAULTS)
+        if c["replay"]["sources"] not in ("all", "specific"):
+            raise ValueError("Recorded sounds must be all or specific")
+        if not isinstance(c["replay"]["game_track"], bool):
+            raise ValueError("Game audio must be on or off")
+        volumes = c["replay"]["volumes"]
+        if not isinstance(volumes, dict) or len(volumes) > 16 or not all(
+                isinstance(k, str) and 0 < len(k) <= 64 and type(v) is int and 0 <= v <= 100 for k, v in volumes.items()):
+            raise ValueError("Volumes are whole percents from 0 to 100, for up to 16 sounds")
     from .host import is_windows
     if not is_windows() and r["system_audio"] and r["microphone"] and not (r["combined_audio_source"] and r["audio_device"].strip()):
         raise ValueError("wf-recorder accepts one audio source. Set up a combined PipeWire source first.")

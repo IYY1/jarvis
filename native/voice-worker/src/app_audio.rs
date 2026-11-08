@@ -13,9 +13,23 @@
 //! The program may start late or close: its track is silent while it isn't
 //! running (everything else, for "include": false) and follows it once it starts.
 //!
-//! {"list":true} prints {"apps":[{"name","label","playing"}]}: programs with a
-//! sound session on an active output, playing now or not.
+//! {"list":true} prints {"apps":[{"name","label","playing","game"}]}: programs
+//! with a sound session on an active output, playing now or not. {"watch":true}
+//! prints that line again whenever it changes, until stdout closes.
+//!
+//! "process": "@game" follows whichever game is running: a program with sound
+//! under steamapps\common, Epic Games or GOG Galaxy\Games (as games.py names
+//! games), the one playing first.
 use crate::Result;
+
+/// The process name that means "the game running now".
+pub const GAME: &str = "@game";
+
+/// A program installed where Steam, Epic or GOG put games.
+pub fn is_game_path(path: &str) -> bool {
+    let path = path.to_lowercase();
+    ["\\steamapps\\common\\", "\\epic games\\", "\\gog galaxy\\games\\"].iter().any(|m| path.contains(m))
+}
 
 pub const RATE: u64 = 48000;
 const FRAME_BYTES: usize = 4;
@@ -43,12 +57,25 @@ pub fn silence_before(elapsed_ms: u64, written: u64, frames: u64) -> u64 {
 }
 
 pub fn run(request: &serde_json::Value) -> Result<()> {
-    if request["list"] == true {
+    if request["list"] == true || request["watch"] == true {
         #[cfg(windows)]
         {
-            let apps = windows_loopback::playing()?;
-            println!("{}", serde_json::json!({"apps": apps}));
-            return Ok(());
+            use std::io::Write;
+            let mut out = std::io::stdout().lock();
+            let mut last = String::new();
+            loop {
+                let line = serde_json::json!({"apps": windows_loopback::playing()?}).to_string();
+                // Unchanged: an empty line, so a window that went away is noticed.
+                let shown = if line != last { line.as_str() } else { "" };
+                if writeln!(out, "{shown}").and_then(|_| out.flush()).is_err() {
+                    return Ok(()); // the settings window closed its end
+                }
+                last = line;
+                if request["watch"] != true {
+                    return Ok(());
+                }
+                std::thread::sleep(std::time::Duration::from_secs(2));
+            }
         }
         #[cfg(not(windows))]
         return Err("Listing apps playing sound is only implemented on Windows".into());
@@ -232,7 +259,34 @@ mod windows_loopback {
 
     /// Programs with a sound session on any active output, once each.
     pub fn playing() -> Result<Vec<serde_json::Value>> {
-        let mut found: Vec<(String, String, bool)> = vec![];
+        Ok(sessions(true)?
+            .into_iter()
+            .map(|s| serde_json::json!({"name":s.name,"label":s.label,"playing":s.playing,"game":s.game}))
+            .collect())
+    }
+
+    struct Session {
+        name: String,
+        label: String,
+        playing: bool,
+        game: bool,
+    }
+
+    /// The game running now with sound (the one playing first), as a process name.
+    fn current_game() -> Option<String> {
+        sessions(false).ok()?.into_iter().find(|s| s.game).map(|s| s.name)
+    }
+
+    /// The tree root of the named program, or with "@game" of the running game.
+    fn find(name: &str) -> Option<u32> {
+        if name == super::GAME {
+            return root_process(&current_game()?);
+        }
+        root_process(name)
+    }
+
+    fn sessions(labels: bool) -> Result<Vec<Session>> {
+        let mut found: Vec<(String, String, bool, bool)> = vec![];
         unsafe {
             CoInitializeEx(None, COINIT_MULTITHREADED).ok()?;
             let devices: IMMDeviceEnumerator = CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL)?;
@@ -253,9 +307,12 @@ mod windows_loopback {
                     let file = path.rsplit('\\').next().unwrap_or(&path);
                     let name = file.strip_suffix(".exe").or_else(|| file.strip_suffix(".EXE")).unwrap_or(file);
                     let active = session.GetState().is_ok_and(|s| s == AudioSessionStateActive);
-                    match found.iter_mut().find(|(n, _, _)| n.eq_ignore_ascii_case(name)) {
+                    match found.iter_mut().find(|(n, ..)| n.eq_ignore_ascii_case(name)) {
                         Some(entry) => entry.2 |= active,
-                        None => found.push((name.to_owned(), description(&path).unwrap_or_else(|| name.to_owned()), active)),
+                        None => {
+                            let label = if labels { label_of(&path).unwrap_or_else(|| name.to_owned()) } else { String::new() };
+                            found.push((name.to_owned(), label, active, super::is_game_path(&path)))
+                        }
                     }
                 }
             }
@@ -263,8 +320,17 @@ mod windows_loopback {
         found.sort_by(|a, b| b.2.cmp(&a.2).then(a.1.to_lowercase().cmp(&b.1.to_lowercase())));
         Ok(found
             .into_iter()
-            .map(|(name, label, playing)| serde_json::json!({"name":name,"label":label,"playing":playing}))
+            .map(|(name, label, playing, game)| Session { name, label, playing, game })
             .collect())
+    }
+
+    /// A program's own description, read once per program and remembered.
+    fn label_of(path: &str) -> Option<String> {
+        use std::collections::HashMap;
+        use std::sync::Mutex;
+        static SEEN: Mutex<Option<HashMap<String, Option<String>>>> = Mutex::new(None);
+        let mut seen = SEEN.lock().ok()?;
+        seen.get_or_insert_with(HashMap::new).entry(path.to_owned()).or_insert_with(|| description(path)).clone()
     }
 
     unsafe fn activate(pid: u32, include: bool) -> Result<IAudioClient> {
@@ -378,7 +444,7 @@ mod windows_loopback {
     fn capture_to(name: &str, include: bool, out: &mut impl Write) -> Result<()> {
         let mut track = Track { start: Instant::now(), written: 0 };
         loop {
-            let program = root_process(name);
+            let program = find(name);
             let target = match (program, include) {
                 (Some(pid), _) => pid,
                 // Everything else, while the program isn't running: exclude only this worker.
@@ -399,7 +465,7 @@ mod windows_loopback {
                 Ok(Followed::ReaderClosed) => return Ok(()),
                 Ok(Followed::Changed) => continue,
                 // It closed while Windows was starting its capture: look again.
-                Err(_) if program.is_some() && root_process(name) != program => continue,
+                Err(_) if program.is_some() && find(name) != program => continue,
                 Err(error) => return Err(error),
             }
         }
@@ -502,7 +568,7 @@ mod windows_loopback {
                     track.written += gap;
                     if looked.elapsed() >= LOOK_EVERY {
                         looked = Instant::now();
-                        if ended(process) || waiting_for.is_some_and(|name| root_process(name).is_some()) {
+                        if ended(process) || waiting_for.is_some_and(|name| find(name).is_some()) {
                             return Ok(Followed::Changed);
                         }
                     }
@@ -527,6 +593,15 @@ mod tests {
         assert_eq!(silence_needed(1500, 48000, 500), 24000);
         // Never negative when ahead of the clock.
         assert_eq!(silence_needed(1000, 50000, 500), 0);
+    }
+
+    #[test]
+    fn games_are_the_programs_where_stores_install_them() {
+        assert!(is_game_path(r"D:\SteamLibrary\steamapps\common\MarvelRivals\MarvelGame\Marvel\Binaries\Win64\Marvel-Win64-Shipping.exe"));
+        assert!(is_game_path(r"C:\Program Files\Epic Games\Fortnite\FortniteClient-Win64-Shipping.exe"));
+        assert!(is_game_path(r"C:\Program Files (x86)\GOG Galaxy\Games\Cyberpunk 2077\bin\x64\Cyberpunk2077.exe"));
+        assert!(!is_game_path(r"C:\Users\me\AppData\Local\Discord\app-1.0\Discord.exe"));
+        assert!(!is_game_path(r"C:\Program Files (x86)\Steam\steam.exe"));
     }
 
     #[test]

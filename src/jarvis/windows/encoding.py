@@ -24,50 +24,106 @@ PROCESS_LOOPBACK_BUILD = 20348
 MIXED_TITLE = "All sound"
 
 
+GAME = "@game"   # the voice worker follows whichever game runs (app_audio.rs)
+GAME_TITLE = "Game audio"
+
+
 def audio_plan(cfg, replay=None, build=0, labels=None, recording=False):
-    """Audio inputs for one capture: [(title or None, worker config)].
+    """Audio inputs for one capture: [(title or None, worker config)], like
+    Medal's "Audio processes".
 
-    With one mixed track (the default) there is one mixed input. With separate
-    tracks, each chosen program, the rest of the desktop and the microphone get
-    their own input: a program you don't choose is only ever heard in the
-    desktop track, so turn "Game sound" off to keep it out completely.
-
-    The desktop track holds everything except the program when one is chosen;
-    Windows can leave out only one process tree, so with several programs it
-    holds all desktop sound, programs included. A recording uses the replay's
-    track layout with its own sound switches. ``labels`` names programs."""
+    sources "all": the desktop's sound (game_audio) and the microphone; with one
+    mixed track they share a single input, otherwise each has its own.
+    sources "specific": only what is chosen, each on its own input: the game
+    running now (game_track, followed as games start and close), the programs
+    in separate_apps (a program not running is silent until it starts) and the
+    microphone. Nothing else is recorded, so nothing is heard twice.
+    volumes: percent per source ("desktop", "game", "microphone", a program).
+    A recording uses this layout with its own sound switches: system_audio for
+    the desktop, game and programs. ``labels`` names programs."""
     if replay and recording:
         replay = dict(replay, game_audio=bool(cfg.get("system_audio")), microphone=bool(cfg.get("microphone")))
-    silent = recording and not (cfg.get("system_audio") or cfg.get("microphone"))
-    if silent or not replay or replay.get("audio_tracks", "mixed") != "separate":
+    if not replay or (recording and not (cfg.get("system_audio") or cfg.get("microphone"))):
         return [(None, cfg)] if cfg.get("system_audio") or cfg.get("microphone") else []
-    from ..replay import valid_app_name
+    volumes = replay.get("volumes") or {}
 
-    if build < PROCESS_LOOPBACK_BUILD:
-        raise RecorderError("Separate sound tracks need Windows 11 (build 20348 or later). "
-                            "Choose One mixed track in Replay settings.")
-    apps = [a for a in replay.get("separate_apps", []) if valid_app_name(a)]
-    labels = {k.casefold(): v for k, v in (labels or {}).items()}
+    def volume(key):
+        return volumes.get(key, 100) / 100
+
+    specific = replay.get("sources", "all") == "specific"
+    if not specific and replay.get("audio_tracks", "mixed") != "separate":
+        if not (cfg.get("system_audio") or cfg.get("microphone")):
+            return []
+        return [(None, dict(cfg, volumes={"desktop": volume("desktop"), "microphone": volume("microphone")}))]
     tracks = []
-    if replay.get("game_audio", True):
-        if len(apps) == 1:
-            tracks.append(("Everything else", {"kind": "game", "app": apps[0], "in_mix": True}))
-        else:
-            tracks.append(("All desktop sound" if apps else "Game and desktop sound",
-                           {"kind": "game", "app": "", "in_mix": True}))
-    in_desktop = replay.get("game_audio", True) and len(apps) > 1
-    tracks += [(labels.get(a.casefold(), a), {"kind": "app", "app": a, "in_mix": not in_desktop}) for a in apps]
+    if not specific:
+        if replay.get("game_audio", True):
+            tracks.append(("Game and desktop sound", {"kind": "game", "app": "", "volume": volume("desktop")}))
+    else:
+        from ..replay import valid_app_name
+
+        if build < PROCESS_LOOPBACK_BUILD:
+            raise RecorderError("Recording specific apps needs Windows 11 (build 20348 or later). "
+                                "Choose All audio in Replay settings.")
+        if not recording or cfg.get("system_audio"):
+            labels = {k.casefold(): v for k, v in (labels or {}).items()}
+            if replay.get("game_track", True):
+                tracks.append((GAME_TITLE, {"kind": "app", "app": GAME, "volume": volume("game")}))
+            for app in (a for a in replay.get("separate_apps", []) if valid_app_name(a)):
+                tracks.append((labels.get(app.casefold(), app), {"kind": "app", "app": app, "volume": volume(app)}))
     if replay.get("microphone", True):
-        tracks.append(("Microphone", {"kind": "microphone", "in_mix": True}))
+        tracks.append(("Microphone", {"kind": "microphone", "volume": volume("microphone")}))
     return [(title, dict(cfg, track=track)) for title, track in tracks]
 
 
 def mixed_inputs(plan):
-    """Which of the plan's tracks the first, mixed track adds up: none for one
-    track. A clip then plays everything chosen in any player, and the separate
-    tracks after it stay for editing."""
-    mix = [i for i, (_, c) in enumerate(plan) if c.get("track", {}).get("in_mix")]
-    return mix if len(mix) > 1 else []
+    """The plan's tracks a first, mixed track adds up: all of them, from two on
+    (none overlap). A clip then plays everything chosen in any player, and the
+    separate tracks after it stay for editing."""
+    return list(range(len(plan))) if len(plan) > 1 else []
+
+
+def audio_maps(audio_pipes, mix=(), volumes=None, separate=True):
+    """FFmpeg arguments for the sound tracks: a first "All sound" track adding up
+    ``mix`` (summed like the system mixer, with a limiter so loud moments together
+    don't clip), then, when ``separate``, each input on its own named track.
+    Each input plays at its ``volumes`` share (1.0 = as it is)."""
+    volumes = list(volumes or [1.0] * len(audio_pipes))
+    mixed = len(mix) > 1
+    graph, mixed_in, outputs = [], [], []
+    for i, (_, title) in enumerate(audio_pipes):
+        source, level = f"[{i + 1}:a]", volumes[i]
+        to_mix, alone = mixed and i in mix, separate or not mixed
+        gain = f"volume={level:.2f}" if level != 1.0 else ""
+        if to_mix and alone:
+            graph.append(f"{source}{gain + ',' if gain else ''}asplit=2[m{i}][s{i}]")
+            mixed_in.append(f"[m{i}]")
+            outputs.append((f"[s{i}]", title))
+        elif to_mix:
+            if gain:
+                graph.append(f"{source}{gain}[m{i}]")
+            mixed_in.append(f"[m{i}]" if gain else source)
+        elif alone:
+            if gain:
+                graph.append(f"{source}{gain}[s{i}]")
+            outputs.append((f"[s{i}]" if gain else f"{i + 1}:a:0", title))
+    args = []
+    if mixed:
+        graph.append(f"{''.join(mixed_in)}amix=inputs={len(mixed_in)}:normalize=0:dropout_transition=0,"
+                     "alimiter=limit=0.97:level=0[mix]")
+        outputs.insert(0, ("[mix]", MIXED_TITLE))
+    if graph:
+        args += ["-filter_complex", ";".join(graph)]
+    for index, (label, title) in enumerate(outputs):
+        args += ["-map", label]
+        if title:
+            args += [f"-metadata:s:a:{index}", f"title={title}"]
+    return args
+
+
+def plan_volumes(plan):
+    """Each input's volume for FFmpeg; a single mixed input applies its own."""
+    return [c.get("track", {}).get("volume", 1.0) for _, c in plan]
 
 
 def encoder_options(cfg, family, codec):
@@ -321,7 +377,7 @@ def output_size(cfg, display):
     return max(2, int(width * ratio) // 2 * 2), max(2, int(height * ratio) // 2 * 2)
 
 
-def command(cfg, display, binary, family, *, audio_pipes=(), screen_pipe=None, mix=()):
+def command(cfg, display, binary, family, *, audio_pipes=(), screen_pipe=None, mix=(), volumes=None, separate=True):
     """``audio_pipes``: [(pipe, title or None)], one audio track each.
     ``screen_pipe``: where the worker's screen mode sends a display in HDR mode.
     ``mix``: indexes into ``audio_pipes`` added up into a first track before them."""
@@ -373,17 +429,7 @@ def command(cfg, display, binary, family, *, audio_pipes=(), screen_pipe=None, m
     for pipe, _ in audio_pipes:
         args += ["-thread_queue_size", "64", "-f", "s16le", "-ar", "48000", "-ac", "2", "-i", pipe]
     args += ["-map", "0:v:0"]
-    first = 0
-    if len(mix) > 1:
-        # Summed like the system mixer, with a limiter so loud moments together don't clip.
-        inputs = "".join(f"[{i + 1}:a]" for i in mix)
-        args += ["-filter_complex", f"{inputs}amix=inputs={len(mix)}:normalize=0:dropout_transition=0,"
-                 "alimiter=limit=0.97:level=0[mix]", "-map", "[mix]", "-metadata:s:a:0", f"title={MIXED_TITLE}"]
-        first = 1
-    for index, (_, title) in enumerate(audio_pipes):
-        args += ["-map", f"{index + 1}:a:0"]
-        if title:
-            args += [f"-metadata:s:a:{index + first}", f"title={title}"]
+    args += audio_maps(audio_pipes, mix, volumes, separate)
     # The fast AAC coder spends about a third less CPU per track than the default
     # two-loop search, with no difference to hear at 160 kb/s.
     args += ["-c:a", "aac", "-aac_coder", "fast", "-b:a", "160k"] if audio_pipes else ["-an"]

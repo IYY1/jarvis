@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Windows: "Recording audio" works like Medal's audio processes. Choose All audio
+  (everything you hear), or Specific apps: "Game audio" follows whichever game
+  runs (Steam, Epic or GOG, found by itself, also when it starts later), plus up
+  to four programs and the microphone, and nothing else is recorded. Programs
+  appear in the list as they play sound, while the page is open. Each sound has
+  its own volume, and "Separate audio tracks" keeps each on its own track after
+  one with them all. Displays and microphones are listed by their own names.
 - Windows: replay clips stay in sync. Saving joined the one-second segments
   by each one's longest stream, and a segment's sound runs about 25 ms past its
   picture, so the picture slipped behind the sound at every join: clips drifted

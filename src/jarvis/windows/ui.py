@@ -54,6 +54,40 @@ PRIVACY_FACTS = [
 ]
 
 
+class VolumeSlider(tk.Canvas):
+    """A volume slider like Medal's: a thin track filled up to the value, and a
+    round knob. ``on_change`` follows the drag; ``on_done`` gets the final value."""
+
+    PAD, HEIGHT = 9, 22
+
+    def __init__(self, parent, window, value, on_change, on_done, width=180):
+        super().__init__(parent, width=width, height=self.HEIGHT, highlightthickness=0, borderwidth=0,
+                         background=palettes.roles(window.palette)["card"], cursor="hand2")
+        self.window, self.value, self.on_change, self.on_done = window, value, on_change, on_done
+        window.recolor.append((self, {"background": "card"}))
+        self.bind("<Configure>", lambda _: self.draw())
+        self.bind("<Button-1>", self.drag)
+        self.bind("<B1-Motion>", self.drag)
+        self.bind("<ButtonRelease-1>", lambda _: self.on_done(self.value))
+
+    def drag(self, event):
+        span = max(1, self.winfo_width() - 2 * self.PAD)
+        self.value = max(0, min(100, round((event.x - self.PAD) / span * 100)))
+        self.draw()
+        self.on_change(self.value)
+
+    def draw(self):
+        r = palettes.roles(self.window.palette)
+        self.delete("all")
+        width, middle = self.winfo_width(), self.HEIGHT // 2
+        end = width - self.PAD
+        at = self.PAD + (end - self.PAD) * self.value / 100
+        self.create_line(self.PAD, middle, end, middle, fill=r["line-strong"], width=4, capstyle="round")
+        if self.value:
+            self.create_line(self.PAD, middle, at, middle, fill=r["accent"], width=4, capstyle="round")
+        self.create_oval(at - 7, middle - 7, at + 7, middle + 7, fill=r["text"], outline="")
+
+
 class Tabs:
     """Short sections of one page, one shown at a time."""
 
@@ -344,6 +378,8 @@ class Window:
         self.current = key
         self.rewrap()
         self.load_apps()
+        if hasattr(self, "sound_watch"):
+            self.watch_sound_apps(key == "recording")
 
     def load_apps(self):
         """Fill the app list when first seen; otherwise it stays empty until someone finds Refresh."""
@@ -965,28 +1001,33 @@ class Window:
         self.number(replay, "Budget (MiB)", "replay", "max_mb", 64, 16384, 64, "The most it may hold; older seconds go first.")
         self.replay_fit = tk.StringVar()
         self.wide(replay, self.wrapping(ttk.Label(replay, textvariable=self.replay_fit, style="Caption.TLabel", justify="left")))
-        self.switch(replay, "Game sound", "replay", "game_audio", "Everything you hear, from the default output.")
-        self.switch(replay, "Microphone", "replay", "microphone", "Your voice, from the default input.")
         self.switch(replay, "Clip sound", "replay", "sound", "A short chirp when a clip is saved.")
         self.switch(replay, "Start with Jarvis", "replay", "autostart", "Turn replay on whenever Jarvis starts.")
 
-        extra = self.group(tabs["replay"], "Separate sound and storage")
-        self.choice(extra, "Sound tracks", "replay", "audio_tracks",
-                    {"One mixed track": "mixed", "Separate tracks (Windows 11)": "separate"},
-                    "Separate tracks give each program you tick below, the rest of the desktop and your "
-                    "microphone a track of their own, after a first track with them all mixed, so clips play "
-                    "anywhere and you can mute one later. For replay and recordings.")
+        # Like Medal's "Audio processes": all desktop sound, or only the sounds ticked
+        # here, each with its own volume; programs appear as they play sound.
+        sound = self.group(tabs["replay"], "Recording audio",
+                           "For replay and recordings. Changing these starts replay over, empty.")
+        self.choice(sound, "Audio processes", "replay", "sources", {"All audio": "all", "Specific apps": "specific"},
+                    "All audio records everything you hear. Specific apps records only what you tick (Windows 11).")
+        self.variable("replay", "sources").trace_add("write", lambda *_: self.show_sound_apps())
+        for key in ("game_audio", "game_track", "microphone"):
+            self.variable("replay", key)
         self.separate_app = tk.StringVar(value=", ".join(self.config["replay"]["separate_apps"]))
-        self.wide(extra, self.wrapping(ttk.Label(
-            extra, style="Caption.TLabel", justify="left",
-            text=f"Programs on their own track, up to {MAX_SEPARATE_APPS}. They may start later or close. "
-                 "To keep everything else out, turn off Game sound above: then only the programs you tick "
-                 "and your microphone are recorded.")))
-        self.sound_apps = self.wide(extra, ttk.Frame(extra, style="Card.TFrame", borderwidth=0))
-        self.sound_app_labels = {}
-        self.buttons(extra, [("Find programs with sound", self.find_sound_apps)])
-        self.show_sound_apps([])
-        self.find_sound_apps()
+        self.volumes = dict(self.config["replay"].get("volumes", {}))
+        self.sound_found, self.sound_rows, self.sound_app_labels = [], {}, {}
+        self.sound_watch = None
+        self.sound_apps = self.wide(sound, ttk.Frame(sound, style="Card.TFrame", borderwidth=0))
+        self.sound_note = tk.StringVar()
+        self.wide(sound, self.wrapping(ttk.Label(sound, textvariable=self.sound_note, style="Caption.TLabel", justify="left")))
+        self.separate_tracks = tk.BooleanVar(value=self.config["replay"]["audio_tracks"] == "separate")
+        self.variable("replay", "audio_tracks")
+        separate = ttk.Checkbutton(sound, variable=self.separate_tracks, command=self.pick_separate_tracks)
+        self.row(sound, "Separate audio tracks", separate,
+                 "Each sound on its own track too, after one with them all, so you can mute one in Clips.")
+        self.show_sound_apps()
+
+        extra = self.group(tabs["replay"], "Storage")
         self.choice(extra, "Storage", "replay", "storage", {"RAM": "ram", "Disk (continuous writes)": "disk"},
                     "Disk writes about 1–10 GB an hour and needs a local NTFS or ReFS disk.")
         self.text(extra, "Disk folder", "replay", "buffer_dir", detail="Optional. Empty uses the app-data folder.")
@@ -1006,31 +1047,105 @@ class Window:
         if hasattr(self, "video"):
             self.video.estimate()
 
-    def find_sound_apps(self):
-        from .audio import apps_with_sound
-        self.submit(apps_with_sound, self.show_sound_apps)
+    def watch_sound_apps(self, on):
+        """While the Capture page is open, a native helper reports the programs
+        with sound whenever they change; nothing runs while it is closed."""
+        if not on:
+            if self.sound_watch is not None:
+                self.sound_watch.kill()
+                self.sound_watch = None
+            return
+        if self.sound_watch is not None:
+            return
+        import subprocess
+        from ..host import child_options
+        from ..native_worker import binary_path
 
-    def show_sound_apps(self, found):
-        """Ticked programs first, then those with sound now, then those heard before."""
-        for app in found:
-            self.sound_app_labels[app["name"].casefold()] = app["label"]
+        worker = binary_path()
+        if worker is None:
+            return
+        try:
+            process = subprocess.Popen([str(worker), "--app-audio"], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                       stderr=subprocess.DEVNULL, **child_options())
+            process.stdin.write(b'{"watch":true}\n')
+            process.stdin.close()
+        except OSError:
+            return
+        self.sound_watch = process
+
+        def read():
+            from .audio import OWN_PROGRAMS
+            for line in process.stdout:
+                try:
+                    apps = json.loads(line)["apps"] if line.strip() else None
+                except (ValueError, KeyError, TypeError):
+                    continue
+                if apps is not None:
+                    apps = [a for a in apps if isinstance(a, dict) and isinstance(a.get("name"), str)
+                            and a["name"].casefold() not in OWN_PROGRAMS]
+                    self.post((self.show_sound_apps, apps, None))
+
+        threading.Thread(target=read, daemon=True, name="jarvis-sound-apps").start()
+
+    def show_sound_apps(self, found=None):
+        """Medal-like rows: what is recorded, each with a volume. Games come in
+        through "Game audio"; programs are the ticked ones first, then those with
+        sound now. Rebuilt only when the rows change, so a slider being dragged stays."""
+        if found is not None:
+            self.sound_found = found
+            for app in found:
+                self.sound_app_labels[app["name"].casefold()] = app["label"]
+        specific = self.variable("replay", "sources").get() == "specific"
         ticked = [n.strip() for n in self.separate_app.get().split(",") if n.strip()]
-        names = list(ticked)
-        for app in found:
-            if app["name"].casefold() not in {n.casefold() for n in names}:
-                names.append(app["name"])
-        for child in self.sound_apps.winfo_children():
-            child.destroy()
-        playing = {a["name"].casefold() for a in found if a.get("playing")}
-        for name in names:
-            chosen = tk.BooleanVar(value=name.casefold() in {n.casefold() for n in ticked})
-            label = self.sound_app_labels.get(name.casefold(), name)
-            text = label + ("  · playing now" if name.casefold() in playing else "")
-            ttk.Checkbutton(self.sound_apps, text=text, variable=chosen,
-                            command=lambda n=name, v=chosen: self.tick_sound_app(n, v)).pack(anchor="w", pady=2)
-        if not names:
-            ttk.Label(self.sound_apps, text="No programs with sound found. Play something, then find them again.",
-                      style="Caption.TLabel").pack(anchor="w")
+        rows = [("game_track", "Game audio", "The game running now, found by itself.", "game") if specific else
+                ("game_audio", "Game and desktop sound", "Everything you hear.", "desktop"),
+                ("microphone", "Microphone", "Your voice, from the input on the Voice page.", "microphone")]
+        playing = set()
+        if specific:
+            names = list(ticked)
+            for app in self.sound_found:
+                if not app.get("game") and app["name"].casefold() not in {n.casefold() for n in names}:
+                    names.append(app["name"])
+            playing = {a["name"].casefold() for a in self.sound_found if a.get("playing")}
+            rows += [(None, self.sound_app_labels.get(n.casefold(), n), "", n) for n in names]
+        layout = [(setting, key) for setting, _, _, key in rows]
+        if layout != getattr(self, "sound_layout", None):
+            self.sound_layout = layout
+            for child in self.sound_apps.winfo_children():
+                child.destroy()
+            self.sound_rows = {}
+            self.sound_apps.columnconfigure(0, weight=1)
+            for row, (setting, title, detail, key) in enumerate(rows):
+                if setting:
+                    variable = self.variable("replay", setting)
+                    command = lambda: self.changed(400)
+                else:
+                    variable = tk.BooleanVar(value=key.casefold() in {n.casefold() for n in ticked})
+                    command = lambda k=key, v=variable: self.tick_sound_app(k, v)
+                check = ttk.Checkbutton(self.sound_apps, text=title, variable=variable, command=command)
+                check.grid(row=row, column=0, sticky="w", pady=3)
+                level = self.volumes.get(key, 100)
+                shown = ttk.Label(self.sound_apps, text=f"{level}%", width=5, anchor="e", style="Card.TLabel")
+                slider = VolumeSlider(self.sound_apps, self, level, lambda v, s=shown: s.configure(text=f"{v}%"),
+                                      lambda v, k=key: self.set_volume(k, v))
+                slider.grid(row=row, column=1, padx=(12, 6))
+                shown.grid(row=row, column=2)
+                self.sound_rows[key] = (check, title)
+        for key, (check, title) in self.sound_rows.items():
+            check.configure(text=title + ("  · playing now" if key.casefold() in playing else ""))
+        self.sound_note.set(f"Programs appear here as they play sound. Tick up to {MAX_SEPARATE_APPS}; one not running "
+                            "is silent until it starts." if specific else
+                            "Choose Specific apps to keep only the game, chosen programs and your voice, each with "
+                            "its own volume.")
+
+    def set_volume(self, key, value):
+        if self.volumes.get(key, 100) != value:
+            self.volumes[key] = value
+            self.changed(400)
+
+    def pick_separate_tracks(self):
+        self.variable("replay", "audio_tracks").set("separate" if self.separate_tracks.get() else "mixed")
+        self.changed(300)
 
     def tick_sound_app(self, name, chosen):
         ticked = [n.strip() for n in self.separate_app.get().split(",") if n.strip()]
@@ -1162,6 +1277,10 @@ class Window:
         value["replay"]["separate_apps"] = [
             name.strip().removesuffix(".exe") for name in self.separate_app.get().split(",") if name.strip()
         ]
+        if hasattr(self, "volumes") and "volumes" in value["replay"]:
+            # Only what differs from 100%, for sounds that are still in the list.
+            kept = {"game", "desktop", "microphone", *value["replay"]["separate_apps"]}
+            value["replay"]["volumes"] = {k: v for k, v in self.volumes.items() if v != 100 and k in kept}
         value["dictation"]["stop_phrases"] = [p.strip() for p in self.voice_controls.stop_phrases.get().split(",") if p.strip()]
         value["commands"] = dict(self.commands)
         return config.validate(value)
@@ -1238,6 +1357,7 @@ class Window:
             self.call("shutdown", lambda _: self.close())
 
     def close(self):
+        self.watch_sound_apps(False)
         self.clips.close()
         if self.save_timer:   # a change still waiting for its pause
             self.root.after_cancel(self.save_timer)

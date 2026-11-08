@@ -278,14 +278,16 @@ def mix_to_pipe(config, pipe):
                 streams.append(PCMStream(engine, pa, select_device(engine, pa, name)))
             if not streams:
                 raise RuntimeError("No recording audio source selected")
+            # Each source at its volume; two share the track at half each, as before.
+            volumes = config.get("volumes") or {}
+            gains = ([volumes.get("desktop", 1.0)] if config.get("system_audio") else []) + (
+                [volumes.get("microphone", 1.0)] if config.get("microphone") else [])
+            gains = [g * (0.5 if len(streams) == 2 else 1.0) for g in gains]
             wait_for_reader(output, streams)
             while True:
                 frames = [stream.read(960) for stream in streams]
-                data = (
-                    frames[0]
-                    if len(frames) == 1
-                    else op.add(op.mul(frames[0], 2, 0.5), op.mul(frames[1], 2, 0.5), 2)
-                )
+                parts = [frame if gain == 1.0 else op.mul(frame, 2, gain) for frame, gain in zip(frames, gains)]
+                data = parts[0] if len(parts) == 1 else op.add(parts[0], parts[1], 2)
                 output.write(data)
         finally:
             for stream in streams:

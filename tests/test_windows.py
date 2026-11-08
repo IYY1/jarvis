@@ -133,35 +133,56 @@ class SettingsWindowTests(unittest.TestCase):
         self.assertEqual(microphone_name("input:Microphone (PD400X)"), "Microphone (PD400X)")
         self.assertEqual(microphone_name(""), "Default Windows microphone")
 
-    def test_programs_with_sound_are_ticked_into_their_own_tracks(self):
+    def sound_boxes(self):
+        return [w for w in self.window.sound_apps.winfo_children() if w.winfo_class() == "TCheckbutton"]
+
+    def test_audio_processes_list_like_medal(self):
         from jarvis.windows.ui import MAX_SEPARATE_APPS
         window = self.window
-        found = [{"name": "Marvel-Win64-Shipping", "label": "Marvel Rivals", "playing": True},
-                 {"name": "Discord", "label": "Discord", "playing": True},
-                 {"name": "Spotify", "label": "Spotify", "playing": False}]
-        window.separate_app.set("steam")   # ticked before, not playing now: still listed first
+        found = [{"name": "Marvel-Win64-Shipping", "label": "Marvel Rivals", "playing": True, "game": True},
+                 {"name": "Discord", "label": "Discord", "playing": True, "game": False},
+                 {"name": "Spotify", "label": "Spotify", "playing": False, "game": False}]
+        # All audio: the desktop and the microphone, nothing per program.
         window.show_sound_apps(found)
-        boxes = window.sound_apps.winfo_children()
+        self.assertEqual([b.cget("text") for b in self.sound_boxes()], ["Game and desktop sound", "Microphone"])
+        with patch.object(window, "changed"):
+            window.variable("replay", "sources").set("specific")
+        # Specific apps: the game by itself, the microphone, then programs (a game is not listed twice).
+        window.separate_app.set("steam")   # ticked before, not running now: still listed
+        window.show_sound_apps(found)
+        boxes = self.sound_boxes()
         self.assertEqual([b.cget("text") for b in boxes],
-                         ["steam", "Marvel Rivals  · playing now", "Discord  · playing now", "Spotify"])
-        self.assertEqual([str(b.instate(["selected"])) for b in boxes], ["True", "False", "False", "False"])
+                         ["Game audio", "Microphone", "steam", "Discord  · playing now", "Spotify"])
+        self.assertEqual([b.instate(["selected"]) for b in boxes][2:], [True, False, False])
         with patch.object(window, "changed") as changed:
-            boxes[1].invoke()   # tick Marvel Rivals
-            self.assertEqual(window.separate_app.get(), "steam, Marvel-Win64-Shipping")
-            boxes[0].invoke()   # untick steam
-            self.assertEqual(window.separate_app.get(), "Marvel-Win64-Shipping")
+            boxes[3].invoke()   # tick Discord
+            boxes[2].invoke()   # untick steam
+            window.set_volume("Discord", 40)
+            window.set_volume("microphone", 50)
             changed.assert_called()
-        # Saving keeps the names, which validate.
-        self.assertEqual(window.settings()["replay"]["separate_apps"], ["Marvel-Win64-Shipping"])
+        saved = window.settings()["replay"]
+        self.assertEqual((saved["sources"], saved["separate_apps"]), ("specific", ["Discord"]))
+        self.assertEqual(saved["volumes"], {"Discord": 40, "microphone": 50})
+        # "Playing now" changes only relabel the rows; the rows themselves stay.
+        window.show_sound_apps(found)   # steam, unticked and not running, has left the list
+        before = self.sound_boxes()
+        self.assertEqual([b.cget("text") for b in before], ["Game audio", "Microphone", "Discord  · playing now", "Spotify"])
+        window.show_sound_apps([dict(a, playing=False) for a in found])
+        self.assertEqual(self.sound_boxes(), before)
+        self.assertEqual(before[2].cget("text"), "Discord")
         # No more than the settings allow.
         window.separate_app.set(", ".join(f"app{i}" for i in range(MAX_SEPARATE_APPS)))
         window.show_sound_apps(found)
-        marvel = next(b for b in window.sound_apps.winfo_children() if b.cget("text").startswith("Marvel"))
+        spotify = next(b for b in self.sound_boxes() if b.cget("text").startswith("Spotify"))
         with patch.object(window, "changed"), patch.object(window, "say") as said:
-            marvel.invoke()
-        self.assertFalse(marvel.instate(["selected"]))
-        self.assertNotIn("Marvel", window.separate_app.get())
+            spotify.invoke()
+        self.assertFalse(spotify.instate(["selected"]))
         said.assert_called()
+        # Separate tracks is a switch over the saved "mixed"/"separate".
+        with patch.object(window, "changed"):
+            window.separate_tracks.set(True)
+            window.pick_separate_tracks()
+        self.assertEqual(window.settings()["replay"]["audio_tracks"], "separate")
 
     def status(self, **changes):
         return {"status": {"state": "idle", "muted": False, "microphone_open": True, "message": "",
@@ -493,61 +514,78 @@ class EncoderTests(unittest.TestCase):
         self.assertEqual(args.count("-i"), 2)
         self.assertNotIn("-metadata:s:a:0", args)
 
-    def test_separate_replay_tracks_get_their_own_inputs_and_titles(self):
-        replay = config.validate({"replay": {"audio_tracks": "separate", "separate_apps": ["firefox"]}})["replay"]
-        cfg = dict(self.cfg, system_audio=True, microphone=True)
-        plan = encoding.audio_plan(cfg, replay, build=22631, labels={"Firefox": "Firefox browser"})
-        self.assertEqual([title for title, _ in plan], ["Everything else", "Firefox browser", "Microphone"])
-        self.assertEqual([c["track"] for _, c in plan],
-                         [{"kind": "game", "app": "firefox", "in_mix": True},
-                          {"kind": "app", "app": "firefox", "in_mix": True}, {"kind": "microphone", "in_mix": True}])
-        pipes = [(rf"\\.\pipe\Jarvis-t-audio{i}", title) for i, (title, _) in enumerate(plan)]
-        mix = encoding.mixed_inputs(plan)
-        args, _, _ = encoding.command(self.cfg, self.display, "ffmpeg.exe", "amf", audio_pipes=pipes, mix=mix)
-        self.assertEqual(args.count("-i"), 4)
-        # First track: all three added up; then each on its own, named.
-        graph = args[args.index("-filter_complex") + 1]
-        self.assertTrue(graph.startswith("[1:a][2:a][3:a]amix=inputs=3:normalize=0"), graph)
-        maps = [args[i + 1] for i, a in enumerate(args) if a == "-map"]
-        self.assertEqual(maps, ["0:v:0", "[mix]", "1:a:0", "2:a:0", "3:a:0"])
-        self.assertEqual(args[args.index("-metadata:s:a:0") + 1], f"title={encoding.MIXED_TITLE}")
-        self.assertEqual(args[args.index("-metadata:s:a:2") + 1], "title=Firefox browser")
-        self.assertEqual(args[args.index("-aac_coder") + 1], "fast")   # a third less CPU per track
-        # Without a program, the game track is all system sound.
-        alone = dict(replay, separate_apps=[])
-        self.assertEqual(encoding.audio_plan(cfg, alone, build=22631)[0][1]["track"],
-                         {"kind": "game", "app": "", "in_mix": True})
-        # Mixed replays and recordings keep one input with the existing mix, and no mixed copy.
-        self.assertEqual(encoding.audio_plan(cfg, dict(replay, audio_tracks="mixed"), build=19045), [(None, cfg)])
-        self.assertEqual(encoding.audio_plan(cfg), [(None, cfg)])
-        self.assertEqual(encoding.mixed_inputs([(None, cfg)]), [])
+    def maps(self, args):
+        return [args[i + 1] for i, a in enumerate(args) if a == "-map"]
 
-    def test_several_programs_each_get_a_track(self):
-        replay = config.validate({"replay": {"audio_tracks": "separate",
-                                             "separate_apps": ["Discord", "Marvel-Win64-Shipping"]}})["replay"]
+    def test_all_audio_records_the_desktop_and_microphone(self):
         cfg = dict(self.cfg, system_audio=True, microphone=True)
-        plan = encoding.audio_plan(cfg, replay, build=26300, labels={"marvel-win64-shipping": "Marvel Rivals"})
-        self.assertEqual([title for title, _ in plan], ["All desktop sound", "Discord", "Marvel Rivals", "Microphone"])
-        self.assertEqual([c["track"]["kind"] for _, c in plan], ["game", "app", "app", "microphone"])
-        # The desktop track already holds the programs: the mix adds desktop and microphone only.
-        self.assertEqual(encoding.mixed_inputs(plan), [0, 3])
-        # Game sound off: only the ticked programs and the microphone, all in the mix.
-        only = encoding.audio_plan(cfg, dict(replay, game_audio=False), build=26300)
-        self.assertEqual([title for title, _ in only], ["Discord", "Marvel-Win64-Shipping", "Microphone"])
-        self.assertEqual(encoding.mixed_inputs(only), [0, 1, 2])
+        replay = config.validate({"replay": {"volumes": {"microphone": 50}}})["replay"]
+        # One mixed track: one input, mixed by the worker with each volume.
+        (title, single), = encoding.audio_plan(cfg, replay, build=26300)
+        self.assertIsNone(title)
+        self.assertEqual(single["volumes"], {"desktop": 1.0, "microphone": 0.5})
+        self.assertEqual(encoding.mixed_inputs([(None, single)]), [])
+        self.assertEqual(encoding.audio_plan(cfg), [(None, cfg)])
+        # Separate: desktop and microphone each on a track, after "All sound"; no Windows 11 needed.
+        plan = encoding.audio_plan(cfg, dict(replay, audio_tracks="separate"), build=19045)
+        self.assertEqual([t for t, _ in plan], ["Game and desktop sound", "Microphone"])
+        self.assertEqual(encoding.plan_volumes(plan), [1.0, 0.5])
+
+    def test_specific_apps_record_the_game_the_ticked_programs_and_the_microphone(self):
+        replay = config.validate({"replay": {"sources": "specific", "audio_tracks": "separate",
+                                             "separate_apps": ["Discord", "Spotify"],
+                                             "volumes": {"Spotify": 30, "game": 100}}})["replay"]
+        cfg = dict(self.cfg, system_audio=True, microphone=True)
+        plan = encoding.audio_plan(cfg, replay, build=26300, labels={"spotify": "Spotify Music"})
+        self.assertEqual([t for t, _ in plan], ["Game audio", "Discord", "Spotify Music", "Microphone"])
+        self.assertEqual([c["track"]["app"] for _, c in plan[:3]], ["@game", "Discord", "Spotify"])
+        self.assertEqual(encoding.plan_volumes(plan), [1.0, 1.0, 0.3, 1.0])
+        # Nothing else is recorded, so the first track adds up all of them.
+        self.assertEqual(encoding.mixed_inputs(plan), [0, 1, 2, 3])
+        pipes = [(rf"\\.\pipe\Jarvis-t-audio{i}", t) for i, (t, _) in enumerate(plan)]
+        args, _, _ = encoding.command(self.cfg, self.display, "ffmpeg.exe", "amf", audio_pipes=pipes,
+                                      mix=encoding.mixed_inputs(plan), volumes=encoding.plan_volumes(plan))
+        graph = args[args.index("-filter_complex") + 1]
+        self.assertIn("[3:a]volume=0.30,asplit=2[m2][s2]", graph)
+        self.assertIn("[m0][m1][m2][m3]amix=inputs=4:normalize=0", graph)
+        self.assertEqual(self.maps(args), ["0:v:0", "[mix]", "[s0]", "[s1]", "[s2]", "[s3]"])
+        self.assertEqual(args[args.index("-metadata:s:a:0") + 1], f"title={encoding.MIXED_TITLE}")
+        self.assertEqual(args[args.index("-metadata:s:a:3") + 1], "title=Spotify Music")
+        self.assertEqual(args[args.index("-aac_coder") + 1], "fast")   # a third less CPU per track
+        # One mixed track: the same sources, only the sum is kept.
+        mixed, _, _ = encoding.command(self.cfg, self.display, "ffmpeg.exe", "amf", audio_pipes=pipes,
+                                       mix=encoding.mixed_inputs(plan), volumes=encoding.plan_volumes(plan),
+                                       separate=False)
+        self.assertEqual(self.maps(mixed), ["0:v:0", "[mix]"])
+        self.assertIn("[3:a]volume=0.30[m2]", mixed[mixed.index("-filter_complex") + 1])
+        # Without Game audio, and with the microphone off.
+        quiet = encoding.audio_plan(cfg, dict(replay, game_track=False, microphone=False), build=26300)
+        self.assertEqual([t for t, _ in quiet], ["Discord", "Spotify"])
+
+    def test_one_track_at_full_volume_needs_no_filter(self):
+        args = encoding.audio_maps([("p", "Microphone")])
+        self.assertEqual(args, ["-map", "1:a:0", "-metadata:s:a:0", "title=Microphone"])
+        quieter = encoding.audio_maps([("p", "Microphone")], volumes=[0.5])
+        self.assertEqual(quieter, ["-filter_complex", "[1:a]volume=0.50[s0]", "-map", "[s0]", "-metadata:s:a:0",
+                                   "title=Microphone"])
 
     def test_recordings_use_the_track_layout_with_their_own_switches(self):
-        replay = config.validate({"replay": {"audio_tracks": "separate", "separate_apps": ["Discord"]}})["replay"]
+        replay = config.validate({"replay": {"sources": "specific", "separate_apps": ["Discord"]}})["replay"]
         quiet = dict(self.cfg, system_audio=False, microphone=False)
         self.assertEqual(encoding.audio_plan(quiet, replay, build=26300, recording=True), [])
         voice = dict(self.cfg, system_audio=False, microphone=True)
-        plan = encoding.audio_plan(voice, replay, build=26300, recording=True)
-        self.assertEqual([title for title, _ in plan], ["Discord", "Microphone"])
+        self.assertEqual([t for t, _ in encoding.audio_plan(voice, replay, build=26300, recording=True)], ["Microphone"])
+        both = dict(self.cfg, system_audio=True, microphone=True)
+        self.assertEqual([t for t, _ in encoding.audio_plan(both, replay, build=26300, recording=True)],
+                         ["Game audio", "Discord", "Microphone"])
 
-    def test_separate_tracks_refuse_windows_10(self):
-        replay = config.validate({"replay": {"audio_tracks": "separate", "separate_apps": ["firefox"]}})["replay"]
+    def test_specific_apps_refuse_windows_10_and_bad_volumes(self):
+        replay = config.validate({"replay": {"sources": "specific", "separate_apps": ["firefox"]}})["replay"]
         with self.assertRaisesRegex(RecorderError, "Windows 11"):
-            encoding.audio_plan(self.cfg, replay, build=19045)
+            encoding.audio_plan(dict(self.cfg, system_audio=True), replay, build=19045)
+        for bad in ({"sources": "some"}, {"volumes": {"game": 120}}, {"volumes": {"game": True}}, {"game_track": 1}):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                config.validate({"replay": bad})
 
     def test_app_audio_is_relayed_and_its_error_reported(self):
         from jarvis.windows import audio
