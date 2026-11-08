@@ -553,7 +553,7 @@ impl Service {
             Some(Ok("Closing Jarvis. Open it again from your app menu or with: jarvis".into()))
         } else if action == "dictation_start" {
             Some(
-                self.start_dictation(Some(phrase))
+                self.start_dictation(Some(dictation::spoken(phrase, heard.as_ref())))
                     .await
                     .map(|_| "Dictation starting · speak into the focused text field".into()),
             )

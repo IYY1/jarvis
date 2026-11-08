@@ -344,7 +344,7 @@ class Service:
                     if accepted:
                         self.message = "Processing command…"
                         self.publish()
-                        await self.execute(event["text"])
+                        await self.execute(event["text"], event.get("heard") if event.get("closest_match") else None)
                         if event.get("closest_match") and event.get("heard"):
                             # Say what was actually heard, so a wrong guess is visible.
                             self.message = f"Heard “{event['heard']}” → {event['text']}. {self.message}"
@@ -542,7 +542,9 @@ class Service:
         if stop:
             await self.stop_dictation()
 
-    async def execute(self, phrase):
+    async def execute(self, phrase, heard=None):
+        """``heard`` is what the worker heard when it matched ``phrase`` (اسمعني
+        arrives as “listen to me”); it picks the dictation language."""
         async with self.action_lock:
             intent = None
             try:
@@ -554,7 +556,7 @@ class Service:
                     return {"ok": True, "message": self.message}
                 if intent.action in ("dictation_start", "dictation_stop"):
                     if intent.action == "dictation_start":
-                        await self.start_dictation(phrase)
+                        await self.start_dictation(heard or phrase)
                         self.message = "Dictation starting · speak into the focused text field"
                     else:
                         await self.stop_dictation()

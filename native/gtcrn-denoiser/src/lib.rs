@@ -99,7 +99,9 @@ impl Denoiser {
             ]),
             "Unexpected GTCRN outputs"
         );
-        let model = loader.model_for_proto_model(&proto)?.into_optimized()?;
+        let model = loader.model_for_proto_model(&proto)?;
+        drop(proto);
+        let model = model.into_optimized()?;
         ensure!(
             model.input_outlets()?.len() == 4 && model.output_outlets()?.len() == 4,
             "GTCRN must have four inputs and outputs"

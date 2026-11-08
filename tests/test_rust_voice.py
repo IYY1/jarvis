@@ -408,7 +408,8 @@ class RustEngineTests(unittest.TestCase):
                         await service.start_worker("once")
                         self.assertEqual(Path(f"/proc/{service.worker.pid}/exe").resolve().name, "jarvis-voice")
                         await asyncio.wait_for(service.voice_task, 12)
-                        service.execute.assert_awaited_once_with("go forward ten meters")
+                        service.execute.assert_awaited_once()
+                        self.assertEqual(service.execute.await_args.args[0], "go forward ten meters")
                         self.assertEqual(service.engine, "vosk")
                         self.assertIsNone(service.worker)
                     finally:

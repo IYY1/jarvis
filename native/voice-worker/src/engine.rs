@@ -33,6 +33,53 @@ fn default_close_verbs() -> Vec<String> {
 }
 
 #[cfg(test)]
+mod early_tests {
+    use super::*;
+    use std::time::{Duration, Instant};
+
+    struct Slow(Duration);
+    fn slow_len(model: &Slow, audio: &[u8]) -> Result<usize> {
+        std::thread::sleep(model.0);
+        Ok(audio.len())
+    }
+    fn fails(_: &Slow, _: &[u8]) -> Result<usize> {
+        Err("corrupt GTCRN".into())
+    }
+    fn panics(_: &Slow, _: &[u8]) -> Result<usize> {
+        panic!("GTCRN kernel panicked")
+    }
+
+    #[test]
+    fn joined_result_and_errors_reach_the_caller() {
+        let model = Arc::new(Slow(Duration::from_millis(50)));
+        assert_eq!(finish(early(model.clone(), &[0; 960], slow_len).unwrap()).unwrap(), 960);
+        let error = finish(early(model.clone(), &[], fails).unwrap()).err().unwrap();
+        assert_eq!(error.to_string(), "corrupt GTCRN");
+        let error = finish(early(model, &[], panics).unwrap()).err().unwrap();
+        assert_eq!(error.to_string(), "Denoiser stopped unexpectedly");
+    }
+
+    /// An Arabic match drops the handle while GTCRN is still running: the
+    /// caller must not wait, and the model handle must go away afterwards so
+    /// an idle release can free the weights.
+    #[test]
+    fn dropping_a_running_handle_detaches_and_later_frees_the_model() {
+        let model = Arc::new(Slow(Duration::from_millis(300)));
+        let start = Instant::now();
+        let handle = early(model.clone(), &[0; 960], slow_len).unwrap();
+        std::thread::sleep(Duration::from_millis(20));
+        assert_eq!(Arc::strong_count(&model), 2, "the thread holds the model");
+        drop(handle);
+        assert!(start.elapsed() < Duration::from_millis(150), "the caller waited");
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while Arc::strong_count(&model) > 1 {
+            assert!(Instant::now() < deadline, "the detached thread kept the model");
+            std::thread::sleep(Duration::from_millis(10));
+        }
+    }
+}
+
+#[cfg(test)]
 mod confidence_tests {
     use super::*;
     use serde_json::json;
@@ -50,6 +97,15 @@ mod confidence_tests {
         ] {
             assert!(complete_confidence(&bad).is_none(), "{bad}");
         }
+    }
+    #[test]
+    fn arabic_hears_the_100_ms_before_the_wake_name_ends() {
+        let audio: Vec<u8> = (0..64000u32).map(|i| i as u8).collect();
+        assert_eq!(arabic_lead(&audio, 32000), &audio[28800..32000]);
+        assert_eq!(arabic_lead(&audio, 32001), &audio[28800..32000]); // odd cut: whole samples
+        assert_eq!(arabic_lead(&audio, 1000), &audio[..1000]);
+        assert!(arabic_lead(&audio, 0).is_empty());
+        assert_eq!(arabic_lead(&audio, 90000), &audio[60800..]);
     }
 }
 
@@ -120,6 +176,35 @@ pub struct Engine {
     pub unsupported: Vec<String>,
     pub unmatched: Option<String>,
     pub name: String,
+}
+
+type Early<R> = std::thread::JoinHandle<std::result::Result<R, String>>;
+
+/// Starts `work` on a short-lived jarvis-denoise thread with its own handle
+/// to the model and a copy of the audio. Dropping the returned handle detaches
+/// the thread: it finishes on its own and then drops the model handle, so an
+/// idle release still frees the weights. None if no thread could start.
+fn early<T, R>(
+    model: Arc<T>,
+    audio: &[u8],
+    work: fn(&T, &[u8]) -> Result<R>,
+) -> Option<Early<R>>
+where
+    T: Send + Sync + 'static,
+    R: Send + 'static,
+{
+    let audio = audio.to_vec();
+    std::thread::Builder::new()
+        .name("jarvis-denoise".into())
+        .spawn(move || work(&model, &audio).map_err(|e| e.to_string()))
+        .ok()
+}
+
+/// The early result; a panic in the thread becomes an error, not an unwind.
+fn finish<R>(handle: Early<R>) -> Result<R> {
+    Ok(handle
+        .join()
+        .map_err(|_| "Denoiser stopped unexpectedly")??)
 }
 
 fn token(word: &str) -> bool {
@@ -286,6 +371,15 @@ fn complete_confidence(result: &Value) -> Option<f64> {
     (spoken.join(" ") == text(result)).then_some(minimum)
 }
 
+/// The 100 ms before `cut` (where Vosk heard the wake name end), for the
+/// Arabic pass only: English Vosk often stretches “jarvis” over the first
+/// syllable of an Arabic word said in the same breath, and without it the
+/// Arabic model hears اسمعني as “معني” or “ما عليه”.
+fn arabic_lead(audio: &[u8], cut: usize) -> &[u8] {
+    let end = (cut - cut % 2).min(audio.len());
+    &audio[end.saturating_sub(3200)..end]
+}
+
 impl Engine {
     /// Only the explicit attribution probe bypasses normal gating/matching.
     pub(crate) fn history_decoder(&self, name: &str) -> Result<&Decoder> {
@@ -317,8 +411,9 @@ impl Engine {
         };
         let arabic = if let Some(directory) = &native.arabic {
             let directory = directory.clone();
+            let threads = native.threads as usize;
             let load: Loader<Arabic> =
-                Arc::new(move || Arabic::load(&directory).map_err(|e| e.to_string()));
+                Arc::new(move || Arabic::load(&directory, threads).map_err(|e| e.to_string()));
             let idle = native.whisper_idle_seconds.map(Duration::from_secs_f64);
             Some(OnDemand::new(load, idle)?)
         } else {
@@ -598,8 +693,10 @@ impl Engine {
         self.utterance_bytes = 0;
         self.open_text.clear();
         self.wake_audio.clear();
+        self.wake_audio.shrink_to(32000);
         self.wake_start = self.stream_bytes;
         self.command_audio.clear();
+        self.command_audio.shrink_to(32000);
         self.held_audio.clear();
         self.held_heard.clear();
         self.early_tried = None;
@@ -662,11 +759,11 @@ impl Engine {
         if self.vosk_fast_path {
             return;
         }
-        if let Some(whisper) = &mut self.whisper {
-            whisper.prepare();
-        }
         if let Some(arabic) = &mut self.arabic {
             arabic.prepare();
+        }
+        if let Some(whisper) = &mut self.whisper {
+            whisper.prepare();
         }
     }
     pub fn recognition_stats(&self) -> Value {
@@ -881,7 +978,7 @@ impl Engine {
             return Ok(None);
         }
         let result = self.command.result(true)?;
-        self.command_result(result)
+        self.command_result(result, &[])
     }
     fn decode(&mut self, pcm: &[u8]) -> Result<Option<Recognition>> {
         self.utterance_bytes += pcm.len();
@@ -925,7 +1022,7 @@ impl Engine {
         }
         if self.command.accept(pcm)? {
             self.utterance_bytes = 0;
-            return self.command_result(self.command.result(self.finalize_utterances)?);
+            return self.command_result(self.command.result(self.finalize_utterances)?, &[]);
         }
         Ok(None)
     }
@@ -980,6 +1077,7 @@ impl Engine {
             let end = (name.last().unwrap()["end"].as_f64().unwrap_or(0.0) - TAIL_MARGIN).max(0.0);
             let cut = ((end * 16000.0) as usize * 2).saturating_sub(start);
             let tail = &audio[(cut - cut % 2).min(audio.len())..];
+            let lead = arabic_lead(audio, cut);
             crate::trace(serde_json::json!({"step":"command in the same breath","text":text,"confidence":conf,
                 "tail_seconds":tail.len() as f64 / 32000.0,"accepted":!text.contains("[unk]") && self.matcher.accepts(&text)}));
             if !text.contains("[unk]")
@@ -989,9 +1087,10 @@ impl Engine {
                 self.pending = self.command_from_audio(
                     tail,
                     Some(serde_json::json!({"text":text,"result":rest})),
+                    lead,
                 )?;
             } else if !audio.is_empty() {
-                self.pending = self.command_from_audio(tail, None)?;
+                self.pending = self.command_from_audio(tail, None, lead)?;
             }
         }
         // Part of a command said in this breath is finished after the pause.
@@ -1006,10 +1105,12 @@ impl Engine {
             None,
         )))
     }
+    /// `lead` is audio from just before `audio` that only the Arabic pass hears.
     fn command_from_audio(
         &mut self,
         audio: &[u8],
         strict: Option<Value>,
+        lead: &[u8],
     ) -> Result<Option<Recognition>> {
         if strict.is_none() && audio.len() < 6400 {
             crate::trace(serde_json::json!({"step":"too little audio after the name","seconds":audio.len() as f64 / 32000.0}));
@@ -1028,9 +1129,9 @@ impl Engine {
             self.command.accept(audio)?;
             self.command.result(true)?
         };
-        self.command_result(strict)
+        self.command_result(strict, lead)
     }
-    fn command_result(&mut self, result: Value) -> Result<Option<Recognition>> {
+    fn command_result(&mut self, result: Value, lead: &[u8]) -> Result<Option<Recognition>> {
         let canonical = self.canonical(&text(&result));
         if let Some(open) = &self.open {
             self.open_text.push(text(&open.result(true)?));
@@ -1074,12 +1175,22 @@ impl Engine {
                 return Ok(Some(recognition));
             }
         }
+        // While Moonshine listens, denoise Whisper's input on another thread
+        // when Whisper is already loaded: GTCRN takes about as long as the
+        // Arabic pass, and English commands need both. An Arabic match leaves
+        // the thread to finish on its own; its result is then unused.
+        let early = match (&self.whisper, &self.arabic) {
+            (Some(whisper), Some(_)) if !audio.is_empty() => whisper
+                .ready()
+                .and_then(|model| early(model, &audio, |m, a| m.command_input(a))),
+            _ => None,
+        };
         // Arabic first: its transcript is accepted only when it is one of the
         // supported Arabic commands, so English speech (which this model
         // writes as Arabic-script sounds) falls through to Whisper unchanged.
         if let Some(arabic) = &mut self.arabic {
             if !audio.is_empty() {
-                let heard_ar = phrase(&arabic.get()?.transcribe(&audio)?);
+                let heard_ar = phrase(&arabic.get()?.transcribe(&[lead, &audio[..]].concat())?);
                 if jarvis_phrases::arabic::has_arabic(&heard_ar)
                     && jarvis_phrases::arabic::translate(
                         &heard_ar,
@@ -1102,7 +1213,10 @@ impl Engine {
             if !audio.is_empty() {
                 self.whisper_commands += 1;
                 let model = whisper.get()?;
-                let mut accurate = spoken(phrase(&model.transcribe(&audio)?));
+                let mut accurate = spoken(phrase(&match early {
+                    Some(denoising) => model.transcribe_input(finish(denoising)?)?,
+                    None => model.transcribe(&audio)?,
+                }));
                 let mut accurate_match = self.matcher.closest(&accurate);
                 if accurate_match.is_none() && earlier && !latest.is_empty() {
                     let alone = spoken(phrase(&model.transcribe(&latest)?));

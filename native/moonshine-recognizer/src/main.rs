@@ -20,6 +20,13 @@ fn memory() -> Value {
     json!({"rss_mib":mib("VmRSS:"),"peak_rss_mib":mib("VmHWM:")})
 }
 
+fn trim() {
+    #[cfg(all(target_os = "linux", target_env = "gnu"))]
+    unsafe {
+        libc::malloc_trim(0);
+    }
+}
+
 fn run() -> TractResult<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
     if args == ["--version"] {
@@ -30,16 +37,28 @@ fn run() -> TractResult<()> {
         ));
         return Ok(());
     }
+    let mut args = args;
+    let threads = if let Some(i) = args.iter().position(|a| a == "--threads") {
+        if i + 1 >= args.len() {
+            return Err(format_err!("--threads requires a number"));
+        }
+        let n = args.remove(i + 1).parse::<usize>()?;
+        args.remove(i);
+        n
+    } else {
+        1
+    };
     let [flag, dir] = &args[..] else {
         return Err(format_err!(
-            "Use jarvis-moonshine --batch MODEL_DIR, then {{\"path\": FILE.s16le}} lines"
+            "Use jarvis-moonshine [--threads N] --batch MODEL_DIR, then {{\"path\": FILE.s16le}} lines"
         ));
     };
     if flag != "--batch" {
         return Err(format_err!("Use --batch MODEL_DIR"));
     }
     let start = Instant::now();
-    let model = Recognizer::load(dir)?;
+    let model = Recognizer::load_with_threads(dir, threads)?;
+    trim();
     println!(
         "{}",
         json!({"event":"ready","load_seconds":start.elapsed().as_secs_f64(),"memory":memory()})
@@ -61,9 +80,11 @@ fn run() -> TractResult<()> {
             .collect();
         let start = Instant::now();
         let text = model.transcribe(&samples)?;
+        let seconds = start.elapsed().as_secs_f64();
+        trim();
         println!(
             "{}",
-            json!({"event":"result","text":text,"seconds":start.elapsed().as_secs_f64(),"memory":memory()})
+            json!({"event":"result","text":text,"seconds":seconds,"memory":memory()})
         );
     }
     Ok(())

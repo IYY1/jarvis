@@ -7,6 +7,9 @@ use libloading::Library;
 use serde_json::Value;
 use std::ffi::{c_char, c_int, c_void, CStr, CString};
 use std::rc::Rc;
+use std::sync::Mutex;
+
+static LOAD_LOCK: Mutex<()> = Mutex::new(());
 
 type Handle = *mut c_void;
 struct Api {
@@ -168,15 +171,35 @@ impl Transcriber {
         Self::load(files, config.denoiser.as_deref(), config.threads as usize)
     }
     pub fn load(files: &WhisperFiles, denoiser: Option<&str>, threads: usize) -> Result<Self> {
-        let recognizer = Recognizer::load(&files.encoder, &files.decoder, &files.tokens, threads)?;
+        let _guard = LOAD_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        // GTCRN compiles on its own thread while Whisper loads. Errors keep
+        // their order: Whisper's first, then the model check, then GTCRN's.
+        let (recognizer, denoiser) = std::thread::scope(|scope| {
+            let gtcrn = denoiser.map(|path| {
+                std::thread::Builder::new()
+                    .name("whisper-load".into())
+                    .stack_size(8 << 20)
+                    .spawn_scoped(scope, move || Denoiser::load(path).map_err(|e| e.to_string()))
+            });
+            let recognizer =
+                Recognizer::load(&files.encoder, &files.decoder, &files.tokens, threads);
+            let denoiser = match gtcrn {
+                // No thread could start: load here, as before.
+                Some(Err(_)) => Some(Denoiser::load(denoiser.unwrap()).map_err(|e| e.to_string())),
+                Some(Ok(handle)) => Some(
+                    handle
+                        .join()
+                        .unwrap_or_else(|_| Err("GTCRN loader stopped unexpectedly".into())),
+                ),
+                None => None,
+            };
+            (recognizer, denoiser)
+        });
+        let recognizer = recognizer?;
         if recognizer.multilingual() {
             return Err("Commands use an English Whisper model; Arabic uses the Arabic model".into());
         }
-        let denoiser = if let Some(path) = denoiser {
-            Some(Denoiser::load(path)?)
-        } else {
-            None
-        };
+        let denoiser = denoiser.transpose()?;
         trim();
         Ok(Self {
             recognizer,
@@ -184,10 +207,17 @@ impl Transcriber {
         })
     }
     pub fn transcribe(&self, pcm: &[u8]) -> Result<String> {
+        let input = self.command_input(pcm)?;
+        self.transcribe_input(input)
+    }
+    /// Command audio as Whisper hears it: scaled and, with GTCRN on,
+    /// denoised; None when it is too short to transcribe. Split from
+    /// `transcribe` so a command can be denoised while Moonshine listens.
+    pub fn command_input(&self, pcm: &[u8]) -> Result<Option<Vec<f32>>> {
         if pcm.len() > 320000 {
             return Err("Command audio exceeds ten seconds".into());
         }
-        self.recognize(pcm)
+        self.input(pcm)
     }
     /// Dictated speech, up to 20 seconds per segment.
     pub fn dictate(&self, pcm: &[u8]) -> Result<Text> {
@@ -195,18 +225,25 @@ impl Transcriber {
             return Err("Dictation segment exceeds twenty seconds".into());
         }
         Ok(Text {
-            text: self.recognize(pcm)?,
+            text: self.transcribe_input(self.input(pcm)?)?,
             language: "en",
         })
     }
-    fn recognize(&self, pcm: &[u8]) -> Result<String> {
+    fn input(&self, pcm: &[u8]) -> Result<Option<Vec<f32>>> {
         if pcm.len() < 6400 {
-            return Ok(String::new());
+            return Ok(None);
         }
         let mut samples = samples(pcm);
         if let Some(denoiser) = &self.denoiser {
             samples = denoiser.process(&samples)?;
         }
+        Ok(Some(samples))
+    }
+    /// Whisper's transcript of `command_input`'s result.
+    pub fn transcribe_input(&self, input: Option<Vec<f32>>) -> Result<String> {
+        let Some(samples) = input else {
+            return Ok(String::new());
+        };
         let text = self.recognizer.transcribe(&samples)?;
         drop(samples);
         trim();
@@ -221,8 +258,11 @@ pub struct Arabic {
     recognizer: jarvis_moonshine::Recognizer,
 }
 impl Arabic {
-    pub fn load(directory: &str) -> Result<Self> {
-        let recognizer = jarvis_moonshine::Recognizer::load(directory)?;
+    /// `threads` splits Moonshine's matrix products like Whisper's; each
+    /// output tile still comes from one thread, so transcripts are unchanged.
+    pub fn load(directory: &str, threads: usize) -> Result<Self> {
+        let _guard = LOAD_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        let recognizer = jarvis_moonshine::Recognizer::load_with_threads(directory, threads)?;
         trim();
         Ok(Self { recognizer })
     }
@@ -230,7 +270,9 @@ impl Arabic {
         if pcm.len() > 640000 {
             return Err("Arabic audio exceeds twenty seconds".into());
         }
-        let text = self.recognizer.transcribe(&samples(pcm))?;
+        let samples = samples(pcm);
+        let text = self.recognizer.transcribe(&samples)?;
+        drop(samples);
         trim();
         Ok(text)
     }
@@ -285,4 +327,68 @@ unsafe fn load(path: &str) -> std::result::Result<Library, libloading::Error> {
 #[cfg(not(windows))]
 unsafe fn load(path: &str) -> std::result::Result<Library, libloading::Error> {
     Library::new(path)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn whisper_load_errors_come_before_denoiser_errors() {
+        let missing = WhisperFiles {
+            encoder: "/nonexistent/tiny.en-encoder.int8.onnx".into(),
+            decoder: "/nonexistent/tiny.en-decoder.int8.onnx".into(),
+            tokens: "/nonexistent/tiny.en-tokens.txt".into(),
+        };
+        let both = Transcriber::load(&missing, Some("/nonexistent/gtcrn.onnx"), 2)
+            .err()
+            .unwrap()
+            .to_string();
+        let whisper_only = Transcriber::load(&missing, None, 2).err().unwrap().to_string();
+        assert_eq!(both, whisper_only, "the denoiser error must not win");
+    }
+    /// The early-denoise path (command_input, then transcribe_input) must give
+    /// exactly what transcribe gives. Runs with JARVIS_WHISPER_MODEL (a
+    /// sherpa-onnx Whisper folder), JARVIS_GTCRN_MODEL and
+    /// JARVIS_SPEECH_TEST_RAW; skipped otherwise.
+    #[test]
+    fn split_whisper_path_matches_transcribe() {
+        let (Ok(folder), Ok(gtcrn), Ok(raw)) = (
+            std::env::var("JARVIS_WHISPER_MODEL"),
+            std::env::var("JARVIS_GTCRN_MODEL"),
+            std::env::var("JARVIS_SPEECH_TEST_RAW"),
+        ) else {
+            eprintln!("skipped: set JARVIS_WHISPER_MODEL, JARVIS_GTCRN_MODEL, JARVIS_SPEECH_TEST_RAW");
+            return;
+        };
+        let file = |suffix: &str| {
+            std::fs::read_dir(&folder)
+                .unwrap()
+                .map(|e| e.unwrap().path())
+                .find(|p| p.to_string_lossy().ends_with(suffix))
+                .unwrap()
+                .to_string_lossy()
+                .into_owned()
+        };
+        let files = WhisperFiles {
+            encoder: file("-encoder.int8.onnx"),
+            decoder: file("-decoder.int8.onnx"),
+            tokens: file("-tokens.txt"),
+        };
+        let pcm = std::fs::read(raw).unwrap();
+        let pcm = &pcm[..pcm.len().min(320000) / 2 * 2];
+        for denoiser in [Some(gtcrn.as_str()), None] {
+            let model = Transcriber::load(&files, denoiser, 4).unwrap();
+            let whole = model.transcribe(pcm).unwrap();
+            assert!(!whole.is_empty());
+            let split = model
+                .transcribe_input(model.command_input(pcm).unwrap())
+                .unwrap();
+            assert_eq!(split, whole, "denoiser {denoiser:?}");
+            // Too short and too long behave the same on both paths.
+            assert!(model.command_input(&pcm[..6398]).unwrap().is_none());
+            assert_eq!(model.transcribe(&pcm[..6398]).unwrap(), "");
+            assert!(model.command_input(&vec![0; 320002]).is_err());
+            assert!(model.transcribe(&vec![0; 320002]).is_err());
+        }
+    }
 }
