@@ -902,6 +902,19 @@ class ReplaySaveTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             self.assertIn('kept only 47 of 60 seconds', self.saved(folder, 47, captured=300, seconds=60))
 
+    def test_an_mkv_clip_gets_no_names_file_and_an_mp4_a_hidden_one(self):
+        # Found on the user's PC: every MKV replay had a visible .tracks.json beside it,
+        # though MKV keeps its track titles itself.
+        import ctypes
+        from jarvis.replay import write_track_names
+        with tempfile.TemporaryDirectory() as folder:
+            write_track_names(Path(folder) / "Replay.mkv", ["All sound", "Game audio"])
+            self.assertEqual(list(Path(folder).iterdir()), [])
+            write_track_names(Path(folder) / "Clip.mp4", ["Game", "Discord"])
+            names = Path(folder) / ".Clip.mp4.tracks.json"
+            self.assertEqual(json.loads(names.read_text())["tracks"], ["Game", "Discord"])
+            self.assertTrue(ctypes.windll.kernel32.GetFileAttributesW(str(names)) & 0x2, "hidden on Windows")
+
     def test_segments_are_joined_one_second_apart(self):
         # Found on the real card: left to step by each segment's longest stream, the
         # join slipped the picture ~25 ms a second behind the sound.

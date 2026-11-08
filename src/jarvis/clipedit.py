@@ -470,7 +470,10 @@ class Export:
                 os.link(staging, self.output)
             staging.unlink()
             self.progress(1.0)
+            # The export names its tracks itself (see _titles); only a format
+            # that can't hold the names gets them in a hidden file beside it.
             names = [self.edit.sources[0].audio[t]["name"] for t in self.tracks if t < len(self.edit.sources[0].audio)]
-            if not self.mix and len(names) > 1:
-                (self.output.parent / f".{self.output.name}.tracks.json").write_text(json.dumps({"tracks": names}), encoding="utf-8")
+            from .replay import write_track_names
+            if not self.mix:
+                write_track_names(self.output, names)
             return self.output
