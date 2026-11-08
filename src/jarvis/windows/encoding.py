@@ -384,7 +384,9 @@ def command(cfg, display, binary, family, *, audio_pipes=(), screen_pipe=None, m
         args += ["-map", f"{index + 1}:a:0"]
         if title:
             args += [f"-metadata:s:a:{index + first}", f"title={title}"]
-    args += ["-c:a", "aac", "-b:a", "160k"] if audio_pipes else ["-an"]
+    # The fast AAC coder spends about a third less CPU per track than the default
+    # two-loop search, with no difference to hear at 160 kb/s.
+    args += ["-c:a", "aac", "-aac_coder", "fast", "-b:a", "160k"] if audio_pipes else ["-an"]
     # Native-size 8-bit NVENC/AMF keep D3D11 frames on the GPU. Scaling and
     # SDR-to-10-bit conversion explicitly download/process frames; encoding
     # remains on the requested GPU, with no silent software fallback.

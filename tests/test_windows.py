@@ -466,6 +466,7 @@ class EncoderTests(unittest.TestCase):
         self.assertEqual(maps, ["0:v:0", "[mix]", "1:a:0", "2:a:0", "3:a:0"])
         self.assertEqual(args[args.index("-metadata:s:a:0") + 1], f"title={encoding.MIXED_TITLE}")
         self.assertEqual(args[args.index("-metadata:s:a:2") + 1], "title=Firefox browser")
+        self.assertEqual(args[args.index("-aac_coder") + 1], "fast")   # a third less CPU per track
         # Without a program, the game track is all system sound.
         alone = dict(replay, separate_apps=[])
         self.assertEqual(encoding.audio_plan(cfg, alone, build=22631)[0][1]["track"],
