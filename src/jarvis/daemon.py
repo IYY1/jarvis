@@ -584,6 +584,12 @@ class Service:
             from .process_memory import snapshot
             return {"ok": True, "status": self.status(), "pid": os.getpid(), "memory": snapshot()}
         if op == "config":
+            if is_windows():   # Windows' own Startup apps switch may have changed it since
+                from .windows.startup import startup_enabled
+                on = await asyncio.to_thread(startup_enabled)
+                if on != self.config["startup"]:
+                    self.config["startup"] = on
+                    self.config = await asyncio.to_thread(configuration.save, self.config)
             return {"ok": True, "config": self.config}
         if op == "apps":
             # Pick up apps installed since the last scan (the UI asks on open/Reconnect).

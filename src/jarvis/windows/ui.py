@@ -172,6 +172,7 @@ class Window:
     def __init__(self, root, page="dashboard"):
         self.root = root
         self.config = config.load()
+        self.config["startup"] = self.windows_startup(self.config["startup"])
         self.events = queue.Queue(maxsize=128)
         self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="jarvis-settings")
         self.stop = threading.Event()
@@ -623,9 +624,28 @@ class Window:
         self.bubble.bind("<Button-1>", lambda _: self.hide_toast())   # a click anywhere on it, ✕ included, closes it
         # Follow the window. A tag only the main window carries: binding on the window itself
         # would also run for every widget inside it that changes size.
-        self.root.bindtags((*self.root.bindtags(), "JarvisToast"))
+        self.root.bindtags((*self.root.bindtags(), "JarvisWindow"))
         for sequence in ("<Configure>", "<Map>"):
-            self.root.bind_class("JarvisToast", sequence, lambda _: self.place_toast())
+            self.root.bind_class("JarvisWindow", sequence, lambda _: self.place_toast())
+        # Back to the window: Windows' Startup apps switch may have changed start-at-sign-in meanwhile.
+        self.root.bind_class("JarvisWindow", "<Activate>", lambda _: self.follow_windows_startup())
+
+    @staticmethod
+    def windows_startup(saved):
+        """Whether Windows will start Jarvis at sign-in, read from Windows; the saved setting elsewhere."""
+        if os.name != "nt":
+            return saved
+        from .startup import startup_enabled
+        try:
+            return startup_enabled()
+        except OSError:
+            return saved
+
+    def follow_windows_startup(self):
+        on = self.windows_startup(self.config["startup"])
+        if on != self.config["startup"]:
+            self.config["startup"] = on   # shown, not saved: the service reads Windows itself
+            self.variable("", "startup").set(on)
 
     def place_toast(self, show=False):
         """Keep the message at the bottom middle of the window; `show` when a message arrives.

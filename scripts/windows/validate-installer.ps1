@@ -172,9 +172,10 @@ if ($Phase -in 'all', 'install') {
 if ($Phase -in 'all', 'after-restart') {
   # Run after signing out/in or rebooting with start at sign-in on.
   Check 'restart: service started at sign-in' { Wait-Until { (Service-Status).state } 120 }
-  Check 'startup: off removes Run entry' {
+  Check 'startup: off keeps the Run entry and turns it off the way Windows does' {
     Console @('startup', 'off') | Out-Null
-    -not (Get-ItemProperty $runKey -Name Jarvis -ErrorAction SilentlyContinue)
+    $approved = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run'
+    (Get-ItemProperty $runKey -Name Jarvis -ErrorAction SilentlyContinue) -and ((Get-ItemProperty $approved -Name Jarvis).Jarvis[0] -eq 3)
   }
   Check 'restart: service restarts after shutdown' {
     Console @('shutdown') | Out-Null

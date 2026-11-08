@@ -63,6 +63,12 @@ class SettingsWindowTests(unittest.TestCase):
         offline = patch("jarvis.windows.ui.request", side_effect=OSError("service offline"))
         offline.start()
         self.addCleanup(offline.stop)
+        registry = patch("jarvis.windows.startup.startup_enabled", return_value=False)   # never this PC's registry
+        registry.start()
+        self.addCleanup(registry.stop)
+        writes = patch("jarvis.windows.startup.set_startup")
+        writes.start()
+        self.addCleanup(writes.stop)
         from jarvis.windows.ui import Window
         with patch.object(Window, "observe", lambda _window: None):   # no status watcher
             self.window = Window(self.root)
@@ -1411,6 +1417,80 @@ class StartupTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "nope"):
                 startup.configure_startup(False)
         registry.assert_not_called()
+
+    @staticmethod
+    def fake_registry():
+        """Just enough of winreg, in memory: the tests never touch the real registry."""
+        keys = {}
+
+        class Key:
+            def __init__(self, path, create):
+                if path not in keys and not create:
+                    raise FileNotFoundError(path)
+                self.values = keys.setdefault(path, {})
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_):
+                return False
+
+        def query(key, name):
+            if name not in key.values:
+                raise FileNotFoundError(name)
+            return key.values[name], 0
+
+        fake = types.SimpleNamespace(
+            HKEY_CURRENT_USER="HKCU", REG_SZ=1, REG_BINARY=3,
+            CreateKey=lambda root, path: Key(path, True), OpenKey=lambda root, path: Key(path, False),
+            SetValueEx=lambda key, name, _, kind, value: key.values.__setitem__(name, value),
+            QueryValueEx=query)
+        return fake, keys
+
+    def test_window_shows_what_windows_will_do_at_sign_in(self):
+        import tkinter
+        try:
+            root = tkinter.Tk()
+        except tkinter.TclError:
+            self.skipTest("no display for Tk")
+        root.withdraw()
+        self.addCleanup(root.destroy)
+        from jarvis.windows import startup
+        from jarvis.windows.ui import Window
+        with tempfile.TemporaryDirectory() as directory, \
+                patch.dict(os.environ, {"JARVIS_CONFIG": str(Path(directory) / "config.json")}), \
+                patch("jarvis.windows.ui.request", side_effect=OSError("offline")), \
+                patch.object(Window, "observe", lambda _window: None), \
+                patch.object(startup, "set_startup") as writes, \
+                patch.object(startup, "startup_enabled", return_value=True):
+            window = Window(root)
+            self.assertTrue(window.variable("", "startup").get())   # saved off, but Windows says on
+            with patch.object(startup, "startup_enabled", return_value=False), patch.object(window, "changed") as save:
+                window.follow_windows_startup()   # switched off in Windows' Settings meanwhile
+            self.assertFalse(window.variable("", "startup").get())
+            save.assert_not_called()
+            writes.assert_not_called()
+
+    def test_jarvis_and_windows_startup_apps_are_one_switch(self):
+        from jarvis.windows import startup
+        fake, keys = self.fake_registry()
+        with patch.dict("sys.modules", winreg=fake):
+            self.assertFalse(startup.startup_enabled())          # never set: not listed, off
+            startup.set_startup(False)
+            # Off from Jarvis: still listed in Windows' Startup apps, switched off there.
+            self.assertIn("--background", keys[startup.RUN]["Jarvis"])
+            self.assertEqual(keys[startup.APPROVED]["Jarvis"][0], 3)
+            self.assertEqual(len(keys[startup.APPROVED]["Jarvis"]), 12)
+            self.assertFalse(startup.startup_enabled())
+            startup.set_startup(True)
+            self.assertEqual(keys[startup.APPROVED]["Jarvis"], bytes([2]) + bytes(11))
+            self.assertTrue(startup.startup_enabled())
+            # Turned off in Windows' Settings (it writes 3 and a time): Jarvis reads it as off.
+            keys[startup.APPROVED]["Jarvis"] = bytes([3, 0, 0, 0]) + (133_000_000_000_000_000).to_bytes(8, "little")
+            self.assertFalse(startup.startup_enabled())
+            # An entry Windows has never switched has no flag: on.
+            del keys[startup.APPROVED]["Jarvis"]
+            self.assertTrue(startup.startup_enabled())
 
 
 class AudioTests(unittest.TestCase):

@@ -19,21 +19,46 @@ def startup_argv():
     ]
 
 
+RUN = r"Software\Microsoft\Windows\CurrentVersion\Run"
+# Where Windows keeps each Run entry's on/off: Settings > Apps > Startup and Task Manager's Startup tab.
+APPROVED = r"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"
+NAME = "Jarvis"
+
+
 def set_startup(enabled):
+    """On or off the way Windows' own Startup apps switch does it, so the two are one switch.
+
+    The Run entry always stays, so Jarvis is always listed in Windows' Startup apps;
+    on or off is Windows' flag beside it: 12 bytes, the first 2 for on and 3 for off,
+    and when it was turned off (a FILETIME), as Windows writes it.
+    """
+    import time
     import winreg
 
-    with winreg.CreateKey(
-        winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run"
-    ) as key:
-        if enabled:
-            winreg.SetValueEx(
-                key, "Jarvis", 0, winreg.REG_SZ, subprocess.list2cmdline(startup_argv())
-            )
-        else:
-            try:
-                winreg.DeleteValue(key, "Jarvis")
-            except FileNotFoundError:
-                pass
+    with winreg.CreateKey(winreg.HKEY_CURRENT_USER, RUN) as key:
+        winreg.SetValueEx(key, NAME, 0, winreg.REG_SZ, subprocess.list2cmdline(startup_argv()))
+    when = 0 if enabled else int((time.time() + 11644473600) * 10_000_000)   # since 1601, in 100 ns
+    flag = bytes([2 if enabled else 3, 0, 0, 0]) + when.to_bytes(8, "little")
+    with winreg.CreateKey(winreg.HKEY_CURRENT_USER, APPROVED) as key:
+        winreg.SetValueEx(key, NAME, 0, winreg.REG_BINARY, flag)
+
+
+def startup_enabled():
+    """Whether Windows will start Jarvis at sign-in, whichever switch changed it last:
+    Jarvis's own or Windows' Startup apps. No flag means on, as Windows reads it."""
+    import winreg
+
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, RUN) as key:
+            winreg.QueryValueEx(key, NAME)
+    except OSError:
+        return False
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, APPROVED) as key:
+            flag = winreg.QueryValueEx(key, NAME)[0]
+    except OSError:
+        return True
+    return not (isinstance(flag, bytes) and flag and flag[0] & 1)   # odd: turned off
 
 
 def configure_startup(enabled):

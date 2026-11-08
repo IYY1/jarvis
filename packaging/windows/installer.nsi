@@ -15,6 +15,8 @@ Unicode true
 !endif
 !define UNINSTALL_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\Jarvis"
 !define RUN_KEY "Software\Microsoft\Windows\CurrentVersion\Run"
+; Windows' own on/off for each Run entry (Settings > Apps > Startup); Jarvis's switch writes it too.
+!define APPROVED_KEY "Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"
 Name "Jarvis ${VERSION}"
 OutFile "${OUTPUT}"
 InstallDir "$LOCALAPPDATA\Programs\Jarvis"
@@ -167,6 +169,7 @@ Section "un.Jarvis program files (required)" UnSecMain
     Abort
   Call un.StopJarvis
   DeleteRegValue HKCU "${RUN_KEY}" "Jarvis"
+  DeleteRegValue HKCU "${APPROVED_KEY}" "Jarvis"
   DeleteRegKey HKCU "${UNINSTALL_KEY}"
   RMDir /r "$SMPROGRAMS\Jarvis"
   Delete "$DESKTOP\Jarvis.lnk"
