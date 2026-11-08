@@ -210,9 +210,11 @@ def apply(style, root, r):
     off = shapes.switch(r["line-strong"], r["card"], r["text-muted"], False)
     on = shapes.switch(r["accent"], r["card"], "#ffffff", True)
     style.element_create(switch, "image", off, ("selected", on), sticky="w")
+    # No focus frame: a switch has no text of its own (its title is beside it), so the
+    # frame was a dashed line next to the knob after every click.
     style.layout("TCheckbutton", [("Checkbutton.padding", {"sticky": "nsew", "children": [
         (switch, {"side": "left", "sticky": ""}),
-        ("Checkbutton.focus", {"side": "left", "sticky": "w", "children": [("Checkbutton.label", {"sticky": "nsew"})]})]})])
+        ("Checkbutton.label", {"side": "left", "sticky": "nsew"})]})])
 
     # A slim scrollbar with no arrows.
     bar = [("Vertical.Scrollbar.trough", {"sticky": "ns", "children": [
