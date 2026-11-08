@@ -289,10 +289,21 @@ class SettingsWindowTests(unittest.TestCase):
 
     def test_saved_settings_name_their_preset(self):
         video, variable = self.window.video, self.window.variable
-        for key, value in dict(codec="av1", resolution="native", fps=120, rate_control="bitrate", bitrate_auto=True).items():
+        for key, value in dict(codec="av1", resolution="1440", fps=120, rate_control="bitrate", bitrate_auto=True).items():
             variable("recording", key).set(value)
         video.match("recording")
-        self.assertEqual(video.presets["recording"].get(), "High frame rate · 120 fps")
+        self.assertEqual(video.presets["recording"].get(), "Extra high · 2K, 120 fps")
+
+    def test_quality_levels_go_from_light_to_heavy_and_keep_ten_bit(self):
+        from jarvis.windows.video_settings import PRESETS
+        self.assertEqual(list(PRESETS), ["Medium · 720p, 60 fps", "High · 1080p, 60 fps", "Extra high · 2K, 120 fps",
+                                         "Maximum · 2K, 240 fps", "High quality · 10-bit"])
+        self.assertEqual(PRESETS["High quality · 10-bit"], ("ten", "native", 60, "quality", "ultra"))   # unchanged
+        video, variable = self.window.video, self.window.variable
+        video.presets["recording"].set("Medium · 720p, 60 fps")
+        video.apply("recording")
+        self.assertEqual((variable("recording", "resolution").get(), int(float(variable("recording", "fps").get())),
+                          variable("recording", "codec").get()), ("720", 60, "auto"))
 
     def test_replay_page_says_whether_the_budget_holds_the_length(self):
         video, variable = self.window.video, self.window.variable
@@ -450,19 +461,19 @@ class SettingsWindowTests(unittest.TestCase):
     def test_windows_240fps_preset_and_replay_profile_save_independently(self):
         video = self.window.video
         video.formats = {"av1": True, "av1_10bit": True}
-        video.presets['recording'].set('High frame rate · 240 fps')
+        video.presets['recording'].set('Maximum · 2K, 240 fps')
         video.apply('recording')
         self.window.variable('replay', 'own_video').set(True)
-        video.presets['replay'].set('Small files · 1080p')
+        video.presets['replay'].set('High · 1080p, 60 fps')
         video.apply('replay')
         self.window.save()
         self.finish()
         saved = config.load()
-        self.assertEqual(saved['recording']['fps'], 240)
+        self.assertEqual((saved['recording']['fps'], saved['recording']['resolution']), (240, '1440'))
         self.assertEqual(saved['recording']['codec'], 'auto')   # the GPU's best, chosen when capture starts
         self.assertTrue(saved['recording']['bitrate_auto'])
         self.assertTrue(saved['replay']['own_video'])
-        self.assertEqual((saved['replay']['fps'], saved['replay']['resolution']), (30, '1080'))
+        self.assertEqual((saved['replay']['fps'], saved['replay']['resolution']), (60, '1080'))
 
     def test_windows_arabic_dictation_controls_save_and_dispatch(self):
         self.window.arabic_enabled.set(True)

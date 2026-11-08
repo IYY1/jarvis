@@ -5,13 +5,15 @@ from tkinter import ttk
 
 from ..encoding import REPLAY_VIDEO, replay_fit_seconds, storage_estimate, auto_bitrate
 
+# Quality levels, lightest first: (format, resolution limit, fps, size control, quality).
+# "best" is Automatic, the best format the GPU encodes. A resolution limit never
+# scales up, so 2K on a 1080p screen records 1080p. Every detail stays editable below.
 PRESETS = {
-    "Recommended": ("best", "native", 60, "bitrate", "very_high"),
+    "Medium · 720p, 60 fps": ("best", "720", 60, "bitrate", "high"),
+    "High · 1080p, 60 fps": ("best", "1080", 60, "bitrate", "very_high"),
+    "Extra high · 2K, 120 fps": ("best", "1440", 120, "bitrate", "very_high"),
+    "Maximum · 2K, 240 fps": ("best", "1440", 240, "bitrate", "very_high"),
     "High quality · 10-bit": ("ten", "native", 60, "quality", "ultra"),
-    "High frame rate · 120 fps": ("best", "native", 120, "bitrate", "very_high"),
-    "High frame rate · 240 fps": ("best", "native", 240, "bitrate", "very_high"),
-    "Small files · 1080p": ("best", "1080", 30, "bitrate", "very_high"),
-    "Compatible · H.264": ("h264", "native", 60, "bitrate", "very_high"),
 }
 
 
