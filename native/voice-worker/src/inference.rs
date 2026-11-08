@@ -172,15 +172,34 @@ impl Transcriber {
     }
     pub fn load(files: &WhisperFiles, denoiser: Option<&str>, threads: usize) -> Result<Self> {
         let _guard = LOAD_LOCK.lock().unwrap_or_else(|e| e.into_inner());
-        let recognizer = Recognizer::load(&files.encoder, &files.decoder, &files.tokens, threads)?;
+        // GTCRN compiles on its own thread while Whisper loads. Errors keep
+        // their order: Whisper's first, then the model check, then GTCRN's.
+        let (recognizer, denoiser) = std::thread::scope(|scope| {
+            let gtcrn = denoiser.map(|path| {
+                std::thread::Builder::new()
+                    .name("whisper-load".into())
+                    .stack_size(8 << 20)
+                    .spawn_scoped(scope, move || Denoiser::load(path).map_err(|e| e.to_string()))
+            });
+            let recognizer =
+                Recognizer::load(&files.encoder, &files.decoder, &files.tokens, threads);
+            let denoiser = match gtcrn {
+                // No thread could start: load here, as before.
+                Some(Err(_)) => Some(Denoiser::load(denoiser.unwrap()).map_err(|e| e.to_string())),
+                Some(Ok(handle)) => Some(
+                    handle
+                        .join()
+                        .unwrap_or_else(|_| Err("GTCRN loader stopped unexpectedly".into())),
+                ),
+                None => None,
+            };
+            (recognizer, denoiser)
+        });
+        let recognizer = recognizer?;
         if recognizer.multilingual() {
             return Err("Commands use an English Whisper model; Arabic uses the Arabic model".into());
         }
-        let denoiser = if let Some(path) = denoiser {
-            Some(Denoiser::load(path)?)
-        } else {
-            None
-        };
+        let denoiser = denoiser.transpose()?;
         trim();
         Ok(Self {
             recognizer,
@@ -285,4 +304,23 @@ unsafe fn load(path: &str) -> std::result::Result<Library, libloading::Error> {
 #[cfg(not(windows))]
 unsafe fn load(path: &str) -> std::result::Result<Library, libloading::Error> {
     Library::new(path)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn whisper_load_errors_come_before_denoiser_errors() {
+        let missing = WhisperFiles {
+            encoder: "/nonexistent/tiny.en-encoder.int8.onnx".into(),
+            decoder: "/nonexistent/tiny.en-decoder.int8.onnx".into(),
+            tokens: "/nonexistent/tiny.en-tokens.txt".into(),
+        };
+        let both = Transcriber::load(&missing, Some("/nonexistent/gtcrn.onnx"), 2)
+            .err()
+            .unwrap()
+            .to_string();
+        let whisper_only = Transcriber::load(&missing, None, 2).err().unwrap().to_string();
+        assert_eq!(both, whisper_only, "the denoiser error must not win");
+    }
 }
