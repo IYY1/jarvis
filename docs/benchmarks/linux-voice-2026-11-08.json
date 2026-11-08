@@ -2,34 +2,78 @@
  "date": "2026-11-08",
  "machine": "AMD Ryzen 7 7800X3D, 16 logical CPUs, Linux 7.3 CachyOS; the live Jarvis service kept running during the runs",
  "base": "84515ef",
- "script": "scripts/benchmark_linux_voice.py; load wall time and equality corpus from ad-hoc probes described in docs/performance.md",
+ "script": "scripts/benchmark_linux_voice.py (paced default; --engine, --load and --equality modes)",
  "config": "wake jarvis/alfred, ar_en (Moonshine Streaming Tiny Arabic), Whisper tiny.en int8, GTCRN on, closest_match on, finalized Vosk utterances, 8 threads",
  "fixture_paced": "build/memory-plan-corpus/new-clip-final-five-seconds.raw (user-confirmed 'Jarvis, clip that')",
  "output_equality_base_vs_final": {
-  "moonshine": {
-   "files": 274,
-   "identical": 274,
-   "decode_seconds_sum": [
-    46.88,
-    24.91
-   ]
+  "first_run_ad_hoc_probe": {
+   "moonshine": {
+    "files": 274,
+    "identical": 274,
+    "decode_seconds_sum": [
+     46.88,
+     24.91
+    ]
+   },
+   "whisper": {
+    "files": 274,
+    "identical": 274,
+    "decode_seconds_sum": [
+     26.26,
+     26.27
+    ]
+   },
+   "engine": {
+    "requests": 464,
+    "identical_events": 464,
+    "requests_with_events": 35,
+    "seconds_sum": [
+     188.68,
+     165.35
+    ]
+   }
   },
-  "whisper": {
-   "files": 274,
-   "identical": 274,
-   "decode_seconds_sum": [
-    26.26,
-    26.27
-   ]
-  },
-  "engine": {
-   "requests": 464,
-   "identical_events": 464,
-   "requests_with_events": 35,
-   "seconds_sum": [
-    188.68,
-    165.35
-   ]
+  "committed_rerun": {
+   "command": "scripts/benchmark_linux_voice.py --equality --fixture build/arabic-research/raw --fixture build/memory-plan-corpus/audio --fixture build/refactor-review/goforward.raw --fixture build/memory-plan-corpus/new-clip-final-five-seconds.raw --fixture build/memory-plan-corpus/new-clip-final-five-seconds-with-two-seconds-silence.raw --arm base=... --arm final=...",
+   "files": 298,
+   "summary": {
+    "base": {
+     "moonshine": {
+      "items": 274,
+      "identical_to_first_arm": 274,
+      "seconds_sum": 46.67
+     },
+     "whisper": {
+      "items": 274,
+      "identical_to_first_arm": 274,
+      "seconds_sum": 26.13
+     },
+     "engine": {
+      "items": 464,
+      "identical_to_first_arm": 464,
+      "seconds_sum": 188.57,
+      "items_with_events": 35
+     }
+    },
+    "final": {
+     "moonshine": {
+      "items": 274,
+      "identical_to_first_arm": 274,
+      "seconds_sum": 24.94
+     },
+     "whisper": {
+      "items": 274,
+      "identical_to_first_arm": 274,
+      "seconds_sum": 26.22
+     },
+     "engine": {
+      "items": 464,
+      "identical_to_first_arm": 464,
+      "seconds_sum": 165.77,
+      "items_with_events": 35
+     }
+    }
+   }
   }
  },
  "paced_base_vs_final": {
@@ -89,44 +133,118 @@
   }
  },
  "load_wall_base_vs_final": {
-  "base": {
-   "load_wall_ms_median": 699.1,
-   "peak_rss_mib_median": 335.73,
-   "loaded_rss_mib_median": 327.16,
-   "walls_ms": [
-    701,
-    694,
-    699,
-    701,
-    686
-   ],
-   "peaks_mib": [
-    335.7,
-    335.3,
-    335.9,
-    336.0,
-    333.3
-   ]
+  "first_run_ad_hoc_probe": {
+   "base": {
+    "load_wall_ms_median": 699.1,
+    "peak_rss_mib_median": 335.73,
+    "loaded_rss_mib_median": 327.16,
+    "walls_ms": [
+     701,
+     694,
+     699,
+     701,
+     686
+    ],
+    "peaks_mib": [
+     335.7,
+     335.3,
+     335.9,
+     336.0,
+     333.3
+    ]
+   },
+   "final": {
+    "load_wall_ms_median": 588.5,
+    "peak_rss_mib_median": 336.63,
+    "loaded_rss_mib_median": 328.16,
+    "walls_ms": [
+     592,
+     597,
+     583,
+     588,
+     588
+    ],
+    "peaks_mib": [
+     337.5,
+     337.9,
+     336.6,
+     336.0,
+     336.0
+    ]
+   }
   },
-  "final": {
-   "load_wall_ms_median": 588.5,
-   "peak_rss_mib_median": 336.63,
-   "loaded_rss_mib_median": 328.16,
-   "walls_ms": [
-    592,
-    597,
-    583,
-    588,
-    588
-   ],
-   "peaks_mib": [
-    337.5,
-    337.9,
-    336.6,
-    336.0,
-    336.0
-   ]
-  }
+  "committed_rerun": {
+   "command": "scripts/benchmark_linux_voice.py --load --fixture build/refactor-review/goforward.raw --arm base=... --arm final=... --runs 5",
+   "runs": {
+    "base": [
+     {
+      "load_wall_ms": 710.0,
+      "peak_rss_mib": 335.66,
+      "loaded_rss_mib": 327.43
+     },
+     {
+      "load_wall_ms": 688.2,
+      "peak_rss_mib": 335.79,
+      "loaded_rss_mib": 326.98
+     },
+     {
+      "load_wall_ms": 684.9,
+      "peak_rss_mib": 334.59,
+      "loaded_rss_mib": 326.98
+     },
+     {
+      "load_wall_ms": 684.4,
+      "peak_rss_mib": 336.04,
+      "loaded_rss_mib": 327.51
+     },
+     {
+      "load_wall_ms": 686.5,
+      "peak_rss_mib": 335.2,
+      "loaded_rss_mib": 327.36
+     }
+    ],
+    "final": [
+     {
+      "load_wall_ms": 588.7,
+      "peak_rss_mib": 338.66,
+      "loaded_rss_mib": 328.04
+     },
+     {
+      "load_wall_ms": 589.5,
+      "peak_rss_mib": 336.74,
+      "loaded_rss_mib": 327.97
+     },
+     {
+      "load_wall_ms": 589.1,
+      "peak_rss_mib": 338.09,
+      "loaded_rss_mib": 328.12
+     },
+     {
+      "load_wall_ms": 588.9,
+      "peak_rss_mib": 337.58,
+      "loaded_rss_mib": 328.61
+     },
+     {
+      "load_wall_ms": 596.9,
+      "peak_rss_mib": 337.09,
+      "loaded_rss_mib": 327.84
+     }
+    ]
+   },
+   "summary": {
+    "base": {
+     "load_wall_ms": 686.5,
+     "peak_rss_mib": 335.66,
+     "loaded_rss_mib": 327.36
+    },
+    "final": {
+     "load_wall_ms": 589.1,
+     "peak_rss_mib": 337.58,
+     "loaded_rss_mib": 328.04
+    }
+   }
+  },
+  "note": "Re-run from the committed --load mode: base median 686.5 ms (ad-hoc probe 699.1), final 589.1 ms (588.5)."
  },
  "per_commit": {
   "moonshine_thread_pool": {

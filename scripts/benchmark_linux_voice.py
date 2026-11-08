@@ -13,6 +13,11 @@ Measured per run: worker start to ``ready``, RSS/anonymous RSS while waiting,
 latency from the fixture's last voiced 30 ms frame to the command event (first
 command cold, the rest warm), peak RSS (VmHWM), RSS after Whisper/Moonshine
 are released, idle CPU over a silent stretch and total CPU.
+
+Other modes: --engine times unpaced --engine requests per fixture; --load
+times on-demand model loading after a ``listen`` control; --equality runs
+Moonshine, Whisper tiny.en and the full worker over every fixture (folders
+allowed) and fails if any arm's outputs differ from the first arm's.
 """
 from __future__ import annotations
 
@@ -265,9 +270,155 @@ def engine(binary: Path, fixtures: list[Path], repeats: int, threads: int | None
             "peak_rss_mib": peak["peak_rss_mib"], "rows": rows}
 
 
+def task_names(pid: int) -> list[str]:
+    names = []
+    for task in Path(f"/proc/{pid}/task").iterdir():
+        try:
+            names.append((task / "comm").read_text().strip())
+        except OSError:
+            pass
+    return names
+
+
+def load_wall(binary: Path, threads: int | None) -> dict:
+    """Seconds from a ``listen`` control to every model loaded.
+
+    ``listen`` starts a command session, which starts the on-demand loads
+    (Moonshine, Whisper and GTCRN) on ``whisper-load`` threads; the load is
+    over when none of those threads remain. Paced silence only.
+    """
+    data, env = payload(threads, 60.0)
+    with tempfile.TemporaryDirectory(prefix="jarvis-load-") as folder:
+        capture = Path(folder) / "pw-record"
+        capture.write_text("#!/usr/bin/env python3\nimport os, time\nwhile True:\n"
+                           "    os.write(1, bytes(960)); time.sleep(.03)\n")
+        capture.chmod(0o700)
+        env.update(PATH=f"{folder}:{env.get('PATH', '')}", JARVIS_OWNER_PID=str(os.getpid()))
+        process = subprocess.Popen([str(binary.resolve())], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                   env=env, text=True)
+        try:
+            process.stdin.write(json.dumps(data) + "\n")
+            process.stdin.flush()
+            while (message := json.loads(process.stdout.readline()))["event"] != "ready":
+                if message["event"] == "error":
+                    raise RuntimeError(message["message"])
+            time.sleep(1.0)
+            start = time.monotonic()
+            process.stdin.write("listen\n")
+            process.stdin.flush()
+            seen = False
+            while True:
+                loading = "whisper-load" in task_names(process.pid)
+                seen |= loading
+                if seen and not loading:
+                    break
+                if time.monotonic() - start > 10:
+                    raise RuntimeError("models did not load within 10 s")
+                time.sleep(.002)
+            wall = time.monotonic() - start
+            time.sleep(.3)
+            after = status(process.pid)
+        finally:
+            process.terminate()
+            process.wait()
+    return {"load_wall_ms": round(wall * 1000, 1), "peak_rss_mib": round(after["VmHWM"], 2),
+            "loaded_rss_mib": round(after["VmRSS"], 2)}
+
+
+def corpus(paths: list[Path]) -> list[Path]:
+    """Fixture files; a directory contributes its *.raw and *.s16le files."""
+    files = []
+    for path in paths:
+        files += sorted([*path.glob("*.raw"), *path.glob("*.s16le")]) if path.is_dir() else [path]
+    return [f for f in files if f.stat().st_size >= 6400 and f.stat().st_size % 2 == 0]
+
+
+def batch(argv: list[str], files: list[Path], limit: int) -> dict:
+    process = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True,
+                               stderr=subprocess.DEVNULL)
+    line = process.stdout.readline()
+    if not line:
+        process.wait()
+        raise RuntimeError(f"{argv[0]} did not start")
+    rows = {}
+    for path in files:
+        if path.stat().st_size > limit:
+            continue
+        process.stdin.write(json.dumps({"path": str(path)}) + "\n")
+        process.stdin.flush()
+        result = json.loads(process.stdout.readline())
+        rows[str(path)] = {"text": result["text"], "seconds": result["seconds"]}
+    process.stdin.close()
+    process.wait()
+    return rows
+
+
+def outputs(binary: Path, files: list[Path], threads: int | None) -> dict:
+    """Moonshine, Whisper tiny.en and full-worker results for every file.
+
+    ``binary`` is a jarvis-voice whose folder also holds jarvis-moonshine and
+    jarvis-whisper. Moonshine runs on ``threads`` (default 8) when the binary
+    accepts --threads; older binaries run single-threaded, which gives the
+    same transcripts. Files over 10 s skip the worker, over 20 s Whisper.
+    """
+    folder = binary.resolve().parent
+    models = Path.home() / ".local/share/jarvis/models"
+    moonshine = [str(folder / "jarvis-moonshine"), "--batch", str(models / "moonshine-streaming-tiny-ar")]
+    try:
+        moon = batch(moonshine[:1] + ["--threads", str(threads or 8)] + moonshine[1:], files, 960000)
+    except RuntimeError:
+        moon = batch(moonshine, files, 960000)
+    whisper = batch([str(folder / "jarvis-whisper"), "--threads", str(threads or 8), "--model-name", "tiny.en",
+                     "--batch", str(models / "sherpa-onnx-whisper-tiny.en")], files, 640000)
+    data, env = payload(threads, 60.0)
+    data["native"].pop("whisper_idle_seconds")
+    process = subprocess.Popen([str(binary.resolve()), "--engine"], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                               text=True, env=env)
+    rows = {}
+    try:
+        process.stdin.write(json.dumps(data) + "\n")
+        process.stdin.flush()
+        json.loads(process.stdout.readline())
+        for path in files:
+            if path.stat().st_size > 320000:
+                continue
+            for session in ("command", "wake"):
+                process.stdin.write(json.dumps({"path": str(path), "session": session}) + "\n")
+                process.stdin.flush()
+                result = json.loads(process.stdout.readline())
+                if result.get("event") != "result":
+                    raise RuntimeError(result)
+                rows[f"{path}:{session}"] = {"events": result["events"], "seconds": result["seconds"]}
+    finally:
+        process.stdin.close()
+        process.wait()
+    return {"moonshine": moon, "whisper": whisper, "engine": rows}
+
+
+def equality(results: dict) -> dict:
+    """Each arm against the first: identical outputs and total decode time."""
+    names = list(results)
+    first = results[names[0]]
+    summary = {}
+    for name in names:
+        arm, out = results[name], {}
+        for kind, field in (("moonshine", "text"), ("whisper", "text"), ("engine", "events")):
+            rows = arm[kind]
+            out[kind] = {"items": len(rows),
+                         "identical_to_first_arm": sum(rows[k][field] == first[kind][k][field] for k in rows),
+                         "seconds_sum": round(sum(r["seconds"] for r in rows.values()), 2)}
+        out["engine"]["items_with_events"] = sum(bool(r["events"]) for r in arm["engine"].values())
+        summary[name] = out
+    return summary
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--fixture", type=Path, action="append", required=True)
+    parser.add_argument("--load", action="store_true",
+                        help="Time on-demand model loading after a listen control, --runs per arm")
+    parser.add_argument("--equality", action="store_true",
+                        help="Compare Moonshine, Whisper and worker outputs per fixture (directories allowed)")
     parser.add_argument("--engine", action="store_true",
                         help="Time unpaced --engine requests for every fixture instead of a paced run")
     parser.add_argument("--arm", action="append", required=True, help="NAME=BINARY")
@@ -282,6 +433,28 @@ def main():
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     arms = [tuple(a.split("=", 1)) for a in args.arm]
+    if args.load:
+        report = {"runs": args.runs, "arms": {name: [] for name, _ in arms}}
+        for index in range(args.runs):
+            for name, path in (arms if index % 2 == 0 else arms[::-1]):
+                report["arms"][name].append(load_wall(Path(path), args.threads))
+        for name, runs in report["arms"].items():
+            report[f"{name}_summary"] = {key: round(statistics.median(r[key] for r in runs), 2)
+                                         for key in ("load_wall_ms", "peak_rss_mib", "loaded_rss_mib")}
+            print(name, json.dumps(report[f"{name}_summary"]), [r["load_wall_ms"] for r in runs])
+        if args.output:
+            args.output.write_text(json.dumps(report, indent=1) + "\n")
+        return
+    if args.equality:
+        files = corpus(args.fixture)
+        results = {name: outputs(Path(path), files, args.threads) for name, path in arms}
+        report = {"files": len(files), "summary": equality(results)}
+        print(json.dumps(report, indent=1))
+        if args.output:
+            args.output.write_text(json.dumps(report | {"results": results}, indent=1, ensure_ascii=False) + "\n")
+        if any(v["identical_to_first_arm"] != v["items"] for arm in report["summary"].values() for v in arm.values()):
+            raise SystemExit("Outputs differ between arms")
+        return
     if args.engine:
         report = {"fixtures": {str(f): hashlib.sha256(f.read_bytes()).hexdigest() for f in args.fixture},
                   "repeats": args.repeats, "runs": args.runs, "arms": {name: [] for name, _ in arms}}
