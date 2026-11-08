@@ -778,6 +778,15 @@ class ReplaySaveTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             self.assertIn('kept only 47 of 60 seconds', self.saved(folder, 47, captured=300, seconds=60))
 
+    def test_segments_are_joined_one_second_apart(self):
+        # Found on the real card: left to step by each segment's longest stream, the
+        # join slipped the picture ~25 ms a second behind the sound.
+        with tempfile.TemporaryDirectory() as folder:
+            self.saved(folder, 3, captured=3)
+            listing = (Path(folder) / 'segments.txt').read_text(encoding='utf-8').splitlines()
+        self.assertEqual(listing, ["file 'segment-0000.mkv'", 'duration 1', "file 'segment-0001.mkv'", 'duration 1',
+                                   "file 'segment-0002.mkv'", 'duration 1'])
+
 
 class ReplayBudgetWarningTests(unittest.TestCase):
     replay = {'max_mb': 256, 'seconds': 120}

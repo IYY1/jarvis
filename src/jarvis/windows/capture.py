@@ -22,6 +22,7 @@ from . import encoding
 
 
 READY = "ready"   # the first line a capture audio worker prints (windows/audio.py)
+SEGMENT_SECONDS = 1   # replay segment length; saving joins them at exactly this
 AUDIO_START_SECONDS = 10
 TRIM_AFTER_SECONDS = (3, 30)   # once started, and once settled
 TRIM_EVERY_SECONDS = 300
@@ -365,7 +366,7 @@ class _Capture:
                         "-f",
                         "segment",
                         "-segment_time",
-                        "1",
+                        str(SEGMENT_SECONDS),
                         "-segment_wrap",
                         "3",
                         "-reset_timestamps",
@@ -625,6 +626,12 @@ class Replay(_Capture):
                 lines = []
                 for path in paths:
                     lines.append(f"file '{path.name}'")
+                    # Each segment's picture is exactly one second (key frames are
+                    # forced on every second, frames are stamped by count). Left to
+                    # itself, concat steps by the longest stream, and the sound runs
+                    # past the picture's end: picture slipped ~25 ms a segment
+                    # behind sound, a second per minute, with a stutter at each join.
+                    lines.append(f"duration {SEGMENT_SECONDS}")
                 listing = root / "segments.txt"
                 listing.write_text("\n".join(lines) + "\n", encoding="utf-8")
                 result = subprocess.run(
