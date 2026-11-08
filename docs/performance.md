@@ -23,7 +23,7 @@ microphone, three alternating runs per arm; the fixture is the user-confirmed
 | RSS after release | 172.6 MiB | 173.4 MiB |
 | Command latency, models loaded (6 commands) | 1,163.5 ms | 1,137.9 ms |
 | Command latency, first after start (3 commands) | 1,370.9 ms | 1,347.0 ms |
-| "listen" to all models loaded (5 runs) | 699.1 ms | 588.5 ms |
+| "listen" to all models loaded (5 runs, `--load`) | 686.5 ms | 589.1 ms |
 | Silent idle CPU | 0.07% of a core | 0.07% of a core |
 
 Three changes: Moonshine's matrix products use a thread pool (its decode
@@ -43,12 +43,17 @@ the last voiced frame on this fixture); recognition after it takes about
 raised the peak by about 2.4 MiB, so it was left out.
 [Raw results](benchmarks/linux-voice-2026-11-08.json); reproduce with
 `scripts/benchmark_linux_voice.py` (`--engine` for the unpaced timings,
-`--load` for load time, `--equality` for the output comparison). A re-run of
-`--load` gave 686.5 → 589.1 ms.
+`--load` for load time, `--equality` for the output comparison). The load
+row is that committed `--load` run (about −97 ms); an earlier ad-hoc probe
+gave 699.1 → 588.5 ms.
 
 Two side effects. Total worker CPU per paced run rose from 2.27 to 2.41 s
-(+6%), because a command that Arabic matches still spends about 40 ms on
-GTCRN work that is then discarded; silent idle CPU is unchanged. A panic
+(+6%); silent idle CPU is unchanged. In the per-commit runs the rise first
+appears with the Moonshine thread pool (2.29 → 2.35 s), while the early
+denoise thread moved nothing (2.36 → 2.36 s). All paced runs use the
+English "clip that" fixture, so no command matched in Arabic. Such a
+command also spends about 40 ms of CPU on a denoise whose result is
+discarded; these runs neither exercised nor measured that. A panic
 inside GTCRN on the denoise thread now surfaces as an error event
 ("Denoiser stopped unexpectedly") instead of unwinding the engine thread.
 
