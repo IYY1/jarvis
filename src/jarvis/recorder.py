@@ -69,9 +69,9 @@ def orphaned_recorders() -> list[int]:
 
 
 def _query(argv: list[str], timeout: float = 3) -> str:
-    from .host import child_options, tool
+    from .host import child_options, grouped, tool
     if argv[0] == "ffprobe":
-        argv = [tool("ffprobe") or argv[0], *argv[1:]]
+        argv = [str(grouped(tool("ffprobe")) or argv[0]), *argv[1:]]   # in Jarvis's Task Manager row
     try:
         result = subprocess.run(argv, capture_output=True, text=True, timeout=timeout,
                                 check=False, stdin=subprocess.DEVNULL, **child_options())

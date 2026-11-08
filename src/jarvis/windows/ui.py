@@ -1060,14 +1060,14 @@ class Window:
         if self.sound_watch is not None:
             return
         import subprocess
-        from ..host import child_options
+        from ..host import child_options, grouped
         from ..native_worker import binary_path
 
         worker = binary_path()
         if worker is None:
             return
         try:
-            process = subprocess.Popen([str(worker), "--app-audio"], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+            process = subprocess.Popen([str(grouped(worker)), "--app-audio"], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                        stderr=subprocess.DEVNULL, **child_options())
             process.stdin.write(b'{"watch":true}\n')
             process.stdin.close()

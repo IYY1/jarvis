@@ -14,7 +14,7 @@ import threading
 import time
 import uuid
 
-from ..host import child_options, command as worker_command, grouped, tool
+from ..host import ENCODER_NAME, child_options, command as worker_command, grouped, tool
 from ..recorder import RecorderError, verify_video
 from ..replay import write_track_names
 from ..encoding import replay_fit_seconds, replay_video, with_auto_bitrate
@@ -642,7 +642,7 @@ class Replay(_Capture):
                 listing.write_text("\n".join(lines) + "\n", encoding="utf-8")
                 result = subprocess.run(
                     [
-                        tool("ffmpeg"),
+                        grouped(tool("ffmpeg"), ENCODER_NAME),   # in Jarvis's row
                         "-hide_banner",
                         "-loglevel",
                         "error",

@@ -4,7 +4,7 @@ import importlib.util
 import platform
 import subprocess
 import sys
-from ..host import app_dir, child_options, tool
+from ..host import app_dir, child_options, grouped, tool
 
 
 def report():
@@ -30,7 +30,7 @@ def report():
         try:
             result = (
                 subprocess.run(
-                    [binary, "--version" if name.startswith("jarvis-") else "-version"],
+                    [str(grouped(binary)), "--version" if name.startswith("jarvis-") else "-version"],
                     capture_output=True,
                     text=True,
                     timeout=5,

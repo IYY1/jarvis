@@ -301,14 +301,14 @@ def apps_with_sound(timeout=5):
     """Programs with sound on an active output, playing now first:
     [{"name", "label", "playing"}], without Jarvis itself. Best effort."""
     import subprocess
-    from ..host import child_options
+    from ..host import child_options, grouped
     from ..native_worker import binary_path
 
     worker = binary_path()
     if worker is None:
         return []
     try:
-        result = subprocess.run([str(worker), "--app-audio"], input=b'{"list":true}\n', capture_output=True,
+        result = subprocess.run([str(grouped(worker)), "--app-audio"], input=b'{"list":true}\n', capture_output=True,
                                 timeout=timeout, **child_options())
         apps = json.loads(result.stdout)["apps"]
     except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError):

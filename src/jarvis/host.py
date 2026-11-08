@@ -59,6 +59,7 @@ def tool(name):
 
 
 GROUP_NAME = "JarvisConsole.exe"
+ENCODER_NAME = "Jarvis video encoder"   # FFmpeg's name in Task Manager (see grouped)
 
 
 def grouped(path, description=None):
@@ -75,20 +76,32 @@ def grouped(path, description=None):
     if path is None or not is_windows() or not getattr(sys, "frozen", False):
         return path
     path = Path(path)
-    if path.name.lower() == GROUP_NAME.lower():
+    # The settings window runs Jarvis.exe: what it starts must carry that name to
+    # sit in the window's row. Everything else is under the service's name.
+    name = Path(sys.executable).name
+    if name.lower() not in ("jarvis.exe", GROUP_NAME.lower()):
+        name = GROUP_NAME
+    if path.name.lower() == name.lower():
         return path
     link = data_dir() / "bin" / path.stem / GROUP_NAME
     try:
-        if description:
-            return _described_copy(path, link, description)
-        if link.is_file() and os.path.samefile(link, path):
-            return link
-        link.parent.mkdir(parents=True, exist_ok=True)
-        link.unlink(missing_ok=True)
-        os.link(path, link)
-        return link if os.path.samefile(link, path) else path
+        target = _described_copy(path, link, description) if description else _same_file(path, link)
+        if name.lower() == GROUP_NAME.lower() or target == path:
+            return target
+        return _same_file(target, link.with_name(name))
     except Exception:   # a name is only nicer to read: never a reason to fail
         return path
+
+
+def _same_file(path, link):
+    """``link``, a hard link to ``path`` (the same file under another name), or
+    ``path`` itself when one can't be made."""
+    if link.is_file() and os.path.samefile(link, path):
+        return link
+    link.parent.mkdir(parents=True, exist_ok=True)
+    link.unlink(missing_ok=True)
+    os.link(path, link)
+    return link if os.path.samefile(link, path) else path
 
 
 def _described_copy(path, copy, description):

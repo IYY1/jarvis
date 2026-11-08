@@ -66,12 +66,13 @@ class Segment:
 
 
 def _executable(argv: list[str]) -> list[str]:
-    from .host import is_windows, tool
+    from .host import ENCODER_NAME, grouped, is_windows, tool
     if is_windows():
         resolved = tool(argv[0])
         if not resolved:
             raise EditError(f"{argv[0]} is missing. Reinstall the complete Jarvis app.")
-        return [resolved, *argv[1:]]
+        # Under the window's name, so an export sits in Jarvis's Task Manager row.
+        return [str(grouped(resolved, ENCODER_NAME if argv[0] == "ffmpeg" else None)), *argv[1:]]
     return argv
 
 

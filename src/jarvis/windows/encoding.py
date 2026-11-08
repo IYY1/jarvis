@@ -4,7 +4,7 @@ from functools import lru_cache
 from pathlib import Path
 import subprocess
 from ..encoding import AUTO_CODECS, validate_encoding
-from ..host import child_options, grouped, tool
+from ..host import ENCODER_NAME, child_options, grouped, tool
 from ..recorder import RecorderError, capture_color
 
 QUALITY = {"medium": 28, "high": 23, "very_high": 19, "ultra": 15}
@@ -250,7 +250,7 @@ def _probe(binary, stamp, family, codec, adapter, cpu, ten_bit=False):
 
 def select_encoder(cfg, display, codec):
     # Capture runs as long as recording does: inside Jarvis's row, under a clear name.
-    binary = grouped(tool("ffmpeg"), "Jarvis video encoder")
+    binary = grouped(tool("ffmpeg"), ENCODER_NAME)
     if not binary or not tool("ffprobe"):
         raise RecorderError(
             "FFmpeg/ffprobe is missing; reinstall the complete Windows package"

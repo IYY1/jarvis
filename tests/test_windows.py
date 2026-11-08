@@ -949,6 +949,18 @@ class TaskManagerGroupTests(unittest.TestCase):
         self.assertTrue(os.path.samefile(link, self.worker))
         self.assertEqual(host.grouped(self.worker), link)   # kept while it is the same file
 
+    def test_what_the_window_starts_carries_the_window_name(self):
+        # The settings window runs Jarvis.exe; its live sound list and clip exports
+        # showed as their own Task Manager rows under the service's name.
+        with patch.object(host.sys, "executable", str(self.root / "Jarvis.exe")):
+            link = host.grouped(self.worker)
+        self.assertEqual(link, self.root / "data" / "bin" / "jarvis-voice" / "Jarvis.exe")
+        self.assertTrue(os.path.samefile(link, self.worker))
+        # The service's name for the same program is the same file too.
+        self.assertTrue(os.path.samefile(link.with_name("JarvisConsole.exe"), self.worker))
+        with patch.object(host.sys, "executable", str(self.root / "JarvisConsole.exe")):
+            self.assertEqual(host.grouped(self.worker).name, "JarvisConsole.exe")
+
     def test_a_replaced_program_gets_a_fresh_link_and_a_foreign_file_is_never_run(self):
         link = host.grouped(self.worker)
         self.worker.unlink()
