@@ -102,8 +102,20 @@ class SettingsWindowTests(unittest.TestCase):
 
     def test_themes_include_like_windows_and_choosing_graphite_works(self):
         from jarvis import palettes
-        for name in ("midnight", "oled", "light"):
+        for name in ("light", "cyberpunk", "pixel"):
             self.assertIn(name, palettes.ALL_PRESETS)
+        # One theme per look: no two share a background and an accent so close they look alike
+        # (Midnight and OLED were dropped for looking like Graphite).
+        def distance(x, y):
+            x, y = (tuple(int(c[i:i + 2], 16) for i in (1, 3, 5)) for c in (x, y))
+            return sum((p - q) ** 2 for p, q in zip(x, y)) ** 0.5
+        themes = list(palettes.ALL_PRESETS.items())
+        for i, (name_a, a) in enumerate(themes):
+            for name_b, b in themes[i + 1:]:
+                with self.subTest(pair=(name_a, name_b)):
+                    alike = distance(a["roles"]["bg"], b["roles"]["bg"]) < 45 and \
+                        distance(a["roles"]["accent"], b["roles"]["accent"]) < 90
+                    self.assertFalse(alike)
         with patch("winreg.QueryValueEx", return_value=(1, 4)):
             self.assertEqual(palettes.resolve(palettes.SYSTEM), "light")
         with patch("winreg.QueryValueEx", return_value=(0, 4)):
