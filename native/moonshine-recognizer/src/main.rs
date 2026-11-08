@@ -37,16 +37,27 @@ fn run() -> TractResult<()> {
         ));
         return Ok(());
     }
+    let mut args = args;
+    let threads = if let Some(i) = args.iter().position(|a| a == "--threads") {
+        if i + 1 >= args.len() {
+            return Err(format_err!("--threads requires a number"));
+        }
+        let n = args.remove(i + 1).parse::<usize>()?;
+        args.remove(i);
+        n
+    } else {
+        1
+    };
     let [flag, dir] = &args[..] else {
         return Err(format_err!(
-            "Use jarvis-moonshine --batch MODEL_DIR, then {{\"path\": FILE.s16le}} lines"
+            "Use jarvis-moonshine [--threads N] --batch MODEL_DIR, then {{\"path\": FILE.s16le}} lines"
         ));
     };
     if flag != "--batch" {
         return Err(format_err!("Use --batch MODEL_DIR"));
     }
     let start = Instant::now();
-    let model = Recognizer::load(dir)?;
+    let model = Recognizer::load_with_threads(dir, threads)?;
     trim();
     println!(
         "{}",

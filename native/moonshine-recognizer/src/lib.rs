@@ -11,8 +11,10 @@
 mod model;
 
 use std::{path::Path, sync::Arc};
+use tract_linalg::multithread::Executor;
 use tract_onnx::prelude::*;
 use tract_onnx::tract_core::internal::{ensure, format_err};
+use tract_onnx::tract_core::runtime::RunOptions;
 
 const START: usize = 1;
 const END: usize = 2;
@@ -58,6 +60,7 @@ fn plan(
     path: &Path,
     max_bytes: u64,
     decoder: bool,
+    executor: &Executor,
     facts: impl FnOnce(&SymbolScope) -> Vec<InferenceFact>,
 ) -> TractResult<(Plan, Option<model::Span>)> {
     let canonical = path.canonicalize()?;
@@ -76,23 +79,57 @@ fn plan(
     for (i, fact) in facts(&typed.symbols).into_iter().enumerate() {
         typed.set_input_fact(i, fact)?;
     }
-    let runnable = typed.into_optimized()?.into_runnable()?;
+    let runnable = TypedRunnableModel::new_with_options(
+        typed.into_optimized()?,
+        &RunOptions {
+            executor: Some(executor.clone()),
+            ..Default::default()
+        },
+    )?;
     trim();
     Ok((runnable, span))
 }
 
 impl Recognizer {
     /// `directory` holds encoder.onnx, cross.onnx, decoder.onnx and tokenizer.json.
+    /// Inference runs on the calling thread.
     pub fn load(directory: impl AsRef<Path>) -> TractResult<Self> {
+        Self::load_with_threads(directory, 1)
+    }
+    /// Like [`Recognizer::load`], with matrix products split across a private
+    /// pool of `threads` workers (named `moonshine-N`) when `threads` > 1.
+    /// Each output tile is computed by exactly one thread in the same order,
+    /// so transcripts are identical for any thread count.
+    pub fn load_with_threads(directory: impl AsRef<Path>, threads: usize) -> TractResult<Self> {
+        ensure!((1..=32).contains(&threads), "Expected 1–32 threads");
+        let executor = if threads > 1 {
+            Executor::MultiThread(Arc::new(
+                rayon::ThreadPoolBuilder::new()
+                    .num_threads(threads)
+                    .thread_name(|n| format!("moonshine-{n}"))
+                    .build()?,
+            ))
+        } else {
+            Executor::SingleThread
+        };
+        let executor = &executor;
         let dir = directory.as_ref();
-        let (encoder, _) = plan(&dir.join("encoder.onnx"), 64 * 1024 * 1024, false, |s| {
-            vec![f32::fact([1.to_dim(), s.sym("f").to_dim(), FRAME.to_dim()]).into()]
-        })?;
-        let (cross, _) = plan(&dir.join("cross.onnx"), 32 * 1024 * 1024, false, |s| {
-            vec![f32::fact([1.to_dim(), s.sym("t").to_dim(), model::HIDDEN.to_dim()]).into()]
-        })?;
+        let (encoder, _) = plan(
+            &dir.join("encoder.onnx"),
+            64 * 1024 * 1024,
+            false,
+            executor,
+            |s| vec![f32::fact([1.to_dim(), s.sym("f").to_dim(), FRAME.to_dim()]).into()],
+        )?;
+        let (cross, _) = plan(
+            &dir.join("cross.onnx"),
+            32 * 1024 * 1024,
+            false,
+            executor,
+            |s| vec![f32::fact([1.to_dim(), s.sym("t").to_dim(), model::HIDDEN.to_dim()]).into()],
+        )?;
         let decoder_path = dir.join("decoder.onnx");
-        let (decoder, span) = plan(&decoder_path, 128 * 1024 * 1024, true, |s| {
+        let (decoder, span) = plan(&decoder_path, 128 * 1024 * 1024, true, executor, |s| {
             let (t, p) = (s.sym("t"), s.sym("p"));
             let rope = || -> InferenceFact { f32::fact([1, ROTARY]).into() };
             let cross_k = || -> InferenceFact {
@@ -326,6 +363,44 @@ fn pieces(json: &[u8]) -> TractResult<Pieces> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn thread_count_is_bounded() {
+        for threads in [0, 33] {
+            let error = Recognizer::load_with_threads("/nonexistent", threads)
+                .err()
+                .unwrap();
+            assert!(error.to_string().contains("1–32 threads"), "{error}");
+        }
+    }
+    /// Runs with JARVIS_ARABIC_MODEL (the moonshine-streaming-tiny-ar folder)
+    /// and JARVIS_ARABIC_TEST_RAW (16 kHz s16le speech); skipped otherwise.
+    #[test]
+    fn transcripts_do_not_depend_on_the_thread_count() {
+        let (Ok(model), Ok(raw)) = (
+            std::env::var("JARVIS_ARABIC_MODEL"),
+            std::env::var("JARVIS_ARABIC_TEST_RAW"),
+        ) else {
+            eprintln!("skipped: set JARVIS_ARABIC_MODEL and JARVIS_ARABIC_TEST_RAW");
+            return;
+        };
+        let bytes = std::fs::read(raw).unwrap();
+        let samples: Vec<f32> = bytes
+            .as_chunks::<2>()
+            .0
+            .iter()
+            .take(MAX_SAMPLES)
+            .map(|b| i16::from_le_bytes(*b) as f32 / 32768.0)
+            .collect();
+        let single = Recognizer::load(&model)
+            .unwrap()
+            .transcribe(&samples)
+            .unwrap();
+        let pooled = Recognizer::load_with_threads(&model, 4).unwrap();
+        assert!(!single.is_empty());
+        for _ in 0..2 {
+            assert_eq!(pooled.transcribe(&samples).unwrap(), single);
+        }
+    }
     #[test]
     fn pieces_map_spaces_bytes_and_specials() {
         let json = "{\"model\":{\"vocab\":{\"<unk>\":0,\"<s>\":1,\"</s>\":2,\"<0xD8>\":3,\"<0xA7>\":4,\"\u{2581}\u{0645}\u{0631}\":5,\"\u{062d}\u{0628}\u{0627}\":6}}}".as_bytes();

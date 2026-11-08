@@ -195,8 +195,9 @@ impl Engine {
         };
         let arabic = if let Some(directory) = &native.arabic {
             let directory = directory.clone();
+            let threads = native.threads as usize;
             let load: Loader<Arabic> =
-                Arc::new(move || Arabic::load(&directory).map_err(|e| e.to_string()));
+                Arc::new(move || Arabic::load(&directory, threads).map_err(|e| e.to_string()));
             let idle = native.whisper_idle_seconds.map(Duration::from_secs_f64);
             Some(OnDemand::new(load, idle)?)
         } else {

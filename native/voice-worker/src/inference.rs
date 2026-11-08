@@ -225,9 +225,11 @@ pub struct Arabic {
     recognizer: jarvis_moonshine::Recognizer,
 }
 impl Arabic {
-    pub fn load(directory: &str) -> Result<Self> {
+    /// `threads` splits Moonshine's matrix products like Whisper's; each
+    /// output tile still comes from one thread, so transcripts are unchanged.
+    pub fn load(directory: &str, threads: usize) -> Result<Self> {
         let _guard = LOAD_LOCK.lock().unwrap_or_else(|e| e.into_inner());
-        let recognizer = jarvis_moonshine::Recognizer::load(directory)?;
+        let recognizer = jarvis_moonshine::Recognizer::load_with_threads(directory, threads)?;
         trim();
         Ok(Self { recognizer })
     }
