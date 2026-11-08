@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Windows: replay clips stay in sync. Saving joined the one-second segments
+  by each one's longest stream, and a segment's sound runs about 25 ms past its
+  picture, so the picture slipped behind the sound at every join: clips drifted
+  about a second per minute and stuttered every second. Measured on a real
+  36-second replay: from +13 to -307 ms before, -15..+5 ms throughout now.
+- Windows: a program's own sound track keeps time after a quiet moment (it came
+  up to 80 ms early), and the clip editor shows a recording's track names and
+  names exported tracks (a mix as "Discord + Microphone").
 - Windows: pick which programs' sound goes into a video. Replay settings list the
   programs with sound (by their own names, such as "Marvel Rivals"), and up to
   four ticked ones each get a track of their own, in replays and recordings, next
