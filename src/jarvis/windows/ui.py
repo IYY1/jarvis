@@ -291,6 +291,13 @@ class Window:
             s.map(name, background=[("active", r["card"])], indicatorbackground=[("selected", r["accent"]), ("active", r["control"])],
                   foreground=[("disabled", r["text-disabled"])])
         s.configure("Swatch.TRadiobutton", font=(f, 10, "bold"))
+        # Quality tiles: a picked tile takes the selected colour and an accent edge.
+        for on, background, edge in (("", r["card"], r["line-strong"]), ("On", r["selected"], r["accent"])):
+            s.configure(f"Tile{on}.TFrame", background=background, bordercolor=edge, lightcolor=edge, darkcolor=edge,
+                        relief="solid", borderwidth=2)
+            s.configure(f"TileName{on}.TLabel", background=background, foreground=r["text"], font=(f, 11, "bold"))
+            s.configure(f"TileNote{on}.TLabel", background=background, foreground=r["text"] if on else r["text-muted"],
+                        font=(f, 9))
         for name in ("TEntry", "TSpinbox", "TCombobox"):
             s.configure(name, fieldbackground=r["inset"], foreground=r["text"], background=r["control"],
                         bordercolor=r["line-strong"], lightcolor=r["inset"], darkcolor=r["inset"], arrowcolor=r["text"],

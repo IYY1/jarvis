@@ -17,6 +17,15 @@ PRESETS = {
 }
 
 
+def tile_text(name):
+    """A preset's tile: its level on top ("Extra high"), what it records beneath ("2K · 120 fps")."""
+    if name not in PRESETS:
+        return "Custom", "Your own settings"
+    level, _, note = name.partition(" · ")
+    note = note.replace(", ", " · ")
+    return level, note if "fps" in note else f"{note} · {PRESETS[name][2]} fps"
+
+
 def sound_tracks(window):
     """How many sound tracks a replay keeps with the settings on screen (see
     encoding.audio_plan): the sources, plus "All sound" when they are separate."""
@@ -54,9 +63,7 @@ class VideoSettings:
             self.panels[section] = p
             preset = tk.StringVar(value="Custom")
             self.presets[section] = preset
-            pick = ttk.Combobox(p, values=(*PRESETS, "Custom"), textvariable=preset, state="readonly", width=29)
-            pick.bind("<<ComboboxSelected>>", lambda _, section=section: self.apply(section))
-            window.row(p, "Preset", pick, "Pick one and you're done. Every detail is below if you want it.")
+            self.quality_tiles(p, section, preset)
             more = ttk.Frame(p, style="Card.TFrame")
             more.columnconfigure(0, weight=1)
             more.next_row = 0
@@ -89,6 +96,45 @@ class VideoSettings:
         window.line(more, ttk.Label(more, textvariable=self.info, style="Caption.TLabel", wraplength=640))
         window.buttons(more, [("Test GPU formats", self.test_formats)])
         self.show()
+
+    def quality_tiles(self, p, section, preset):
+        """The presets as tiles, three to a row: the level's name on top, what it records beneath."""
+        box = ttk.Frame(p, style="Card.TFrame")
+        ttk.Label(box, text="Quality", style="Row.TLabel").grid(row=0, column=0, columnspan=3, sticky="w")
+        self.window.wrapping(ttk.Label(box, text="Pick one and you're done. Every detail is under Show all options.",
+                                       style="Caption.TLabel", justify="left")).grid(row=1, column=0, columnspan=3, sticky="ew", pady=(0, 8))
+        tiles = {}
+        for index, name in enumerate((*PRESETS, "Custom")):
+            level, note = tile_text(name)
+            tile = ttk.Frame(box, style="Tile.TFrame", padding=(12, 8), cursor="hand2")
+            tile.grid(row=2 + index // 3, column=index % 3, sticky="nsew", padx=(0 if index % 3 == 0 else 8, 0), pady=(0, 8))
+            parts = (tile, ttk.Label(tile, text=level, style="TileName.TLabel", cursor="hand2"),
+                     ttk.Label(tile, text=note, style="TileNote.TLabel", cursor="hand2"))
+            for part in parts[1:]:
+                part.pack(anchor="w")
+            for part in parts:
+                part.bind("<Button-1>", lambda _, name=name: self.pick(section, name))
+            tiles[name] = parts
+        for column in range(3):
+            box.columnconfigure(column, weight=1, uniform="tile")
+
+        def light(*_):
+            for name, (tile, level, note) in tiles.items():
+                on = "On" if name == preset.get() else ""
+                tile.configure(style=f"Tile{on}.TFrame")
+                level.configure(style=f"TileName{on}.TLabel")
+                note.configure(style=f"TileNote{on}.TLabel")
+        preset.trace_add("write", light)
+        light()
+        self.window.wide(p, box)
+
+    def pick(self, section, name):
+        """A tile was clicked. Custom opens every detail instead, since that's where it's made."""
+        if name in PRESETS:
+            self.presets[section].set(name)
+            self.apply(section)
+        elif not self.folds[0].winfo_manager() or not self.folds[0].grid_info():
+            self.fold()
 
     def details(self, parent, frame):
         """Technical options, folded away until asked for."""

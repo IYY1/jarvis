@@ -305,6 +305,29 @@ class SettingsWindowTests(unittest.TestCase):
         self.assertEqual((variable("recording", "resolution").get(), int(float(variable("recording", "fps").get())),
                           variable("recording", "codec").get()), ("720", 60, "auto"))
 
+    def test_quality_is_picked_from_tiles_named_by_level(self):
+        from jarvis.windows.video_settings import tile_text
+        self.assertEqual(tile_text("Extra high · 2K, 120 fps"), ("Extra high", "2K · 120 fps"))
+        self.assertEqual(tile_text("High quality · 10-bit"), ("High quality", "10-bit · 60 fps"))
+        self.assertEqual(tile_text("Custom"), ("Custom", "Your own settings"))
+        video, variable = self.window.video, self.window.variable
+        video.pick("recording", "High · 1080p, 60 fps")
+        self.assertEqual(video.presets["recording"].get(), "High · 1080p, 60 fps")
+        self.assertEqual(variable("recording", "resolution").get(), "1080")
+        def lit():
+            frames, found = [video.panels["recording"]], []
+            while frames:
+                frame = frames.pop()
+                frames += frame.winfo_children()
+                if frame.winfo_class() == "TFrame" and str(frame.cget("style")) == "TileOn.TFrame":
+                    found.append(frame)
+            return found
+        self.assertEqual(len(lit()), 1)
+        variable("recording", "fps").set(90)   # an edit by hand makes it Custom, and Custom is the lit tile
+        self.assertEqual(video.presets["recording"].get(), "Custom")
+        video.pick("recording", "Custom")
+        self.assertTrue(all(frame.grid_info() for frame in video.folds))
+
     def test_replay_page_says_whether_the_budget_holds_the_length(self):
         video, variable = self.window.video, self.window.variable
         video.display = {"width": 2560, "height": 1440}
