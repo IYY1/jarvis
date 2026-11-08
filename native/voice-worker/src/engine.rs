@@ -33,6 +33,53 @@ fn default_close_verbs() -> Vec<String> {
 }
 
 #[cfg(test)]
+mod early_tests {
+    use super::*;
+    use std::time::{Duration, Instant};
+
+    struct Slow(Duration);
+    fn slow_len(model: &Slow, audio: &[u8]) -> Result<usize> {
+        std::thread::sleep(model.0);
+        Ok(audio.len())
+    }
+    fn fails(_: &Slow, _: &[u8]) -> Result<usize> {
+        Err("corrupt GTCRN".into())
+    }
+    fn panics(_: &Slow, _: &[u8]) -> Result<usize> {
+        panic!("GTCRN kernel panicked")
+    }
+
+    #[test]
+    fn joined_result_and_errors_reach_the_caller() {
+        let model = Arc::new(Slow(Duration::from_millis(50)));
+        assert_eq!(finish(early(model.clone(), &[0; 960], slow_len).unwrap()).unwrap(), 960);
+        let error = finish(early(model.clone(), &[], fails).unwrap()).err().unwrap();
+        assert_eq!(error.to_string(), "corrupt GTCRN");
+        let error = finish(early(model, &[], panics).unwrap()).err().unwrap();
+        assert_eq!(error.to_string(), "Denoiser stopped unexpectedly");
+    }
+
+    /// An Arabic match drops the handle while GTCRN is still running: the
+    /// caller must not wait, and the model handle must go away afterwards so
+    /// an idle release can free the weights.
+    #[test]
+    fn dropping_a_running_handle_detaches_and_later_frees_the_model() {
+        let model = Arc::new(Slow(Duration::from_millis(300)));
+        let start = Instant::now();
+        let handle = early(model.clone(), &[0; 960], slow_len).unwrap();
+        std::thread::sleep(Duration::from_millis(20));
+        assert_eq!(Arc::strong_count(&model), 2, "the thread holds the model");
+        drop(handle);
+        assert!(start.elapsed() < Duration::from_millis(150), "the caller waited");
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while Arc::strong_count(&model) > 1 {
+            assert!(Instant::now() < deadline, "the detached thread kept the model");
+            std::thread::sleep(Duration::from_millis(10));
+        }
+    }
+}
+
+#[cfg(test)]
 mod confidence_tests {
     use super::*;
     use serde_json::json;
@@ -111,6 +158,35 @@ pub struct Engine {
     pub unsupported: Vec<String>,
     pub unmatched: Option<String>,
     pub name: String,
+}
+
+type Early<R> = std::thread::JoinHandle<std::result::Result<R, String>>;
+
+/// Starts `work` on a short-lived jarvis-denoise thread with its own handle
+/// to the model and a copy of the audio. Dropping the returned handle detaches
+/// the thread: it finishes on its own and then drops the model handle, so an
+/// idle release still frees the weights. None if no thread could start.
+fn early<T, R>(
+    model: Arc<T>,
+    audio: &[u8],
+    work: fn(&T, &[u8]) -> Result<R>,
+) -> Option<Early<R>>
+where
+    T: Send + Sync + 'static,
+    R: Send + 'static,
+{
+    let audio = audio.to_vec();
+    std::thread::Builder::new()
+        .name("jarvis-denoise".into())
+        .spawn(move || work(&model, &audio).map_err(|e| e.to_string()))
+        .ok()
+}
+
+/// The early result; a panic in the thread becomes an error, not an unwind.
+fn finish<R>(handle: Early<R>) -> Result<R> {
+    Ok(handle
+        .join()
+        .map_err(|_| "Denoiser stopped unexpectedly")??)
 }
 
 fn token(word: &str) -> bool {
@@ -800,13 +876,9 @@ impl Engine {
         // Arabic pass, and English commands need both. An Arabic match leaves
         // the thread to finish on its own; its result is then unused.
         let early = match (&self.whisper, &self.arabic) {
-            (Some(whisper), Some(_)) if !audio.is_empty() => whisper.ready().and_then(|model| {
-                let audio = audio.clone();
-                std::thread::Builder::new()
-                    .name("jarvis-denoise".into())
-                    .spawn(move || model.command_input(&audio).map_err(|e| e.to_string()))
-                    .ok()
-            }),
+            (Some(whisper), Some(_)) if !audio.is_empty() => whisper
+                .ready()
+                .and_then(|model| early(model, &audio, |m, a| m.command_input(a))),
             _ => None,
         };
         // Arabic first: its transcript is accepted only when it is one of the
@@ -838,11 +910,7 @@ impl Engine {
                 self.whisper_commands += 1;
                 let model = whisper.get()?;
                 let accurate = phrase(&match early {
-                    Some(denoising) => model.transcribe_input(
-                        denoising
-                            .join()
-                            .map_err(|_| "Denoiser stopped unexpectedly")??,
-                    )?,
+                    Some(denoising) => model.transcribe_input(finish(denoising)?)?,
                     None => model.transcribe(&audio)?,
                 });
                 let accurate_match = self.matcher.closest(&accurate);

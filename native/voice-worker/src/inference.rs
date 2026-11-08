@@ -323,4 +323,49 @@ mod tests {
         let whisper_only = Transcriber::load(&missing, None, 2).err().unwrap().to_string();
         assert_eq!(both, whisper_only, "the denoiser error must not win");
     }
+    /// The early-denoise path (command_input, then transcribe_input) must give
+    /// exactly what transcribe gives. Runs with JARVIS_WHISPER_MODEL (a
+    /// sherpa-onnx Whisper folder), JARVIS_GTCRN_MODEL and
+    /// JARVIS_SPEECH_TEST_RAW; skipped otherwise.
+    #[test]
+    fn split_whisper_path_matches_transcribe() {
+        let (Ok(folder), Ok(gtcrn), Ok(raw)) = (
+            std::env::var("JARVIS_WHISPER_MODEL"),
+            std::env::var("JARVIS_GTCRN_MODEL"),
+            std::env::var("JARVIS_SPEECH_TEST_RAW"),
+        ) else {
+            eprintln!("skipped: set JARVIS_WHISPER_MODEL, JARVIS_GTCRN_MODEL, JARVIS_SPEECH_TEST_RAW");
+            return;
+        };
+        let file = |suffix: &str| {
+            std::fs::read_dir(&folder)
+                .unwrap()
+                .map(|e| e.unwrap().path())
+                .find(|p| p.to_string_lossy().ends_with(suffix))
+                .unwrap()
+                .to_string_lossy()
+                .into_owned()
+        };
+        let files = WhisperFiles {
+            encoder: file("-encoder.int8.onnx"),
+            decoder: file("-decoder.int8.onnx"),
+            tokens: file("-tokens.txt"),
+        };
+        let pcm = std::fs::read(raw).unwrap();
+        let pcm = &pcm[..pcm.len().min(320000) / 2 * 2];
+        for denoiser in [Some(gtcrn.as_str()), None] {
+            let model = Transcriber::load(&files, denoiser, 4).unwrap();
+            let whole = model.transcribe(pcm).unwrap();
+            assert!(!whole.is_empty());
+            let split = model
+                .transcribe_input(model.command_input(pcm).unwrap())
+                .unwrap();
+            assert_eq!(split, whole, "denoiser {denoiser:?}");
+            // Too short and too long behave the same on both paths.
+            assert!(model.command_input(&pcm[..6398]).unwrap().is_none());
+            assert_eq!(model.transcribe(&pcm[..6398]).unwrap(), "");
+            assert!(model.command_input(&vec![0; 320002]).is_err());
+            assert!(model.transcribe(&vec![0; 320002]).is_err());
+        }
+    }
 }
