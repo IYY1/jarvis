@@ -51,6 +51,15 @@ mod confidence_tests {
             assert!(complete_confidence(&bad).is_none(), "{bad}");
         }
     }
+    #[test]
+    fn arabic_hears_the_100_ms_before_the_wake_name_ends() {
+        let audio: Vec<u8> = (0..64000u32).map(|i| i as u8).collect();
+        assert_eq!(arabic_lead(&audio, 32000), &audio[28800..32000]);
+        assert_eq!(arabic_lead(&audio, 32001), &audio[28800..32000]); // odd cut: whole samples
+        assert_eq!(arabic_lead(&audio, 1000), &audio[..1000]);
+        assert!(arabic_lead(&audio, 0).is_empty());
+        assert_eq!(arabic_lead(&audio, 90000), &audio[60800..]);
+    }
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -162,6 +171,15 @@ fn complete_confidence(result: &Value) -> Option<f64> {
         minimum = minimum.min(confidence);
     }
     (spoken.join(" ") == text(result)).then_some(minimum)
+}
+
+/// The 100 ms before `cut` (where Vosk heard the wake name end), for the
+/// Arabic pass only: English Vosk often stretches “jarvis” over the first
+/// syllable of an Arabic word said in the same breath, and without it the
+/// Arabic model hears اسمعني as “معني” or “ما عليه”.
+fn arabic_lead(audio: &[u8], cut: usize) -> &[u8] {
+    let end = (cut - cut % 2).min(audio.len());
+    &audio[end.saturating_sub(3200)..end]
 }
 
 impl Engine {
@@ -619,7 +637,7 @@ impl Engine {
             return Ok(None);
         }
         let result = self.command.result(true)?;
-        self.command_result(result)
+        self.command_result(result, &[])
     }
     fn decode(&mut self, pcm: &[u8]) -> Result<Option<Recognition>> {
         self.utterance_bytes += pcm.len();
@@ -663,7 +681,7 @@ impl Engine {
         }
         if self.command.accept(pcm)? {
             self.utterance_bytes = 0;
-            return self.command_result(self.command.result(self.finalize_utterances)?);
+            return self.command_result(self.command.result(self.finalize_utterances)?, &[]);
         }
         Ok(None)
     }
@@ -713,6 +731,7 @@ impl Engine {
                 * 2)
             .saturating_sub(start);
             let tail = &audio[(cut - cut % 2).min(audio.len())..];
+            let lead = arabic_lead(audio, cut);
             if !text.contains("[unk]")
                 && self.matcher.accepts(&text)
                 && conf.is_none_or(|c| c >= 0.6)
@@ -720,9 +739,10 @@ impl Engine {
                 self.pending = self.command_from_audio(
                     tail,
                     Some(serde_json::json!({"text":text,"result":rest})),
+                    lead,
                 )?;
             } else if !audio.is_empty() {
-                self.pending = self.command_from_audio(tail, None)?;
+                self.pending = self.command_from_audio(tail, None, lead)?;
             }
         }
         self.reset()?;
@@ -733,10 +753,12 @@ impl Engine {
             None,
         )))
     }
+    /// `lead` is audio from just before `audio` that only the Arabic pass hears.
     fn command_from_audio(
         &mut self,
         audio: &[u8],
         strict: Option<Value>,
+        lead: &[u8],
     ) -> Result<Option<Recognition>> {
         if strict.is_none() && audio.len() < 6400 {
             return Ok(None);
@@ -754,9 +776,9 @@ impl Engine {
             self.command.accept(audio)?;
             self.command.result(true)?
         };
-        self.command_result(strict)
+        self.command_result(strict, lead)
     }
-    fn command_result(&mut self, result: Value) -> Result<Option<Recognition>> {
+    fn command_result(&mut self, result: Value, lead: &[u8]) -> Result<Option<Recognition>> {
         let canonical = self.canonical(&text(&result));
         if let Some(open) = &self.open {
             self.open_text.push(text(&open.result(true)?));
@@ -797,7 +819,7 @@ impl Engine {
         // writes as Arabic-script sounds) falls through to Whisper unchanged.
         if let Some(arabic) = &mut self.arabic {
             if !audio.is_empty() {
-                let heard_ar = phrase(&arabic.get()?.transcribe(&audio)?);
+                let heard_ar = phrase(&arabic.get()?.transcribe(&[lead, &audio[..]].concat())?);
                 if jarvis_phrases::arabic::has_arabic(&heard_ar)
                     && jarvis_phrases::arabic::translate(
                         &heard_ar,

@@ -1,6 +1,6 @@
 {
   "about": "Arabic command wording (Najdi/Saudi first, then common MSA). Keys are written in folded form: no diacritics or hamza, alef forms as ا, ta marbuta as ه, alef maqsura as ي. Each maps onto an English command the parser already understands; nothing here can name an action of its own. Shared by native/command-phrases and src/jarvis/phrases.py.",
-  "wake_words": ["جارفس", "جارفيس", "جارفز", "جارفيز", "جارفث", "جافيس"],
+  "wake_words": ["جارفس", "جارفيس", "جارفز", "جارفيز", "جارفث", "جافيس", "جاردس", "جاربس", "جار فس", "جار بس"],
   "polite_prefixes": ["لو سمحت", "لوسمحت", "الله يخليك", "من فضلك", "ممكن", "تكفي", "ياليت", "يا ليت", "ابيك", "ابغاك", "ابغي", "ابي"],
   "polite_suffixes": ["لو سمحت", "لوسمحت", "الله يخليك", "من فضلك", "تكفي", "يعطيك العافيه", "الله يعافيك", "شكرا", "بسرعه"],
   "fixed": {
@@ -41,7 +41,8 @@
     "سكر جارفس": "close yourself", "اقفل جارفس": "close yourself",
     "الغ": "cancel", "الغاء": "cancel", "كنسل": "cancel", "خلاص": "cancel", "انسي": "cancel", "لا خلاص": "cancel",
     "تجاهل": "cancel", "الغ الامر": "cancel", "ولا شي": "cancel",
-    "اسمعني": "listen to me", "اكتب اللي اقوله": "listen to me", "اكتب اللي بقوله": "listen to me",
+    "اسمعني": "listen to me", "سمعني": "listen to me", "اسماني": "listen to me", "اسمالي": "listen to me",
+    "اكتب اللي اقوله": "listen to me", "اكتب اللي بقوله": "listen to me",
     "ابدا الكتابه": "listen to me", "ابدا الاملاء": "listen to me", "اكتب وراي": "listen to me"
   },
   "open_verbs": ["افتح لي", "افتحي لي", "شغل لي", "شغلي لي", "افتح", "افتحي", "شغل", "شغلي"],

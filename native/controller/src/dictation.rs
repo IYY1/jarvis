@@ -148,6 +148,12 @@ pub fn language(config: &Value, trigger: Option<&str>) -> &'static str {
     }
 }
 
+/// The words that started dictation, for `language`: what was heard when the
+/// worker matched it onto a command (اسمعني arrives as “listen to me”).
+pub fn spoken<'a>(phrase: &'a str, heard: Option<&'a (String, String)>) -> &'a str {
+    heard.map_or(phrase, |(words, _)| words)
+}
+
 /// Puts text on the Wayland clipboard with wl-copy, which keeps serving it
 /// after it returns. False when wl-copy is missing or fails.
 pub async fn copy(text: &str) -> bool {
@@ -280,6 +286,13 @@ mod tests {
         assert_eq!(language(&config("en", "auto"), Some("اسمعني")), "en");
         assert_eq!(language(&config("ar_en", "en"), Some("اسمعني")), "en");
         assert_eq!(language(&config("ar_en", "ar"), Some("listen")), "ar");
+        // The worker sends اسمعني as “listen to me”; what was heard decides.
+        let heard = ("اسمعني".to_owned(), "listen to me".to_owned());
+        assert_eq!(
+            language(&both, Some(spoken("listen to me", Some(&heard)))),
+            "ar"
+        );
+        assert_eq!(language(&both, Some(spoken("listen to me", None))), "en");
     }
 
     #[test]

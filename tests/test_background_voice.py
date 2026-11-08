@@ -180,7 +180,7 @@ class BackgroundDeliveryTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(service.watchers)
         with patch.object(service, "execute", new_callable=AsyncMock) as execute:
             await service.read_voice(worker, "wake_word")
-        execute.assert_awaited_once_with("open steam")
+        execute.assert_awaited_once_with("open steam", None)
 
 
 if __name__ == "__main__":
