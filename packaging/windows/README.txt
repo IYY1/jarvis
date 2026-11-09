@@ -1,6 +1,6 @@
-Jarvis 0.4.1 — Windows x64
+Jarvis 1.0.0 — Windows x64
 
-Windows 10 22H2 and Windows 11 x64. Run Jarvis-0.4.1-Windows-x64-Setup.exe:
+Windows 10 22H2 and Windows 11 x64. Run Jarvis-1.0.0-Windows-x64-Setup.exe:
 it installs for your account only, needs no administrator rights, downloads
 nothing and does not restart Windows. Setup upgrades an earlier Jarvis in
 place and keeps settings and recordings. Optional: desktop shortcut (on by
@@ -15,8 +15,7 @@ The notification-area icon remains while the service runs. Its menu can mute,
 listen once, save replay, stop recording or quit the service.
 
 Recording: select a display and folder, review system/microphone switches,
-then start capture. Settings apply as they change. Start with Compatible
-(H.264) if you need broad playback support. The
+then start capture. Settings apply as they change. Choose H.264 if you need broad playback support. At 8 Mbps, the
 video budget is about 60 MB per minute plus sound/container overhead. HEVC
 and AV1 usually offer better compression but need compatible graphics hardware
 and playback software. CPU H.264 is an explicit compatibility option.
@@ -52,25 +51,21 @@ Console examples:
 No Discord moderation is included. The same Windows app can still be opened
 by name like other installed applications.
 
-New in 0.4.1: capture presets including 240 fps, separate replay video settings,
-resolution limits, automatic bitrate, SDR 10-bit formats (driver tested), Arabic
-model install/language controls, dictation controls and clip section/split/join.
-Scaling and SDR 10-bit conversion use CPU pixel processing with GPU encoding.
-New in 0.4.0: sidebar settings, apply-as-you-change controls, three color
-presets, Arabic speech support, dictation and a Clips page. Open a saved clip,
-choose the sound tracks to keep, optionally trim its start/end, then Export copy.
-Fast mode copies video; Exact mode re-encodes on the CPU. The original is kept.
-Separate app tracks on Windows require Windows 11 and support one program
-plus the rest of system sound and the microphone. Linux supports up to eight
-apps. Arabic uses an optional model download; English models are bundled.
+New in 1.0.0: automatic video format selection (AV1, HEVC, then H.264),
+quality presets up to 240 fps, corrected replay sync, improved HDR capture,
+faster GPU clip exports, fast-speech retries, six settings themes, and start
+at sign-in synchronized with Windows Startup apps.
 
-Validation: policy and native-worker tests run on Windows in CI. The release
-is built with Windows CPython under Wine; frozen-app checks use a private
-test display. Earlier 0.3.x installers passed install/upgrade/reboot/uninstall
-checks in a Windows 10 virtual machine. Those earlier results do not establish
-0.4.1 behavior. Real microphone input, Windows 11 separate tracks, dictation
-on Windows, GPU capture and HDR still require validation on Windows hardware.
-This build is unsigned; Windows may show a SmartScreen warning.
+Recording audio: choose All audio, or Specific apps for the running game,
+up to four programs and the microphone. Each has a volume; Separate audio
+tracks keeps them individually alongside a combined track. Specific-app
+capture requires Windows 11 (build 20348 or later).
+Arabic recognition uses an optional model download; English models are bundled.
+
+Validation details for this build are on the v1.0.0 GitHub release page.
+The contributor tested the Windows changes on Windows 11 with an RTX 5080.
+Automated and Wine checks do not establish behavior on every GPU, display
+or microphone. This build is unsigned; Windows may show a SmartScreen warning.
 
 License: Jarvis source is MIT. See THIRD-PARTY-NOTICES.txt and licenses/.
 The separate FFmpeg executables are GPLv3-or-later; their complete corresponding

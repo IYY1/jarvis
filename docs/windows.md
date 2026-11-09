@@ -20,7 +20,7 @@ ignored local `build/deferred-discord/snapshot/` folder for future work. Ordinar
 
 ## Install and use
 
-Download `Jarvis-0.4.1-Windows-x64-Setup.exe` and run it. Setup installs for the
+Download `Jarvis-1.0.0-Windows-x64-Setup.exe` and run it. Setup installs for the
 current Windows account into `%LOCALAPPDATA%\Programs\Jarvis`, needs no
 administrator rights, downloads nothing and never restarts Windows. Its pages:
 welcome (what Setup will and will not do), MIT license, **components** (Jarvis,
@@ -84,7 +84,7 @@ is shown as an actionable command error. Create desktops in Task View first.
 
 ## Recording choices
 
-0.4.1 exposes capture presets including **240 fps**, 1–240 fps manual input,
+1.0.0 exposes capture presets including **240 fps**, 1–240 fps manual input,
 resolution limits, automatic bitrate and replay's independent video profile.
 Scaling preserves aspect ratio and never enlarges the source. Scaling and SDR
 10-bit conversion download/process pixels on the CPU while retaining GPU encoding.
@@ -94,20 +94,23 @@ display and game; the Windows VM cannot establish GPU capture throughput.
 
 The Voice page includes Arabic model installation, language selection and
 full dictation controls. Clips supports section removal, split, join and undo;
-preview opens the system player. Windows app-audio separation still supports
-one program on Windows 11.
+preview opens the system player. Specific-app audio capture follows the running game and up to four programs,
+plus the microphone, with per-source volumes and optional separate tracks.
+It requires Windows 11 (build 20348 or later).
 
 
 Start with **H.264, Automatic GPU, 30 fps, 8 Mbps**. The video budget is about
-60 decimal MB/minute, plus sound/container overhead. The FPS slider supports 1–60.
+60 decimal MB/minute, plus sound/container overhead. The FPS slider supports 1–240.
 The storage-budget setting controls size independently of frame rate; more frames
 at the same bitrate divide the available bits among more frames. Quality mode
 offers Medium, High and Very high presets, with variable file size.
 
 Automatic encoding tries the selected adapter's NVIDIA NVENC, AMD AMF or Intel
 Quick Sync family, then hardware Media Foundation. A synthetic frame checks the
-driver before capture. It never silently switches to CPU encoding. Explicit CPU
-compatibility mode uses two-thread ultrafast x264, H.264 SDR only. HEVC and AV1
+driver before capture. Automatic format tries AV1, HEVC, then H.264 and can
+fall back to CPU H.264 for SDR when no GPU encoder works. HDR requires a
+supported HEVC/AV1 GPU encoder. Explicit CPU compatibility mode uses
+two-thread ultrafast x264, H.264 SDR only. HEVC and AV1
 can reduce bitrate for comparable quality, subject to encoder generation, content
 and playback compatibility; this release does not claim equal quality across GPU
 vendors or a hardware benchmark it has not run. See the official
@@ -120,7 +123,7 @@ Auto mode refuses an unknown display color state. Known SDR displays cannot be
 forced to HDR without enabling HDR in Windows. Final output is verified with
 ffprobe before publication; interrupted/failed staging files are retained.
 
-Replay defaults to **RAM**, retaining 10–600 seconds or the configured encoded
+Replay defaults to **RAM**, retaining 10–1800 seconds or the configured encoded
 history budget (default **256 MiB**), whichever fits first. In RAM mode, video
 files are written only after Save. Models, encoder buffers, three in-flight
 segments and a concurrently saved snapshot are additional memory. Save waits
@@ -156,7 +159,8 @@ and callback overflows remain errors.
 
 ## Build locally
 
-The supported build runs on Linux, either directly or in the
+The release can be built on Windows with `scripts/build_windows.py` and NSIS.
+The automated cross-build also runs on Linux, directly or in the
 [build container](../packaging/container/README.md):
 
 ```sh
@@ -295,5 +299,5 @@ Use the available dual boot to check:
 - Mixed-DPI and multiple adapters/displays; HDR enabled/disabled and output playback.
 - Command latency on typical hardware (see the regression in [Windows memory](windows-memory.md)).
 
-This task prepares local artifacts for review and does not publish a release or
-claim those remaining checks passed.
+See the v1.0.0 release notes for verification of the shipped build. Earlier
+version checks above retain their original scope.
