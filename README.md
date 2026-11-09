@@ -8,7 +8,23 @@ Everything runs on your CPU: Vosk listens for the wake word and Whisper tiny.en
 understands the command. No account, API key or cloud service. The settings
 window can close while Jarvis keeps listening in the background.
 
-Jarvis is early software. Recognition depends on your voice, microphone and room.
+Recognition depends on your voice, microphone and room.
+
+## What's new in 1.0.0 (Windows)
+
+- **Windows audio:** record all sound or the current game plus up to four apps
+  and the microphone, with individual volumes and separate tracks (Windows 11).
+- **Recording and replay:** automatic AV1 / HEVC / H.264 selection, corrected
+  replay synchronization, improved HDR capture and GPU clip exports.
+- **Windows settings:** six themes, quality tiles, named displays/microphones,
+  and start at sign-in synchronized with Windows Startup apps.
+- **Voice:** retries for fast speech, clearer failed-command feedback and
+  corrected Arabic dictation activation.
+- **Offline downloads:** Windows Setup and portable ZIP on the [release page](https://github.com/abdullaho21/jarvis/releases/tag/v1.0.0).
+
+Platform development: [abdullaho21](https://github.com/abdullaho21) maintains
+Linux; [IYY1](https://github.com/IYY1) maintains Windows.
+The Linux release follows separate testing; platform features can differ.
 
 ## What's new in 0.4.1
 
@@ -112,7 +128,7 @@ then `bash install.sh`.
 
 ### Windows 10/11
 
-Download `Jarvis-0.4.1-Windows-x64-Setup.exe` from the
+Download `Jarvis-1.0.0-Windows-x64-Setup.exe` from the
 [releases page](https://github.com/abdullaho21/jarvis/releases) and run it. It
 installs for your account only, with no administrator rights, downloads or
 restart, and upgrades an earlier Jarvis in place. A portable ZIP is also

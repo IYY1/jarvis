@@ -1493,6 +1493,7 @@ class StartupTests(WindowsPolicyTestCase):
             QueryValueEx=query)
         return fake, keys
 
+    @unittest.skipUnless(sys.platform == "win32", "Windows Startup apps integration")
     def test_window_shows_what_windows_will_do_at_sign_in(self):
         import tkinter
         try:

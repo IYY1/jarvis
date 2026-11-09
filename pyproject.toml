@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "jarvis-hyprland"
-version = "0.4.1"
+version = "1.0.0"
 description = "Offline desktop voice controls for Windows and Hyprland"
 requires-python = ">=3.11"
 readme = "README.md"
@@ -12,7 +12,7 @@ license = "MIT"
 license-files = ["LICENSE"]
 keywords = ["hyprland", "linux", "windows", "voice-control", "offline", "accessibility"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Environment :: X11 Applications :: GTK",
     "Intended Audience :: End Users/Desktop",
     "Operating System :: POSIX :: Linux",

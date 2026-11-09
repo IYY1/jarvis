@@ -1,6 +1,14 @@
 # Changelog
 
-## Unreleased
+## 1.0.0 — 2026-11-09
+
+First major Windows release, including the
+Windows contribution from [IYY1](https://github.com/IYY1) in
+[PR #17](https://github.com/abdullaho21/jarvis/pull/17). Windows is distributed
+as an offline Setup installer and portable ZIP; upgrades preserve settings
+and recordings. The Linux release follows separate user testing.
+Linux development is maintained by abdullaho21; Windows
+development is maintained by IYY1.
 
 - Saying اسمعني now dictates Arabic. The voice worker passes the phrase on as
   the English command “listen to me”, and dictation picked its language from
