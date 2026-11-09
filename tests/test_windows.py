@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import queue
 import struct
+import sys
 import tempfile
 import threading
 import time
@@ -28,6 +29,22 @@ except ImportError:
     TK = False
 
 
+class WindowsPolicyTestCase(unittest.TestCase):
+    """Load the real Windows defaults even when policy tests run on Linux."""
+
+    def setUp(self):
+        spec = importlib.util.spec_from_file_location("jarvis_windows_config", config.__file__)
+        windows_config = importlib.util.module_from_spec(spec)
+        with patch.object(sys, "platform", "win32"):
+            spec.loader.exec_module(windows_config)
+        defaults = patch.object(config, "DEFAULTS", windows_config.DEFAULTS)
+        defaults.start()
+        self.addCleanup(defaults.stop)
+        automatic = patch("jarvis.encoding.AUTO", ("auto",))
+        automatic.start()
+        self.addCleanup(automatic.stop)
+
+
 @unittest.skipUnless(TK, "Tk is not installed")
 class WindowRequestTests(unittest.TestCase):
     def test_requests_keep_the_client_per_operation_timeouts(self):
@@ -45,10 +62,11 @@ class WindowRequestTests(unittest.TestCase):
 
 
 @unittest.skipUnless(TK, "Tk is not installed")
-class SettingsWindowTests(unittest.TestCase):
+class SettingsWindowTests(WindowsPolicyTestCase):
     """The redesigned window: sidebar pages, settings that save on their own, Wada colors."""
 
     def setUp(self):
+        super().setUp()
         import tkinter
         try:
             self.root = tkinter.Tk()
@@ -619,8 +637,9 @@ class SettingsWindowTests(unittest.TestCase):
         self.assertEqual(palettes.chosen(), "190")
 
 
-class EncoderTests(unittest.TestCase):
+class EncoderTests(WindowsPolicyTestCase):
     def setUp(self):
+        super().setUp()
         self.cfg = config.validate({})["recording"]
         self.cfg.update(codec="h264", rate_control="bitrate", bitrate_mbps=8)
         self.display = {
@@ -1036,7 +1055,8 @@ class ReplaySaveTests(unittest.TestCase):
             write_track_names(Path(folder) / "Clip.mp4", ["Game", "Discord"])
             names = Path(folder) / ".Clip.mp4.tracks.json"
             self.assertEqual(json.loads(names.read_text())["tracks"], ["Game", "Discord"])
-            self.assertTrue(ctypes.windll.kernel32.GetFileAttributesW(str(names)) & 0x2, "hidden on Windows")
+            if sys.platform == "win32":
+                self.assertTrue(ctypes.windll.kernel32.GetFileAttributesW(str(names)) & 0x2, "hidden on Windows")
 
     def test_segments_are_joined_one_second_apart(self):
         # Found on the real card: left to step by each segment's longest stream, the
@@ -1112,6 +1132,7 @@ class TaskManagerGroupTests(unittest.TestCase):
         self.assertTrue(os.path.samefile(host.grouped(self.worker), self.worker))
         self.assertEqual(link.read_bytes(), b"MZ new version")
 
+    @unittest.skipUnless(sys.platform == "win32", "Windows executable version resources")
     def test_a_program_without_a_name_gets_a_named_copy_and_the_original_never_changes(self):
         import shutil
         import sys
@@ -1142,7 +1163,7 @@ class TaskManagerGroupTests(unittest.TestCase):
             self.assertEqual(host.grouped(self.worker), self.worker)
 
 
-class AutomaticFormatTests(unittest.TestCase):
+class AutomaticFormatTests(WindowsPolicyTestCase):
     """codec "auto": the best format the GPU encodes, so older GPUs record without a setting change."""
     sdr = {"name": r"\\.\DISPLAY2", "adapter": 0, "output": 1, "vendor": 0x10DE, "colorManagementPreset": "srgb",
            "hdr_known": True, "width": 2560, "height": 1440, "left": -2560, "top": 0}
@@ -1232,7 +1253,30 @@ class IconTests(unittest.TestCase):
 
         icon = logo_ico()
         stored = Path(__file__).resolve().parents[1] / "packaging" / "windows" / "jarvis.ico"
-        self.assertEqual(stored.read_bytes(), icon, "regenerate packaging/windows/jarvis.ico from look.logo_ico()")
+        def pixels(data):
+            # zlib versions may compress identical PNG pixels differently.
+            import zlib
+            count = struct.unpack("<H", data[4:6])[0]
+            images = []
+            for index in range(count):
+                entry = struct.unpack("<BBBBHHII", data[6 + 16 * index:22 + 16 * index])
+                length, offset = entry[-2:]
+                png = data[offset:offset + length]
+                chunks, compressed, position = [], b"", 8
+                while position < len(png):
+                    size = struct.unpack(">I", png[position:position + 4])[0]
+                    kind = png[position + 4:position + 8]
+                    payload = png[position + 8:position + 8 + size]
+                    if kind == b"IDAT":
+                        compressed += payload
+                    else:
+                        chunks.append((kind, payload))
+                    position += size + 12
+                images.append((entry[:6], chunks, zlib.decompress(compressed)))
+            return images
+
+        self.assertEqual(pixels(stored.read_bytes()), pixels(icon),
+                         "regenerate packaging/windows/jarvis.ico from look.logo_ico()")
         reserved, kind, count = struct.unpack("<HHH", icon[:6])
         self.assertEqual((reserved, kind, count), (0, 1, len(ICON_SIZES)))
         for index, size in enumerate(ICON_SIZES):
@@ -1325,7 +1369,7 @@ class TransportTests(unittest.TestCase):
                     transport.connect(1)
 
 
-class HostTests(unittest.TestCase):
+class HostTests(WindowsPolicyTestCase):
     def test_new_windows_settings_are_gpu_budgeted_and_require_setup(self):
         with (
             tempfile.TemporaryDirectory() as directory,
