@@ -151,10 +151,11 @@ class SettingsWindowTests(WindowsPolicyTestCase):
                     alike = distance(a["roles"]["bg"], b["roles"]["bg"]) < 45 and \
                         distance(a["roles"]["accent"], b["roles"]["accent"]) < 90
                     self.assertFalse(alike)
-        with patch("winreg.QueryValueEx", return_value=(1, 4)):
-            self.assertEqual(palettes.resolve(palettes.SYSTEM), "light")
-        with patch("winreg.QueryValueEx", return_value=(0, 4)):
-            self.assertEqual(palettes.resolve(palettes.SYSTEM), "graphite")
+        if sys.platform == "win32":
+            with patch("winreg.QueryValueEx", return_value=(1, 4)):
+                self.assertEqual(palettes.resolve(palettes.SYSTEM), "light")
+            with patch("winreg.QueryValueEx", return_value=(0, 4)):
+                self.assertEqual(palettes.resolve(palettes.SYSTEM), "graphite")
         window = self.window
         with patch.object(palettes, "choose"), patch.object(window, "say") as said:
             window.palette_setting = "light"
@@ -377,7 +378,8 @@ class SettingsWindowTests(WindowsPolicyTestCase):
         # Its corners are see-through, so no box shows behind the capsule.
         from jarvis.windows.ui import SEE_THROUGH
         self.assertEqual(bubble.cget("background"), SEE_THROUGH)
-        self.assertEqual(str(window.toast_window.attributes("-transparentcolor")), SEE_THROUGH)
+        if sys.platform == "win32":
+            self.assertEqual(str(window.toast_window.attributes("-transparentcolor")), SEE_THROUGH)
 
     def test_quality_is_picked_from_tiles_named_by_level(self):
         from jarvis.windows.video_settings import tile_text
@@ -1431,7 +1433,7 @@ class HostTests(WindowsPolicyTestCase):
         self.assertNotIn("discord", config.DEFAULTS)
 
 
-class StartupTests(unittest.TestCase):
+class StartupTests(WindowsPolicyTestCase):
     """Setup's start-at-sign-in component uses the same entry and setting as Settings."""
 
     def test_running_service_applies_the_change_itself(self):
