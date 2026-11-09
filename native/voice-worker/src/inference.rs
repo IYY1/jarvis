@@ -295,6 +295,29 @@ pub fn trim() {
     }
 }
 
+/// Windows: hand back the pages nothing has touched lately. Waiting for the wake
+/// phrase reads a small part of what loading the models touched, and the rest
+/// comes back at once if it is ever needed. Not for use mid-command. At most every
+/// two minutes, because what is really in use would only have to come back.
+pub fn release_unused() {
+    #[cfg(windows)]
+    {
+        use std::sync::Mutex;
+        use std::time::{Duration, Instant};
+        use windows::Win32::System::ProcessStatus::K32EmptyWorkingSet;
+        use windows::Win32::System::Threading::GetCurrentProcess;
+        static LAST: Mutex<Option<Instant>> = Mutex::new(None);
+        let Ok(mut last) = LAST.lock() else { return };
+        if last.is_some_and(|at| at.elapsed() < Duration::from_secs(120)) {
+            return;
+        }
+        *last = Some(Instant::now());
+        unsafe {
+            let _ = K32EmptyWorkingSet(GetCurrentProcess());
+        }
+    }
+}
+
 /// libvosk.dll's MinGW runtime DLLs sit beside it in the vosk package.
 #[cfg(windows)]
 unsafe fn load(path: &str) -> std::result::Result<Library, libloading::Error> {

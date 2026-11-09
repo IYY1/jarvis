@@ -66,12 +66,13 @@ class Segment:
 
 
 def _executable(argv: list[str]) -> list[str]:
-    from .host import is_windows, tool
+    from .host import ENCODER_NAME, grouped, is_windows, tool
     if is_windows():
         resolved = tool(argv[0])
         if not resolved:
             raise EditError(f"{argv[0]} is missing. Reinstall the complete Jarvis app.")
-        return [resolved, *argv[1:]]
+        # Under the window's name, so an export sits in Jarvis's Task Manager row.
+        return [str(grouped(resolved, ENCODER_NAME if argv[0] == "ffmpeg" else None)), *argv[1:]]
     return argv
 
 
@@ -83,8 +84,9 @@ def _run(argv: list[str], timeout: float = 60) -> str:
     return result.stdout
 
 
-def track_names(path: str | Path, count: int) -> list[str]:
-    """Names Jarvis stored when it saved the replay, else "Audio 1", "Audio 2"…"""
+def track_names(path: str | Path, count: int, titles: list | None = None) -> list[str]:
+    """Names Jarvis stored when it saved the replay, else each track's own
+    title (recordings keep theirs in the file), else "Audio 1", "Audio 2"…"""
     path = Path(path)
     try:
         names = json.loads((path.parent / f".{path.name}.tracks.json").read_text(encoding="utf-8"))["tracks"]
@@ -92,7 +94,16 @@ def track_names(path: str | Path, count: int) -> list[str]:
             return names
     except (OSError, ValueError, KeyError, TypeError):
         pass
-    return [f"Audio {i + 1}" for i in range(count)]
+    titles = list(titles or [])[:count]
+    titles += [None] * (count - len(titles))
+    return [t.strip() if isinstance(t, str) and t.strip() else f"Audio {i + 1}" for i, t in enumerate(titles)]
+
+
+def _titles(argv: list[str], names: list[str]) -> list[str]:
+    """Name the exported audio tracks, which filters and mixing leave unnamed."""
+    for index, name in enumerate(names):
+        argv += [f"-metadata:s:a:{index}", f"title={name}"]
+    return argv
 
 
 SILENT_DB = -90.0   # volumedetect reports digital silence as -91 dB
@@ -120,14 +131,16 @@ def probe(path: str | Path) -> Source:
     path = str(Path(path).resolve())
     data = json.loads(_run(["ffprobe", "-v", "error", "-show_entries",
                             "format=duration:stream=index,codec_type,codec_name,width,height,pix_fmt,"
-                            "r_frame_rate,channels,sample_rate,color_transfer,color_primaries,color_space,color_range",
+                            "r_frame_rate,channels,sample_rate,color_transfer,color_primaries,color_space,color_range"
+                            ":stream_tags=title",
                             "-of", "json", path]))
     duration = float(data.get("format", {}).get("duration") or 0)
     video = [s for s in data.get("streams", []) if s.get("codec_type") == "video"]
     audio = [s for s in data.get("streams", []) if s.get("codec_type") == "audio"]
     if not video or duration <= 0:
         raise EditError(f"{Path(path).name} has no video to edit")
-    for name, stream in zip(track_names(path, len(audio)), audio):
+    titles = [(s.get("tags") or {}).get("title") for s in audio]
+    for name, stream in zip(track_names(path, len(audio), titles), audio):
         stream["name"] = name
     packets = _run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "packet=pts_time,flags",
                     "-of", "csv=p=0", path], timeout=300)
@@ -270,6 +283,31 @@ def _vaapi_device(codec: str) -> str | None:
     return None
 
 
+def _windows_encoder(codec: str, hdr: bool, kbps: int) -> list[str] | None:
+    """Encoder arguments for the graphics card recording uses (NVIDIA, AMD or Intel,
+    tested the same way), in the source's own format; None when no card can encode it.
+    The bundled Windows FFmpeg has no CPU AV1 or HEVC encoder."""
+    from .recorder import RecorderError
+    from .windows import encoding
+    from .windows.capture import chosen_display
+    from .windows.displays import sources
+
+    display = chosen_display(sources(), "")
+    if display is None:
+        return None
+    cfg = {"codec": codec + ("_10bit" if hdr else ""), "encoder": "auto", "color_mode": "sdr"}
+    try:
+        _, family = encoding.select_encoder(cfg, display, codec)
+    except RecorderError:
+        return None
+    args = encoding.encoder_options({"rate_control": "bitrate", "bitrate_mbps": max(1, round(kbps / 1000)),
+                                     "_ten_bit": hdr}, family, codec)
+    if family == "qsv":
+        args = ["-init_hw_device", f"qsv=encoder:hw,child_device={display['adapter']},child_device_type=d3d11va",
+                *args]
+    return args
+
+
 def command(edit: Edit, output: Path, mode: str, tracks: list[int], mix: bool, workdir: Path) -> list[str]:
     """The FFmpeg command for an export (see the module docstring)."""
     if mode not in ("fast", "exact"):
@@ -277,6 +315,9 @@ def command(edit: Edit, output: Path, mode: str, tracks: list[int], mix: bool, w
     if not edit.segments:
         raise EditError("Nothing left to export")
     first = edit.sources[edit.segments[0].source]
+    names = [first.audio[t].get("name") or f"Audio {t + 1}" if t < len(first.audio) else f"Audio {t + 1}" for t in tracks]
+    if mix and len(tracks) > 1:
+        names = [" + ".join(names)]
     argv = ["ffmpeg", "-hide_banner", "-nostdin", "-v", "error", "-progress", "pipe:1", "-nostats", "-n"]
     from .host import is_windows
     # The bundled Windows FFmpeg includes AAC, but does not include libopus.
@@ -301,17 +342,28 @@ def command(edit: Edit, output: Path, mode: str, tracks: list[int], mix: bool, w
             for t in tracks:
                 argv += ["-map", f"0:a:{t}"]
             argv += ["-c", "copy"]
-        return argv + ["-avoid_negative_ts", "make_zero", "-movflags", "+faststart", str(output)]
+        return _titles(argv, names) + ["-avoid_negative_ts", "make_zero", "-movflags", "+faststart", str(output)]
 
     # Exact: decode, trim on the chosen times, scale joined clips to the first size, re-encode.
     used = sorted({s.source for s in edit.segments})
     index = {source: i for i, source in enumerate(used)}
     for source in used:
-        argv += ["-i", edit.sources[source].path]
+        # The Windows FFmpeg has no software AV1 decoder, and AV1 is what Jarvis
+        # records by default: decode on the graphics card (FFmpeg falls back to
+        # software for other formats if the card can't).
+        argv += [*(["-hwaccel", "d3d11va"] if is_windows() else []), "-i", edit.sources[source].path]
     width, height = first.video["width"], first.video["height"]
     hdr = first.video.get("color_transfer") in ("smpte2084", "arib-std-b67")
     codec = first.video.get("codec_name") if first.video.get("codec_name") in ("h264", "hevc", "av1") else "h264"
-    device = _vaapi_device(codec + ("_10bit" if hdr else ""))
+    windows_encoder = None
+    if is_windows():
+        # Exact export used VA-API (Linux AMD/Intel) or the CPU; on Windows that meant
+        # slow H.264 even on NVIDIA, and HDR clips failed: there is no libsvtav1 here.
+        kbps_hint = max(1000, int(os.path.getsize(first.path) * 8 / first.duration / 1000 * 1.1))
+        windows_encoder = _windows_encoder(codec, hdr, kbps_hint)
+        if windows_encoder is None and hdr:
+            raise EditError("No graphics card encoder can make HDR video here; choose Fast, or update the graphics driver")
+    device = None if is_windows() else _vaapi_device(codec + ("_10bit" if hdr else ""))
     pixel = "p010" if hdr else "nv12"
     graph, labels = [], []
     for i, s in enumerate(edit.segments):
@@ -336,7 +388,13 @@ def command(edit: Edit, output: Path, mode: str, tracks: list[int], mix: bool, w
     # Aim for the source's own bitrate, so an edit is about as large per
     # second as the original rather than re-encoded at an arbitrary quality.
     kbps = max(1000, int(os.path.getsize(first.path) * 8 / first.duration / 1000 * 1.1))
-    if device:
+    if windows_encoder:
+        if windows_encoder[0] == "-init_hw_device":   # Intel needs its device before the inputs
+            argv[1:1] = windows_encoder[:2]
+            windows_encoder = windows_encoder[2:]
+        video_out = "[v]"
+        encoder = windows_encoder
+    elif device:
         graph.append(f"[v]format={pixel},hwupload[vout]")
         video_out = "[vout]"
         encoder = ["-c:v", f"{codec}_vaapi", "-rc_mode", "VBR", "-b:v", f"{kbps}k", "-maxrate", f"{kbps * 2}k"]
@@ -359,6 +417,7 @@ def command(edit: Edit, output: Path, mode: str, tracks: list[int], mix: bool, w
                  "-colorspace", "bt2020nc", "-color_range", "tv"]
     if tracks:
         argv += audio_codec
+        _titles(argv, names)
     return argv + ["-movflags", "+faststart", str(output)]
 
 
@@ -412,7 +471,10 @@ class Export:
                 os.link(staging, self.output)
             staging.unlink()
             self.progress(1.0)
+            # The export names its tracks itself (see _titles); only a format
+            # that can't hold the names gets them in a hidden file beside it.
             names = [self.edit.sources[0].audio[t]["name"] for t in self.tracks if t < len(self.edit.sources[0].audio)]
-            if not self.mix and len(names) > 1:
-                (self.output.parent / f".{self.output.name}.tracks.json").write_text(json.dumps({"tracks": names}), encoding="utf-8")
+            from .replay import write_track_names
+            if not self.mix:
+                write_track_names(self.output, names)
             return self.output

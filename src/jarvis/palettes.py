@@ -106,23 +106,91 @@ PRESETS: dict[str, dict] = {
 }
 DEFAULT = "344"
 
+# Neutral graphite with one blue accent, for the Windows window. Not from the book.
+_GRAPHITE_BG = "#14161c"
+GRAPHITE = {
+    "name": "Graphite", "number": None, "dark": True,
+    "swatches": {"Blue": "#4c8dff", "Card": "#1c1f27", "Page": "#14161c", "Rail": "#0f1116"},
+    "roles": {
+        "bg": _GRAPHITE_BG, "surface": "#0f1116", "card": "#1c1f27", "inset": "#14161c", "control": "#2a2e39",
+        "control-hover": "#343945", "control-active": "#3d4250", "line": "#2c303b", "line-strong": "#4a4f5d",
+        "text": "#f2f3f5", "text-muted": "#a4aab6", "text-disabled": "#6b7180", "disabled": "#20232b",
+        "accent": "#4c8dff", "accent-hover": "#6aa1ff", "accent-text": "#7fb0ff", "on-accent": "#0b0d12",
+        "selected": "#26324b", "live": "#3dd68c", "live-soft": mix(_GRAPHITE_BG, "#3dd68c", 0.16), "live-text": "#3dd68c",
+        "on-live": "#0b0d12", "focus": "#6aa1ff", "error-bg": mix(_GRAPHITE_BG, "#f0616d", 0.22), "error-text": "#ff9aa2",
+    },
+}
+def _plain(name, dark, swatches, **roles):
+    """A theme from plain role colors, like Graphite."""
+    bg = roles["bg"]
+    roles.setdefault("live-soft", mix(bg, roles["live"], 0.16))
+    roles.setdefault("error-bg", mix(bg, "#f0616d", 0.22 if dark else 0.14))
+    return {"name": name, "number": None, "dark": dark, "swatches": swatches, "roles": roles}
+
+
+# Light: a clean daytime theme. Cyberpunk: neon yellow, cyan and magenta on violet
+# night. Pixel art: the sixteen-colour palette of PICO-8, the fantasy retro console.
+# None of these are from the book; each looks unlike the others.
+CYBERPUNK = _plain("Cyberpunk", True, {"Neon yellow": "#fcee0a", "Magenta": "#ff2bd6", "Cyan": "#00f0ff",
+                                       "Night": "#0b0814"},
+                   bg="#0b0814", surface="#07050d", card="#151024", inset="#0b0814", control="#231a38",
+                   **{"control-hover": "#2e2348", "control-active": "#392c58", "line": "#261d3b", "line-strong": "#4a3a6e",
+                      "text": "#f2ecff", "text-muted": "#b3a6d6", "text-disabled": "#6c5f8f", "disabled": "#171128",
+                      "accent": "#fcee0a", "accent-hover": "#fff35c", "accent-text": "#fcee0a", "on-accent": "#0b0814",
+                      "selected": "#3a1d4f", "live": "#00f0ff", "live-text": "#00f0ff", "on-live": "#0b0814",
+                      "focus": "#ff2bd6", "error-text": "#ff6b9a"})
+PIXEL = _plain("Pixel art", True, {"Red": "#ff004d", "Yellow": "#ffec27", "Green": "#00e436", "Blue": "#29adff",
+                                   "Navy": "#1d2b53"},
+               bg="#1d2b53", surface="#151f3e", card="#26376b", inset="#1d2b53", control="#34478a",
+               **{"control-hover": "#3e549f", "control-active": "#4a62b4", "line": "#33467f", "line-strong": "#5f6fa8",
+                  "text": "#fff1e8", "text-muted": "#c2c3c7", "text-disabled": "#83769c", "disabled": "#222f5c",
+                  "accent": "#ffec27", "accent-hover": "#fff36b", "accent-text": "#ffec27", "on-accent": "#1d2b53",
+                  "selected": "#7e2553", "live": "#00e436", "live-text": "#00e436", "on-live": "#1d2b53",
+                  "focus": "#29adff", "error-text": "#ffccaa"})
+LIGHT = _plain("Light", False, {"Blue": "#2f6fe4", "Card": "#ffffff", "Page": "#f4f5f8", "Rail": "#e9ebf0"},
+               bg="#f4f5f8", surface="#e9ebf0", card="#ffffff", inset="#f4f5f8", control="#e6e8ee",
+               **{"control-hover": "#dcdfe7", "control-active": "#d0d4de", "line": "#e1e4ea", "line-strong": "#c5cad5",
+                  "text": "#161a22", "text-muted": "#5b6475", "text-disabled": "#9aa1ae", "disabled": "#eceef2",
+                  "accent": "#2f6fe4", "accent-hover": "#255fcc", "accent-text": "#2459bd", "on-accent": "#ffffff",
+                  "selected": "#dce7fb", "live": "#137a47", "live-text": "#0f6a3d", "on-live": "#ffffff",
+                  "focus": "#2f6fe4", "error-text": "#b4232f"})
+ALL_PRESETS: dict[str, dict] = {"graphite": GRAPHITE, "light": LIGHT, "cyberpunk": CYBERPUNK, "pixel": PIXEL, **PRESETS}
+# The Windows window offers one theme per look. Violet & cinnamon and Grenadine & slate green
+# are muted darks like Graphite there; the Linux window still has every book preset.
+WINDOWS = ("graphite", "light", "cyberpunk", "pixel", "190")
+# Not a palette: follow Windows' own light or dark setting, read when the window opens.
+SYSTEM = "system"
+
+
+def resolve(name: str) -> str:
+    """The palette to paint with: "system" becomes Light or Graphite as Windows is set."""
+    if name != SYSTEM:
+        return name if name in ALL_PRESETS else DEFAULT
+    try:
+        import winreg
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize") as key:
+            light = winreg.QueryValueEx(key, "AppsUseLightTheme")[0] == 1
+    except (ImportError, OSError):
+        light = False
+    return "light" if light else "graphite"
+
 
 def preference_path() -> Path:
     from .config import config_path
     return config_path().with_name("appearance.json")
 
 
-def chosen() -> str:
+def chosen(default: str = DEFAULT) -> str:
     """The saved preset, or the default when none (or an unknown one) is saved."""
     try:
-        name = str(json.loads(preference_path().read_text(encoding="utf-8")).get("palette", DEFAULT))
+        name = str(json.loads(preference_path().read_text(encoding="utf-8")).get("palette", default))
     except (OSError, ValueError, AttributeError):
-        return DEFAULT
-    return name if name in PRESETS else DEFAULT
+        return default
+    return name if name in ALL_PRESETS or name == SYSTEM else default
 
 
 def choose(name: str) -> None:
-    if name not in PRESETS:
+    if name not in ALL_PRESETS and name != SYSTEM:
         raise ValueError(f"Unknown color preset {name!r}")
     path = preference_path()
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -132,7 +200,7 @@ def choose(name: str) -> None:
 
 
 def roles(name: str | None = None) -> dict[str, str]:
-    return PRESETS[name if name in PRESETS else chosen()]["roles"]
+    return ALL_PRESETS[name if name in ALL_PRESETS else chosen()]["roles"]
 
 
 def gtk_colors(name: str | None = None) -> str:

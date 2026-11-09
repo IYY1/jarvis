@@ -6,6 +6,18 @@ from contextlib import contextmanager
 _job = None
 
 
+def release_unused_memory(handle=None):
+    """Hand Windows back the pages a process isn't using: this one, or a child by
+    its handle. Pages it touches again return at once, with no change in behavior.
+    FFmpeg alone goes from about 85 MiB to about 8 while recording."""
+    import ctypes
+
+    kernel = ctypes.WinDLL("kernel32")
+    kernel.GetCurrentProcess.restype = ctypes.c_void_p
+    kernel.K32EmptyWorkingSet.argtypes = [ctypes.c_void_p]
+    kernel.K32EmptyWorkingSet(kernel.GetCurrentProcess() if handle is None else handle)
+
+
 @contextmanager
 def com_context():
     import pythoncom

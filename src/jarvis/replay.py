@@ -15,6 +15,7 @@ import shutil
 import signal
 import socket
 import subprocess
+import sys
 import threading
 
 from .client import socket_path
@@ -157,13 +158,23 @@ def track_names(replay: dict, apps: list[dict] | None = None) -> list[str]:
 
 def write_track_names(clip: Path, names: list[str]) -> None:
     """MP4 replays lose the recorder's track titles; keep them in a hidden
-    `.NAME.tracks.json` beside the clip. Best effort."""
-    if len(names) < 2:
+    `.NAME.tracks.json` beside the clip. Best effort. An MKV keeps its track
+    titles itself (the clip editor reads them), so it gets no extra file."""
+    if len(names) < 2 or clip.suffix.lower() == ".mkv":
         return
     try:
-        (clip.parent / f".{clip.name}.tracks.json").write_text(json.dumps({"tracks": names}))
+        names_file = clip.parent / f".{clip.name}.tracks.json"
+        names_file.write_text(json.dumps({"tracks": names}))
+        hide(names_file)
     except OSError:
         pass
+
+
+def hide(path: Path) -> None:
+    """On Windows a leading dot doesn't hide a file: mark it hidden. Best effort."""
+    if sys.platform == "win32":
+        import ctypes
+        ctypes.windll.kernel32.SetFileAttributesW(str(path), 0x2)   # FILE_ATTRIBUTE_HIDDEN
 
 
 def command(cfg: dict, replay: dict, folder: Path, ipc: Path, *, color: str = "sdr",

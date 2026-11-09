@@ -1,5 +1,5 @@
-use crate::inference::{trim, Arabic, Decoder, Model, Text, Transcriber};
-use crate::matching::{phrase, Matcher};
+use crate::inference::{release_unused, trim, Arabic, Decoder, Model, Text, Transcriber};
+use crate::matching::{phrase, wording, Matcher};
 use crate::on_demand::{Loader, OnDemand};
 use crate::{NativeConfig, Result};
 use serde::{Deserialize, Serialize};
@@ -162,6 +162,15 @@ pub struct Engine {
     wake_start: usize,
     pending: Option<Recognition>,
     command_audio: Vec<u8>,
+    /// What this session has heard so far without making a command: "open",
+    /// when a pause came before "spotify". The next part is tried joined to it.
+    held_audio: Vec<u8>,
+    held_heard: String,
+    /// Word sequences that are the start of a longer command, like "open steam"
+    /// beside "open steam support center". These must wait for the end of speech.
+    incomplete: HashSet<String>,
+    /// The candidate Whisper already looked at during this utterance.
+    early_tried: Option<String>,
     speech_frames: usize,
     quiet_run: usize,
     pub unsupported: Vec<String>,
@@ -211,6 +220,119 @@ fn supported(model: &Model, phrases: &[String]) -> Vec<String> {
         .collect::<BTreeSet<_>>()
         .into_iter()
         .collect()
+}
+
+/// Quiet that lets a complete command answer early: 4 frames of 30 ms.
+const EARLY_QUIET_FRAMES: usize = 4;
+
+/// Every proper word-prefix of these phrases.
+fn word_prefixes<'a>(phrases: impl Iterator<Item = &'a String>) -> HashSet<String> {
+    let mut prefixes = HashSet::new();
+    for phrase in phrases {
+        let mut end = 0;
+        for word in phrase.split(' ') {
+            end += word.len();
+            if end < phrase.len() {
+                prefixes.insert(phrase[..end].to_owned());
+            }
+            end += 1;
+        }
+    }
+    prefixes
+}
+
+/// Mistakes here cost work or end the program, so these always get the full check.
+fn may_answer_early(intent: &str) -> bool {
+    !intent.starts_with("close_app") && intent != "quit"
+}
+
+/// The most audio kept for joining: the 10 seconds an utterance may last.
+const HELD_AUDIO: usize = 320000;
+/// Silence that ends speech: 20 frames of 30 ms.
+const END_OF_SPEECH_FRAMES: usize = 20;
+/// How much slower Whisper hears a command it couldn't follow, in turn.
+const SLOWER: [f64; 2] = [1.5, 2.0];
+/// Seconds of the wake name kept before a command said in the same breath.
+/// Measured on spoken commands up to 2.7x normal speed: 0.08 understood the most
+/// (0.16 left too much of the name in, nothing lost the command's first sound).
+const TAIL_MARGIN: f64 = 0.08;
+
+/// Older audio first, keeping only the newest `HELD_AUDIO` bytes.
+fn joined_audio(held: &[u8], latest: &[u8]) -> Vec<u8> {
+    let mut joined = Vec::with_capacity(held.len() + latest.len());
+    joined.extend_from_slice(held);
+    joined.extend_from_slice(latest);
+    if joined.len() > HELD_AUDIO {
+        // Whole samples only: an odd cut would turn the rest into noise.
+        let cut = joined.len() - HELD_AUDIO;
+        joined.drain(..cut + cut % 2);
+    }
+    joined
+}
+
+fn joined_text(held: &str, latest: &str) -> String {
+    match (held.is_empty(), latest.is_empty()) {
+        (true, _) => latest.to_owned(),
+        (_, true) => held.to_owned(),
+        _ => format!("{held} {latest}"),
+    }
+}
+
+/// Whisper describes silence and noise in brackets, as "[ silence ]" or
+/// "(wind blowing)". Neither is something the person said.
+fn spoken(transcript: String) -> String {
+    if transcript.starts_with(['[', '(']) {
+        String::new()
+    } else {
+        transcript
+    }
+}
+
+#[cfg(test)]
+mod held_speech_tests {
+    use super::*;
+
+    #[test]
+    fn parts_of_a_command_join_in_the_order_they_were_said() {
+        assert_eq!(joined_audio(&[1, 2], &[3, 4]), vec![1, 2, 3, 4]);
+        assert_eq!(joined_text("open", "spotify"), "open spotify");
+        assert_eq!(joined_text("", "spotify"), "spotify");
+        assert_eq!(joined_text("open", ""), "open");
+    }
+
+    #[test]
+    fn held_audio_is_bounded_and_keeps_whole_samples() {
+        let held = vec![1_u8; HELD_AUDIO - 2];
+        let joined = joined_audio(&held, &[2, 2, 2, 2]);
+        assert_eq!(joined.len(), HELD_AUDIO);
+        assert_eq!(joined.len() % 2, 0);
+        assert_eq!(joined.last(), Some(&2));
+    }
+
+    #[test]
+    fn a_command_that_can_continue_is_marked_incomplete() {
+        let phrases = ["open steam".to_string(), "open steam support center".to_string()];
+        let prefixes = word_prefixes(phrases.iter());
+        assert!(prefixes.contains("open"));
+        assert!(prefixes.contains("open steam"));
+        assert!(prefixes.contains("open steam support"));
+        assert!(!prefixes.contains("open steam support center"));
+    }
+
+    #[test]
+    fn closing_and_quitting_never_answer_early() {
+        assert!(may_answer_early("open_app:spotify"));
+        assert!(may_answer_early("volume_up"));
+        assert!(!may_answer_early("close_app:spotify"));
+        assert!(!may_answer_early("quit"));
+    }
+
+    #[test]
+    fn descriptions_of_silence_are_not_speech() {
+        assert_eq!(spoken("[ silence ]".into()), "");
+        assert_eq!(spoken("(wind blowing)".into()), "");
+        assert_eq!(spoken("open spotify".into()), "open spotify");
+    }
 }
 
 fn text(result: &Value) -> String {
@@ -420,6 +542,7 @@ impl Engine {
             }
         }
         let full: Vec<_> = full.into_iter().collect();
+        let incomplete = word_prefixes(full.iter());
         let wake_forms = supported(&model, &native.wake_forms);
         if wake_forms.is_empty() {
             return Err(
@@ -505,6 +628,10 @@ impl Engine {
             wake_start: 0,
             pending: None,
             command_audio: vec![],
+            held_audio: vec![],
+            held_heard: String::new(),
+            incomplete,
+            early_tried: None,
             speech_frames: 0,
             quiet_run: 0,
             unsupported,
@@ -570,8 +697,20 @@ impl Engine {
         self.wake_start = self.stream_bytes;
         self.command_audio.clear();
         self.command_audio.shrink_to(32000);
+        self.held_audio.clear();
+        self.held_heard.clear();
+        self.early_tried = None;
         self.speech_frames = 0;
         self.quiet_run = 0;
+        Ok(())
+    }
+    /// Starts listening for the command after a wake name, keeping any part of
+    /// it already spoken in the same breath as the name.
+    pub fn begin_after_wake(&mut self) -> Result<()> {
+        let (audio, heard) = (std::mem::take(&mut self.held_audio), std::mem::take(&mut self.held_heard));
+        self.begin(true)?;
+        self.held_audio = audio;
+        self.held_heard = heard;
         Ok(())
     }
     pub fn begin(&mut self, command: bool) -> Result<()> {
@@ -646,6 +785,7 @@ impl Engine {
         }
         if released {
             trim();
+            release_unused();
         }
         Ok(())
     }
@@ -691,6 +831,23 @@ impl Engine {
         if let Some(result) = self.decode(pcm)? {
             return Ok(Some(result));
         }
+        if self.mode == Some("wake") {
+            if quiet {
+                self.quiet_run += 1;
+            } else {
+                self.quiet_run = 0;
+            }
+            if self.time_to_try_early() {
+                if let Some(result) = self.early_command()? {
+                    return Ok(Some(result));
+                }
+            }
+            if self.quiet_run == END_OF_SPEECH_FRAMES {
+                if let Some(result) = self.finish_wake()? {
+                    return Ok(Some(result));
+                }
+            }
+        }
         if quiet && self.hangover == 0 && self.mode == Some("wake") {
             // The energy gate is about to stop forwarding quiet frames. Vosk
             // can still have an unfinished [unk] utterance here; retaining it
@@ -705,11 +862,116 @@ impl Engine {
                 self.speech_frames += 1;
                 self.quiet_run = 0;
             }
-            if self.speech_frames >= 8 && self.quiet_run >= 20 {
+            if self.speech_frames >= 8 && self.time_to_try_early() {
+                if let Some(result) = self.early_command()? {
+                    return Ok(Some(result));
+                }
+            }
+            if self.speech_frames >= 8 && self.quiet_run >= END_OF_SPEECH_FRAMES {
                 return self.flush();
             }
         }
         Ok(None)
+    }
+    fn time_to_try_early(&self) -> bool {
+        self.quiet_run >= EARLY_QUIET_FRAMES
+            && self.quiet_run < END_OF_SPEECH_FRAMES
+            && (self.quiet_run - EARLY_QUIET_FRAMES).is_multiple_of(2)
+    }
+    /// The complete command Vosk hears so far, with its intent.
+    fn early_candidate(&self) -> Result<Option<(String, String)>> {
+        let waking = self.mode == Some("wake");
+        let partial = if waking { self.wake.partial()? } else { self.command.partial()? };
+        let words: Vec<_> = partial["partial"].as_str().unwrap_or("").split_whitespace().collect();
+        let rest = if waking {
+            let Some((position, size)) = self.wake_at(&words) else {
+                return Ok(None);
+            };
+            &words[position + size..]
+        } else {
+            &words[..]
+        };
+        if rest.is_empty() || rest.contains(&"[unk]") {
+            return Ok(None);
+        }
+        let raw = rest.join(" ");
+        if self.incomplete.contains(&raw) {
+            return Ok(None);
+        }
+        let text = self.canonical(&raw);
+        if !self.matcher.accepts(&text) {
+            return Ok(None);
+        }
+        let plain = wording(&text, &self.matcher.prefixes, &self.matcher.suffixes);
+        let Some(intent) = self.matcher.intent(&plain).filter(|i| may_answer_early(i)) else {
+            return Ok(None);
+        };
+        let intent = intent.to_owned();
+        Ok(Some((text, intent)))
+    }
+    /// Speech has just paused. When Vosk's grammar and Whisper's free hearing
+    /// independently name the same complete command, there is nothing to wait
+    /// for. Anything less falls through to the usual end of speech.
+    fn early_command(&mut self) -> Result<Option<Recognition>> {
+        if self.whisper.is_none() {
+            return Ok(None);
+        }
+        let Some((text, intent)) = self.early_candidate()? else {
+            return Ok(None);
+        };
+        if self.early_tried.as_ref() == Some(&text) {
+            return Ok(None);
+        }
+        self.early_tried = Some(text.clone());
+        let waking = self.mode == Some("wake");
+        let audio = if waking {
+            self.wake_audio.clone()
+        } else {
+            joined_audio(&self.held_audio, &self.command_audio)
+        };
+        let whisper = self.whisper.as_mut().expect("checked above");
+        let heard = spoken(phrase(&whisper.get()?.transcribe(&audio)?));
+        let found = self.matcher.closest(&heard);
+        let agreed = found.as_ref().is_some_and(|(p, _)| self.matcher.intent(p) == Some(intent.as_str()));
+        crate::trace(serde_json::json!({"step":"early check","vosk":text,"whisper":heard,"agreed":agreed,"quiet_frames":self.quiet_run}));
+        if !agreed {
+            return Ok(None);
+        }
+        self.whisper_commands += 1;
+        let mut command = Recognition::new("command", text, found.map(|(_, score)| score));
+        command.recognition_pass = Some("early");
+        self.mode = None;
+        if waking {
+            self.reset()?;
+            self.pending = Some(command);
+            self.mode = None;
+            return Ok(Some(Recognition::new("wake", self.wake_phrase.clone(), None)));
+        }
+        Ok(Some(command))
+    }
+    /// The speaker stopped after a wake name. Vosk would wait up to a second to
+    /// be sure; this is the same pause that ends a command, so finish now.
+    fn finish_wake(&mut self) -> Result<Option<Recognition>> {
+        let partial = self.wake.partial()?;
+        let words: Vec<_> = partial["partial"]
+            .as_str()
+            .unwrap_or("")
+            .split_whitespace()
+            .collect();
+        if self.wake_at(&words).is_none() {
+            return Ok(None);
+        }
+        self.utterance_bytes = 0;
+        let audio = std::mem::take(&mut self.wake_audio);
+        let start = self.wake_start;
+        self.wake_start = self.stream_bytes;
+        let result = self.wake.result(true)?;
+        let recognized = self.wake_result(result, &audio, start)?;
+        if recognized.is_none() {
+            // Too unsure to be a wake name: its words must not start the next one.
+            self.reset()?;
+        }
+        Ok(recognized)
     }
     pub fn flush(&mut self) -> Result<Option<Recognition>> {
         if self.mode != Some("command") || self.command_audio.is_empty() {
@@ -779,7 +1041,9 @@ impl Engine {
             })
             .unwrap_or_default();
         let spoken: Vec<_> = words.iter().map(|w| w["word"].as_str().unwrap()).collect();
+        crate::trace(serde_json::json!({"step":"wake decoder","result":&result,"audio_seconds":audio.len() as f64 / 32000.0}));
         let Some((position, size)) = self.wake_at(&spoken) else {
+            crate::trace(serde_json::json!({"step":"no wake name","spoken":spoken}));
             return Ok(None);
         };
         let name = &words[position..position + size];
@@ -788,12 +1052,14 @@ impl Engine {
             .filter_map(|w| w["conf"].as_f64())
             .any(|c| c < 0.8 * (1.0 - self.sensitivity))
         {
+            crate::trace(serde_json::json!({"step":"wake name too unsure","floor":0.8 * (1.0 - self.sensitivity)}));
             return Ok(None);
         }
         // The command follows in this utterance or after a pause.
         self.prepare_whisper();
         let rest = &words[position + size..];
         self.pending = None;
+        crate::trace(serde_json::json!({"step":"woke","words_after_name":rest.len()}));
         if !rest.is_empty() {
             let text = self.canonical(
                 &rest
@@ -806,11 +1072,14 @@ impl Engine {
                 .iter()
                 .filter_map(|w| w["conf"].as_f64())
                 .min_by(f64::total_cmp);
-            let cut = ((name.last().unwrap()["end"].as_f64().unwrap_or(0.0) * 16000.0) as usize
-                * 2)
-            .saturating_sub(start);
+            // Vosk's end of the name runs late on fast speech and took the start of
+            // the command with it ("clip that" reached Whisper as "with that").
+            let end = (name.last().unwrap()["end"].as_f64().unwrap_or(0.0) - TAIL_MARGIN).max(0.0);
+            let cut = ((end * 16000.0) as usize * 2).saturating_sub(start);
             let tail = &audio[(cut - cut % 2).min(audio.len())..];
             let lead = arabic_lead(audio, cut);
+            crate::trace(serde_json::json!({"step":"command in the same breath","text":text,"confidence":conf,
+                "tail_seconds":tail.len() as f64 / 32000.0,"accepted":!text.contains("[unk]") && self.matcher.accepts(&text)}));
             if !text.contains("[unk]")
                 && self.matcher.accepts(&text)
                 && conf.is_none_or(|c| c >= 0.6)
@@ -824,7 +1093,11 @@ impl Engine {
                 self.pending = self.command_from_audio(tail, None, lead)?;
             }
         }
+        // Part of a command said in this breath is finished after the pause.
+        let (held_audio, held_heard) = (std::mem::take(&mut self.held_audio), std::mem::take(&mut self.held_heard));
         self.reset()?;
+        self.held_audio = held_audio;
+        self.held_heard = held_heard;
         self.mode = None;
         Ok(Some(Recognition::new(
             "wake",
@@ -840,6 +1113,7 @@ impl Engine {
         lead: &[u8],
     ) -> Result<Option<Recognition>> {
         if strict.is_none() && audio.len() < 6400 {
+            crate::trace(serde_json::json!({"step":"too little audio after the name","seconds":audio.len() as f64 / 32000.0}));
             return Ok(None);
         }
         self.command.clear(self.finalize_utterances)?;
@@ -871,10 +1145,18 @@ impl Engine {
             .collect::<Vec<_>>()
             .join(" ");
         self.open_text.clear();
-        let audio = std::mem::take(&mut self.command_audio);
+        let latest = std::mem::take(&mut self.command_audio);
+        let latest_heard = std::mem::take(&mut heard);
+        let earlier = !self.held_heard.is_empty() || !self.held_audio.is_empty();
+        let audio = joined_audio(&self.held_audio, &latest);
+        heard = joined_text(&self.held_heard, &latest_heard);
         self.speech_frames = 0;
         self.quiet_run = 0;
         let mut heard_match = self.matcher.closest(&heard);
+        if heard_match.is_none() && earlier {
+            // Something unrelated, then a whole command: the command still counts.
+            heard_match = self.matcher.closest(&latest_heard);
+        }
         if self.vosk_fast_path
             && self.whisper.is_some()
             && self
@@ -931,11 +1213,42 @@ impl Engine {
             if !audio.is_empty() {
                 self.whisper_commands += 1;
                 let model = whisper.get()?;
-                let accurate = phrase(&match early {
+                let mut accurate = spoken(phrase(&match early {
                     Some(denoising) => model.transcribe_input(finish(denoising)?)?,
                     None => model.transcribe(&audio)?,
-                });
-                let accurate_match = self.matcher.closest(&accurate);
+                }));
+                let mut accurate_match = self.matcher.closest(&accurate);
+                if accurate_match.is_none() && earlier && !latest.is_empty() {
+                    let alone = spoken(phrase(&model.transcribe(&latest)?));
+                    if let Some(found) = self.matcher.closest(&alone) {
+                        accurate = alone;
+                        accurate_match = Some(found);
+                    }
+                }
+                // Fast talkers: Whisper tiny mishears speech much quicker than it
+                // learned from. Only after it failed, so ordinary speech costs nothing.
+                if accurate_match.is_none() && audio.len() >= 9600 {
+                    for factor in SLOWER {
+                        // Whisper takes at most ten seconds; a long stretch of talk is
+                        // not a quick command anyway. A failed retry never stops listening.
+                        if audio.len() as f64 * factor > 320000.0 {
+                            break;
+                        }
+                        let Ok(text) = model.transcribe(&crate::stretch::slower(&audio, factor)) else {
+                            break;
+                        };
+                        let slowed = spoken(phrase(&text));
+                        let found = self.matcher.closest(&slowed);
+                        crate::trace(serde_json::json!({"step":"whisper slowed","factor":factor,"text":slowed,"match":found}));
+                        if let Some(found) = found {
+                            accurate = slowed;
+                            accurate_match = Some(found);
+                            break;
+                        }
+                    }
+                }
+                crate::trace(serde_json::json!({"step":"whisper","text":accurate,"match":accurate_match,
+                    "seconds":audio.len() as f64 / 32000.0,"strict":canonical,"free":heard}));
                 if accurate_match.is_some() || heard_match.is_none() {
                     if !accurate.is_empty() {
                         heard = accurate;
@@ -956,14 +1269,19 @@ impl Engine {
                         "vosk"
                     });
             }
+            crate::trace(serde_json::json!({"step":"command","text":recognition.text,"confidence":recognition.confidence}));
             self.mode = None;
             return Ok(Some(recognition));
         }
+        crate::trace(serde_json::json!({"step":"not a command yet","strict":canonical,"heard":heard}));
         let heard = if heard.is_empty() {
             canonical.replace("[unk]", "…").trim().to_owned()
         } else {
             heard
         };
+        // Not a command yet. The rest may still be coming, so keep what was said.
+        self.held_audio = audio;
+        self.held_heard = heard.clone();
         self.unmatched = if heard.is_empty() { None } else { Some(heard) };
         Ok(None)
     }

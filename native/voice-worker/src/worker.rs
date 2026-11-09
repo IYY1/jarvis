@@ -6,6 +6,7 @@ use crate::{
     Payload, Result,
 };
 use serde_json::json;
+use std::collections::VecDeque;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 static STOP: AtomicBool = AtomicBool::new(false);
@@ -120,6 +121,48 @@ impl NoiseFloor {
         }));
     }
 }
+/// The short quiet wanted after a wake name before listening for a command.
+/// Speech ends it early: that is the command starting, and it must not be lost.
+/// Once a command has been heard and not understood, how long to wait for more
+/// speech. Waiting out the whole session looks like the program stopped listening.
+const RETRY_SECONDS: f64 = 2.5;
+#[derive(Default)]
+struct Settling {
+    active: bool,
+    quiet_frames: usize,
+    /// Quiet frames held for the start of the command, which is often too soft
+    /// to pass the energy gate. At most `SETTLE_FRAMES`.
+    frames: VecDeque<[u8; FRAME]>,
+}
+const SETTLE_FRAMES: usize = 7;
+impl Settling {
+    fn start(&mut self) {
+        self.active = true;
+        self.quiet_frames = 0;
+        self.frames.clear();
+    }
+    fn stop(&mut self) {
+        self.active = false;
+        self.frames.clear();
+    }
+    /// Returns true once listening should begin, leaving any held frames to feed first.
+    fn frame(&mut self, pcm: &[u8; FRAME], quiet: bool) -> bool {
+        if !quiet {
+            self.active = false;
+            return true;
+        }
+        if self.frames.len() == SETTLE_FRAMES {
+            self.frames.pop_front();
+        }
+        self.frames.push_back(*pcm);
+        self.quiet_frames += 1;
+        if self.quiet_frames >= SETTLE_FRAMES {
+            self.stop();
+            return true;
+        }
+        false
+    }
+}
 fn ready(engine: Option<&Engine>, listening: bool, deadline: Option<f64>) -> Result<()> {
     emit(
         json!({"event":"ready","listening":listening,"deadline":deadline,"unsupported":engine.map(|e| &e.unsupported).cloned().unwrap_or_default(),"engine":engine.map(|e| e.name.as_str()),"worker":"rust"}),
@@ -226,12 +269,16 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
     } else {
         None
     };
+    let mut session_end = deadline;
+    let mut retrying = false;
     if let Some(e) = &mut engine {
         e.begin(listening)?;
     }
     ready(engine.as_ref(), listening, deadline)?;
     if mode == "dictation" {
         begin_dictation(&mut engine, &mut dictation, &mut dictation_deadline, None)?;
+    } else if engine.is_some() {
+        crate::inference::release_unused();
     }
     let minimum = config["audio"]["vad_rms"]
         .as_f64()
@@ -244,8 +291,8 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
     };
     let mut next_level = 0.0;
     let mut cooldown = 0.0;
-    let mut settling = false;
-    let mut quiet_frames = 0;
+    let mut settling = Settling::default();
+    let mut loudest = 0.0_f64;
     let mut last_frame = now();
     let mut pending = [0_u8; FRAME];
     while !STOP.load(Ordering::Relaxed) {
@@ -277,11 +324,12 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
                 }
                 listening = false;
                 deadline = None;
-                settling = false;
+                settling.stop();
                 engine.as_mut().unwrap().begin(false)?;
                 cooldown = now() + 1.5;
                 continue;
             }
+            crate::trace(json!({"step":"deadline: session ended without a command"}));
             heard(&mut engine)?;
             if ["test", "once"].contains(&mode.as_str()) {
                 emit(json!({"event":"timeout"}))?;
@@ -289,8 +337,7 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
             }
             listening = false;
             deadline = None;
-            settling = false;
-            quiet_frames = 0;
+            settling.stop();
             engine.as_mut().unwrap().begin(false)?;
             emit(json!({"event":"timeout"}))?;
         }
@@ -362,8 +409,9 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
             } else {
                 None
             };
-            settling = false;
-            quiet_frames = 0;
+            session_end = deadline;
+            retrying = false;
+            settling.stop();
             cooldown = 0.0;
             engine
                 .as_mut()
@@ -425,13 +473,25 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
         let gate = noise.gate();
         noise.update(energy);
         let quiet = energy < gate;
-        if settling {
-            quiet_frames = if quiet { quiet_frames + 1 } else { 0 };
-            if quiet_frames >= 7 {
-                settling = false;
-                engine.as_mut().unwrap().begin(true)?;
+        if !quiet {
+            loudest = loudest.max(energy);
+        } else if loudest > 0.0 {
+            crate::trace(json!({"step":"speech stopped","loudest":loudest,"gate":gate,"listening":listening}));
+            loudest = 0.0;
+        }
+        if settling.active {
+            if !settling.frame(&pending, quiet) {
+                continue;
             }
-            continue;
+            let engine = engine.as_mut().unwrap();
+            engine.begin_after_wake()?;
+            if quiet {
+                continue;
+            }
+            // The command has started. Quiet frames go to the engine's pre-roll.
+            for frame in settling.frames.drain(..) {
+                engine.feed(&frame, true)?;
+            }
         }
         let mut captured_at = now();
         if listening && deadline.is_some_and(|d| captured_at >= d) {
@@ -439,27 +499,30 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
         }
         let result = engine.as_mut().unwrap().feed(&pending, quiet)?;
         last_frame = now();
+        // What it heard so far is reported at the deadline: until then, the
+        // rest of the command may still be coming. More speech gives it longer.
         let Some(mut result) = result else {
-            heard(&mut engine)?;
+            if listening && (!quiet || !retrying) && engine.as_ref().is_some_and(|e| e.unmatched.is_some()) {
+                retrying = true;
+                deadline = session_end.map(|end| end.min(now() + RETRY_SECONDS));
+            }
             continue;
         };
         if result.kind == "wake" {
             listening = true;
             deadline = Some(now() + timeout);
-            settling = true;
-            quiet_frames = 0;
+            session_end = deadline;
+            retrying = false;
+            settling.start();
             emit(json!({"event":"wake","deadline":deadline}))?;
             let follow = engine.as_mut().unwrap().after_wake();
             if let Some(command) = follow {
                 result = command;
-                settling = false;
+                settling.stop();
                 captured_at = now();
             } else {
-                heard(&mut engine)?;
                 continue;
             }
-        } else {
-            heard(&mut engine)?;
         }
         command(&result, captured_at)?;
         if mode == "once" {
@@ -475,6 +538,27 @@ pub fn run(payload: Payload, mut controls: Vec<u8>) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn speech_ends_settling_at_once_and_keeps_the_quiet_before_it() {
+        let mut settling = Settling::default();
+        settling.start();
+        assert!(!settling.frame(&[1; FRAME], true));
+        assert!(!settling.frame(&[2; FRAME], true));
+        assert!(settling.frame(&[3; FRAME], false));
+        assert!(!settling.active);
+        assert_eq!(settling.frames.iter().map(|f| f[0]).collect::<Vec<_>>(), vec![1, 2]);
+    }
+    #[test]
+    fn enough_quiet_ends_settling_with_nothing_to_feed() {
+        let mut settling = Settling::default();
+        settling.start();
+        for _ in 1..SETTLE_FRAMES {
+            assert!(!settling.frame(&[0; FRAME], true));
+        }
+        assert!(settling.frame(&[0; FRAME], true));
+        assert!(!settling.active);
+        assert!(settling.frames.is_empty());
+    }
     #[test]
     fn energy_and_adaptation() {
         assert_eq!(rms(&[0; 960]), 0.0);

@@ -7,16 +7,16 @@ from .. import models
 
 
 class VoiceControls:
-    def __init__(self, window, page):
+    def __init__(self, window, language_page, dictation_page):
         self.window = window
-        language = window.group(page, "Language")
+        language = window.group(language_page, "Language")
         window.choice(language, "Understands", "recognition", "language", {"English": "en", "Arabic and English": "ar_en"},
                       "Arabic uses an optional local model. English keeps working.")
         window.buttons(language, [("Download Arabic model (118 MB)", self.download), ("Install model from file…", self.install_file)])
         self.model_state = tk.StringVar(value="Arabic model installed." if models.arabic_model_ready() else "Arabic model not installed.")
         window.line(language, ttk.Label(language, textvariable=self.model_state, style="Caption.TLabel", wraplength=520))
         self.downloading = False
-        d = window.group(page, "Dictation", "Types into the focused text field; password fields are refused. Untyped text can be copied.")
+        d = window.group(dictation_page, "Dictation", "Types into the focused text field; password fields are refused. Untyped text can be copied.")
         buttons = window.buttons(d, [("Start dictation", self.toggle, "Primary.TButton"),
                                     ("Cancel dictation", lambda: window.call("dictation", action="cancel"))])
         self.button = buttons.winfo_children()[0]

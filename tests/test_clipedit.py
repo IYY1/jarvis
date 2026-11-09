@@ -71,6 +71,27 @@ class EditTests(unittest.TestCase):
             self.assertTrue(any("amix=inputs=2" in a for a in mixed))
             self.assertIn("-n", argv, "never overwrite")
 
+    def test_exported_tracks_keep_their_names_and_a_mix_names_its_parts(self):
+        clip = source(audio=3)
+        for stream, name in zip(clip.audio, ("All sound", "Discord", "Microphone")):
+            stream["name"] = name
+        edit = Edit.of(clip)
+        with tempfile.TemporaryDirectory() as work:
+            argv = command(edit, Path(work) / "o.mp4", "fast", [1, 2], False, Path(work))
+            self.assertEqual(argv[argv.index("-metadata:s:a:1") + 1], "title=Microphone")
+            mixed = command(edit, Path(work) / "o.mp4", "fast", [1, 2], True, Path(work))
+            self.assertEqual(mixed[mixed.index("-metadata:s:a:0") + 1], "title=Discord + Microphone")
+            self.assertNotIn("-metadata:s:a:1", mixed)
+
+    def test_tracks_are_named_from_the_file_when_no_names_were_saved(self):
+        from jarvis.clipedit import track_names
+        with tempfile.TemporaryDirectory() as work:
+            clip = Path(work) / "recording.mkv"
+            # A recording carries its own titles; a missing one falls back to its number.
+            self.assertEqual(track_names(clip, 3, ["All sound", "", None]), ["All sound", "Audio 2", "Audio 3"])
+            (Path(work) / ".recording.mkv.tracks.json").write_text(json.dumps({"tracks": ["A", "B", "C"]}))
+            self.assertEqual(track_names(clip, 3, ["x", "y", "z"]), ["A", "B", "C"])
+
 
 @unittest.skipUnless(shutil.which("ffmpeg") and shutil.which("ffprobe"), "needs FFmpeg")
 class ExportTests(unittest.TestCase):

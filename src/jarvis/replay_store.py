@@ -39,8 +39,9 @@ class DiskReplayBuffer:
         self.saving = False
         self.failed = False
         self.pending, self.next = {}, 0
+        from .host import grouped
         self.process = subprocess.Popen(
-            [binary()], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+            [str(grouped(binary()))], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL, **child_options(),
         )
         # A separate condition lets this watchdog stop a helper while the

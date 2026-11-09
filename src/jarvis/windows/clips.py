@@ -5,6 +5,17 @@ import tkinter as tk
 from tkinter import filedialog, ttk
 
 from .. import clipedit
+from .encoding import MIXED_TITLE
+
+
+def clip_row(path, stat, folder):
+    """A library row: the clip, its game (the folder Jarvis sorted it into), when, how big."""
+    from datetime import datetime
+
+    game = path.parent.name if path.parent != folder else ""
+    size = stat.st_size / 1048576
+    return (path.name, game, datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M"),
+            f"{size / 1024:.1f} GB" if size >= 1024 else f"{size:.0f} MB")
 
 
 class ClipsPanel:
@@ -19,19 +30,24 @@ class ClipsPanel:
         self.touched = set()
         self.files = []
         self.scanning = False
-        window.subtitle(page, "Keep the sound you want and export a new copy. The original is never changed.")
-        library = window.group(page, "Clips", "Open a saved recording or replay. Already mixed sound cannot be separated.")
+        self.tabs = window.tabs(page, [("library", "Library"), ("sound", "Sound"), ("edit", "Edit and export")])
+        library = window.group(self.tabs["library"], "Clips", "Open a saved recording or replay. Already mixed sound cannot be separated.")
         window.buttons(library, [("Open clip…", self.choose), ("Refresh recordings", self.refresh),
                                  ("Open recordings folder", window.open_folder)])
-        self.library = ttk.Treeview(library, columns=("file",), show="headings", height=5, selectmode="browse")
-        self.library.heading("file", text="Saved recordings and replays · newest first")
-        self.library.column("file", width=520, stretch=True)
-        window.line(library, self.library)
+        self.library = ttk.Treeview(library, columns=("clip", "game", "saved", "size"), show="headings", height=8,
+                                    selectmode="browse")
+        for column, title, width, anchor in (("clip", "Clip · newest first", 330, "w"), ("game", "Game", 140, "w"),
+                                             ("saved", "Saved", 130, "w"), ("size", "Size", 80, "e")):
+            self.library.heading(column, text=title, anchor=anchor)
+            self.library.column(column, width=width, stretch=column == "clip", anchor=anchor)
+        window.wide(library, self.library)   # the card's whole width
         self.library.bind("<Double-1>", self.open_selected)
         self.library.bind("<Return>", self.open_selected)
         window.buttons(library, [("Open selected", self.open_selected)])
 
-        editor = window.group(page, "Sound tracks", "Separate tracks must be enabled before capture. Windows 11 separates one program from the rest of system sound.")
+        editor = window.group(self.tabs["sound"], "Sound tracks",
+                              "Clips have their own tracks when Separate audio tracks is on (Capture › Recording audio). "
+                              "\"All sound\" holds every sound together: untick a sound and it is left out of the mix.")
         self.name = tk.StringVar(value="Open a clip to choose its tracks.")
         window.line(editor, ttk.Label(editor, textvariable=self.name, style="Card.TLabel", wraplength=520))
         window.buttons(editor, [("Keep all", lambda: self.keep_all(True)), ("Mute all", lambda: self.keep_all(False))])
@@ -42,21 +58,22 @@ class ClipsPanel:
         window.row(editor, "Mix kept tracks into one", ttk.Checkbutton(editor, variable=self.mix),
                    "Leave off to keep the selected tracks separate.")
 
-        cuts = window.group(page, "Sections", "Start/end mark a section in the edited timeline. Preview opens the original in your default player.")
+        cuts = window.group(self.tabs["edit"], "Sections", "Start/end mark a section in the edited timeline. Preview opens the original in your default player.")
         window.buttons(cuts, [("Preview in player", self.preview), ("Keep section", lambda: self.change("keep")),
                               ("Remove section", lambda: self.change("remove"))])
         window.buttons(cuts, [("Split at start", lambda: self.change("split")), ("Undo", lambda: self.change("undo")),
                               ("Join clip…", self.join)])
         self.sections = tk.StringVar(value="")
         window.line(cuts, ttk.Label(cuts, textvariable=self.sections, style="Caption.TLabel", wraplength=520))
-        output = window.group(page, "Export copy")
+        output = window.group(self.tabs["edit"], "Export copy", "The original is never changed.")
         self.start, self.end = tk.StringVar(value="0"), tk.StringVar(value="0")
         window.row(output, "Start (seconds)", ttk.Entry(output, textvariable=self.start, width=12))
         window.row(output, "End (seconds)", ttk.Entry(output, textvariable=self.end, width=12))
         self.mode = tk.StringVar(value="Fast (keyframes)")
         window.row(output, "Cut mode", ttk.Combobox(output, textvariable=self.mode,
                    values=("Fast (keyframes)", "Exact (re-encode)"), state="readonly", width=24),
-                   "Fast copies video and may begin at an earlier keyframe. Exact re-encodes on the CPU on Windows.")
+                   "Fast copies video and may begin at an earlier keyframe. Exact re-encodes on the graphics card, "
+                   "in the clip's own format.")
         self.progress = tk.StringVar(value="")
         window.line(output, ttk.Label(output, textvariable=self.progress, style="Caption.TLabel", wraplength=520))
         window.buttons(output, [("Export copy", self.export_copy, "Primary.TButton"), ("Cancel export", self.cancel)])
@@ -77,26 +94,27 @@ class ClipsPanel:
         self.scanning = True
         folder = Path(self.window.variable("recording", "output_dir").get()).expanduser()
         def scan():
-            files = [p for p in folder.rglob("*") if p.is_file() and p.suffix.lower() in (".mp4", ".mkv", ".webm", ".mov")
-                     and not p.name.startswith(".")]
-            return sorted(files, key=lambda p: p.stat().st_mtime, reverse=True)[:200]
+            files = [(p, p.stat()) for p in folder.rglob("*") if p.is_file()
+                     and p.suffix.lower() in (".mp4", ".mkv", ".webm", ".mov") and not p.name.startswith(".")]
+            return sorted(files, key=lambda f: f[1].st_mtime, reverse=True)[:200]
         def done(outcome):
             self.scanning = False
-            files, error = outcome
+            found, error = outcome
             if error:
                 self.window.say(error, error=True)
                 return
-            self.files = files
+            self.files = [path for path, _ in found]
             self.library.delete(*self.library.get_children())
-            for i, path in enumerate(files):
-                self.library.insert("", "end", iid=str(i), values=(str(path.relative_to(folder)),))
-            if not files:
-                self.window.say("No recordings found. Open clip… can choose a file from another folder.")
+            for i, (path, stat) in enumerate(found):
+                self.library.insert("", "end", iid=str(i), values=clip_row(path, stat, folder))
+            if not found:
+                self.library.insert("", "end", iid="empty", values=(
+                    "No clips yet. Say \"clip that\" during a game, or Open clip… for another folder.", "", "", ""))
         self.work(scan, done)
 
     def open_selected(self, _event=None):
         selected = self.library.selection()
-        if selected:
+        if selected and selected[0].isdigit():
             self.open(self.files[int(selected[0])])
 
     def choose(self):
@@ -128,6 +146,7 @@ class ClipsPanel:
         self.start.set("0")
         self.end.set(str(source.duration))
         self.edited()
+        self.tabs.show("sound")
         self.progress.set("Checking for silent tracks…" if source.audio else "This clip has no sound tracks.")
         for widget in self.track_box.winfo_children():
             widget.destroy()
@@ -138,7 +157,7 @@ class ClipsPanel:
             self.tracks.append((keep, details))
             title = f"{track['name']} · {track.get('codec_name', 'audio')} · {track.get('channels', '?')} channels · {track.get('sample_rate', '?')} Hz"
             ttk.Checkbutton(self.track_box, text=title, variable=keep,
-                            command=lambda i=i: self.touched.add(i)).grid(row=i * 2, column=0, sticky="w", pady=(6, 0))
+                            command=lambda i=i: self.ticked(i)).grid(row=i * 2, column=0, sticky="w", pady=(6, 0))
             ttk.Button(self.track_box, text="Only this", command=lambda i=i: self.only(i)).grid(row=i * 2, column=1, padx=(12, 0))
             ttk.Label(self.track_box, textvariable=details, style="Caption.TLabel").grid(row=i * 2 + 1, column=0, sticky="w", padx=(24, 0), pady=(0, 6))
         if source.audio:
@@ -157,6 +176,20 @@ class ClipsPanel:
                             self.tracks[i][0].set(False)
                 self.progress.set("Choose the tracks to keep, then Export copy.")
             self.work(lambda: clipedit.loudness(source.path, len(source.audio)), checked)
+
+    def ticked(self, index):
+        """Leaving a sound out of a clip whose first track is "All sound" (which
+        holds that sound too) drops "All sound" and mixes the tracks kept, so the
+        copy plays everything else, without it, in any player."""
+        self.touched.add(index)
+        audio = self.source.audio if self.source else []
+        if (index and not self.tracks[index][0].get() and audio
+                and audio[0].get("name") == MIXED_TITLE and self.tracks[0][0].get()):
+            self.tracks[0][0].set(False)
+            self.touched.add(0)
+            self.mix.set(True)
+            self.progress.set(f"\"{MIXED_TITLE}\" also holds {audio[index].get('name', 'that sound')}, so it is left out; "
+                              "the tracks you keep are mixed into one.")
 
     def only(self, index):
         for i, (keep, _detail) in enumerate(self.tracks):

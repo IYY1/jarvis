@@ -2,10 +2,22 @@
 
 from __future__ import annotations
 import argparse
+from contextlib import contextmanager
 import json
 import queue
 import sys
+import threading
 import time
+
+READY = "ready"   # the first line a capture audio worker prints
+
+
+@contextmanager
+def output_closed(output):
+    try:
+        yield output
+    finally:
+        output.close()
 
 
 def _library():
@@ -101,17 +113,32 @@ def select_device(engine, pa, name="", *, loopback=False):
     return engine.get_device_info_by_index(wasapi["defaultInputDevice"])
 
 
+# FFmpeg holds video back once it runs 100 ms ahead of the sound, and video held
+# back is frames lost for good. Silence must therefore keep arriving well inside
+# that, while a packet merely running late, during real sound, gets more patience.
+SILENCE_TICK_IDLE = 0.05
+SILENCE_TICK_PLAYING = 0.15
+PLAYING_WITHIN = 1.0
+
+
+def silence_wait(seconds_since_sound):
+    """How long to wait for a packet before filling the gap with silence."""
+    return SILENCE_TICK_PLAYING if seconds_since_sound < PLAYING_WITHIN else SILENCE_TICK_IDLE
+
+
 class PCMStream:
     """Bounded callback queue. No disk audio, polling timer, or silent sample loss."""
 
     def __init__(
         self, engine, pa, device, *, rate=48000, channels=2, silence_on_idle=False
     ):
-        self.queue = queue.Queue(maxsize=60)
+        # 5 s of 20 ms packets, under 1 MB: FFmpeg pauses reading sound while video
+        # catches up (a game loading, a permission prompt), and 1.2 s ended recordings.
+        self.queue = queue.Queue(maxsize=250)
         self.error = None
         self.target_rate, self.target_channels = rate, channels
         self.silence_on_idle = silence_on_idle
-        self.last_samples = time.monotonic()
+        self.last_samples = self.last_sound = time.monotonic()
         self.source_rate = int(device["defaultSampleRate"])
         self.source_channels = min(2, int(device["maxInputChannels"]))
         if self.source_channels < 1:
@@ -143,10 +170,23 @@ class PCMStream:
             stream_callback=callback,
         )
 
+    def discard(self):
+        """Drop what has been captured so far: nobody is listening yet."""
+        if self.error:
+            raise self.error
+        try:
+            while True:
+                self.queue.get_nowait()
+        except queue.Empty:
+            pass
+        self.pending.clear()
+        self.last_samples = time.monotonic()
+
     def read(self, frames, timeout=3):
         op = _audioop()
         size = frames * self.target_channels * 2
-        deadline = time.monotonic() + (0.2 if self.silence_on_idle else timeout)
+        now = time.monotonic()
+        deadline = now + (silence_wait(now - self.last_sound) if self.silence_on_idle else timeout)
         while len(self.pending) < size:
             if self.error:
                 raise self.error
@@ -183,7 +223,7 @@ class PCMStream:
             if channels == 1 and self.target_channels == 2:
                 data = op.tostereo(data, 2, 1, 1)
             self.pending.extend(data)
-            self.last_samples = time.monotonic()
+            self.last_samples = self.last_sound = time.monotonic()
         result = bytes(self.pending[:size])
         del self.pending[:size]
         return result
@@ -193,12 +233,34 @@ class PCMStream:
         self.stream.close()
 
 
+def wait_for_reader(output, streams):
+    """Tell Jarvis the sound is flowing, and keep it fresh until FFmpeg connects.
+
+    FFmpeg stamps the first sound it receives as time zero, and stamps video from
+    the moment capture starts. Sound arriving even half a second after that leaves
+    video permanently "ahead", and FFmpeg then throws most of its frames away.
+    """
+    connecting = threading.Thread(target=output.connect, daemon=True)
+    connecting.start()
+    print(READY, flush=True)
+    while connecting.is_alive():
+        for stream in streams:
+            stream.discard()
+        connecting.join(0.02)
+    if not output.connected:
+        raise RuntimeError("FFmpeg did not open the audio input")
+    for stream in streams:
+        stream.discard()
+    output.write(bytes(3840))  # 20 ms of silence: the sound's clock starts now
+
+
 def mix_to_pipe(config, pipe):
     from .pipes import PipeWriter
 
     pa, op = _library(), _audioop()
     streams = []
-    with PipeWriter(pipe) as output, pa.PyAudio() as engine:
+    output = PipeWriter(pipe)
+    with output_closed(output), pa.PyAudio() as engine:
         try:
             device = config.get("audio_device", "")
             if config.get("system_audio"):
@@ -216,66 +278,79 @@ def mix_to_pipe(config, pipe):
                 streams.append(PCMStream(engine, pa, select_device(engine, pa, name)))
             if not streams:
                 raise RuntimeError("No recording audio source selected")
+            # Each source at its volume; two share the track at half each, as before.
+            volumes = config.get("volumes") or {}
+            gains = ([volumes.get("desktop", 1.0)] if config.get("system_audio") else []) + (
+                [volumes.get("microphone", 1.0)] if config.get("microphone") else [])
+            gains = [g * (0.5 if len(streams) == 2 else 1.0) for g in gains]
+            wait_for_reader(output, streams)
             while True:
                 frames = [stream.read(960) for stream in streams]
-                data = (
-                    frames[0]
-                    if len(frames) == 1
-                    else op.add(op.mul(frames[0], 2, 0.5), op.mul(frames[1], 2, 0.5), 2)
-                )
+                parts = [frame if gain == 1.0 else op.mul(frame, 2, gain) for frame, gain in zip(frames, gains)]
+                data = parts[0] if len(parts) == 1 else op.add(parts[0], parts[1], 2)
                 output.write(data)
         finally:
             for stream in streams:
                 stream.close()
 
 
-def app_audio_to_pipe(program, include, pipe):
-    """One program's sound (``include``) or everything except it, from the
-    voice worker's process-loopback mode, relayed into an FFmpeg pipe."""
+OWN_PROGRAMS = ("jarvis", "jarvisconsole", "jarvis-voice")
+
+
+def apps_with_sound(timeout=5):
+    """Programs with sound on an active output, playing now first:
+    [{"name", "label", "playing"}], without Jarvis itself. Best effort."""
     import subprocess
-    from .pipes import PipeWriter
-    from ..host import child_options
+    from ..host import child_options, grouped
+    from ..native_worker import binary_path
+
+    worker = binary_path()
+    if worker is None:
+        return []
+    try:
+        result = subprocess.run([str(grouped(worker)), "--app-audio"], input=b'{"list":true}\n', capture_output=True,
+                                timeout=timeout, **child_options())
+        apps = json.loads(result.stdout)["apps"]
+    except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError):
+        return []
+    return [a for a in apps if isinstance(a, dict) and isinstance(a.get("name"), str)
+            and a["name"].casefold() not in OWN_PROGRAMS]
+
+
+def start_app_audio(program, include, pipe):
+    """The native worker writing one program's sound (``include``), or all but
+    it, straight into FFmpeg's ``pipe``: it says "ready" once the pipe exists."""
+    import subprocess
+    from ..host import child_options, grouped
     from ..native_worker import binary_path
 
     worker = binary_path()
     if worker is None:
         raise RuntimeError("The Windows voice worker is missing; reinstall the complete Jarvis package")
-    with PipeWriter(pipe) as output:
-        process = subprocess.Popen([str(worker), "--app-audio"], stdin=subprocess.PIPE,
-                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, **child_options())
-        try:
-            process.stdin.write(json.dumps({"process": program, "include": include}).encode() + b"\n")
-            process.stdin.close()
-            while chunk := process.stdout.read(3840):
-                output.write(chunk)
-            detail = process.stderr.read(4096).decode(errors="replace")
-            message = next((json.loads(line).get("message") for line in detail.splitlines()
-                            if line.startswith("{")), detail.strip())
-            raise RuntimeError(message or f"Audio capture for {program} stopped")
-        finally:
-            if process.poll() is None:
-                process.kill()
-            process.wait()
-            process.stdout.close()
-            process.stderr.close()
+    process = subprocess.Popen([str(grouped(worker)), "--app-audio"], stdin=subprocess.PIPE,
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE, **child_options())
+    process.stdin.write(json.dumps({"process": program, "include": include, "pipe": pipe}).encode() + b"\n")
+    process.stdin.close()
+    return process
 
 
 def track_to_pipe(config, pipe):
-    """One replay track, unmixed: "game" (everything except ``app``, or all
-    system sound), "app" (only that program) or "microphone"."""
+    """One track, unmixed: "game" (all desktop sound) or "microphone". A
+    program's own track runs on the native worker, straight into FFmpeg
+    (start_app_audio), never through here."""
     track = config["track"]
     kind, program = track.get("kind"), track.get("app", "")
-    if kind == "app" or (kind == "game" and program):
-        return app_audio_to_pipe(program, kind == "app", pipe)
-    if kind not in ("game", "microphone"):
+    if program or kind not in ("game", "microphone"):
         raise RuntimeError("Unknown replay audio track")
     from .pipes import PipeWriter
 
     pa = _library()
-    with PipeWriter(pipe) as output, pa.PyAudio() as engine:
+    output = PipeWriter(pipe)
+    with output_closed(output), pa.PyAudio() as engine:
         stream = (PCMStream(engine, pa, select_device(engine, pa, "default_output", loopback=True), silence_on_idle=True)
                   if kind == "game" else PCMStream(engine, pa, select_device(engine, pa, "default_input")))
         try:
+            wait_for_reader(output, [stream])
             while True:
                 output.write(stream.read(960))
         finally:

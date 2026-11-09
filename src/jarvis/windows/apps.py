@@ -11,6 +11,8 @@ class WindowsApp(App):
         # AUMIDs distinguish packaged apps and browser app shortcuts. A verified
         # executable path is an additional identity only for a plain app entry.
         result = {self.id.casefold()}
+        if "!" in self.id:   # a packaged app: its windows may only show their package's folder
+            result.add(self.id.split("!", 1)[0].casefold())
         if self.exec and not self.wm_class:
             result.add(str(PureWindowsPath(self.exec)).casefold())
         return result

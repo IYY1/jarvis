@@ -14,11 +14,18 @@ import threading
 import time
 import uuid
 
-from ..host import child_options, command as worker_command, tool
-from ..recorder import RecorderError, capture_color, verify_video
+from ..host import ENCODER_NAME, child_options, command as worker_command, grouped, tool
+from ..recorder import RecorderError, verify_video
 from ..replay import write_track_names
-from ..encoding import replay_video, with_auto_bitrate
+from ..encoding import replay_fit_seconds, replay_video, with_auto_bitrate
 from . import encoding
+
+
+READY = "ready"   # the first line a capture audio worker prints (windows/audio.py)
+SEGMENT_SECONDS = 1   # replay segment length; saving joins them at exactly this
+AUDIO_START_SECONDS = 10
+TRIM_AFTER_SECONDS = (3, 30)   # once started, and once settled
+TRIM_EVERY_SECONDS = 300
 
 
 def audio_sources():
@@ -31,6 +38,33 @@ def sources():
     from .displays import sources as discover
 
     return discover()
+
+
+def chosen_display(displays, name):
+    """The named display. No name means "Primary display", as the window calls it:
+    the one Windows places at the desktop's origin."""
+    if name:
+        return next((d for d in displays if d["name"] == name), None)
+    return next((d for d in displays if (d.get("left"), d.get("top")) == (0, 0)), displays[0] if displays else None)
+
+
+def replay_budget_warning(cfg, replay, audio_tracks):
+    """Status text when the budget can't hold the chosen length at this bitrate."""
+    fit = replay_fit_seconds(cfg, replay["max_mb"], audio_tracks)
+    if fit is None or fit >= replay["seconds"]:
+        return ""
+    return (f" · About {fit} of {replay['seconds']} seconds fit in this budget;"
+            " raise the budget or lower the bitrate")
+
+
+def replay_shortfall_warning(wanted, retained, captured):
+    """Status text when a clip lost history to the budget rather than to warm-up.
+
+    Two seconds of margin: more segments can arrive while a save prepares its files.
+    """
+    if retained >= wanted or captured <= wanted + 2:
+        return ""
+    return f" · The budget kept only {retained} of {wanted} seconds; raise it or lower the bitrate"
 
 
 class ReplayBuffer:
@@ -103,14 +137,102 @@ class ReplayBuffer:
 
 
 def audio_failure(process, title):
-    """The reason an audio worker ended, from the last line it wrote."""
+    """The reason an audio worker ended, from the last line it wrote. The packaged
+    worker ends with PyInstaller's own "[PYI-...] Failed to execute script" line,
+    which says nothing; the exception is the line before it."""
     try:
         lines = process.stderr.read(8192).decode(errors="replace").strip().splitlines()
     except (OSError, ValueError):
         lines = []
+    lines = [line for line in lines if line.strip() and not line.startswith("[PYI-")]
     reason = lines[-1].split(": ", 1)[-1] if lines else ""  # drop "RuntimeError: "
+    try:
+        reason = json.loads(lines[-1])["message"]   # the native worker's {"event":"error",...}
+    except (IndexError, ValueError, KeyError, TypeError):
+        pass
     track = f"The {title} track" if title else "Recording audio"
     return f"{track} stopped: {reason}" if reason else f"{track} stopped unexpectedly; check Windows audio permissions"
+
+
+def screen_failure(process):
+    """The reason the worker's screen mode ended, from its last line."""
+    try:
+        lines = process.stderr.read(8192).decode(errors="replace").strip().splitlines()
+    except (OSError, ValueError):
+        lines = []
+    for line in reversed(lines):
+        try:
+            message = json.loads(line).get("message")
+        except (ValueError, AttributeError):
+            continue
+        if message:
+            return f"Screen capture stopped: {message}"
+    return "Screen capture stopped unexpectedly; check the graphics driver"
+
+
+def start_screen(request):
+    """The worker's screen mode, for a display in HDR mode. Waits until it can capture."""
+    from ..native_worker import binary_path
+
+    worker = binary_path()
+    if worker is None:
+        raise RecorderError("The Windows voice worker is missing; reinstall the complete Jarvis package")
+    process = subprocess.Popen(
+        [str(grouped(worker)), "--screen"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        **child_options(),
+    )
+    process.stdin.write(json.dumps(request).encode() + b"\n")
+    process.stdin.close()
+    return process
+
+
+def wait_for_screen(process, seconds=AUDIO_START_SECONDS):
+    outcome = _wait_ready(process, seconds)
+    if outcome == "late":
+        raise RecorderError("Screen capture did not start; check the graphics driver")
+    if outcome == "ended":
+        process.wait(timeout=5)
+        raise RecorderError(screen_failure(process))
+
+
+def _wait_ready(process, seconds):
+    """Read the worker's "ready" line: "ready", "late", or "ended" without one."""
+    ready = threading.Event()
+
+    def watch():
+        # A driver may print its own lines first.
+        while line := process.stdout.readline():
+            if line.strip() == READY.encode():
+                ready.set()
+                return
+
+    reader = threading.Thread(target=watch, daemon=True)
+    reader.start()
+    reader.join(seconds)
+    if reader.is_alive():
+        return "late"
+    if ready.is_set():
+        process.stdout.close()
+        return "ready"
+    return "ended"
+
+
+def wait_for_audio(process, title, seconds=AUDIO_START_SECONDS):
+    """Hold FFmpeg back until the audio worker's sound is flowing.
+
+    Sound that starts after video leaves video permanently ahead of it, and FFmpeg
+    then discards most of the frames. Also, the worker's pipe must exist by now.
+    """
+    outcome = _wait_ready(process, seconds)
+    if outcome == "late":
+        track = f"The {title} track" if title else "Recording audio"
+        raise RecorderError(f"{track} did not start; check Windows audio devices and permissions")
+    if outcome == "ended":
+        process.wait(timeout=5)
+        raise RecorderError(audio_failure(process, title))
 
 
 class _Capture:
@@ -121,6 +243,9 @@ class _Capture:
         self._lock = threading.RLock()
         self._process, self._segments, self._buffer = None, None, None
         self._audio = []  # [(audio worker process, track title or None)]
+        self._mixed = False  # a first track adds up the others
+        self._titles = []    # the saved clip's track names, in order
+        self._screen = None  # the worker's screen mode, for a display in HDR mode
         self._done = threading.Event()
         self._done.set()
         self._requested, self._forced, self._error = False, False, None
@@ -172,10 +297,12 @@ class _Capture:
         cfg = dict(replay_video(self.config) if self.replay else self.config["recording"])
         if not cfg.get("configured"):
             raise RecorderError("Complete and review recording setup first")
-        display = next((d for d in sources() if d["name"] == cfg["monitor"]), None)
+        display = chosen_display(sources(), cfg["monitor"])
         if display is None:
             raise RecorderError("Choose a connected recording display")
-        color = capture_color(cfg, display)
+        cfg = encoding.resolve_codec(cfg, display)   # "auto": the best format this GPU encodes
+        color = encoding.windows_color(cfg, display)
+        cfg["fps"] = encoding.capped_fps(cfg["fps"], display)
         cfg = dict(with_auto_bitrate(cfg, display))
         if self.replay:
             cfg.update(
@@ -207,12 +334,25 @@ class _Capture:
                     + uuid.uuid4().hex[:10]
                 )
                 prefix = r"\\.\pipe\Jarvis-" + uuid.uuid4().hex
+                tracks = self.config["replay"]
+                labels = {}
+                if tracks.get("sources") == "specific" and tracks.get("separate_apps"):
+                    from .audio import apps_with_sound
+                    labels = {a["name"]: a["label"] for a in apps_with_sound()}
                 plan = encoding.audio_plan(
-                    cfg, self.config["replay"] if self.replay else None,
-                    sys.getwindowsversion().build if hasattr(sys, "getwindowsversion") else 0)
+                    cfg, tracks, sys.getwindowsversion().build if hasattr(sys, "getwindowsversion") else 0,
+                    labels, recording=not self.replay)
                 pipes = [(f"{prefix}-audio{i}", title) for i, (title, _) in enumerate(plan)]
+                mix = encoding.mixed_inputs(plan)
+                separate = tracks.get("audio_tracks") == "separate"
+                self._mixed = bool(mix)
+                # The track names a saved clip keeps, in order.
+                self._titles = ([encoding.MIXED_TITLE] if mix else []) + (
+                    [title for title, _ in plan if title] if separate or not mix else [])
+                screen_pipe = f"{prefix}-video" if encoding.in_hdr_mode(display) else None
                 argv, self._color, self._codec = encoding.command(
-                    cfg, display, binary, family, audio_pipes=pipes
+                    cfg, display, binary, family, audio_pipes=pipes, screen_pipe=screen_pipe, mix=mix,
+                    volumes=encoding.plan_volumes(plan), separate=separate
                 )
                 self._folder = folder
                 self._error, self._requested, self._forced = None, False, False
@@ -232,7 +372,7 @@ class _Capture:
                         "-f",
                         "segment",
                         "-segment_time",
-                        "1",
+                        str(SEGMENT_SECONDS),
                         "-segment_wrap",
                         "3",
                         "-reset_timestamps",
@@ -251,16 +391,29 @@ class _Capture:
                     argv[argv.index("-n")] = "-y"
                     argv += ["-f", "matroska", str(partial)]
                 for (pipe, title), (_, worker_cfg) in zip(pipes, plan):
+                    track = worker_cfg.get("track") or {}
+                    if track.get("app") and track.get("kind") in ("app", "game"):
+                        # A program's sound goes from the native worker straight to FFmpeg.
+                        from .audio import start_app_audio
+                        self._audio.append((start_app_audio(track["app"], track["kind"] == "app", pipe), title))
+                        continue
                     audio = subprocess.Popen(
                         worker_command("audio", pipe),
                         stdin=subprocess.PIPE,
-                        stdout=subprocess.DEVNULL,
+                        stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
                         **child_options(),
                     )
                     self._audio.append((audio, title))
                     audio.stdin.write(json.dumps(worker_cfg).encode() + b"\n")
                     audio.stdin.close()
+                if screen_pipe:
+                    self._screen = start_screen(
+                        encoding.screen_request(cfg, display, screen_pipe, self._color)
+                    )
+                    wait_for_screen(self._screen)
+                for audio, title in self._audio:
+                    wait_for_audio(audio, title)
                 self._process = subprocess.Popen(
                     argv,
                     stdin=subprocess.PIPE,
@@ -272,7 +425,8 @@ class _Capture:
                 self._set(
                     "on" if self.replay else "recording",
                     f"{'Replay' if self.replay else 'Recorder'} running · {self._codec.upper()} · {self._color.upper()} · {family}"
-                    + (f" · {self.config['replay']['storage']} · {self.config['replay']['max_mb']} MiB budget" if self.replay else ""),
+                    + (f" · {self.config['replay']['storage']} · {self.config['replay']['max_mb']} MiB budget"
+                       + replay_budget_warning(cfg, self.config["replay"], len(self._titles)) if self.replay else ""),
                     partial,
                 )
                 threading.Thread(
@@ -310,15 +464,23 @@ class _Capture:
             target=drain, args=(process.stderr,), daemon=True
         )
         diagnostics.start()
+        started = time.monotonic()
+        trims = iter(TRIM_AFTER_SECONDS)
+        next_trim = next(trims)
         try:
             while process.poll() is None:
                 # This wait is a process wait, not a frame/desktop polling loop.
                 try:
                     process.wait(timeout=0.5)
                 except subprocess.TimeoutExpired:
+                    if time.monotonic() - started >= next_trim:
+                        self._release_memory(process)
+                        next_trim = next(trims, next_trim + TRIM_EVERY_SECONDS)
                     stopped = next((a for a in self._audio if a[0].poll() is not None), None)
                     if not self._requested and stopped is not None:
                         self._abort(audio_failure(*stopped))
+                    if not self._requested and self._screen is not None and self._screen.poll() is not None:
+                        self._abort(screen_failure(self._screen))
             diagnostics.join(timeout=2)
             if self._error:
                 raise RecorderError(self._error)
@@ -354,6 +516,19 @@ class _Capture:
                 self._process = None
             self._done.set()
 
+    def _release_memory(self, process):
+        """FFmpeg and the workers touch far more memory starting up than they use."""
+        from .system import release_unused_memory
+
+        children = [process] + [audio for audio, _ in self._audio]
+        if self._screen is not None:
+            children.append(self._screen)
+        for child in children:
+            try:
+                release_unused_memory(int(child._handle))
+            except (AttributeError, OSError, ValueError):
+                pass
+
     def _cleanup(self):
         if self._segments:
             self._segments.close()
@@ -369,6 +544,17 @@ class _Capture:
             if audio.stderr:
                 audio.stderr.close()
         self._audio = []
+        if self._screen is not None:
+            if self._screen.poll() is None:
+                self._screen.terminate()
+            try:
+                self._screen.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                self._screen.kill()
+                self._screen.wait()
+            if self._screen.stderr:
+                self._screen.stderr.close()
+            self._screen = None
         if self._buffer:
             self._buffer.close()
             self._buffer = None
@@ -424,7 +610,8 @@ class Replay(_Capture):
                     self._color,
                     self._codec,
                 )
-                titles = [title for _, title in self._audio if title]
+                titles = list(self._titles)
+            length = self.config["replay"]["seconds"]
             # Wait for the current independent segment so the requested moment
             # is included. This may add up to one second of later video.
             tag = (
@@ -435,6 +622,7 @@ class Replay(_Capture):
             partial = folder / f".Jarvis_replay_{tag}.part.mkv"
             final = folder / f"Replay_{tag}.mkv"
             with buffer.files(after=time.monotonic(), timeout=2) as paths:
+                captured = buffer.next
                 if seconds is not None:
                     # One-second segments, plus the one finishing at the request.
                     paths = paths[-(seconds + 1):]
@@ -444,11 +632,17 @@ class Replay(_Capture):
                 lines = []
                 for path in paths:
                     lines.append(f"file '{path.name}'")
+                    # Each segment's picture is exactly one second (key frames are
+                    # forced on every second, frames are stamped by count). Left to
+                    # itself, concat steps by the longest stream, and the sound runs
+                    # past the picture's end: picture slipped ~25 ms a segment
+                    # behind sound, a second per minute, with a stutter at each join.
+                    lines.append(f"duration {SEGMENT_SECONDS}")
                 listing = root / "segments.txt"
                 listing.write_text("\n".join(lines) + "\n", encoding="utf-8")
                 result = subprocess.run(
                     [
-                        tool("ffmpeg"),
+                        grouped(tool("ffmpeg"), ENCODER_NAME),   # in Jarvis's row
                         "-hide_banner",
                         "-loglevel",
                         "error",
@@ -491,7 +685,9 @@ class Replay(_Capture):
             else:
                 self._set(
                     "on" if self._process is not None and not self._requested else "off",
-                    f"Saved replay: {final.name} · {len(paths)} seconds retained ({self.config['replay']['max_mb']} MiB {self.config['replay']['storage']} budget)",
+                    f"Saved replay: {final.name} · {len(paths)} seconds retained ({self.config['replay']['max_mb']} MiB {self.config['replay']['storage']} budget)"
+                    + replay_shortfall_warning(
+                        min(seconds or length, length), len(paths), captured),
                     final,
                 )
             return self.status()

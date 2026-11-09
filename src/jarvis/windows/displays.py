@@ -67,6 +67,102 @@ def release(obj):
         method(obj, 2, C.c_ulong)(obj)
 
 
+def refresh_rate(name):
+    """The display's current refresh rate in Hz, or 0 when Windows won't say."""
+    try:
+        import win32api
+
+        return int(win32api.EnumDisplaySettings(name, -1).DisplayFrequency)
+    except Exception:
+        return 0
+
+
+class _Header(C.Structure):
+    _fields_ = [("type", C.c_uint32), ("size", C.c_uint32), ("adapter_low", C.c_uint32),
+                ("adapter_high", C.c_int32), ("id", C.c_uint32)]
+
+
+class _SourceName(C.Structure):
+    _fields_ = [("header", _Header), ("gdi_name", W.WCHAR * 32)]
+
+
+class _TargetName(C.Structure):
+    _fields_ = [("header", _Header), ("flags", C.c_uint32), ("technology", C.c_uint32),
+                ("manufacturer", C.c_uint16), ("product", C.c_uint16), ("connector", C.c_uint32),
+                ("friendly", W.WCHAR * 64), ("path", W.WCHAR * 128)]
+
+
+class _PathSource(C.Structure):
+    _fields_ = [("adapter_low", C.c_uint32), ("adapter_high", C.c_int32), ("id", C.c_uint32),
+                ("mode", C.c_uint32), ("flags", C.c_uint32)]
+
+
+class _PathTarget(C.Structure):
+    _fields_ = [("adapter_low", C.c_uint32), ("adapter_high", C.c_int32), ("id", C.c_uint32),
+                ("mode", C.c_uint32), ("technology", C.c_uint32), ("rotation", C.c_uint32),
+                ("scaling", C.c_uint32), ("refresh_num", C.c_uint32), ("refresh_den", C.c_uint32),
+                ("scanline", C.c_uint32), ("available", W.BOOL), ("flags", C.c_uint32)]
+
+
+class _Path(C.Structure):
+    _fields_ = [("source", _PathSource), ("target", _PathTarget), ("flags", C.c_uint32)]
+
+
+MAKERS = {"AUS": "ASUS", "SAM": "Samsung", "GSM": "LG", "DEL": "Dell", "ACR": "Acer", "BNQ": "BenQ", "AOC": "AOC",
+          "MSI": "MSI", "GBT": "Gigabyte", "LEN": "Lenovo", "HPN": "HP", "HWP": "HP", "PHL": "Philips",
+          "VSC": "ViewSonic", "SNY": "Sony", "XMI": "Xiaomi", "AAC": "AOC", "IVM": "iiyama", "NEC": "NEC",
+          "ALI": "Alienware", "CMN": "Innolux", "BOE": "BOE", "SHP": "Sharp", "HSD": "HannStar", "KOS": "KOORUI"}
+
+
+def maker(code):
+    """The maker's name from the display's three-letter EDID id, or "" when unknown."""
+    for value in (code, ((code & 0xFF) << 8) | (code >> 8)):   # Windows may hand it over byte-swapped
+        letters = "".join(chr(64 + (value >> shift & 31)) for shift in (10, 5, 0))
+        if letters in MAKERS:
+            return MAKERS[letters]
+    return ""
+
+
+def monitor_names():
+    """Each active display's own name ("Odyssey G70B"), by its Windows device
+    name (\\\\.\\DISPLAY1). Read once when displays are listed; {} when Windows won't say."""
+    names = {}
+    try:
+        user32 = C.WinDLL("user32")
+        paths, modes = C.c_uint32(), C.c_uint32()
+        if user32.GetDisplayConfigBufferSizes(2, C.byref(paths), C.byref(modes)):   # QDC_ONLY_ACTIVE_PATHS
+            return names
+        path_array = (_Path * paths.value)()
+        mode_array = (C.c_byte * (64 * max(1, modes.value)))()   # DISPLAYCONFIG_MODE_INFO is 64 bytes
+        if user32.QueryDisplayConfig(2, C.byref(paths), path_array, C.byref(modes), mode_array, None):
+            return names
+        for path in path_array[: paths.value]:
+            source = _SourceName()
+            source.header = _Header(1, C.sizeof(_SourceName), path.source.adapter_low, path.source.adapter_high,
+                                    path.source.id)   # DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME
+            target = _TargetName()
+            target.header = _Header(2, C.sizeof(_TargetName), path.target.adapter_low, path.target.adapter_high,
+                                    path.target.id)   # DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME
+            if user32.DisplayConfigGetDeviceInfo(C.byref(source)) or user32.DisplayConfigGetDeviceInfo(C.byref(target)):
+                continue
+            model = target.friendly.strip()
+            if model:
+                brand = maker(target.manufacturer)
+                names[source.gdi_name] = f"{brand} {model}" if brand and brand.lower() not in model.lower() else model
+    except (OSError, AttributeError, ValueError):
+        pass
+    return names
+
+
+def display_label(display, names=None):
+    """How a display is shown in a list: its own name, size and refresh rate."""
+    own = (names or {}).get(display["name"]) or display.get("description") or display["name"]
+    if own == display["name"]:
+        own = own.replace("\\\\.\\", "").replace("DISPLAY", "Display ")
+    detail = f"{display['width']}×{display['height']}" + (f", {display['refresh']} Hz" if display.get("refresh") else "")
+    return f"{own} ({detail})"
+
+
 def sources():
     # Set before any desktop coordinates are queried, including on scaled and
     # mixed-DPI monitors. This only affects the current Jarvis process.
@@ -164,6 +260,7 @@ def sources():
                                     "vendor": vendor,
                                     "output": output_index,
                                     "hdr_known": hdr_known,
+                                    "refresh": refresh_rate(desc.name),
                                     "colorManagementPreset": "hdr" if hdr else "srgb",
                                     "focused": len(result) == 0,
                                 }
@@ -176,4 +273,8 @@ def sources():
             adapter_index += 1
     finally:
         release(factory)
+    names = monitor_names()
+    for display in result:
+        display["description"] = names.get(display["name"], display["name"])
+        display["label"] = display_label(display, names)
     return result

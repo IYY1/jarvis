@@ -52,6 +52,17 @@ DEFAULTS = {
                "own_video": False, "codec": "av1", "fps": 60, "resolution": "native", "rate_control": "bitrate",
                "quality_preset": "very_high", "bitrate_mbps": 8, "bitrate_auto": True},
 }
+if sys.platform == "win32":
+    # Windows picks the best format the GPU encodes when capture starts (see
+    # windows/encoding.resolve_codec), so a new install records on any GPU without
+    # choosing one. Saved settings keep whatever format they name.
+    DEFAULTS["recording"]["codec"] = "auto"
+    DEFAULTS["replay"]["codec"] = "auto"
+    # Which sounds go into a capture (see windows/encoding.audio_plan): "all"
+    # desktop sound, or only "specific" ones: the game running (game_track), the
+    # programs in separate_apps and the microphone. volumes: percent per source,
+    # by "game", "desktop", "microphone" or a program's name; 100 when unset.
+    DEFAULTS["replay"].update(sources="all", game_track=True, volumes={})
 # Sections that existed in earlier versions and are now ignored.
 LEGACY_SECTIONS: tuple[str, ...] = ()
 # Free-form mappings; their keys are user phrases, not setting names.
@@ -208,9 +219,9 @@ def validate(data: dict) -> dict:
         raise ValueError("Invalid replay buffer directory")
     if not all(isinstance(c["replay"][key], bool) for key in ("autostart", "game_audio", "microphone", "sound", "own_video")):
         raise ValueError("Replay switches must be true or false")
-    from .encoding import GPU_CODECS, REPLAY_VIDEO
+    from .encoding import AUTO, GPU_CODECS, REPLAY_VIDEO
     validate_encoding({key: c["replay"][key] for key in REPLAY_VIDEO})
-    if c["replay"]["codec"] not in GPU_CODECS:
+    if c["replay"]["codec"] not in (*GPU_CODECS, *AUTO):
         raise ValueError("Replay records with a GPU format: choose AV1, HEVC or H.264")
     if c["replay"]["audio_tracks"] not in ("mixed", "separate"):
         raise ValueError("Replay audio tracks must be mixed or separate")
@@ -220,6 +231,15 @@ def validate(data: dict) -> dict:
     from .replay import valid_app_name
     if not all(isinstance(app, str) and valid_app_name(app) for app in apps):
         raise ValueError("App audio names may use letters, digits, spaces, dots, dashes and underscores")
+    if "sources" in c["replay"]:   # Windows (see DEFAULTS)
+        if c["replay"]["sources"] not in ("all", "specific"):
+            raise ValueError("Recorded sounds must be all or specific")
+        if not isinstance(c["replay"]["game_track"], bool):
+            raise ValueError("Game audio must be on or off")
+        volumes = c["replay"]["volumes"]
+        if not isinstance(volumes, dict) or len(volumes) > 16 or not all(
+                isinstance(k, str) and 0 < len(k) <= 64 and type(v) is int and 0 <= v <= 100 for k, v in volumes.items()):
+            raise ValueError("Volumes are whole percents from 0 to 100, for up to 16 sounds")
     from .host import is_windows
     if not is_windows() and r["system_audio"] and r["microphone"] and not (r["combined_audio_source"] and r["audio_device"].strip()):
         raise ValueError("wf-recorder accepts one audio source. Set up a combined PipeWire source first.")
@@ -312,7 +332,9 @@ def load(path: Path | None = None) -> dict:
         defaults = copy.deepcopy(DEFAULTS)
         from .host import is_windows
         if is_windows():
-            defaults["recording"].update(codec="h264", rate_control="bitrate", output_dir="~/Videos/Jarvis")
+            # The format stays DEFAULTS' "auto" (best the GPU encodes); naming H.264
+            # here made every first install skip Automatic.
+            defaults["recording"].update(rate_control="bitrate", output_dir="~/Videos/Jarvis")
         return defaults
     if path.stat().st_size > 65536:
         raise ValueError("Configuration exceeds 64 KiB")

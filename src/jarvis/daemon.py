@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import gc
 import json
 import os
 from pathlib import Path
@@ -11,6 +12,7 @@ import struct
 import subprocess
 import sys
 import threading
+import time
 
 from . import config as configuration
 from .actions import Dispatcher
@@ -31,6 +33,57 @@ else:
 from .state import Activation
 from .desktop_process import desktop_argv
 from . import dictation
+
+
+async def close_connection(writer):
+    """Close a client's stream. A client that already vanished is routine, not an error."""
+    writer.close()
+    try:
+        await writer.wait_closed()
+    except OSError:
+        pass
+
+
+WORKER_ERROR_TAIL = 4096
+
+
+async def worker_error_tail(stream):
+    """Drain a worker's stderr so it can't block, keeping only the newest bytes."""
+    tail = bytearray()
+    while chunk := await stream.read(WORKER_ERROR_TAIL):
+        tail += chunk
+        del tail[:-WORKER_ERROR_TAIL]
+    return bytes(tail)
+
+
+def exit_description(code):
+    """Exit code as text; Windows crash codes are only recognisable in hex."""
+    if isinstance(code, int) and abs(code) > 255:
+        return f"{code} (0x{code & 0xFFFFFFFF:08X})"
+    return str(code)
+
+
+class TimestampedLog:
+    """Prefixes each line written to the service log with the local time."""
+
+    def __init__(self, stream):
+        self.stream = stream
+        self.at_line_start = True
+
+    def write(self, text):
+        for line in text.splitlines(keepends=True):
+            if self.at_line_start:
+                self.stream.write(time.strftime("%Y-%m-%d %H:%M:%S "))
+            self.stream.write(line)
+            self.at_line_start = line.endswith("\n")
+        return len(text)
+
+    def __getattr__(self, name):
+        return getattr(self.stream, name)
+
+
+MEMORY_FIRST_RELEASE_SECONDS = 5
+MEMORY_RELEASE_SECONDS = 600
 
 
 class Service:
@@ -214,18 +267,22 @@ class Service:
                 raise CommandError("Voice grammar exceeds the 1 MiB worker limit")
             self.worker = await asyncio.create_subprocess_exec(
                 *worker_argv, stdin=asyncio.subprocess.PIPE,
-                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, limit=65536,
+                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, limit=65536,
                 env=worker_env, **child_options())
+            errors = getattr(self.worker, "stderr", None)
+            errors = asyncio.create_task(worker_error_tail(errors)) if errors else None
             self.worker_mode = mode
             # Mute may arrive while subprocess creation yields. Never leave a stale worker.
             if self.muted or not self.config["privacy"]["onboarded"] or (mode == "wake_word" and self.config["activation"]["mode"] != "wake_word"):
                 await self._stop_worker_locked()
+                if errors:
+                    errors.cancel()
                 return
             self.worker.stdin.write(encoded)
             await self.worker.stdin.drain()
             if mode not in ("wake_word", "dictation"):   # only these take control lines
                 self.worker.stdin.close()
-            self.voice_task = asyncio.create_task(self.read_voice(self.worker, mode))
+            self.voice_task = asyncio.create_task(self.read_voice(self.worker, mode, errors))
             self.publish()
 
     async def steer_worker(self, line: bytes) -> bool:
@@ -245,7 +302,21 @@ class Service:
                 return False   # it just exited; the caller starts a new one
             return True
 
-    async def read_voice(self, proc, mode):
+    async def log_worker_exit(self, proc, mode, errors):
+        """Record why a worker we didn't stop ended; its stderr is not kept otherwise."""
+        tail = b""
+        if errors:
+            try:
+                tail = await asyncio.wait_for(errors, 1)
+            except (TimeoutError, OSError):
+                pass
+        if proc.returncode or tail:
+            detail = tail.decode(errors="replace").strip()
+            print(f"jarvis: voice worker ({mode}) ended with exit code {exit_description(proc.returncode)}"
+                  + (f": {detail}" if detail else ""), file=sys.stderr, flush=True)
+
+    async def read_voice(self, proc, mode, errors=None):
+        heard = False   # what it heard says more than "no command heard" would
         try:
             while line := await proc.stdout.readline():
                 event = json.loads(line)
@@ -283,8 +354,11 @@ class Service:
                         self.activation.arm() if mode == "wake_word" else self.activation.pause()
                 elif kind == "heard":
                     self.message = f"Heard “{event.get('text', '')}”, which isn't a command I know. Try again."
+                    heard = True
                 elif kind == "timeout":
-                    self.message = "No command heard. Try again."
+                    if not heard:
+                        self.message = "No command heard. Try again."
+                    heard = False
                     self.activation.arm() if mode == "wake_word" else self.activation.pause()
                 elif kind == "dictation":
                     if event.get("state") == "started":
@@ -304,11 +378,13 @@ class Service:
                     self.level = event["level"]
                     self.gate = event.get("gate")
                 elif kind == "error":
+                    print(f"jarvis: voice worker ({mode}) reported: {event['message']}", file=sys.stderr, flush=True)
                     self.activation.error()
                     self.message = event["message"]
                 self.publish()
             await proc.wait()
             if self.worker is proc:
+                await self.log_worker_exit(proc, mode, errors)
                 self.worker = None
                 self.level = 0
                 if mode in ("test", "once") and not self.muted and self.activation.state != "error" and self.config["activation"]["mode"] == "wake_word":
@@ -323,10 +399,14 @@ class Service:
         except asyncio.CancelledError:
             raise
         except Exception as exc:
+            print(f"jarvis: voice worker ({mode}) failed: {exc!r}", file=sys.stderr, flush=True)
             await self.stop_worker()
             self.activation.error()
             self.message = "Voice worker failed: " + str(exc)
             self.publish()
+        finally:
+            if errors:
+                errors.cancel()
 
     async def set_mute(self, muted):
         if type(muted) is not bool:
@@ -506,6 +586,12 @@ class Service:
             from .process_memory import snapshot
             return {"ok": True, "status": self.status(), "pid": os.getpid(), "memory": snapshot()}
         if op == "config":
+            if is_windows():   # Windows' own Startup apps switch may have changed it since
+                from .windows.startup import startup_enabled
+                on = await asyncio.to_thread(startup_enabled)
+                if on != self.config["startup"]:
+                    self.config["startup"] = on
+                    self.config = await asyncio.to_thread(configuration.save, self.config)
             return {"ok": True, "config": self.config}
         if op == "apps":
             # Pick up apps installed since the last scan (the UI asks on open/Reconnect).
@@ -645,6 +731,30 @@ def devices():
         for n in nodes if (p := n.get("info", {}).get("props", {})).get("media.class") == "Audio/Source" and "node.name" in p]
 
 
+async def keep_memory_low(service):
+    """Windows only: what starting up touched goes back, and stays back.
+
+    Never while instant replay holds its buffer in RAM: Windows would write those
+    pages to the page file, the disk writing RAM mode exists to avoid, and read
+    them back for every clip.
+    """
+    from .windows.system import release_unused_memory
+
+    def screen_in_ram():
+        return (service.replay.status()["state"] != "off"
+                and service.config.get("replay", {}).get("storage", "ram") == "ram")
+
+    # Long-lived objects need no more garbage-collection passes, which would touch
+    # their pages again and again.
+    await asyncio.sleep(MEMORY_FIRST_RELEASE_SECONDS)
+    gc.collect()
+    gc.freeze()
+    while True:
+        if not screen_in_ram():
+            release_unused_memory()
+        await asyncio.sleep(MEMORY_RELEASE_SECONDS)
+
+
 async def serve():
     service = Service()
     service.loop = asyncio.get_running_loop()
@@ -723,8 +833,7 @@ async def serve():
         finally:
             if queue:
                 service.watchers.discard(queue)
-            writer.close()
-            await writer.wait_closed()
+            await close_connection(writer)
     if is_windows():
         server = await asyncio.start_server(connection, "127.0.0.1", 0, limit=65536)
         transport.publish(server.sockets[0].getsockname()[1], token)
@@ -757,8 +866,11 @@ async def serve():
             except (CommandError, RuntimeError, OSError) as exc:
                 service.activation.error()
                 service.message = f"Voice control could not start: {exc}"
+        memory = asyncio.create_task(keep_memory_low(service)) if is_windows() else None
         async with server:
             await service.stopping.wait()
+        if memory:
+            memory.cancel()
     finally:
         server.close()
         await server.wait_closed()
@@ -779,4 +891,8 @@ async def serve():
 
 
 def main():
+    if is_windows() and sys.stderr:   # systemd already timestamps the journal
+        from . import __version__
+        sys.stderr = TimestampedLog(sys.stderr)
+        print(f"jarvis: service {__version__} starting", file=sys.stderr, flush=True)
     asyncio.run(serve())

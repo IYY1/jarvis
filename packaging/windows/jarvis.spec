@@ -94,6 +94,32 @@ import json
     {name.split(".")[0] for name, *_ in a.pure} | {dest.replace("\\", "/").split("/")[0] for dest, *_ in a.binaries}
 )))
 pyz = PYZ(a.pure)
+
+
+def version_file(description, filename):
+    """Windows shows FileDescription, not the file name, in Task Manager and in
+    file properties: "Jarvis" reads better than "JarvisConsole"."""
+    import re
+    version = re.search(r'__version__ = "([^"]+)"', (root / "src/jarvis/__init__.py").read_text(encoding="utf-8"))[1]
+    parts = (tuple(int(p) for p in version.split(".")) + (0, 0, 0, 0))[:4]
+    path = Path(workpath) / f"version-{filename}.txt"
+    path.write_text(f"""VSVersionInfo(
+  ffi=FixedFileInfo(filevers={parts}, prodvers={parts}, mask=0x3f, flags=0x0, OS=0x40004, fileType=0x1, subtype=0x0, date=(0, 0)),
+  kids=[
+    StringFileInfo([StringTable('040904B0', [
+      StringStruct('CompanyName', 'Jarvis'),
+      StringStruct('FileDescription', '{description}'),
+      StringStruct('FileVersion', '{version}'),
+      StringStruct('InternalName', '{filename}'),
+      StringStruct('OriginalFilename', '{filename}.exe'),
+      StringStruct('ProductName', 'Jarvis'),
+      StringStruct('ProductVersion', '{version}')])]),
+    VarFileInfo([VarStruct('Translation', [1033, 1200])])
+  ]
+)""", encoding="utf-8")
+    return str(path)
+
+
 console = EXE(
     pyz,
     [item for item in a.scripts if item[0] != "gui"],
@@ -102,6 +128,8 @@ console = EXE(
     exclude_binaries=True,
     name="JarvisConsole",
     console=True,
+    icon=str(root / "packaging/windows/jarvis.ico"),
+    version=version_file("Jarvis", "JarvisConsole"),
     debug=False,
     strip=False,
     upx=False,
@@ -115,6 +143,9 @@ gui = EXE(
     exclude_binaries=True,
     name="Jarvis",
     console=False,
+    # The window's mark (look.logo_ico); a test keeps this file in step with it.
+    icon=str(root / "packaging/windows/jarvis.ico"),
+    version=version_file("Jarvis", "Jarvis"),
     debug=False,
     strip=False,
     upx=False,

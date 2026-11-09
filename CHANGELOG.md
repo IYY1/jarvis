@@ -10,6 +10,126 @@
   “ما عليه” or “مالي”), so the Arabic pass now also hears the 100 ms before
   the cut. Spellings the Arabic model writes for “Jarvis” (جاردس, جار بس…)
   and for اسمعني (اسماني, اسمالي, سمعني) were added from real recordings.
+- Windows: "Recording audio" works like Medal's audio processes. Choose All audio
+  (everything you hear), or Specific apps: "Game audio" follows whichever game
+  runs (Steam, Epic or GOG, found by itself, also when it starts later), plus up
+  to four programs and the microphone, and nothing else is recorded. Programs
+  appear in the list as they play sound, while the page is open. Each sound has
+  its own volume, and "Separate audio tracks" keeps each on its own track after
+  one with them all. Displays and microphones are listed by their own names.
+- Windows: replay clips stay in sync. Saving joined the one-second segments
+  by each one's longest stream, and a segment's sound runs about 25 ms past its
+  picture, so the picture slipped behind the sound at every join: clips drifted
+  about a second per minute and stuttered every second. Measured on a real
+  36-second replay: from +13 to -307 ms before, -15..+5 ms throughout now.
+- Windows: a program's own sound track keeps time after a quiet moment (it came
+  up to 80 ms early), and the clip editor shows a recording's track names and
+  names exported tracks (a mix as "Discord + Microphone").
+- Windows: pick which programs' sound goes into a video. Replay settings list the
+  programs with sound (by their own names, such as "Marvel Rivals"), and up to
+  four ticked ones each get a track of their own, in replays and recordings, next
+  to the desktop and the microphone. With Game sound off only the ticked programs
+  and the microphone are recorded. A first "All sound" track adds up the others
+  (with a limiter), so a clip plays everything in any player; the clip editor can
+  still keep or drop each track. A ticked program may start later or close: its
+  track stays silent and picks it up. Per-program capture never worked before: the
+  worker freed Windows' activation settings it didn't own and froze, so replay
+  with a program on its own track had no sound from it.
+- Voice: fast talkers are understood. A command said in the same breath as
+  "Jarvis" lost its first sound, because the wake name's end is placed late; the
+  cut now keeps 80 ms more. When Whisper can't make a command out of what it
+  heard, it hears it again slowed to 1.5x and then 2x the length at the same pitch,
+  so ordinary speech costs nothing extra. On spoken test commands at 1.7x normal
+  speed 16 of 16 are understood (was 15), at 2.2x 12 (was 10), at 2.7x 7 (was 1);
+  normal speed is unchanged and nothing runs from speech without a command.
+- Windows: a new "Automatic · best for this GPU" format, the default for new
+  installs and for the Recommended, high frame rate and 1080p presets. When capture
+  starts it picks the first of AV1, HEVC and H.264 the GPU really encodes (a
+  one-frame test, cached), so NVIDIA before RTX 40 and AMD before RX 7000 record
+  without changing a setting; real HDR takes only AV1 or HEVC, and with no GPU
+  encoder ordinary video falls back to CPU H.264. Saved formats are kept.
+- Windows: Task Manager shows Jarvis's background work as one "Jarvis" row: the
+  voice and screen worker, FFmpeg and the replay disk store run under the service's
+  file name (a hard link in the data folder, remade when the program is updated),
+  because Task Manager only groups processes whose files share a name. File
+  properties name the programs "Jarvis" and "Jarvis voice and screen"; FFmpeg,
+  which carries no name of its own, runs from a copy named "Jarvis video encoder"
+  (about 28 MB in the data folder, remade when FFmpeg changes).
+- Windows: Exact clip export uses the graphics card (NVIDIA, AMD or Intel, picked
+  the way recording picks it) and keeps the clip's format. It looked for a Linux
+  VA-API device, so it fell back to slow CPU H.264, failed on AV1 clips (the
+  Windows FFmpeg has no software AV1 decoder) and on every HDR clip (no
+  libsvtav1). A 6-second 2K clip now exports in about 2 seconds, HDR included.
+- Windows: Jarvis has its own icon, the window's blue rings and white dot, on the
+  program, its shortcuts, the taskbar and the tray, instead of the packager's default.
+- Windows: colors on an HDR display look right. Screen capture on an HDR desktop
+  returned clipped, washed-out-then-oversaturated colors, and NVENC encoded them
+  with the wrong matrix, so games such as Marvel Rivals looked glaring. The voice
+  worker now captures HDR displays itself (`jarvis-voice --screen`): the desktop's
+  true colors are tone mapped to normal video on the GPU, or kept as real HDR10
+  with `color_mode=hdr`, and the pointer is drawn in. It also delivers more frames
+  on fast displays: 240 Hz keeps about 232 new frames a second instead of about 200.
+- Windows: much less memory. Jarvis hands back pages it isn't using once it has
+  started: a recording on an HDR display drops from about 220 MB of RAM to about
+  85, one on an SDR display to about 25; idle, the service, window and voice
+  worker hold a few MB each instead of about 22, 25 and 130, with the same command
+  speed. NVIDIA encoding keeps one reference frame, about 40 MB less video memory
+  at 2K for the same picture. A replay buffer kept in RAM is left alone, so it is
+  never written to the page file.
+- Windows: recording and replay keep going through a permission prompt, such as the
+  one a game launcher raises. Video now holds the last picture while Windows shows
+  the prompt and resumes right after it; before, the HDR capture stayed frozen for
+  the rest of the session and kept a CPU core busy.
+- Windows: a still screen on an HDR display no longer falls behind. It delivered
+  about 37 frames a second of 60, and FFmpeg then stopped taking sound until the
+  audio worker gave up ("Audio capture could not keep up"). Sound also waits up to
+  5 seconds for FFmpeg instead of 1.2, and a failed audio worker now says why
+  instead of "Failed to execute script".
+- Windows: Start no longer replaces settings that changed while the window was open.
+- Windows: "Primary display" now works. The window offers it, but capture refused
+  it with "Choose a connected recording display".
+- Windows: recordings and replays now reach the frame rate you choose. Audio that
+  started after video made FFmpeg discard frames: 60 fps delivered about 40, and
+  165 about 46. Audio is now flowing before capture starts, which also keeps sound
+  and picture together. Fast rates improved too: 165 delivers about 150 new frames
+  a second instead of about 100, and 240 about 200 instead of about 175.
+- Windows: the frame rate is capped at each display's refresh rate, so a 144 Hz
+  display no longer spends encoder time and disk on repeated frames.
+- Windows: recordings and clips on an HDR display are kept instead of failing
+  verification, and all captures label their color correctly. FFmpeg was writing
+  the RGB labels that screen capture reports, over the ones Jarvis asked for.
+- Windows: HEVC and AV1 work on NVIDIA again. The encoder test used a frame below
+  NVENC's minimum size, so both were reported as unavailable. HDR displays were
+  affected in every format, because HDR capture needs HEVC or AV1.
+- Windows: Store apps such as Notepad and Spotify can now be closed and focused.
+  Their windows weren't recognized, so Jarvis said they weren't running.
+- "Unmute volume" now unmutes. It used to match the closest phrase, "mute volume".
+- Voice (Rust worker): commands can answer about 0.15 seconds after speech stops
+  instead of about 0.7, when Vosk and Whisper independently name the same complete
+  command. A command that could continue, closing an app, and quitting all still
+  wait for the end of speech.
+- Voice: after a command it couldn't understand, Jarvis stops waiting about 2.5
+  seconds after you stop talking instead of finishing the whole 8-second session,
+  and the status keeps what it heard instead of "No command heard".
+- Voice (Rust worker): `JARVIS_VOICE_TRACE=<file>` writes what each model heard
+  and decided, for diagnosing misheard commands. It records words, never audio.
+- Voice (Rust worker): a pause no longer loses a command. Speech right after the
+  wake name starts the command instead of being dropped, and "open", a pause,
+  then "spotify" now joins into one command. Replies to a command said in one
+  breath come about 0.4 seconds sooner. What was heard but not understood is
+  now reported when the session ends, not mid-sentence.
+- Windows: a tidier window. Home fits on one screen, six sidebar pages use short
+  tabs, technical video options fold away, switches replace tick boxes, and the
+  title bar matches the window. Memory stays about the same.
+- Windows: the Capture page says whether the replay budget holds the chosen
+  length, and the app list fills itself when first opened.
+- Windows: say so when the replay budget can't hold the chosen length, both
+  when replay starts and when a clip comes out shorter than asked.
+- Service log: timestamp Windows log lines, and record the exit code and last
+  error output of a voice worker that ends unexpectedly.
+- Windows: stop logging a traceback when a client disconnects abruptly.
+- Build: the installer script now builds on Windows, and the lock file accepts
+  the srt archive published on PyPI.
 
 ## 0.4.1 — 2026-11-06
 

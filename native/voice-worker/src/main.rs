@@ -6,6 +6,8 @@ mod inference;
 mod input;
 mod matching;
 mod on_demand;
+mod screen;
+mod stretch;
 mod worker;
 use serde::Deserialize;
 use serde_json::{json, Value};
@@ -61,6 +63,21 @@ fn emit(event: Value) -> Result<()> {
     out.write_all(b"\n")?;
     out.flush()?;
     Ok(())
+}
+/// Appends one line to the file named by `JARVIS_VOICE_TRACE`, for diagnosing
+/// recognition. Off unless that variable is set. It records words and decisions,
+/// never audio, so it is for a person looking into their own misheard commands.
+pub(crate) fn trace(event: Value) {
+    use std::sync::{Mutex, OnceLock};
+    static FILE: OnceLock<Option<Mutex<std::fs::File>>> = OnceLock::new();
+    let file = FILE.get_or_init(|| {
+        let path = std::env::var_os("JARVIS_VOICE_TRACE")?;
+        let file = std::fs::OpenOptions::new().create(true).append(true).open(path).ok()?;
+        Some(Mutex::new(file))
+    });
+    if let Some(Ok(mut file)) = file.as_ref().map(Mutex::lock) {
+        let _ = writeln!(file, "{:.3} {event}", worker::now());
+    }
 }
 fn read_line(reader: &mut impl BufRead, limit: usize) -> Result<Option<Vec<u8>>> {
     let mut bytes = vec![];
@@ -289,6 +306,7 @@ fn run() -> Result<()> {
             "--transcribe",
             "--engine",
             "--app-audio",
+            "--screen",
             "--decoder-history",
             "--match",
             "--version",
@@ -297,7 +315,7 @@ fn run() -> Result<()> {
     }) || args.len() > 1
     {
         return Err(
-            "Use --transcribe, --engine, --decoder-history, --match, --app-audio, --version, or no arguments for microphone worker"
+            "Use --transcribe, --engine, --decoder-history, --match, --app-audio, --screen, --version, or no arguments for microphone worker"
                 .into(),
         );
     }
@@ -314,6 +332,10 @@ fn run() -> Result<()> {
     if args.first().is_some_and(|a| a == "--app-audio") {
         let request = read_line(&mut reader, 4096)?.ok_or("Application audio request required")?;
         return app_audio::run(&serde_json::from_slice(&request)?);
+    }
+    if args.first().is_some_and(|a| a == "--screen") {
+        let request = read_line(&mut reader, 4096)?.ok_or("Screen capture request required")?;
+        return screen::run(&serde_json::from_slice(&request)?);
     }
     if args.first().is_some_and(|a| a == "--match") {
         return policy(&mut reader);
@@ -346,8 +368,11 @@ fn run() -> Result<()> {
 }
 fn main() {
     if let Err(error) = run() {
-        if std::env::args().nth(1).as_deref() == Some("--app-audio") {
-            // stdout carries the audio stream in this mode.
+        if matches!(
+            std::env::args().nth(1).as_deref(),
+            Some("--app-audio") | Some("--screen")
+        ) {
+            // stdout carries the audio stream, or the "ready" line, in these modes.
             eprintln!("{}", json!({"event":"error","message":error.to_string()}));
             std::process::exit(1);
         }
