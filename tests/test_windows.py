@@ -152,9 +152,9 @@ class SettingsWindowTests(WindowsPolicyTestCase):
                         distance(a["roles"]["accent"], b["roles"]["accent"]) < 90
                     self.assertFalse(alike)
         if sys.platform == "win32":
-            with patch("winreg.QueryValueEx", return_value=(1, 4)):
+            with patch("winreg.OpenKey"), patch("winreg.QueryValueEx", return_value=(1, 4)):
                 self.assertEqual(palettes.resolve(palettes.SYSTEM), "light")
-            with patch("winreg.QueryValueEx", return_value=(0, 4)):
+            with patch("winreg.OpenKey"), patch("winreg.QueryValueEx", return_value=(0, 4)):
                 self.assertEqual(palettes.resolve(palettes.SYSTEM), "graphite")
         window = self.window
         with patch.object(palettes, "choose"), patch.object(window, "say") as said:
