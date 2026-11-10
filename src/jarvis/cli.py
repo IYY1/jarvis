@@ -223,6 +223,7 @@ def main():
     record.add_argument("action", choices=["start", "stop"])
     replay = sub.add_parser("replay", help="Instant replay: start, stop, or save the last seconds")
     replay.add_argument("action", choices=["start", "stop", "save"])
+    sub.add_parser("screenshot", help="Save a screenshot of the recording display")
     sub.add_parser("doctor", help="Read-only dependency and session checks")
     alias = sub.add_parser("alias", help="Give an installed app a voice name, e.g.: jarvis alias streamio stremio")
     alias.add_argument("name", nargs="?", help="What you will say (\"open <name>\")")

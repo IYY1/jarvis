@@ -28,6 +28,7 @@ from .system import release_unused_memory
 
 RELEASE_MEMORY_AFTER_MS = 4000
 MAX_SEPARATE_APPS = 4   # config.validate allows this many
+MAX_OUTPUTS = config.MAX_OUTPUTS   # sound outputs one capture records at once
 DEFAULT_MICROPHONE = "Default Windows microphone"
 PRIMARY_DISPLAY = "Looking for displays…"   # shown only until the service lists them
 SEE_THROUGH = "#ff00fe"   # the message window's corners: Windows shows what's behind wherever this colour is
@@ -184,9 +185,9 @@ class Window:
         self.save_timer = None
         self.toast_timer = None
         self.status = {}
-        self.palette_setting = palettes.chosen("graphite")   # may be "system": follow Windows
+        self.palette_setting = palettes.chosen("cyberpunk")   # may be "system": follow Windows
         if self.palette_setting not in (*palettes.WINDOWS, palettes.SYSTEM):   # a theme this window no longer offers
-            self.palette_setting = "graphite"
+            self.palette_setting = "cyberpunk"
         self.palette = palettes.resolve(self.palette_setting)   # what the window is painted with
         self.shapes = None
         self.apps_loaded = False
@@ -328,13 +329,13 @@ class Window:
         s.configure("State.TLabel", font=(f + " Semibold", 15))
         s.configure("Live.TLabel", font=(f + " Semibold", 15))
         self.shapes = look.apply(s, self.root, r)   # the previous theme's pictures can go now
-        self.logo = look.image(self.root, look.logo_png(44, r["surface"], r["accent"], r["text"]))
-        self.icon = look.image(self.root, look.logo_png(32, r["surface"], r["accent"], r["text"]))
-        self.root.iconphoto(True, self.icon)
+        if not hasattr(self, "logo"):   # the icon has its own colors: made once, not per theme
+            self.logo = look.image(self.root, look.icon_png(48))
+            # Title bar and taskbar sizes only: the whole .ico (up to 256 px) cost more memory.
+            self.icons = [look.image(self.root, look.icon_png(size)) for size in (16, 32)]
+            self.root.iconphoto(True, self.logo, *self.icons)
         if self.root.winfo_ismapped():
             self.color_title_bar()
-        if hasattr(self, "logo_label"):
-            self.logo_label.configure(image=self.logo)
         if hasattr(self, "home"):
             self.home.paint()
         for widget, options in self.recolor:
@@ -470,6 +471,7 @@ class Window:
         if getattr(self, "current", None) == "recording" and self.online and not getattr(self, "displays_loaded", False):
             self.displays_loaded = True
             self.call("monitors", lambda result: self.load_displays(result, quiet=True))
+            self.call("recording_devices", lambda result: self.load_recording_devices(result, quiet=True))
         # The microphones, by name, the first time the Voice page is open.
         if getattr(self, "current", None) == "voice" and self.online and not getattr(self, "inputs_loaded", False):
             self.inputs_loaded = True
@@ -1135,7 +1137,9 @@ class Window:
         self.save(success="Removed.")
 
     def build_recording(self, p):
-        tabs = self.tabs(p, [("recording", "Recording"), ("replay", "Instant replay"), ("picture", "Picture and size")])
+        tabs = self.tabs(p, [("recording", "Recording"), ("replay", "Instant replay"), ("picture", "Picture and size"),
+                             ("screenshots", "Screenshots")])
+        self.build_screenshots(tabs["screenshots"])
 
         now = self.group(tabs["recording"], "Now")
         self.wide(now, self.wrapping(ttk.Label(now, textvariable=self.record_state, style="Row.TLabel", justify="left")))
@@ -1198,6 +1202,25 @@ class Window:
         self.row(sound, "Separate audio tracks", separate,
                  "Each sound on its own track too, after one with them all, so you can mute one in Clips.")
         self.show_sound_apps()
+        # Recordings' own microphone, apart from the one voice commands listen on.
+        self.rec_mic_ids = {DEFAULT_MICROPHONE: ""}
+        self.variable("replay", "mic_device")   # saved with the other settings
+        self.rec_mic_name = tk.StringVar(value=microphone_name(self.config["replay"].get("mic_device", "")))
+        self.rec_mic_choice = ttk.Combobox(sound, textvariable=self.rec_mic_name, state="readonly", width=30,
+                                           values=list(dict.fromkeys([DEFAULT_MICROPHONE, self.rec_mic_name.get()])))
+        self.rec_mic_choice.bind("<<ComboboxSelected>>", lambda _: self.pick_recording_microphone())
+        self.row(sound, "Microphone for recordings", self.rec_mic_choice,
+                 "Can differ from the one voice commands listen on (Voice page).")
+        # Sound outputs: people split game, chat, music and browser across outputs.
+        self.outputs = list(self.config["replay"].get("outputs", []))
+        self.output_found = []
+        self.row(sound, "Sound outputs", ttk.Frame(sound, style="Card.TFrame"),
+                 f"With All audio: tick up to {MAX_OUTPUTS} outputs (game, chat, music…), each on its own track. "
+                 "None ticked records the default output.")
+        self.output_rows = self.wide(sound, ttk.Frame(sound, style="Card.TFrame", borderwidth=0))
+        self.output_note = tk.StringVar()
+        self.wide(sound, self.wrapping(ttk.Label(sound, textvariable=self.output_note, style="Caption.TLabel", justify="left")))
+        self.show_outputs()
 
         extra = self.group(tabs["replay"], "Storage")
         self.choice(extra, "Storage", "replay", "storage", {"RAM": "ram", "Disk (continuous writes)": "disk"},
@@ -1273,7 +1296,7 @@ class Window:
         ticked = [n.strip() for n in self.separate_app.get().split(",") if n.strip()]
         rows = [("game_track", "Game audio", "The game running now, found by itself.", "game") if specific else
                 ("game_audio", "Game and desktop sound", "Everything you hear.", "desktop"),
-                ("microphone", "Microphone", "Your voice, from the input on the Voice page.", "microphone")]
+                ("microphone", "Microphone", "Your voice, from the microphone chosen for recordings.", "microphone")]
         playing = set()
         if specific:
             names = list(ticked)
@@ -1312,6 +1335,53 @@ class Window:
                             "Choose Specific apps to keep only the game, chosen programs and your voice, each with "
                             "its own volume.")
 
+    def load_recording_devices(self, result, quiet=True):
+        """Microphones for the recordings list, and the sound outputs that can be recorded."""
+        devices = [d for d in result.get("devices", []) if isinstance(d.get("id"), str)]
+        self.rec_mic_ids = {DEFAULT_MICROPHONE: ""}
+        for item in devices:
+            if item["id"].startswith("input:") and not item.get("monitor"):
+                self.rec_mic_ids[microphone_name(item["id"])] = item["id"]
+        names = list(self.rec_mic_ids)
+        if self.rec_mic_name.get() not in names:   # the saved one is unplugged: still show it
+            names.append(self.rec_mic_name.get())
+        self.rec_mic_choice.configure(values=names)
+        self.output_found = [d["id"] for d in devices if d.get("monitor") and d["id"].startswith("loopback:")]
+        self.show_outputs()
+        if not quiet:
+            self.say(f"Found {len(self.rec_mic_ids) - 1} microphones and {len(self.output_found)} sound outputs.")
+
+    def pick_recording_microphone(self):
+        name = self.rec_mic_name.get()
+        self.variable("replay", "mic_device").set(self.rec_mic_ids.get(name, "" if name == DEFAULT_MICROPHONE else f"input:{name}"))
+        self.changed(300)
+
+    def show_outputs(self):
+        """A switch per sound output: the ticked ones first (also when unplugged), then the rest."""
+        for child in self.output_rows.winfo_children():
+            child.destroy()
+        listed = list(dict.fromkeys([*self.outputs, *self.output_found]))
+        for row, output in enumerate(listed):
+            chosen = tk.BooleanVar(value=output in self.outputs)
+            title = output.removeprefix("loopback:").removesuffix(" [Loopback]")
+            if self.output_found and output not in self.output_found:
+                title += "  · not connected"
+            ttk.Checkbutton(self.output_rows, text=title, variable=chosen,
+                            command=lambda o=output, v=chosen: self.tick_output(o, v)).grid(row=row, column=0, sticky="w", pady=3)
+        self.output_note.set("" if listed else "Your sound outputs appear here once Jarvis is running.")
+
+    def tick_output(self, output, chosen):
+        outputs = [o for o in self.outputs if o != output]
+        if chosen.get():
+            if len(outputs) >= MAX_OUTPUTS:
+                chosen.set(False)
+                self.say(f"Up to {MAX_OUTPUTS} sound outputs can be recorded at once.", error=True)
+                return
+            outputs.append(output)
+        self.outputs = outputs
+        self.changed(400)
+        self.estimate()   # more tracks: less replay fits the budget
+
     def set_volume(self, key, value):
         if self.volumes.get(key, 100) != value:
             self.volumes[key] = value
@@ -1341,13 +1411,25 @@ class Window:
         self.display_ids = {}
         for display in monitors:
             self.display_ids[(display.get("label") or display_label(display)) + (" · main" if display is main else "")] = display["name"]
+        self.display_models = {d["name"]: d.get("description", "") for d in monitors}
         saved = self.variable("recording", "monitor").get()
         wanted = saved or (main["name"] if main else "")
+        model = self.variable("recording", "monitor_name").get()
+        if saved and model and self.display_models.get(saved) != model:
+            # Windows renumbered its displays: the saved screen now has another number.
+            same = [name for name, own in self.display_models.items() if own == model]
+            if len(same) == 1:
+                wanted = same[0]
         shown = next((label for label, name in self.display_ids.items() if name == wanted), None)
         if shown is None:   # the saved display is unplugged: still show it, by number rather than device path
             shown = (saved.replace("\\\\.\\", "").replace("DISPLAY", "Display ") + " · not connected") if saved else PRIMARY_DISPLAY
             self.display_ids[shown] = saved
         self.display_name.set(shown)
+        if hasattr(self, "screen_numbers") and monitors:
+            from .screenshot import screens_in_order
+            self.screen_numbers.set("\n".join(
+                f"Screen {n}: {d.get('label') or display_label(d)}" + ("  · main" if n == 1 else "")
+                for n, d in enumerate(screens_in_order(monitors), 1)))
         names = list(self.display_ids)
         self.display_choice.configure(values=names)
         if not quiet:
@@ -1355,7 +1437,10 @@ class Window:
 
     def pick_display(self):
         label = self.display_name.get()
-        self.variable("recording", "monitor").set(self.display_ids.get(label, ""))
+        chosen = self.display_ids.get(label, "")
+        self.variable("recording", "monitor").set(chosen)
+        # The screen's own name too, so it is found again if Windows renumbers it.
+        self.variable("recording", "monitor_name").set(getattr(self, "display_models", {}).get(chosen, ""))
         self.changed(300)
 
     def browse(self):
@@ -1368,6 +1453,43 @@ class Window:
         path = Path(self.variable("recording", "output_dir").get()).expanduser()
         path.mkdir(parents=True, exist_ok=True)
         os.startfile(path)
+
+    def build_screenshots(self, p):
+        from .screenshot import DEFAULT_FOLDER
+        now = self.group(p, "Screenshot", "Say “take a screenshot” or “screenshot” (Arabic: “سكرين شوت”, "
+                                          "“لقطة شاشة”), or use the tray menu.")
+        self.buttons(now, [("Take a screenshot", lambda: self.call("screenshot")),
+                           ("Folder", self.open_screenshot_folder)])
+        options = self.group(p, "Screenshot settings", "Of the display chosen for recording.")
+        self.choice(options, "Format", "recording", "screenshot_format",
+                    {"PNG · exact, larger": "png", "JPG · smaller": "jpg"})
+        self.text(options, "Save to", "recording", "screenshot_dir",
+                  detail=f"Empty saves in {DEFAULT_FOLDER.replace('~/', '')}.")
+        self.buttons(options, [("Choose folder…", self.browse_screenshots)])
+        self.switch(options, "A folder per game", "recording", "screenshot_game_folders",
+                    "A screenshot taken while a game is focused goes into that game's folder.")
+        self.switch(options, "Sound when saved", "recording", "screenshot_sound")
+        self.line(options, "On an HDR display the screenshot is Windows' SDR version of the picture.", caption=True)
+        numbers = self.group(p, "Screens by number", "Say “take a screenshot of screen two” (Arabic: "
+                                                     "“لقطة شاشة للشاشة الثانية”) for one screen in particular.")
+        self.screen_numbers = tk.StringVar(value="Your screens appear here once Jarvis is running.")
+        self.line(numbers, self.wrapping(ttk.Label(numbers, textvariable=self.screen_numbers, style="Card.TLabel",
+                                                   justify="left")))
+
+    def screenshot_folder(self):
+        from .screenshot import DEFAULT_FOLDER
+        return Path(self.variable("recording", "screenshot_dir").get() or DEFAULT_FOLDER).expanduser()
+
+    def open_screenshot_folder(self):
+        path = self.screenshot_folder()
+        path.mkdir(parents=True, exist_ok=True)
+        os.startfile(path)
+
+    def browse_screenshots(self):
+        directory = filedialog.askdirectory(parent=self.root, title="Save screenshots in")
+        if directory:
+            self.variable("recording", "screenshot_dir").set(directory)
+            self.changed(0)
 
     def build_clips(self, p):
         from .clips import ClipsPanel
@@ -1461,6 +1583,8 @@ class Window:
         value["replay"]["separate_apps"] = [
             name.strip().removesuffix(".exe") for name in self.separate_app.get().split(",") if name.strip()
         ]
+        if hasattr(self, "outputs") and "outputs" in value["replay"]:
+            value["replay"]["outputs"] = list(self.outputs)
         if hasattr(self, "volumes") and "volumes" in value["replay"]:
             # Only what differs from 100%, for sounds that are still in the list.
             kept = {"game", "desktop", "microphone", *value["replay"]["separate_apps"]}

@@ -43,4 +43,4 @@ where = ["src"]
 include = ["jarvis*"]
 
 [tool.setuptools.package-data]
-jarvis = ["style.css", "onnx-cpu.conf", "arabic_commands.json"]
+jarvis = ["style.css", "onnx-cpu.conf", "arabic_commands.json", "windows/jarvis.ico"]

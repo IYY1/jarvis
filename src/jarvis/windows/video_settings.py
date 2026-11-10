@@ -34,7 +34,8 @@ def sound_tracks(window):
         programs = [n for n in getattr(window, "separate_app", tk.StringVar()).get().split(",") if n.strip()]
         sources = bool(v("replay", "game_track").get()) + len(programs) + bool(v("replay", "microphone").get())
     else:
-        sources = bool(v("replay", "game_audio").get()) + bool(v("replay", "microphone").get())
+        outputs = len(getattr(window, "outputs", None) or []) or 1   # chosen outputs, or the default one
+        sources = outputs * bool(v("replay", "game_audio").get()) + bool(v("replay", "microphone").get())
     if sources > 1:
         return sources + 1 if v("replay", "audio_tracks").get() == "separate" else 1
     return sources
@@ -227,6 +228,7 @@ class VideoSettings:
             return
         try:
             monitor = self.window.variable("recording", "monitor").get()
+            model = self.window.variable("recording", "monitor_name").get()
             cfg = dict(self.window.settings()['recording'], encoder="auto", color_mode="sdr")
         except ValueError as error:
             self.window.say(str(error), error=True)
@@ -238,7 +240,8 @@ class VideoSettings:
             from .encoding import select_encoder
             from ..recorder import RecorderError
             displays = sources()
-            display = next((d for d in displays if d['name'] == monitor), None)
+            from .capture import chosen_display
+            display = chosen_display(displays, monitor, model)   # none chosen: the main display
             if display is None:
                 raise ValueError("Choose a connected display first.")
             # These are synthetic encoder tests; no display pixels are read.

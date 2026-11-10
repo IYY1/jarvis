@@ -6,9 +6,10 @@ from tkinter import ttk
 
 from .. import palettes
 
-GLYPH_RECORD, GLYPH_REPLAY, GLYPH_DICTATE = "", "", ""
-PHRASES = (("“Open Firefox”", "Open or focus an app"), ("“Turn the volume down”", "Change the volume"),
-           ("“Clip that”", "Save the replay as a clip"), ("“Go to workspace three”", "Switch virtual desktops"))
+GLYPH_RECORD, GLYPH_REPLAY, GLYPH_SHOT = "", "", ""
+PHRASES = (("“Clip that”", "Save the replay as a clip"), ("“Take a screenshot”", "Save a picture of the screen"),
+           ("“Open Firefox”", "Open or focus an app"), ("“Turn the volume down”", "Change the volume"))
+SHOT_READY = "Say “take a screenshot”, or press Take."
 
 
 class Home:
@@ -63,8 +64,11 @@ class Home:
         w.voice_message = tk.StringVar()
         w.wrapping(ttk.Label(card, textvariable=w.voice_message, style="Caption.TLabel", justify="left")).grid(
             row=1, column=1, sticky="ew")
+        # Dictation is a voice action too, so it sits beside Listen instead of in a tile of its own.
+        w.dictate_button = ttk.Button(card, text="Start dictation", command=lambda: w.voice_controls.toggle())
+        w.dictate_button.grid(row=0, column=2, rowspan=2, padx=(16, 0))
         self.action = ttk.Button(card, text="Start Jarvis", style="Primary.TButton", command=self.act, width=14)
-        self.action.grid(row=0, column=2, rowspan=2, padx=(16, 0))
+        self.action.grid(row=0, column=3, rowspan=2, padx=(8, 0))
         self.place(page, card)
 
     def paint(self, role=None):
@@ -95,22 +99,24 @@ class Home:
             row.columnconfigure(column, weight=1, uniform="tile")
         self.place(page, row)
 
-        self.record_text, actions = self.tile(row, 0, GLYPH_RECORD, "Recording")
-        self.record_button = ttk.Button(actions, text="Start", width=8, command=self.toggle_recording)
-        self.record_button.pack(side="left", padx=(0, 6))
-        self.record_buttons = [self.record_button]
-        ttk.Button(actions, text="Folder", width=8, command=w.open_folder).pack(side="left")
-
-        self.replay_text, actions = self.tile(row, 1, GLYPH_REPLAY, "Instant replay")
+        # Most used first: the replay, then recording, then screenshots.
+        self.replay_text, actions = self.tile(row, 0, GLYPH_REPLAY, "Instant replay")
         self.replay_button = ttk.Button(actions, text="Start", width=8, command=self.replay_action)
         self.replay_button.pack(side="left", padx=(0, 6))
         self.replay_stop = ttk.Button(actions, text="Stop", width=8, command=lambda: w.call("replay_stop"))
         self.replay_buttons, self.replay_stops = [self.replay_button], [self.replay_stop]
 
-        self.dictation_text, actions = self.tile(row, 2, GLYPH_DICTATE, "Dictation")
-        w.dictate_button = ttk.Button(actions, text="Start dictation", command=lambda: w.voice_controls.toggle())
-        w.dictate_button.pack(side="left")
-        self.dictation_text.set("Type with your voice in any app.")
+        self.record_text, actions = self.tile(row, 1, GLYPH_RECORD, "Recording")
+        self.record_button = ttk.Button(actions, text="Start", width=8, command=self.toggle_recording)
+        self.record_button.pack(side="left", padx=(0, 6))
+        self.record_buttons = [self.record_button]
+        ttk.Button(actions, text="Folder", width=8, command=w.open_folder).pack(side="left")
+
+        self.shot_text, actions = self.tile(row, 2, GLYPH_SHOT, "Screenshot")
+        self.shot_button = ttk.Button(actions, text="Take", width=8, command=lambda: w.call("screenshot"))
+        self.shot_button.pack(side="left", padx=(0, 6))
+        ttk.Button(actions, text="Folder", width=8, command=w.open_screenshot_folder).pack(side="left")
+        self.shot_text.set(SHOT_READY)
 
     def lower(self, page):
         w = self.window
@@ -168,6 +174,8 @@ class Home:
         self.action.configure(text="Start Jarvis", style="Primary.TButton")
         self.record_text.set("Start Jarvis to record your screen.")
         self.replay_text.set("Start Jarvis to keep the last moments of your screen.")
+        self.shot_text.set("Start Jarvis to take screenshots.")
+        self.shot_button.configure(state="disabled")
 
     def update(self, status):
         self.online = True
@@ -177,6 +185,9 @@ class Home:
         muted = bool(status.get("muted", True))
         self.action.configure(text="Unmute" if muted else "Cancel" if state == "listening" else "Listen now")
         self.show_recording(status.get("recording", {}))
+        if str(self.shot_button.cget("state")) == "disabled":   # only when it changes: this runs every status
+            self.shot_button.configure(state="normal")
+            self.shot_text.set(SHOT_READY)
         self.show_replay(status.get("replay", {}))
 
     def show_recording(self, recording):

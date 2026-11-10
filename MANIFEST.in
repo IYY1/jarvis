@@ -1,6 +1,6 @@
 include LICENSE README.md CONTRIBUTING.md SECURITY.md pyproject.toml
 include run-jarvis
-recursive-include src/jarvis *.py *.css *.conf *.json
+recursive-include src/jarvis *.py *.css *.conf *.json *.ico
 recursive-include tests *.py
 recursive-include scripts *.py
 recursive-include native/voice-worker *.rs Cargo.toml Cargo.lock

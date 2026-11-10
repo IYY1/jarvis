@@ -447,6 +447,30 @@ class ReplayServiceTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.get("restarted", []), [])
         service.execute.assert_not_called()
 
+    async def test_first_review_starts_replay_that_is_set_to_start_by_itself(self):
+        from jarvis.daemon import Service
+        registry = MagicMock(index={})
+        with patch("jarvis.daemon.AppRegistry", return_value=registry):
+            # Settings from an older version, saved before recording was reviewed.
+            service = Service({"replay": {"autostart": True}, "recording": {"configured": False}})
+        self.assertFalse(service.config["recording"]["configured"])
+        service.replay = MagicMock()
+        service.replay.status.return_value = {"state": "off"}
+        service.recorder = MagicMock()
+        service.recorder.status.return_value = {"state": "idle"}
+        service.execute = AsyncMock(return_value={"ok": True})
+        cfg = copy.deepcopy(service.config)
+        cfg["recording"]["configured"] = True
+        with patch("jarvis.daemon.configuration.save", side_effect=lambda c: c), \
+                patch.object(service, "desktop_call", AsyncMock(return_value=registry)):
+            result = await service.handle({"op": "save_config", "config": cfg})
+            self.assertTrue(result["ok"], result)
+            service.execute.assert_awaited_once_with("start replay")
+            service.execute.reset_mock()
+            cfg["recording"]["fps"] = 60   # reviewed already: a later save starts nothing
+            await service.handle({"op": "save_config", "config": cfg})
+        service.execute.assert_not_called()
+
     async def test_status_reports_replay_and_save_while_off_is_a_json_error(self):
         from jarvis.daemon import Service
         registry = MagicMock()

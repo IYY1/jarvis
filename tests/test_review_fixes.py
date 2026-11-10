@@ -207,8 +207,8 @@ class ConfigValidationTests(unittest.TestCase):
             path.write_text(json.dumps(old))
             with patch("sys.stderr"):
                 loaded = config.load(path)
-            self.assertEqual((loaded["activation"]["wake_phrase"], loaded["recording"]["fps"]), ("alfred", 30))
-            self.assertEqual(json.loads(path.read_text())["recording"]["fps"], 30)   # repaired on disk
+            self.assertEqual((loaded["activation"]["wake_phrase"], loaded["recording"]["fps"]), ("alfred", config.DEFAULTS["recording"]["fps"]))
+            self.assertEqual(json.loads(path.read_text())["recording"]["fps"], config.DEFAULTS["recording"]["fps"])   # repaired on disk
             [kept] = (Path(folder) / "backups").glob("config-before-repair-*.json")
             self.assertEqual(json.loads(kept.read_text())["recording"]["fps"], 999)
             path.write_text("{not json")

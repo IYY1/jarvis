@@ -17,6 +17,11 @@ import subprocess
 import sys
 import time
 
+if __package__:
+    from .native_build import without_build_paths
+else:
+    from native_build import without_build_paths
+
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = "x86_64-pc-windows-gnu"
 RUST_HELPERS = (("voice-worker", "jarvis-voice"), ("replay-store", "jarvis-replay-store"),
@@ -46,7 +51,7 @@ def target_dir(root: Path, crate: str) -> Path:
 
 
 def cross_compile(root: Path, cargo: str, offline: bool) -> dict[str, Path]:
-    env = dict(os.environ)
+    env = without_build_paths(os.environ, root)
     env.setdefault("CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER", "x86_64-w64-mingw32-gcc")
     built = {}
     for crate, binary in RUST_HELPERS:
@@ -123,7 +128,7 @@ def main():
     if args.no_voice_worker:
         helpers = {}
         crate = root / "native/replay-store/Cargo.toml"
-        env = dict(os.environ, CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER="x86_64-w64-mingw32-gcc")
+        env = dict(without_build_paths(os.environ, root), CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER="x86_64-w64-mingw32-gcc")
         env["CARGO_TARGET_DIR"] = str(target_dir(root, "replay-store"))
         run([args.cargo, "build", "--release", "--locked", "--target", TARGET, "--manifest-path", str(crate)]
             + (["--offline"] if args.offline else []), env=env)

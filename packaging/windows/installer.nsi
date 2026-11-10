@@ -41,7 +41,7 @@ VIAddVersionKey "LegalCopyright" "Jarvis contributors; MIT"
 !define MUI_WELCOMEPAGE_TEXT "Jarvis is offline voice control for your desktop: say $\"Jarvis$\" followed by a command.$\r$\n$\r$\nSetup installs Jarvis for your Windows account only. It does not need administrator rights, does not download anything and does not restart your PC. Speech recognition runs entirely on this PC.$\r$\n$\r$\nIf Jarvis is already installed, Setup closes it, upgrades it in place and keeps your settings, voice names and recordings."
 !define MUI_COMPONENTSPAGE_SMALLDESC
 !define MUI_FINISHPAGE_TITLE "Jarvis is installed"
-!define MUI_FINISHPAGE_TEXT "Jarvis starts with the microphone off. Open Home in Jarvis to allow listening.$\r$\n$\r$\nIf Windows blocks the microphone, turn on Settings > Privacy > Microphone > $\"Let desktop apps access your microphone$\"."
+!define MUI_FINISHPAGE_TEXT "Jarvis is ready: it listens for $\"Hey Jarvis$\" on this PC only (nothing is sent anywhere), keeps the last moments of your screen for $\"clip that$\", and starts when you sign in. Mute is one click in Jarvis or its tray icon.$\r$\n$\r$\nIf Windows blocks the microphone, turn on Settings > Privacy > Microphone > $\"Let desktop apps access your microphone$\"."
 !define MUI_FINISHPAGE_RUN "$INSTDIR\Jarvis.exe"
 !define MUI_FINISHPAGE_RUN_TEXT "Open Jarvis now"
 !insertmacro MUI_PAGE_WELCOME
@@ -147,7 +147,7 @@ Section "Desktop shortcut" SecDesktop
   CreateShortcut "$DESKTOP\Jarvis.lnk" "$INSTDIR\Jarvis.exe" "" "$INSTDIR\Jarvis.exe" 0 SW_SHOWNORMAL "" "Offline voice control"
 SectionEnd
 
-Section /o "Start Jarvis when I sign in" SecStartup
+Section "Start Jarvis when I sign in" SecStartup
   ; Writes the same Run entry and setting as Jarvis > Privacy > Start with Windows.
   ExecWait '"$INSTDIR\JarvisConsole.exe" startup on' $0
   ${If} $0 != 0
@@ -158,7 +158,7 @@ SectionEnd
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
   !insertmacro MUI_DESCRIPTION_TEXT ${SecMain} "The Jarvis app, its tray icon, offline speech models and screen-recording tools."
   !insertmacro MUI_DESCRIPTION_TEXT ${SecDesktop} "Put a Jarvis shortcut on your desktop. Start menu shortcuts are always created."
-  !insertmacro MUI_DESCRIPTION_TEXT ${SecStartup} "Run Jarvis in the notification area after you sign in. The microphone stays off until you allow it. You can change this later in Jarvis > Privacy."
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecStartup} "Run Jarvis in the notification area after you sign in. You can turn this off later in Jarvis > Settings or in Windows' Startup apps."
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 Section "un.Jarvis program files (required)" UnSecMain

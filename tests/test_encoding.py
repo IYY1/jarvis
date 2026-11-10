@@ -119,7 +119,7 @@ class EncodingTests(unittest.TestCase):
 
     def test_sdr_gpu_uses_gpu_backend_with_explicit_audio(self):
         for codec in GPU_CODECS:
-            cfg = validate({"recording": {"configured": True, "monitor": "DP-1", "codec": codec,
+            cfg = validate({"recording": {"configured": True, "monitor": "DP-1", "codec": codec, "microphone": False,
                            "system_audio": True, "audio_device": "game.monitor", "rate_control": "bitrate"}})
             with patch("jarvis.recorder.sources", return_value=[{"name": "DP-1"}]), \
                     patch("jarvis.recorder.audio_sources", return_value=[{"name": "game.monitor", "monitor": True}]), \
@@ -132,6 +132,7 @@ class EncodingTests(unittest.TestCase):
 
     def test_cpu_bitrate_mode_uses_bounded_encoder_buffer_and_keeps_thread_limit(self):
         cfg = validate({"recording": {"configured": True, "monitor": "DP-1", "rate_control": "bitrate", "bitrate_mbps": 6,
+                                      "system_audio": False, "microphone": False, "resolution": "native",
                                       "bitrate_auto": False, "codec": "libx264"}})
         with patch("jarvis.recorder.sources", return_value=[{"name": "DP-1"}]), \
                 patch("jarvis.recorder.shutil.which", side_effect=lambda name: "/fake/" + name):

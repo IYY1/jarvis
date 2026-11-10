@@ -22,6 +22,15 @@ from jarvis.windows.audio import PCMStream, select_device
 from jarvis.windows.apps import WindowsApp
 from jarvis.windows.capture import Replay, ReplayBuffer, replay_budget_warning
 
+# Settings these tests start from, independent of what a new install defaults to.
+PLAIN_SETTINGS = {
+    "activation": {"sensitivity": 0.5},
+    "privacy": {"onboarded": False}, "startup": False,
+    "recording": {"fps": 30, "resolution": "native", "system_audio": False, "microphone": False, "configured": False},
+    "replay": {"seconds": 120, "autostart": False, "max_mb": 256, "audio_tracks": "mixed", "separate_apps": [],
+               "sources": "all", "volumes": {}},
+}
+
 try:
     import tkinter  # noqa: F401  (the Windows settings window needs Tk)
     TK = True
@@ -78,6 +87,9 @@ class SettingsWindowTests(WindowsPolicyTestCase):
         environment = patch.dict(os.environ, {"JARVIS_CONFIG": str(Path(folder.name) / "config.json")})
         environment.start()
         self.addCleanup(environment.stop)
+        # These tests are about the window, not the defaults (tested on their own):
+        # start every one from the same plain settings, whatever the defaults become.
+        (Path(folder.name) / "config.json").write_text(json.dumps(PLAIN_SETTINGS), encoding="utf-8")
         offline = patch("jarvis.windows.ui.request", side_effect=OSError("service offline"))
         offline.start()
         self.addCleanup(offline.stop)
@@ -169,28 +181,28 @@ class SettingsWindowTests(WindowsPolicyTestCase):
         from jarvis.windows.clips import clip_row
         folder = Path("C:/Videos/Jarvis")
         stat = types.SimpleNamespace(st_size=536732682, st_mtime=time.mktime((2026, 11, 8, 5, 13, 0, 0, 0, -1)))
-        self.assertEqual(clip_row(folder / "MarvelRivals" / "Replay_x.mkv", stat, folder),
-                         ("Replay_x.mkv", "MarvelRivals", "2026-11-08 05:13", "512 MB"))
+        self.assertEqual(clip_row(folder / "SpaceRacer" / "Replay_x.mkv", stat, folder),
+                         ("Replay_x.mkv", "SpaceRacer", "2026-11-08 05:13", "512 MB"))
         self.assertEqual(clip_row(folder / "Jarvis_y.mkv", types.SimpleNamespace(st_size=3 * 1024 ** 3, st_mtime=stat.st_mtime),
                                   folder)[1:], ("", "2026-11-08 05:13", "3.0 GB"))
 
     def test_displays_are_listed_by_their_own_names_and_saved_by_device(self):
         window = self.window
-        monitors = [{"name": "\\\\.\\DISPLAY1", "label": "ASUS XG27AQDMG (2560×1440, 240 Hz)", "left": 0, "top": 0},
-                    {"name": "\\\\.\\DISPLAY2", "label": "ASUS VG27B (2560×1440, 144 Hz)", "left": 2560, "top": 0}]
-        main = "ASUS XG27AQDMG (2560×1440, 240 Hz) · main"
+        monitors = [{"name": "\\\\.\\DISPLAY1", "label": "Example 27Q (2560×1440, 240 Hz)", "left": 0, "top": 0},
+                    {"name": "\\\\.\\DISPLAY2", "label": "Example 24F (2560×1440, 144 Hz)", "left": 2560, "top": 0}]
+        main = "Example 27Q (2560×1440, 240 Hz) · main"
         with patch.object(window, "changed"):
             window.variable("recording", "monitor").set("")
             window.load_displays({"monitors": monitors})
             # No "Primary display": every screen by its own name, and nothing saved shows the main one.
-            self.assertEqual(list(window.display_choice.cget("values")), [main, "ASUS VG27B (2560×1440, 144 Hz)"])
+            self.assertEqual(list(window.display_choice.cget("values")), [main, "Example 24F (2560×1440, 144 Hz)"])
             self.assertEqual(window.display_name.get(), main)
-            window.display_name.set("ASUS VG27B (2560×1440, 144 Hz)")
+            window.display_name.set("Example 24F (2560×1440, 144 Hz)")
             window.pick_display()
             self.assertEqual(window.settings()["recording"]["monitor"], "\\\\.\\DISPLAY2")
             # Listed again later, the saved one shows by name.
             window.load_displays({"monitors": monitors}, quiet=True)
-            self.assertEqual(window.display_name.get(), "ASUS VG27B (2560×1440, 144 Hz)")
+            self.assertEqual(window.display_name.get(), "Example 24F (2560×1440, 144 Hz)")
             window.display_name.set(main)
             window.pick_display()
             self.assertEqual(window.settings()["recording"]["monitor"], "\\\\.\\DISPLAY1")
@@ -208,25 +220,25 @@ class SettingsWindowTests(WindowsPolicyTestCase):
         self.assertEqual(maker(((code & 0xFF) << 8) | (code >> 8)), "ASUS")   # byte-swapped
         self.assertEqual(maker(0), "")
         display = {"name": "\\\\.\\DISPLAY2", "width": 2560, "height": 1440, "refresh": 144}
-        self.assertEqual(display_label(display, {"\\\\.\\DISPLAY2": "ASUS VG27B"}), "ASUS VG27B (2560×1440, 144 Hz)")
+        self.assertEqual(display_label(display, {"\\\\.\\DISPLAY2": "Example 24F"}), "Example 24F (2560×1440, 144 Hz)")
         self.assertEqual(display_label(display), "Display 2 (2560×1440, 144 Hz)")   # no name from Windows
 
     def test_microphones_are_listed_by_name_and_saved_by_id(self):
         window = self.window
         window.load_inputs({"devices": [{"id": "", "name": "Default Windows microphone"},
-                                        {"id": "input:Microphone (PD400X)", "name": "Microphone (PD400X)"},
-                                        {"id": "input:Headset Microphone (Arctis)", "name": "Headset Microphone (Arctis)"}]})
+                                        {"id": "input:Microphone (USB Mic)", "name": "Microphone (USB Mic)"},
+                                        {"id": "input:Headset Microphone (Wireless)", "name": "Headset Microphone (Wireless)"}]})
         self.assertEqual(list(window.mic_choice.cget("values")),
-                         ["Default Windows microphone", "Microphone (PD400X)", "Headset Microphone (Arctis)"])
+                         ["Default Windows microphone", "Microphone (USB Mic)", "Headset Microphone (Wireless)"])
         with patch.object(window, "changed"):
-            window.mic_name.set("Microphone (PD400X)")
+            window.mic_name.set("Microphone (USB Mic)")
             window.pick_microphone()
-            self.assertEqual(window.settings()["audio"]["device"], "input:Microphone (PD400X)")
+            self.assertEqual(window.settings()["audio"]["device"], "input:Microphone (USB Mic)")
             window.mic_name.set("Default Windows microphone")
             window.pick_microphone()
             self.assertEqual(window.settings()["audio"]["device"], "")
         from jarvis.windows.ui import microphone_name
-        self.assertEqual(microphone_name("input:Microphone (PD400X)"), "Microphone (PD400X)")
+        self.assertEqual(microphone_name("input:Microphone (USB Mic)"), "Microphone (USB Mic)")
         self.assertEqual(microphone_name(""), "Default Windows microphone")
 
     def sound_boxes(self):
@@ -235,7 +247,7 @@ class SettingsWindowTests(WindowsPolicyTestCase):
     def test_audio_processes_list_like_medal(self):
         from jarvis.windows.ui import MAX_SEPARATE_APPS
         window = self.window
-        found = [{"name": "Marvel-Win64-Shipping", "label": "Marvel Rivals", "playing": True, "game": True},
+        found = [{"name": "SpaceRacer-Win64-Shipping", "label": "Space Racer", "playing": True, "game": True},
                  {"name": "Discord", "label": "Discord", "playing": True, "game": False},
                  {"name": "Spotify", "label": "Spotify", "playing": False, "game": False}]
         # All audio: the desktop and the microphone, nothing per program.
@@ -303,6 +315,18 @@ class SettingsWindowTests(WindowsPolicyTestCase):
         self.assertEqual(home.record_button.cget("text"), "Stop")
         self.assertEqual(home.replay_button.cget("text"), "Save clip")
         self.assertTrue(home.replay_stop.winfo_manager())
+
+    def test_home_screenshot_needs_jarvis_running(self):
+        home = self.window.home
+        self.window.disconnected(None)
+        self.assertEqual(str(home.shot_button.cget("state")), "disabled")
+        self.assertIn("Start Jarvis", home.shot_text.get())
+        self.window.received(self.status())
+        self.assertEqual(str(home.shot_button.cget("state")), "normal")
+        self.assertIn("take a screenshot", home.shot_text.get())
+        with patch.object(self.window, "call") as call:
+            home.shot_button.invoke()
+        call.assert_called_once_with("screenshot")
 
     def test_home_shows_when_the_budget_shortens_replay(self):
         warning = "About 46 of 120 seconds fit in this budget; raise the budget or lower the bitrate"
@@ -642,7 +666,7 @@ class SettingsWindowTests(WindowsPolicyTestCase):
 class EncoderTests(WindowsPolicyTestCase):
     def setUp(self):
         super().setUp()
-        self.cfg = config.validate({})["recording"]
+        self.cfg = config.validate(PLAIN_SETTINGS)["recording"]
         self.cfg.update(codec="h264", rate_control="bitrate", bitrate_mbps=8)
         self.display = {
             "name": r"\\.\DISPLAY2",
@@ -720,7 +744,7 @@ class EncoderTests(WindowsPolicyTestCase):
 
     def test_all_audio_records_the_desktop_and_microphone(self):
         cfg = dict(self.cfg, system_audio=True, microphone=True)
-        replay = config.validate({"replay": {"volumes": {"microphone": 50}}})["replay"]
+        replay = config.validate({"replay": dict(PLAIN_SETTINGS["replay"], volumes={"microphone": 50})})["replay"]
         # One mixed track: one input, mixed by the worker with each volume.
         (title, single), = encoding.audio_plan(cfg, replay, build=26300)
         self.assertIsNone(title)
@@ -780,13 +804,158 @@ class EncoderTests(WindowsPolicyTestCase):
         self.assertEqual([t for t, _ in encoding.audio_plan(both, replay, build=26300, recording=True)],
                          ["Game audio", "Discord", "Microphone"])
 
-    def test_specific_apps_refuse_windows_10_and_bad_volumes(self):
-        replay = config.validate({"replay": {"sources": "specific", "separate_apps": ["firefox"]}})["replay"]
-        with self.assertRaisesRegex(RecorderError, "Windows 11"):
-            encoding.audio_plan(dict(self.cfg, system_audio=True), replay, build=19045)
-        for bad in ({"sources": "some"}, {"volumes": {"game": 120}}, {"volumes": {"game": True}}, {"game_track": 1}):
+    def test_specific_apps_fall_back_to_all_audio_on_windows_10_and_bad_volumes_are_refused(self):
+        replay = config.validate({"replay": {"sources": "specific", "separate_apps": ["firefox"],
+                                             "audio_tracks": "separate"}})["replay"]
+        # Windows 10 can't record one program: everything is recorded instead of failing.
+        titles = [t for t, _ in encoding.audio_plan(dict(self.cfg, system_audio=True, microphone=True), replay, build=19045)]
+        self.assertEqual(titles, ["Game and desktop sound", "Microphone"])
+        with self.assertRaisesRegex(RecorderError, "Windows 11"):   # an unknown build still says why
+            encoding.audio_plan(dict(self.cfg, system_audio=True), replay, build=0)
+        for bad in ({"sources": "some"}, {"volumes": {"game": 120}}, {"volumes": {"game": True}}, {"game_track": 1},
+                    {"outputs": ["Speakers"]}, {"outputs": [f"loopback:{n}" for n in range(7)]},
+                    {"outputs": ["loopback:A", "loopback:A"]}, {"mic_device": "loopback:A"}):
             with self.subTest(bad=bad), self.assertRaises(ValueError):
                 config.validate({"replay": bad})
+
+    def test_chosen_outputs_each_get_a_track_and_recordings_use_their_own_microphone(self):
+        outputs = ["loopback:Headphones (Wireless Game) [Loopback]", "loopback:Headphones (Wireless Chat) [Loopback]"]
+        replay = config.validate({"replay": {"sources": "all", "audio_tracks": "separate", "outputs": outputs,
+                                             "mic_device": "input:USB Podcast Microphone"}})["replay"]
+        plan = encoding.audio_plan(dict(self.cfg, system_audio=True, microphone=True), replay, build=26300)
+        self.assertEqual([t for t, _ in plan], ["Headphones (Wireless Game)", "Headphones (Wireless Chat)", "Microphone"])
+        self.assertEqual([c["track"].get("device") for _, c in plan], [*outputs, "input:USB Podcast Microphone"])
+        self.assertEqual({c["track"]["kind"] for _, c in plan[:2]}, {"output"})
+        # One mixed track: every chosen output and the recordings' microphone go into it.
+        (title, mixed), = encoding.audio_plan(dict(self.cfg, system_audio=True, microphone=True),
+                                              dict(replay, audio_tracks="mixed"), build=26300)
+        self.assertIsNone(title)
+        self.assertEqual((mixed["outputs"], mixed["mic_device"]), (outputs, "input:USB Podcast Microphone"))
+        # None chosen: the default output, as before.
+        default = encoding.audio_plan(dict(self.cfg, system_audio=True, microphone=True),
+                                      dict(replay, outputs=[]), build=26300)
+        self.assertEqual([t for t, _ in default], ["Game and desktop sound", "Microphone"])
+
+    def test_screenshots_are_a_voice_command_in_english_and_arabic(self):
+        from jarvis.commands import Parser
+        from jarvis.phrases import translate_arabic
+        parser = Parser()
+        for said in ("take a screenshot", "screenshot", "take screenshot", "capture the screen", "please take a screenshot"):
+            with self.subTest(said=said):
+                self.assertEqual(parser.parse(said).action, "screenshot")
+        for said in ("سكرين شوت", "خذ سكرين شوت", "لقطة شاشة", "خذ صورة للشاشة"):
+            with self.subTest(said=said):
+                self.assertEqual(parser.parse(translate_arabic(said)).action, "screenshot")
+        self.assertEqual(parser.parse(translate_arabic("صور الشاشة")).action, "record_start")   # unchanged: a video
+
+    def test_a_screenshot_of_one_screen_by_its_number(self):
+        from jarvis.commands import Parser
+        from jarvis.phrases import translate_arabic
+        from jarvis.windows.screenshot import screens_in_order
+        parser = Parser()
+        for said, number in (("take a screenshot of screen two", 2), ("screenshot screen one", 1),
+                             ("take a screenshot of the second screen", 2), ("screenshot of screen two", 2)):
+            with self.subTest(said=said):
+                self.assertEqual((parser.parse(said).action, parser.parse(said).target), ("screenshot", number))
+        for said, number in (("لقطة شاشة للشاشة الثانية", 2), ("سكرين شوت للشاشة الأولى", 1)):
+            with self.subTest(said=said):
+                self.assertEqual(parser.parse(translate_arabic(said)).target, number)
+        self.assertIsNone(parser.parse("take a screenshot").target)   # the recording display
+        # Screen one is the main display; the rest by position, left to right.
+        displays = [{"name": "B", "left": 2560, "top": 0}, {"name": "Main", "left": 0, "top": 0},
+                    {"name": "A", "left": -2560, "top": 6}]
+        self.assertEqual([d["name"] for d in screens_in_order(displays)], ["Main", "A", "B"])
+
+    def test_fast_cuts_join_parts_on_whole_frames(self):
+        from jarvis import clipedit
+        source = clipedit.Source("D:/clip.mkv", 12.0, {"r_frame_rate": "120/1", "codec_name": "av1"}, [],
+                                 [0.021 + k for k in range(12)])
+        edit = clipedit.Edit.of(source)
+        edit.remove_range(3, 6)
+        with tempfile.TemporaryDirectory() as folder:
+            clipedit.command(edit, Path(folder) / "out.mkv", "fast", [], False, Path(folder))
+            listing = (Path(folder) / "segments.ffconcat").read_text().split("\n")
+        first = dict(line.split(" ", 1) for line in listing[2:5])
+        # Starts on the first frame, ends between two frames, and is a whole number of frames long.
+        self.assertAlmostEqual(float(first["inpoint"]), 0.021, places=6)
+        frames = float(first["duration"]) * 120
+        self.assertAlmostEqual(frames, round(frames), places=3)
+        self.assertAlmostEqual((float(first["outpoint"]) - 0.021) * 120 % 1, 0.5, places=3)
+
+    def test_a_screenshot_png_is_a_valid_image_of_the_frame(self):
+        import zlib
+        from jarvis.windows.screenshot import png_bytes
+        width, height = 3, 2
+        rgb = bytes(range(width * height * 3))
+        data = png_bytes(width, height, rgb)
+        self.assertEqual(data[:8], b"\x89PNG\r\n\x1a\n")
+        chunks, at = {}, 8
+        while at < len(data):
+            size = int.from_bytes(data[at:at + 4], "big")
+            kind, body = data[at + 4:at + 8], data[at + 8:at + 8 + size]
+            self.assertEqual(int.from_bytes(data[at + 8 + size:at + 12 + size], "big"), zlib.crc32(kind + body))
+            chunks[kind] = body
+            at += 12 + size
+        self.assertEqual(chunks[b"IHDR"][:8], width.to_bytes(4, "big") + height.to_bytes(4, "big"))
+        rows = zlib.decompress(chunks[b"IDAT"])
+        self.assertEqual(rows, b"\x00" + rgb[:9] + b"\x00" + rgb[9:])
+        with self.assertRaises(RecorderError):
+            png_bytes(width, height, rgb[:-1])   # a short frame is refused, not saved broken
+
+    def test_screenshot_settings_and_capture(self):
+        from jarvis.windows import screenshot
+        fresh = config.validate({})["recording"]
+        self.assertEqual((fresh["screenshot_format"], fresh["screenshot_dir"], fresh["screenshot_game_folders"],
+                          fresh["screenshot_sound"]), ("png", "", True, True))
+        for bad in ({"screenshot_format": "gif"}, {"screenshot_sound": 1}, {"screenshot_dir": 5}):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                config.validate({"recording": bad})
+        args = screenshot.capture_args({"adapter": 0, "output": 1}, "ffmpeg.exe")
+        grab = args[args.index("-i") + 1]
+        self.assertIn("output_idx=1", grab)
+        self.assertIn("draw_mouse=0", grab)   # the pointer stays out
+        self.assertEqual(args[args.index("-frames:v") + 1], "1")
+        with patch("jarvis.games.focused_game", return_value="Space Racer"):
+            self.assertEqual(screenshot.folder_for({"screenshot_dir": "D:/Shots", "screenshot_game_folders": True}),
+                             Path("D:/Shots/Space Racer"))
+            self.assertEqual(screenshot.folder_for({"screenshot_dir": "D:/Shots", "screenshot_game_folders": False}),
+                             Path("D:/Shots"))
+
+    def test_a_renumbered_display_is_still_found_by_its_own_name(self):
+        from jarvis.windows.capture import chosen_display
+        # As found on the author's PC: after a restart DISPLAY1 and DISPLAY2 swapped.
+        displays = [{"name": "\\\\.\\DISPLAY2", "description": "Example 27Q", "left": 0, "top": 0},
+                    {"name": "\\\\.\\DISPLAY1", "description": "Example 24F", "left": -2560, "top": 6}]
+        self.assertEqual(chosen_display(displays, "\\\\.\\DISPLAY1", "Example 27Q")["description"], "Example 27Q")
+        self.assertEqual(chosen_display(displays, "\\\\.\\DISPLAY1", "")["description"], "Example 24F")   # no name saved: as before
+        self.assertEqual(chosen_display(displays, "\\\\.\\DISPLAY1", "Unplugged screen")["description"], "Example 24F")
+        self.assertEqual(chosen_display(displays, "", "")["description"], "Example 27Q")   # the main display
+        twins = displays + [{"name": "\\\\.\\DISPLAY3", "description": "Example 27Q", "left": 2560, "top": 0}]
+        self.assertEqual(chosen_display(twins, "\\\\.\\DISPLAY1", "Example 27Q")["name"], "\\\\.\\DISPLAY1")   # two alike: the number
+
+    def test_a_new_install_starts_with_the_authors_settings_and_nothing_personal(self):
+        fresh = config.validate({})
+        self.assertEqual((fresh["replay"]["sources"], fresh["replay"]["separate_apps"], fresh["replay"]["seconds"],
+                          fresh["replay"]["audio_tracks"], fresh["recording"]["fps"]),
+                         ("specific", ["Discord", "Spotify"], 250, "separate", 120))
+        self.assertEqual((fresh["recording"]["monitor"], fresh["audio"]["device"], fresh["replay"]["mic_device"],
+                          fresh["recording"]["color_mode"]), ("", "", "", "auto"))
+        # Ready at once: listening, replay and voice recordings on, starting with Windows.
+        self.assertEqual((fresh["privacy"]["onboarded"], fresh["recording"]["configured"], fresh["startup"],
+                          fresh["replay"]["autostart"]), (True, True, True, True))
+
+    def test_an_update_keeps_every_saved_setting_and_only_adds_new_ones(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "config.json"
+            # A file from an older version: its own choices, and no mic_device or outputs yet.
+            older = {"activation": {"sensitivity": 0.3}, "recording": {"fps": 60, "resolution": "native"},
+                     "replay": {"seconds": 90, "sources": "all", "separate_apps": [], "volumes": {"game": 40}}}
+            path.write_text(json.dumps(older), encoding="utf-8")
+            loaded = config.load(path)
+        self.assertEqual((loaded["activation"]["sensitivity"], loaded["recording"]["fps"], loaded["recording"]["resolution"],
+                          loaded["replay"]["seconds"], loaded["replay"]["sources"], loaded["replay"]["separate_apps"],
+                          loaded["replay"]["volumes"]), (0.3, 60, "native", 90, "all", [], {"game": 40}))
+        self.assertEqual((loaded["replay"]["mic_device"], loaded["replay"]["outputs"]), ("", []))   # the new ones, added
 
     def test_program_tracks_never_go_through_the_python_relay(self):
         # They run on the native worker straight into FFmpeg (start_app_audio).
@@ -1251,34 +1420,12 @@ class ClipExportTests(unittest.TestCase):
 class IconTests(unittest.TestCase):
     def test_packaged_icon_is_the_window_mark_in_every_size(self):
         import struct
-        from jarvis.windows.look import ICON_SIZES, logo_ico
+        from jarvis.windows.look import ICON, ICON_SIZES, icon_png
 
-        icon = logo_ico()
-        stored = Path(__file__).resolve().parents[1] / "packaging" / "windows" / "jarvis.ico"
-        def pixels(data):
-            # zlib versions may compress identical PNG pixels differently.
-            import zlib
-            count = struct.unpack("<H", data[4:6])[0]
-            images = []
-            for index in range(count):
-                entry = struct.unpack("<BBBBHHII", data[6 + 16 * index:22 + 16 * index])
-                length, offset = entry[-2:]
-                png = data[offset:offset + length]
-                chunks, compressed, position = [], b"", 8
-                while position < len(png):
-                    size = struct.unpack(">I", png[position:position + 4])[0]
-                    kind = png[position + 4:position + 8]
-                    payload = png[position + 8:position + 8 + size]
-                    if kind == b"IDAT":
-                        compressed += payload
-                    else:
-                        chunks.append((kind, payload))
-                    position += size + 12
-                images.append((entry[:6], chunks, zlib.decompress(compressed)))
-            return images
-
-        self.assertEqual(pixels(stored.read_bytes()), pixels(icon),
-                         "regenerate packaging/windows/jarvis.ico from look.logo_ico()")
+        icon = ICON.read_bytes()
+        spec = (Path(__file__).resolve().parents[1] / "packaging" / "windows" / "jarvis.spec").read_text(encoding="utf-8")
+        self.assertIn("src/jarvis/windows/jarvis.ico", spec)   # the exe and the window share one file
+        self.assertEqual(struct.unpack(">II", icon_png(48)[16:24]), (48, 48))
         reserved, kind, count = struct.unpack("<HHH", icon[:6])
         self.assertEqual((reserved, kind, count), (0, 1, len(ICON_SIZES)))
         for index, size in enumerate(ICON_SIZES):
@@ -1372,7 +1519,7 @@ class TransportTests(unittest.TestCase):
 
 
 class HostTests(WindowsPolicyTestCase):
-    def test_new_windows_settings_are_gpu_budgeted_and_require_setup(self):
+    def test_new_windows_settings_are_gpu_budgeted_and_ready_at_once(self):
         with (
             tempfile.TemporaryDirectory() as directory,
             patch.object(host, "is_windows", return_value=True),
@@ -1380,8 +1527,8 @@ class HostTests(WindowsPolicyTestCase):
             value = config.load(Path(directory) / "absent.json")
         self.assertEqual(value["recording"]["codec"], "auto")   # the best format the GPU encodes
         self.assertEqual(value["recording"]["rate_control"], "bitrate")
-        self.assertFalse(value["recording"]["configured"])
-        self.assertFalse(value["privacy"]["onboarded"])
+        self.assertTrue(value["recording"]["configured"])
+        self.assertTrue(value["privacy"]["onboarded"])
 
     def test_existing_settings_are_not_replaced_by_windows_defaults(self):
         with tempfile.TemporaryDirectory() as directory:

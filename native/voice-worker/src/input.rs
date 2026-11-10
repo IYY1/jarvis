@@ -527,10 +527,10 @@ mod tests {
     fn a_microphone_is_found_with_or_without_its_id_prefix() {
         // Found on the user's PC: the setting edited down to the bare name left
         // Jarvis not listening ("unavailable or ambiguous").
-        let name = "Microphone (PD400X Podcast Microphone)";
-        assert_eq!(microphone_name("input:Microphone (PD400X Podcast Microphone)"), name);
+        let name = "Microphone (USB Podcast Microphone)";
+        assert_eq!(microphone_name("input:Microphone (USB Podcast Microphone)"), name);
         assert_eq!(microphone_name(name), name);
-        assert_eq!(microphone_name(" Microphone (PD400X Podcast Microphone) "), name);
+        assert_eq!(microphone_name(" Microphone (USB Podcast Microphone) "), name);
     }
 
     fn producer() -> (Producer, Receiver<Message>, Arc<AtomicUsize>) {

@@ -34,7 +34,7 @@ development is maintained by IYY1.
   up to 80 ms early), and the clip editor shows a recording's track names and
   names exported tracks (a mix as "Discord + Microphone").
 - Windows: pick which programs' sound goes into a video. Replay settings list the
-  programs with sound (by their own names, such as "Marvel Rivals"), and up to
+  programs with sound (by their own names, such as a game's title), and up to
   four ticked ones each get a track of their own, in replays and recordings, next
   to the desktop and the microphone. With Game sound off only the ticked programs
   and the microphone are recorded. A first "All sound" track adds up the others
@@ -68,11 +68,12 @@ development is maintained by IYY1.
   VA-API device, so it fell back to slow CPU H.264, failed on AV1 clips (the
   Windows FFmpeg has no software AV1 decoder) and on every HDR clip (no
   libsvtav1). A 6-second 2K clip now exports in about 2 seconds, HDR included.
-- Windows: Jarvis has its own icon, the window's blue rings and white dot, on the
-  program, its shortcuts, the taskbar and the tray, instead of the packager's default.
+- Windows: Jarvis has its own icon, a round blue interface ring, on the program,
+  its shortcuts, the taskbar, the tray, the title bar and the sidebar, instead of
+  the packager's default. Home shows Instant replay, Recording and Screenshot first.
 - Windows: colors on an HDR display look right. Screen capture on an HDR desktop
   returned clipped, washed-out-then-oversaturated colors, and NVENC encoded them
-  with the wrong matrix, so games such as Marvel Rivals looked glaring. The voice
+  with the wrong matrix, so bright games looked glaring. The voice
   worker now captures HDR displays itself (`jarvis-voice --screen`): the desktop's
   true colors are tone mapped to normal video on the GPU, or kept as real HDR10
   with `color_mode=hdr`, and the pointer is drawn in. It also delivers more frames

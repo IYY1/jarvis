@@ -221,7 +221,7 @@ mod windows_loopback {
         }
     }
 
-    /// The file's own description ("Discord", "Marvel Rivals"), if it has one.
+    /// The file's own description ("Discord", "Space Racer"), if it has one.
     fn description(path: &str) -> Option<String> {
         unsafe {
             let wide: Vec<u16> = path.encode_utf16().chain([0]).collect();
@@ -597,7 +597,7 @@ mod tests {
 
     #[test]
     fn games_are_the_programs_where_stores_install_them() {
-        assert!(is_game_path(r"D:\SteamLibrary\steamapps\common\MarvelRivals\MarvelGame\Marvel\Binaries\Win64\Marvel-Win64-Shipping.exe"));
+        assert!(is_game_path(r"D:\SteamLibrary\steamapps\common\SpaceRacer\RacerGame\Binaries\Win64\SpaceRacer-Win64-Shipping.exe"));
         assert!(is_game_path(r"C:\Program Files\Epic Games\Fortnite\FortniteClient-Win64-Shipping.exe"));
         assert!(is_game_path(r"C:\Program Files (x86)\GOG Galaxy\Games\Cyberpunk 2077\bin\x64\Cyberpunk2077.exe"));
         assert!(!is_game_path(r"C:\Users\me\AppData\Local\Discord\app-1.0\Discord.exe"));
