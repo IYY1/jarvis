@@ -316,6 +316,23 @@ class SettingsWindowTests(WindowsPolicyTestCase):
         self.assertEqual(home.replay_button.cget("text"), "Save clip")
         self.assertTrue(home.replay_stop.winfo_manager())
 
+    def test_opening_jarvis_starts_it_and_says_so_until_it_answers(self):
+        home = self.window.home
+        with patch("jarvis.windows.startup.start_service") as start:
+            self.window.start_jarvis()
+            self.window.executor.submit(lambda: None).result(timeout=5)   # the start ran
+        start.assert_called_once_with()
+        self.assertEqual(self.window.voice_state.get(), "Starting Jarvis…")
+        self.assertEqual(str(home.action.cget("state")), "disabled")
+        self.window.disconnected(None)   # not answering yet: still starting, no Start button
+        self.assertEqual(self.window.voice_state.get(), "Starting Jarvis…")
+        self.window.received(self.status())
+        self.assertEqual((home.action.cget("text"), str(home.action.cget("state"))), ("Listen now", "normal"))
+        self.window.starting_until = 0
+        self.window.disconnected(None)   # later, if it stops: the button to start it again
+        self.assertEqual(home.action.cget("text"), "Start Jarvis")
+        self.assertEqual(str(home.action.cget("state")), "normal")
+
     def test_home_screenshot_needs_jarvis_running(self):
         home = self.window.home
         self.window.disconnected(None)

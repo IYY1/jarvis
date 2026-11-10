@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 import queue
 import threading
+import time
 import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog, ttk
 import tkinter.font as tkfont
@@ -177,6 +178,8 @@ class Window:
         self.events = queue.Queue(maxsize=128)
         self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="jarvis-settings")
         self.stop = threading.Event()
+        self.retry = threading.Event()   # Jarvis was just started: look for it again at once
+        self.starting_until = 0.0        # until then, "not connected" means still starting
         self.variables = {}
         self.pages, self.canvases, self.nav = {}, {}, {}
         self.recolor = []          # plain Tk widgets the theme colors by hand: (widget, {option: role})
@@ -778,13 +781,24 @@ class Window:
                 delay = 1
             except (OSError, ValueError, RuntimeError):
                 self.post((self.disconnected, None, None))
-            self.stop.wait(delay)
-            delay = min(30, delay * 2)
+            if self.retry.wait(delay):
+                self.retry.clear()
+                delay = 1
+            # Every second while Jarvis starts, then less and less often.
+            delay = 1 if time.monotonic() < self.starting_until else min(30, delay * 2)
+
+    def start_jarvis(self):
+        """Start the service (nothing happens if it already runs) and connect as soon as it answers."""
+        from .startup import start_service
+        self.starting_until = time.monotonic() + 30
+        if not self.online:
+            self.home.went_offline(starting=True)
+        self.submit(start_service, lambda _: self.retry.set())
 
     def disconnected(self, _):
         self.online = False
         self.pill.configure(text="Offline", style="PillOff.TLabel")
-        self.home.went_offline()
+        self.home.went_offline(starting=time.monotonic() < self.starting_until)
 
     def received(self, reply):
         status = reply.get("status")
@@ -1671,6 +1685,7 @@ class Window:
             self.root.after_cancel(self.save_timer)
             self.save()
         self.stop.set()
+        self.retry.set()   # the status thread stops waiting
         self.executor.shutdown(wait=True, cancel_futures=False)
         self.root.destroy()
 
@@ -1680,7 +1695,8 @@ def main(argv=None):
     parser.add_argument("--page", default="dashboard")
     args = parser.parse_args(argv)
     root = tk.Tk()
-    Window(root, args.page)
+    window = Window(root, args.page)
+    window.start_jarvis()   # opening Jarvis starts it; no Start button to press first
     # Building every page touches far more memory than showing one needs.
     root.after(RELEASE_MEMORY_AFTER_MS, release_unused_memory)
     root.mainloop()

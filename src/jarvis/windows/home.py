@@ -145,8 +145,7 @@ class Home:
     def act(self):
         w = self.window
         if not self.online:
-            from .startup import start_service
-            w.submit(start_service, lambda _: w.root.after(600, w.refresh_status))
+            w.start_jarvis()
         elif w.status.get("muted", True):
             w.toggle_mute()
         else:
@@ -165,13 +164,20 @@ class Home:
 
     # State -----------------------------------------------------------------
 
-    def went_offline(self):
+    def went_offline(self, starting=False):
+        """Not connected; while the window has just started Jarvis, say so instead of asking."""
         w = self.window
         self.online = False
-        w.voice_state.set("Jarvis isn't running")
-        w.voice_message.set("Start it to use your voice. Settings you change here are still saved.")
-        self.paint("error-text")
-        self.action.configure(text="Start Jarvis", style="Primary.TButton")
+        if starting:
+            w.voice_state.set("Starting Jarvis…")
+            w.voice_message.set("Voice, replay and recording are getting ready.")
+            self.paint("text-muted")
+            self.action.configure(text="Starting…", style="Primary.TButton", state="disabled")
+        else:
+            w.voice_state.set("Jarvis isn't running")
+            w.voice_message.set("Start it to use your voice. Settings you change here are still saved.")
+            self.paint("error-text")
+            self.action.configure(text="Start Jarvis", style="Primary.TButton", state="normal")
         self.record_text.set("Start Jarvis to record your screen.")
         self.replay_text.set("Start Jarvis to keep the last moments of your screen.")
         self.shot_text.set("Start Jarvis to take screenshots.")
@@ -183,7 +189,7 @@ class Home:
         self.paint({"idle": "live", "listening": "accent", "processing": "accent", "dictating": "accent",
                     "error": "error-text"}.get(state, "text-muted"))
         muted = bool(status.get("muted", True))
-        self.action.configure(text="Unmute" if muted else "Cancel" if state == "listening" else "Listen now")
+        self.action.configure(text="Unmute" if muted else "Cancel" if state == "listening" else "Listen now", state="normal")
         self.show_recording(status.get("recording", {}))
         if str(self.shot_button.cget("state")) == "disabled":   # only when it changes: this runs every status
             self.shot_button.configure(state="normal")
