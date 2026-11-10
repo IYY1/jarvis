@@ -41,7 +41,15 @@ except ImportError:
 class WindowsPolicyTestCase(unittest.TestCase):
     """Load the real Windows defaults even when policy tests run on Linux."""
 
+    # Settings checks as on Windows: the Windows defaults record desktop sound and the
+    # microphone together, which Linux's wf-recorder check would refuse.
+    windows_settings = False
+
     def setUp(self):
+        if self.windows_settings:
+            windows = patch("jarvis.host.is_windows", return_value=True)
+            windows.start()
+            self.addCleanup(windows.stop)
         spec = importlib.util.spec_from_file_location("jarvis_windows_config", config.__file__)
         windows_config = importlib.util.module_from_spec(spec)
         with patch.object(sys, "platform", "win32"):
@@ -681,6 +689,8 @@ class SettingsWindowTests(WindowsPolicyTestCase):
 
 
 class EncoderTests(WindowsPolicyTestCase):
+    windows_settings = True
+
     def setUp(self):
         super().setUp()
         self.cfg = config.validate(PLAIN_SETTINGS)["recording"]
@@ -1353,6 +1363,7 @@ class TaskManagerGroupTests(unittest.TestCase):
 
 class AutomaticFormatTests(WindowsPolicyTestCase):
     """codec "auto": the best format the GPU encodes, so older GPUs record without a setting change."""
+    windows_settings = True
     sdr = {"name": r"\\.\DISPLAY2", "adapter": 0, "output": 1, "vendor": 0x10DE, "colorManagementPreset": "srgb",
            "hdr_known": True, "width": 2560, "height": 1440, "left": -2560, "top": 0}
     hdr = dict(sdr, colorManagementPreset="hdr")
@@ -1599,6 +1610,7 @@ class HostTests(WindowsPolicyTestCase):
 
 class StartupTests(WindowsPolicyTestCase):
     """Setup's start-at-sign-in component uses the same entry and setting as Settings."""
+    windows_settings = True
 
     def test_running_service_applies_the_change_itself(self):
         from jarvis.windows import startup
