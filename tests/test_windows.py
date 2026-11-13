@@ -1023,6 +1023,7 @@ class EncoderTests(WindowsPolicyTestCase):
 
         with patch("jarvis.native_worker.binary_path", return_value=Path("jarvis-voice.exe")), \
                 patch("jarvis.host.grouped", side_effect=lambda path, *_: path), \
+                patch("jarvis.host.child_options", return_value={}), \
                 patch("subprocess.Popen", Process):
             audio.start_app_audio("Discord", True, r"\\.\pipe\Jarvis-t-audio1")
         self.assertEqual(started, [[str(Path("jarvis-voice.exe")), "--app-audio"],
