@@ -62,11 +62,42 @@ if sys.platform == "win32":
     # desktop sound, or only "specific" ones: the game running (game_track), the
     # programs in separate_apps and the microphone. volumes: percent per source,
     # by "game", "desktop", "microphone" or a program's name; 100 when unset.
-    DEFAULTS["replay"].update(sources="all", game_track=True, volumes={})
+    # mic_device: the microphone recordings use ("input:<name>"; "" is Windows'
+    # default), apart from the one voice commands listen on (audio.device).
+    # outputs: with all audio, the sound outputs recorded ("loopback:<name>", up to
+    # MAX_OUTPUTS, each its own track when tracks are separate); [] is the default output.
+    DEFAULTS["replay"].update(sources="all", game_track=True, volumes={}, mic_device="", outputs=[])
+    # monitor_name: the chosen display's own name ("Example 27Q"), so it is found
+    # again when Windows renumbers its displays (see capture.chosen_display).
+    DEFAULTS["recording"]["monitor_name"] = ""
+    # Screenshots of the recording display (windows/screenshot.py): PNG or JPG, their
+    # own folder ("" is Pictures\Jarvis), a folder per game, and a sound when saved.
+    DEFAULTS["recording"].update(screenshot_format="png", screenshot_dir="", screenshot_game_folders=True,
+                                 screenshot_sound=True)
+    # A new install starts ready to use, set the way the author uses Jarvis daily: the
+    # game, Discord and Spotify each on their own replay track (each silent until it
+    # plays), 250 seconds of 1080p 120 fps replay kept in RAM, recording sound and
+    # voice on. Nothing personal: display, folders and devices stay each PC's own,
+    # HDR stays automatic. It works from the first start: listening for the wake word
+    # (onboarded; Setup says so and Mute is one click), replay running and voice able
+    # to start recordings (configured), and starting with Windows.
+    # A saved settings file keeps its own values; these only fill settings it lacks.
+    DEFAULTS["privacy"]["onboarded"] = True
+    DEFAULTS["recording"]["configured"] = True
+    DEFAULTS["startup"] = True
+    DEFAULTS["activation"]["sensitivity"] = 0.55
+    DEFAULTS["recording"].update(system_audio=True, microphone=True, fps=120, resolution="1080", bitrate_mbps=16)
+    DEFAULTS["replay"].update(seconds=250, autostart=True, max_mb=2624, audio_tracks="separate",
+                              separate_apps=["Discord", "Spotify"], sources="specific",
+                              volumes={"Spotify": 70, "game": 80})
+# Sound outputs one capture can record at once (game, chat, music, browser…).
+MAX_OUTPUTS = 6
 # Sections that existed in earlier versions and are now ignored.
 LEGACY_SECTIONS: tuple[str, ...] = ()
 # Free-form mappings; their keys are user phrases, not setting names.
 MAPPINGS = ("aliases", "commands", "app_prefixes")
+# Settings inside a section that are taken whole from the saved file, never merged.
+WHOLE_SETTINGS = (("replay", "volumes"),)
 
 
 def unknown_keys(data: dict) -> list[str]:
@@ -122,6 +153,12 @@ def validate(data: dict) -> dict:
     if unknown:
         raise ValueError("Unknown setting(s): " + ", ".join(sorted(unknown)[:5]))
     c = merged(DEFAULTS, {k: v for k, v in data.items() if k not in LEGACY_SECTIONS})
+    # A saved choice that is itself a list of entries is the user's whole: a newer
+    # default's entries never mix into it (replay volumes per sound).
+    for section, name in WHOLE_SETTINGS:
+        saved = data.get(section)
+        if isinstance(saved, dict) and name in saved and isinstance(c.get(section), dict):
+            c[section][name] = copy.deepcopy(saved[name])
     for key in ("activation", "audio", "recognition", "privacy", "recording", "replay", "aliases", "commands", "dictation"):
         if not isinstance(c[key], dict):
             raise ValueError(f"{key} must be an object")
@@ -240,6 +277,24 @@ def validate(data: dict) -> dict:
         if not isinstance(volumes, dict) or len(volumes) > 16 or not all(
                 isinstance(k, str) and 0 < len(k) <= 64 and type(v) is int and 0 <= v <= 100 for k, v in volumes.items()):
             raise ValueError("Volumes are whole percents from 0 to 100, for up to 16 sounds")
+        model = c["recording"]["monitor_name"]
+        if not isinstance(model, str) or len(model) > 200 or "\0" in model:
+            raise ValueError("The display's name must be short text")
+        if c["recording"]["screenshot_format"] not in ("png", "jpg"):
+            raise ValueError("Screenshots are saved as PNG or JPG")
+        folder = c["recording"]["screenshot_dir"]
+        if not isinstance(folder, str) or len(folder) > 4096 or "\0" in folder:
+            raise ValueError("Choose a valid folder for screenshots")
+        if not all(isinstance(c["recording"][k], bool) for k in ("screenshot_game_folders", "screenshot_sound")):
+            raise ValueError("Screenshot switches must be on or off")
+        mic = c["replay"]["mic_device"]
+        if not isinstance(mic, str) or len(mic) > 300 or "\0" in mic or (mic and not mic.startswith("input:")):
+            raise ValueError("Choose a microphone for recordings, or the Windows default")
+        outputs = c["replay"]["outputs"]
+        if (not isinstance(outputs, list) or len(outputs) > MAX_OUTPUTS or len(set(map(str, outputs))) != len(outputs)
+                or not all(isinstance(o, str) and o.startswith("loopback:") and len(o) <= 300 and "\0" not in o
+                           for o in outputs)):
+            raise ValueError(f"Choose up to {MAX_OUTPUTS} different sound outputs to record")
     from .host import is_windows
     if not is_windows() and r["system_audio"] and r["microphone"] and not (r["combined_audio_source"] and r["audio_device"].strip()):
         raise ValueError("wf-recorder accepts one audio source. Set up a combined PipeWire source first.")

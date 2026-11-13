@@ -51,6 +51,7 @@ FIXED = {
     "start recording": Intent("record_start"), "stop recording": Intent("record_stop"),
     "open the video recorder": Intent("open_recorder"), "open video recorder": Intent("open_recorder"),
     "save replay": Intent("replay_save"), "start replay": Intent("replay_start"), "stop replay": Intent("replay_stop"),
+    "take a screenshot": Intent("screenshot"),
     "stop listening": Intent("pause"), "cancel": Intent("cancel"),
     "listen to me": Intent("dictation_start"), "stop dictation": Intent("dictation_stop"),
     "close yourself": Intent("quit"),
@@ -81,6 +82,9 @@ VARIANTS = {
     "make this full screen": "make this window full screen", "go full screen": "make this window full screen",
     "leave full screen": "exit full screen", "stop listening to me": "stop listening",
     "pause listening": "stop listening", "cancel that": "cancel", "never mind": "cancel",
+    "screenshot": "take a screenshot", "take screenshot": "take a screenshot",
+    "take a snapshot": "take a screenshot", "capture the screen": "take a screenshot",
+    "capture my screen": "take a screenshot",
     "clip that": "save replay", "save that": "save replay", "save the replay": "save replay",
     "save a replay": "save replay", "start instant replay": "start replay",
     "turn on instant replay": "start replay", "stop instant replay": "stop replay",
@@ -90,6 +94,17 @@ VARIANTS = {
     "quit jarvis": "close yourself", "close jarvis": "close yourself", "exit jarvis": "close yourself",
     "quit yourself": "close yourself", "shut yourself down": "close yourself", "turn yourself off": "close yourself",
 }
+
+# A screenshot of one screen: screen one is the main display, the others follow by
+# position from left to right (windows/screenshot.screens_in_order).
+SCREEN_NUMBERS = {1: ("one", "first"), 2: ("two", "second"), 3: ("three", "third"), 4: ("four", "fourth")}
+for _number, (_word, _ordinal) in SCREEN_NUMBERS.items():
+    _canonical = f"take a screenshot of screen {_word}"
+    FIXED[_canonical] = Intent("screenshot", _number)
+    VARIANTS.update({f"screenshot screen {_word}": _canonical, f"screenshot of screen {_word}": _canonical,
+                     f"take screenshot of screen {_word}": _canonical,
+                     f"take a screenshot of the {_ordinal} screen": _canonical,
+                     f"screenshot the {_ordinal} screen": _canonical})
 
 # Optional sentence-edge courtesy. The parser accepts both; the speech grammar
 # only offers the prefixes. With optional trailing words the decoder tends to
@@ -142,6 +157,7 @@ REFERENCE = [
     {"category": "Audio", "title": "Volume", "examples": ["turn the volume down", "turn down the volume", "turn the volume up", "mute volume", "turn the sound back on"]},
     {"category": "Recording", "title": "Capture your screen", "examples": ["start recording", "stop recording", "open the video recorder"]},
     {"category": "Recording", "title": "Instant replay", "examples": ["clip that", "clip the last thirty seconds", "clip the last two minutes", "save replay", "start replay", "stop replay"]},
+    {"category": "Recording", "title": "Screenshot", "examples": ["take a screenshot", "screenshot", "capture the screen"]},
     {"category": "Dictation", "title": "Type what you say into the focused text field", "examples": ["listen to me", "start dictation", "stop dictation"]},
     {"category": "Privacy", "title": "Stop immediately", "examples": ["stop listening", "cancel"]},
     {"category": "Privacy", "title": "Close Jarvis", "examples": ["close yourself", "quit Jarvis"]},

@@ -40,11 +40,20 @@ def sources():
     return discover()
 
 
-def chosen_display(displays, name):
+def chosen_display(displays, name, model=""):
     """The named display. No name means "Primary display", as the window calls it:
-    the one Windows places at the desktop's origin."""
+    the one Windows places at the desktop's origin.
+
+    ``model`` is the screen's own name ("Example 27Q"), saved with it: Windows
+    renumbers its displays (\\\\.\\DISPLAY1 and 2 swap after a restart or a driver
+    update), so when the number now names another screen, the screen is followed."""
     if name:
-        return next((d for d in displays if d["name"] == name), None)
+        named = next((d for d in displays if d["name"] == name), None)
+        if model and (named is None or named.get("description") != model):
+            same = [d for d in displays if d.get("description") == model]
+            if len(same) == 1:
+                return same[0]
+        return named
     return next((d for d in displays if (d.get("left"), d.get("top")) == (0, 0)), displays[0] if displays else None)
 
 
@@ -297,7 +306,7 @@ class _Capture:
         cfg = dict(replay_video(self.config) if self.replay else self.config["recording"])
         if not cfg.get("configured"):
             raise RecorderError("Complete and review recording setup first")
-        display = chosen_display(sources(), cfg["monitor"])
+        display = chosen_display(sources(), cfg["monitor"], cfg.get("monitor_name", ""))
         if display is None:
             raise RecorderError("Choose a connected recording display")
         cfg = encoding.resolve_codec(cfg, display)   # "auto": the best format this GPU encodes

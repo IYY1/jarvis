@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import signal
 import subprocess
+import sys
 import tempfile
 import time
 import unittest
@@ -123,7 +124,8 @@ class ConfigTests(unittest.TestCase):
         before = copy.deepcopy(config.DEFAULTS)
         actual = config.validate({"activation": {"mode": "push_to_talk"}})
         self.assertEqual(actual["activation"]["confidence"], 0.35)
-        self.assertFalse(actual["privacy"]["onboarded"])
+        # Windows installs start listening (Setup says so); elsewhere the user allows it first.
+        self.assertEqual(actual["privacy"]["onboarded"], sys.platform == "win32")
         self.assertEqual(config.DEFAULTS, before)
 
     def test_invalid_confidence_consent_and_normalized_alias_collision(self):

@@ -55,6 +55,14 @@ class Dispatcher:
             return self.replay.save(intent.target)["message"]   # only the last N seconds
         if action in ("replay_start", "replay_stop", "replay_save"):
             return getattr(self.replay, action.removeprefix("replay_"))()["message"]
+        if action == "screenshot":
+            from .windows.screenshot import take
+            recording = (self.config or {}).get("recording", {})
+            path = take(self.config, intent.target if isinstance(intent.target, int) else None)
+            if recording.get("screenshot_sound", True):
+                from .feedback import play
+                play("clip")
+            return f"Saved screenshot: {path.parent.name} / {path.name}"
         if action == "open_recorder":
             self.open_ui("recording")
             return "Opened recording settings"

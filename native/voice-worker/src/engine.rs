@@ -250,6 +250,10 @@ fn may_answer_early(intent: &str) -> bool {
 const HELD_AUDIO: usize = 320000;
 /// Silence that ends speech: 20 frames of 30 ms.
 const END_OF_SPEECH_FRAMES: usize = 20;
+/// Silence that ends a wake name said on its own: 10 frames of 30 ms. A name is
+/// short and a command follows, so listening for it starts sooner than a
+/// command's end; a longer pause still reaches the command in its own session.
+const WAKE_END_FRAMES: usize = 10;
 /// How much slower Whisper hears a command it couldn't follow, in turn.
 const SLOWER: [f64; 2] = [1.5, 2.0];
 /// Seconds of the wake name kept before a command said in the same breath.
@@ -842,7 +846,7 @@ impl Engine {
                     return Ok(Some(result));
                 }
             }
-            if self.quiet_run == END_OF_SPEECH_FRAMES {
+            if self.quiet_run == WAKE_END_FRAMES {
                 if let Some(result) = self.finish_wake()? {
                     return Ok(Some(result));
                 }
@@ -950,7 +954,7 @@ impl Engine {
         Ok(Some(command))
     }
     /// The speaker stopped after a wake name. Vosk would wait up to a second to
-    /// be sure; this is the same pause that ends a command, so finish now.
+    /// be sure; a short pause (WAKE_END_FRAMES) is enough after a name, so finish now.
     fn finish_wake(&mut self) -> Result<Option<Recognition>> {
         let partial = self.wake.partial()?;
         let words: Vec<_> = partial["partial"]

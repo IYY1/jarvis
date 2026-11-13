@@ -10,6 +10,7 @@ import base64
 import itertools
 from math import hypot
 import os
+from pathlib import Path
 import struct
 import tkinter as tk
 import zlib
@@ -70,60 +71,19 @@ def rounded_png(width, height, radius, fill, under, border=None, knob=None):
     return _png(width, height, pixels)
 
 
-def logo_png(size, background, accent, center):
-    """Two rings and a dot: the Jarvis mark."""
-    bg, ring, dot = _rgb(background), _rgb(accent), _rgb(center)
-    pixels = []
-    middle, unit = size / 2, size / 44
-    for y in range(size):
-        for x in range(size):
-            distance = hypot(x + 0.5 - middle, y + 0.5 - middle)
-            outer = _coverage(abs(distance - 19 * unit) - 2.5 * unit)
-            inner = _coverage(abs(distance - 11 * unit) - 1.5 * unit)
-            color = _blend(_blend(bg, ring, max(outer, inner)), dot, _coverage(distance - 5.5 * unit))
-            pixels.append(color)
-    return _png(size, size, pixels)
-
-
-def _png_rgba(width, height, pixels):
-    def chunk(kind, data):
-        return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data))
-
-    rows = b"".join(b"\0" + bytes(value for pixel in pixels[y * width:(y + 1) * width] for value in pixel)
-                    for y in range(height))
-    return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0))
-            + chunk(b"IDAT", zlib.compress(rows, 9)) + chunk(b"IEND", b""))
-
-
+ICON = Path(__file__).with_name("jarvis.ico")
 ICON_SIZES = (16, 20, 24, 32, 40, 48, 64, 96, 128, 256)
 
 
-def logo_ico(backdrop="#0f1116", accent="#4c8dff", center="#f2f3f5"):
-    """The Jarvis mark as a Windows icon: the window's two blue rings and white dot
-    on a dark disc, so it reads on light and dark backgrounds alike. One PNG per size."""
-    bg, ring, dot = _rgb(backdrop), _rgb(accent), _rgb(center)
-    images = []
-    for size in ICON_SIZES:
-        # The window's 44-unit mark inside a 50-unit disc: a dark margin keeps the
-        # outer ring a ring instead of the disc's edge.
-        middle, unit = size / 2, size / 50
-        pixels = []
-        for y in range(size):
-            for x in range(size):
-                distance = hypot(x + 0.5 - middle, y + 0.5 - middle)
-                outer = _coverage(abs(distance - 19 * unit) - 2.5 * unit)
-                inner = _coverage(abs(distance - 11 * unit) - 1.5 * unit)
-                color = _blend(_blend(bg, ring, max(outer, inner)), dot, _coverage(distance - 5.5 * unit))
-                alpha = round(255 * _coverage(distance - 25 * unit + 0.5))
-                pixels.append((*color, alpha))
-        images.append((size, _png_rgba(size, size, pixels)))
-    header = struct.pack("<HHH", 0, 1, len(images))
-    offset = len(header) + 16 * len(images)
-    entries, blobs = b"", b""
-    for size, png in images:
-        entries += struct.pack("<BBBBHHII", size % 256, size % 256, 0, 0, 1, 32, len(png), offset + len(blobs))
-        blobs += png
-    return header + entries + blobs
+def icon_png(size):
+    """The PNG stored in jarvis.ico for one size (the exe, tray, window and sidebar share it)."""
+    data = ICON.read_bytes()
+    count = struct.unpack_from("<H", data, 4)[0]
+    for n in range(count):
+        width, _h, _c, _r, _p, _b, length, offset = struct.unpack_from("<BBBBHHII", data, 6 + 16 * n)
+        if (width or 256) == size:
+            return data[offset:offset + length]
+    raise LookupError(f"jarvis.ico has no {size} px picture")
 
 
 def image(root, data):

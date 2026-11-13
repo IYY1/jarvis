@@ -266,6 +266,25 @@ class Edit:
         return problems
 
 
+def _frame_seconds(source: Source) -> float:
+    """One frame of ``source``'s video, from its frame rate (60 fps when unknown)."""
+    try:
+        num, _, den = str(source.video.get("r_frame_rate", "60/1")).partition("/")
+        rate = float(num) / float(den or 1)
+        return 1 / rate if rate > 0 else 1 / 60
+    except (ValueError, ZeroDivisionError):
+        return 1 / 60
+
+
+def _on_frames(source: Source, t: float) -> float:
+    """The first frame time of ``source`` at or after ``t``: its frames fall on a grid
+    from its first keyframe, one frame apart."""
+    import math
+    step = _frame_seconds(source)
+    phase = source.keyframes[0] if getattr(source, "keyframes", None) else 0.0
+    return phase + max(0, math.ceil((t - phase) / step - 1e-6)) * step
+
+
 def output_path(first: str | Path) -> Path:
     first = Path(first)
     for n in range(1, 1000):
@@ -329,9 +348,26 @@ def command(edit: Edit, output: Path, mode: str, tracks: list[int], mix: bool, w
             raise EditError("Fast export needs matching clips (" + "; ".join(problems[:3]) + "). Choose Exact to convert them.")
         listing = workdir / "segments.ffconcat"
         lines = ["ffconcat version 1.0"]
-        for start, segment in zip(edit.fast_starts(), edit.segments):
+        last = len(edit.segments) - 1
+        for n, (start, segment) in enumerate(zip(edit.fast_starts(), edit.segments)):
             path = edit.sources[segment.source].path.replace("\\", "/").replace("'", "'\\''")
-            lines += [f"file '{path}'", f"inpoint {start:.6f}", f"outpoint {segment.end:.6f}"]
+            # Each part starts and ends on its source's own frames: the concat demuxer
+            # places the next part (outpoint - inpoint) after this one's start, so a cut
+            # between frames (or a start before the first frame) put the next part's
+            # first frame a few ms after this one's last, which a constant-rate player
+            # or editor merges into one.
+            # Frame times in the file are rounded to the millisecond, so the part's
+            # length is given outright (whole frames) and its end falls between two
+            # frames, never on one.
+            source = edit.sources[segment.source]
+            start = _on_frames(source, start)
+            if n < last:
+                step = _frame_seconds(source)
+                cut = _on_frames(source, segment.end)
+                lines += [f"file '{path}'", f"inpoint {start:.6f}", f"outpoint {cut - step / 2:.6f}",
+                          f"duration {round((cut - start) / step) * step:.6f}"]
+            else:
+                lines += [f"file '{path}'", f"inpoint {start:.6f}", f"outpoint {segment.end:.6f}"]
         listing.write_text("\n".join(lines) + "\n", encoding="utf-8")
         argv += ["-f", "concat", "-safe", "0", "-i", str(listing), "-map", "0:v:0"]
         if mix and len(tracks) > 1:

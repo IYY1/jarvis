@@ -13,7 +13,8 @@ root = Path(SPECPATH).parents[1]
 # service and settings never import an inference library.
 # The shared Arabic parser reads this table at runtime, including in the
 # frozen Windows service; Python module discovery cannot collect JSON.
-datas = [(str(root / "src/jarvis/arabic_commands.json"), "jarvis")]
+datas = [(str(root / "src/jarvis/arabic_commands.json"), "jarvis"),
+         (str(root / "src/jarvis/windows/jarvis.ico"), "jarvis/windows")]
 binaries = []
 hiddenimports = []
 for package in (
@@ -128,7 +129,7 @@ console = EXE(
     exclude_binaries=True,
     name="JarvisConsole",
     console=True,
-    icon=str(root / "packaging/windows/jarvis.ico"),
+    icon=str(root / "src/jarvis/windows/jarvis.ico"),
     version=version_file("Jarvis", "JarvisConsole"),
     debug=False,
     strip=False,
@@ -143,8 +144,8 @@ gui = EXE(
     exclude_binaries=True,
     name="Jarvis",
     console=False,
-    # The window's mark (look.logo_ico); a test keeps this file in step with it.
-    icon=str(root / "packaging/windows/jarvis.ico"),
+    # The same file the window loads (look.ICON), from the user's picture.
+    icon=str(root / "src/jarvis/windows/jarvis.ico"),
     version=version_file("Jarvis", "Jarvis"),
     debug=False,
     strip=False,

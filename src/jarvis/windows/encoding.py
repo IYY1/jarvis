@@ -51,14 +51,25 @@ def audio_plan(cfg, replay=None, build=0, labels=None, recording=False):
         return volumes.get(key, 100) / 100
 
     specific = replay.get("sources", "all") == "specific"
+    if specific and 0 < build < PROCESS_LOOPBACK_BUILD:
+        # Windows 10 can't record one program's sound: record all of it instead
+        # (Specific apps is the default, and must not stop a capture there).
+        specific = False
+    microphone = replay.get("mic_device", "")   # recordings' own microphone; "" is Windows' default
+    outputs = list(replay.get("outputs") or [])   # sound outputs to record; [] is the default output
     if not specific and replay.get("audio_tracks", "mixed") != "separate":
         if not (cfg.get("system_audio") or cfg.get("microphone")):
             return []
-        return [(None, dict(cfg, volumes={"desktop": volume("desktop"), "microphone": volume("microphone")}))]
+        return [(None, dict(cfg, mic_device=microphone, outputs=outputs,
+                            volumes={"desktop": volume("desktop"), "microphone": volume("microphone")}))]
     tracks = []
     if not specific:
         if replay.get("game_audio", True):
-            tracks.append(("Game and desktop sound", {"kind": "game", "app": "", "volume": volume("desktop")}))
+            if outputs:   # each chosen output on its own track, named as Windows names it
+                tracks += [(output.removeprefix("loopback:").removesuffix(" [Loopback]"),
+                            {"kind": "output", "device": output, "volume": volume("desktop")}) for output in outputs]
+            else:
+                tracks.append(("Game and desktop sound", {"kind": "game", "app": "", "volume": volume("desktop")}))
     else:
         from ..replay import valid_app_name
 
@@ -72,7 +83,7 @@ def audio_plan(cfg, replay=None, build=0, labels=None, recording=False):
             for app in (a for a in replay.get("separate_apps", []) if valid_app_name(a)):
                 tracks.append((labels.get(app.casefold(), app), {"kind": "app", "app": app, "volume": volume(app)}))
     if replay.get("microphone", True):
-        tracks.append(("Microphone", {"kind": "microphone", "volume": volume("microphone")}))
+        tracks.append(("Microphone", {"kind": "microphone", "device": microphone, "volume": volume("microphone")}))
     return [(title, dict(cfg, track=track)) for title, track in tracks]
 
 

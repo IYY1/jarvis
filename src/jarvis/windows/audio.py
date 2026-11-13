@@ -263,31 +263,33 @@ def mix_to_pipe(config, pipe):
     with output_closed(output), pa.PyAudio() as engine:
         try:
             device = config.get("audio_device", "")
+            volumes = config.get("volumes") or {}
+            gains = []
             if config.get("system_audio"):
-                name = device if device.startswith("loopback:") else "default_output"
-                streams.append(
-                    PCMStream(
-                        engine,
-                        pa,
-                        select_device(engine, pa, name, loopback=True),
-                        silence_on_idle=True,
-                    )
-                )
+                # The chosen sound outputs, or the default one (or a legacy audio_device).
+                outputs = list(config.get("outputs") or []) or [
+                    device if device.startswith("loopback:") else "default_output"]
+                for name in outputs:
+                    streams.append(PCMStream(engine, pa, select_device(engine, pa, name, loopback=True),
+                                             silence_on_idle=True))
+                    gains.append(volumes.get("desktop", 1.0))
             if config.get("microphone"):
-                name = device if device.startswith("input:") else "default_input"
+                name = config.get("mic_device") or (device if device.startswith("input:") else "default_input")
                 streams.append(PCMStream(engine, pa, select_device(engine, pa, name)))
+                gains.append(volumes.get("microphone", 1.0))
             if not streams:
                 raise RuntimeError("No recording audio source selected")
-            # Each source at its volume; two share the track at half each, as before.
-            volumes = config.get("volumes") or {}
-            gains = ([volumes.get("desktop", 1.0)] if config.get("system_audio") else []) + (
-                [volumes.get("microphone", 1.0)] if config.get("microphone") else [])
-            gains = [g * (0.5 if len(streams) == 2 else 1.0) for g in gains]
+            # Each source at its volume, at half when sharing the track (as two always
+            # were): more outputs don't make each quieter. Rare peaks together are
+            # limited by the saturating add, never wrapped around.
+            gains = [g * 0.5 if len(streams) > 1 else g for g in gains]
             wait_for_reader(output, streams)
             while True:
                 frames = [stream.read(960) for stream in streams]
                 parts = [frame if gain == 1.0 else op.mul(frame, 2, gain) for frame, gain in zip(frames, gains)]
-                data = parts[0] if len(parts) == 1 else op.add(parts[0], parts[1], 2)
+                data = parts[0]
+                for part in parts[1:]:
+                    data = op.add(data, part, 2)
                 output.write(data)
         finally:
             for stream in streams:
@@ -335,20 +337,24 @@ def start_app_audio(program, include, pipe):
 
 
 def track_to_pipe(config, pipe):
-    """One track, unmixed: "game" (all desktop sound) or "microphone". A
-    program's own track runs on the native worker, straight into FFmpeg
-    (start_app_audio), never through here."""
+    """One track, unmixed: "game" (all sound on the default output), "output"
+    (all sound on one chosen output) or "microphone" (the chosen one, else
+    Windows' default). A program's own track runs on the native worker, straight
+    into FFmpeg (start_app_audio), never through here."""
     track = config["track"]
-    kind, program = track.get("kind"), track.get("app", "")
-    if program or kind not in ("game", "microphone"):
+    kind, program, device = track.get("kind"), track.get("app", ""), track.get("device", "")
+    if program or kind not in ("game", "output", "microphone") or (kind == "output" and not device):
         raise RuntimeError("Unknown replay audio track")
     from .pipes import PipeWriter
 
     pa = _library()
     output = PipeWriter(pipe)
     with output_closed(output), pa.PyAudio() as engine:
-        stream = (PCMStream(engine, pa, select_device(engine, pa, "default_output", loopback=True), silence_on_idle=True)
-                  if kind == "game" else PCMStream(engine, pa, select_device(engine, pa, "default_input")))
+        if kind == "microphone":
+            stream = PCMStream(engine, pa, select_device(engine, pa, device or "default_input"))
+        else:
+            name = device if kind == "output" else "default_output"
+            stream = PCMStream(engine, pa, select_device(engine, pa, name, loopback=True), silence_on_idle=True)
         try:
             wait_for_reader(output, [stream])
             while True:

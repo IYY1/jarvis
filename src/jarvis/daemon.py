@@ -650,6 +650,8 @@ class Service:
                     self.activation.pause()
         elif op == "save_config":
             c = configuration.validate(payload["config"])
+            # Recording reviewed for the first time: replay set to start by itself starts now.
+            first_review = c["recording"]["configured"] and not self.config["recording"]["configured"]
             # Running captures whose settings change stop, then start again with them.
             recording_changed = recording_capture_changed(self.config["recording"], c["recording"])
             restart = []
@@ -687,11 +689,17 @@ class Service:
                 started = await self.execute(start)
                 if not started.get("ok"):
                     errors.append(started.get("error", "did not start"))
+            if first_review and c["replay"]["autostart"] and self.replay.status()["state"] in ("off", "error"):
+                started = await self.execute("start replay")
+                if not started.get("ok"):
+                    errors.append(started.get("error", "did not start"))
             return {"ok": True, "config": self.config,
                     "restarted": ["record" if "recording" in s else "replay" for s, _ in restart],
                     "restart_errors": errors}
         elif op in ("replay_start", "replay_stop", "replay_save"):
             return await self.execute(op.removeprefix("replay_") + " replay")
+        elif op == "screenshot":
+            return await self.execute("take a screenshot")
         elif op in ("record_start", "record_stop"):
             return await self.execute("start recording" if op == "record_start" else "stop recording")
         elif op == "execute":
@@ -853,7 +861,9 @@ async def serve():
             await asyncio.to_thread(service.recorder.inspect_previous)
         except OSError as exc:
             print(f"jarvis: could not inspect earlier recordings: {exc}", file=sys.stderr)
-        if service.config["replay"]["autostart"]:
+        # Not before recording is reviewed: a new install would only show an error.
+        # The first review starts it (save_config).
+        if service.config["replay"]["autostart"] and service.config["recording"]["configured"]:
             try:
                 await asyncio.to_thread(service.replay.start)
             except RuntimeError as exc:   # shown in status; the service keeps running

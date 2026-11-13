@@ -100,6 +100,7 @@ class Tray:
                         (3, "Listen once"),
                         (4, "Stop recording"),
                         (5, "Save replay"),
+                        (7, "Take a screenshot"),
                         (6, "Quit Jarvis"),
                     ):
                         win32gui.AppendMenu(menu, win32con.MF_STRING, ident, label)
@@ -115,7 +116,7 @@ class Tray:
                         )
                         if choice == 2:
                             invoke("mute", muted=not muted)
-                        elif choice in (1, 3, 4, 5, 6):
+                        elif choice in (1, 3, 4, 5, 6, 7):
                             invoke(
                                 {
                                     1: "open_ui",
@@ -123,6 +124,7 @@ class Tray:
                                     4: "record_stop",
                                     5: "replay_save",
                                     6: "shutdown",
+                                    7: "screenshot",
                                 }[choice]
                             )
                     finally:

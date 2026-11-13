@@ -26,6 +26,13 @@
     "turn the sound on": "turn the sound back on",
     "sound on": "turn the sound back on",
     "restore the volume": "turn the sound back on",
+    "unmute volume": "turn the sound back on",
+    "unmute the volume": "turn the sound back on",
+    "unmute audio": "turn the sound back on",
+    "unmute the audio": "turn the sound back on",
+    "unmute sound": "turn the sound back on",
+    "unmute the sound": "turn the sound back on",
+    "unmute": "turn the sound back on",
     "start screen recording": "start recording",
     "start a recording": "start recording",
     "start recording my screen": "start recording",
@@ -44,6 +51,11 @@
     "pause listening": "stop listening",
     "cancel that": "cancel",
     "never mind": "cancel",
+    "screenshot": "take a screenshot",
+    "take screenshot": "take a screenshot",
+    "take a snapshot": "take a screenshot",
+    "capture the screen": "take a screenshot",
+    "capture my screen": "take a screenshot",
     "clip that": "save replay",
     "save that": "save replay",
     "save the replay": "save replay",
@@ -62,13 +74,26 @@
     "quit yourself": "close yourself",
     "shut yourself down": "close yourself",
     "turn yourself off": "close yourself",
-    "unmute volume": "turn the sound back on",
-    "unmute the volume": "turn the sound back on",
-    "unmute audio": "turn the sound back on",
-    "unmute the audio": "turn the sound back on",
-    "unmute sound": "turn the sound back on",
-    "unmute the sound": "turn the sound back on",
-    "unmute": "turn the sound back on"
+    "screenshot screen one": "take a screenshot of screen one",
+    "screenshot of screen one": "take a screenshot of screen one",
+    "take screenshot of screen one": "take a screenshot of screen one",
+    "take a screenshot of the first screen": "take a screenshot of screen one",
+    "screenshot the first screen": "take a screenshot of screen one",
+    "screenshot screen two": "take a screenshot of screen two",
+    "screenshot of screen two": "take a screenshot of screen two",
+    "take screenshot of screen two": "take a screenshot of screen two",
+    "take a screenshot of the second screen": "take a screenshot of screen two",
+    "screenshot the second screen": "take a screenshot of screen two",
+    "screenshot screen three": "take a screenshot of screen three",
+    "screenshot of screen three": "take a screenshot of screen three",
+    "take screenshot of screen three": "take a screenshot of screen three",
+    "take a screenshot of the third screen": "take a screenshot of screen three",
+    "screenshot the third screen": "take a screenshot of screen three",
+    "screenshot screen four": "take a screenshot of screen four",
+    "screenshot of screen four": "take a screenshot of screen four",
+    "take screenshot of screen four": "take a screenshot of screen four",
+    "take a screenshot of the fourth screen": "take a screenshot of screen four",
+    "screenshot the fourth screen": "take a screenshot of screen four"
   },
   "POLITE_PREFIXES": [
     "please",
@@ -175,6 +200,15 @@
         "save replay",
         "start replay",
         "stop replay"
+      ]
+    },
+    {
+      "category": "Recording",
+      "title": "Screenshot",
+      "examples": [
+        "take a screenshot",
+        "screenshot",
+        "capture the screen"
       ]
     },
     {
@@ -309,6 +343,10 @@
       "action": "replay_stop",
       "target": null
     },
+    "take a screenshot": {
+      "action": "screenshot",
+      "target": null
+    },
     "stop listening": {
       "action": "pause",
       "target": null
@@ -328,6 +366,22 @@
     "close yourself": {
       "action": "quit",
       "target": null
+    },
+    "take a screenshot of screen one": {
+      "action": "screenshot",
+      "target": 1
+    },
+    "take a screenshot of screen two": {
+      "action": "screenshot",
+      "target": 2
+    },
+    "take a screenshot of screen three": {
+      "action": "screenshot",
+      "target": 3
+    },
+    "take a screenshot of screen four": {
+      "action": "screenshot",
+      "target": 4
     }
   }
 }
