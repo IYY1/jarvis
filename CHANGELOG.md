@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+- Windows: a listening sign. After the wake word the Jarvis mark turns and
+  breathes in a corner of the screen until the command ends: green when it
+  worked, red when it wasn't understood, and it goes away as soon as Jarvis is
+  only waiting again. It shows on the screen you are working on, never takes
+  focus, lets clicks through and never shows in replays, recordings or
+  screenshots. Voice > Wake word turns it off or picks the corner.
+- Windows: a new icon, a teal dial drawn by Jarvis itself
+  (scripts/make_windows_icon.py) with the same drawing as the listening sign, on
+  the program, its shortcuts, the taskbar, the tray, the title bar and the sidebar.
+- Windows: the game track no longer follows Epic's launcher or overlay, so an
+  Epic game's sound is recorded.
+
 ## 1.1.0 — 2026-11-13
 
 Windows update from PR #19: screenshots, up to six recording sound outputs,

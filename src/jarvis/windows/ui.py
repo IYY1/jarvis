@@ -917,6 +917,10 @@ class Window:
         self.text(wake, "Wake name", "activation", "wake_phrase", detail="Short, and unlike the words in your games.")
         self.wake_aliases = tk.StringVar(value=", ".join(self.config["activation"]["wake_aliases"]))
         self.text(wake, "Other names", variable=self.wake_aliases, detail="Separate with commas; up to eight names in all.")
+        self.switch(wake, "Show a sign while listening", "activation", "listening_sign",
+                    "The Jarvis mark in a corner of the screen until your command ends. Never in recordings or screenshots.")
+        self.choice(wake, "Sign corner", "activation", "sign_corner",
+                    {"Top right": "top_right", "Top left": "top_left", "Bottom right": "bottom_right", "Bottom left": "bottom_left"})
 
         from .voice_controls import VoiceControls
         self.voice_controls = VoiceControls(self, tabs["language"], tabs["dictation"])

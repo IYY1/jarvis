@@ -113,6 +113,12 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(games.game_from_paths("/home/u/Games/Heroic/Hades/Hades.exe"), "Hades")
         self.assertEqual(games.game_from_paths("C:\\Program Files\\Epic Games\\Fortnite\\FortniteClient.exe"), "Fortnite")
         self.assertIsNone(games.game_from_paths("/usr/lib/firefox/firefox"))
+        # Store programs beside the games are not games.
+        self.assertIsNone(games.game_from_paths(
+            "C:\\Program Files\\Epic Games\\Launcher\\Portal\\Binaries\\Win64\\EpicGamesLauncher.exe"))
+        self.assertIsNone(games.game_from_paths("C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\x\\EOSOverlayRenderer.exe"))
+        self.assertIsNone(games.game_from_paths("C:\\Steam\\steamapps\\common\\SteamVR\\bin\\win64\\vrmonitor.exe"))
+        self.assertEqual(games.game_from_paths("C:\\Program Files\\Epic Games\\SomeGame\\Binaries\\Win64\\SomeGame.exe"), "SomeGame")
         self.assertEqual(games.game_folder("Half-Life: Alyx"), "Half-Life Alyx")
         self.assertIsNone(games.game_folder(" ../ "))
         clip = self.home / "Replay.mkv"

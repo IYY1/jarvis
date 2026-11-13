@@ -17,8 +17,16 @@ from .host import is_windows
 MARKERS = ("/steamapps/common/", "/Games/Heroic/", "/Games/", "/Epic Games/", "/GOG Galaxy/Games/")
 
 
+# Store programs installed beside the games that are not games (mirrors NOT_GAMES in
+# the voice worker's app_audio.rs): Epic's launcher and overlay, Steam tools.
+NOT_GAMES = ("/epic games/launcher/", "/epic games/epic online services/", "/steamapps/common/wallpaper_engine/",
+             "/steamapps/common/steamworks shared/", "/steamapps/common/steamvr/")
+
+
 def game_from_paths(text: str) -> str | None:
     text = text.replace("\\", "/")
+    if any(marker in text.lower() for marker in NOT_GAMES):
+        return None
     for marker in MARKERS:
         at = text.find(marker)
         if at >= 0:

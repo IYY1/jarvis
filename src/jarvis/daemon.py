@@ -122,6 +122,7 @@ class Service:
             import pythoncom
             self.desktop_executor = ThreadPoolExecutor(max_workers=1, initializer=pythoncom.CoInitialize, thread_name_prefix="jarvis-com")
         self.tray = None
+        self.sign = None   # Windows: the listening sign in a corner of the screen
         self.engine = None
         self.gate = None
         self.dictation = dictation.Session()
@@ -148,7 +149,16 @@ class Service:
         except Exception as exc:
             raise CommandError(f"Windows could not complete this action: {exc}") from exc
 
+    def show_sign(self, what, *args):
+        """Tell the listening sign (Windows) what voice control is doing: listen, busy, done(ok) or hide."""
+        if self.sign is not None:
+            getattr(self.sign, what)(*args)
+
     def publish(self):
+        if self.activation.state not in ("listening", "processing"):
+            # Whatever ended the session (a result, a timeout, Cancel, a restart),
+            # the sign goes with it: it never stays up while Jarvis just waits.
+            self.show_sign("hide")
         if self.tray:
             self.tray.update(self.status())
         message = {"ok": True, "status": self.status()}
@@ -332,33 +342,39 @@ class Service:
                     self.unsupported = event.get("unsupported", [])
                     self.engine = event.get("engine")
                     self.activation.arm()
-                    if event.get("listening"):
-                        self.activation.listen(deadline=event.get("deadline"))
+                    if event.get("listening") and self.activation.listen(deadline=event.get("deadline")):
+                        self.show_sign("listen")
                     self.message = "Say a command" if event.get("listening") else ("Microphone test · ends in 15 seconds" if mode == "test" else "Waiting for “" + self.config["activation"]["wake_phrase"] + "”")
                 elif kind == "wake":
-                    self.activation.listen(deadline=event.get("deadline"))
+                    if self.activation.listen(deadline=event.get("deadline")):
+                        self.show_sign("listen")
                     self.message = "Listening · say one command"
                 elif kind == "command":
                     accepted = self.activation.accept(event["text"], event.get("confidence"),
                                                       captured_at=event.get("captured_at"))
                     if accepted:
                         self.message = "Processing command…"
+                        self.show_sign("busy")
                         self.publish()
-                        await self.execute(event["text"], event.get("heard") if event.get("closest_match") else None)
+                        result = await self.execute(event["text"], event.get("heard") if event.get("closest_match") else None)
+                        self.show_sign("done", bool(result and result.get("ok")))
                         if event.get("closest_match") and event.get("heard"):
                             # Say what was actually heard, so a wrong guess is visible.
                             self.message = f"Heard “{event['heard']}” → {event['text']}. {self.message}"
                     else:
                         self.message = "No confident match. Try again or adjust sensitivity."
+                        self.show_sign("done", False)
                     if not self.muted:
                         self.activation.arm() if mode == "wake_word" else self.activation.pause()
                 elif kind == "heard":
                     self.message = f"Heard “{event.get('text', '')}”, which isn't a command I know. Try again."
                     heard = True
+                    self.show_sign("done", False)
                 elif kind == "timeout":
                     if not heard:
                         self.message = "No command heard. Try again."
                     heard = False
+                    self.show_sign("hide")
                     self.activation.arm() if mode == "wake_word" else self.activation.pause()
                 elif kind == "dictation":
                     if event.get("state") == "started":
@@ -380,6 +396,7 @@ class Service:
                 elif kind == "error":
                     print(f"jarvis: voice worker ({mode}) reported: {event['message']}", file=sys.stderr, flush=True)
                     self.activation.error()
+                    self.show_sign("hide")
                     self.message = event["message"]
                 self.publish()
             await proc.wait()
@@ -415,6 +432,7 @@ class Service:
             raise CommandError("Complete first-run microphone consent in Settings")
         self.muted = muted
         if muted:
+            self.show_sign("hide")
             # Mark closed before awaiting termination so no queued result can dispatch.
             await self.end_dictation("Dictation stopped: microphone muted")
             self.activation.pause()
@@ -857,6 +875,9 @@ async def serve():
             from .windows.tray import Tray
             service.tray = Tray(service)
             service.tray.start()
+            from .windows.listening_sign import ListeningSign
+            activation = lambda: service.config["activation"]   # noqa: E731  (follows saved settings)
+            service.sign = ListeningSign(lambda: activation()["sign_corner"] if activation().get("listening_sign") else None)
         try:
             await asyncio.to_thread(service.recorder.inspect_previous)
         except OSError as exc:
@@ -896,6 +917,8 @@ async def serve():
             lock.close()
             if service.tray:
                 service.tray.close()
+            if service.sign:
+                service.sign.close()
             if service.desktop_executor:
                 service.desktop_executor.shutdown(wait=False, cancel_futures=True)
 

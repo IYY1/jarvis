@@ -86,6 +86,9 @@ if sys.platform == "win32":
     DEFAULTS["recording"]["configured"] = True
     DEFAULTS["startup"] = True
     DEFAULTS["activation"]["sensitivity"] = 0.55
+    # The listening sign (windows/listening_sign.py): the logo in a corner while
+    # Jarvis waits for a command; off makes no window at all.
+    DEFAULTS["activation"].update(listening_sign=True, sign_corner="top_right")
     DEFAULTS["recording"].update(system_audio=True, microphone=True, fps=120, resolution="1080", bitrate_mbps=16)
     DEFAULTS["replay"].update(seconds=250, autostart=True, max_mb=2624, audio_tracks="separate",
                               separate_apps=["Discord", "Spotify"], sources="specific",
@@ -287,6 +290,10 @@ def validate(data: dict) -> dict:
             raise ValueError("Choose a valid folder for screenshots")
         if not all(isinstance(c["recording"][k], bool) for k in ("screenshot_game_folders", "screenshot_sound")):
             raise ValueError("Screenshot switches must be on or off")
+        if not isinstance(c["activation"]["listening_sign"], bool):
+            raise ValueError("The listening sign must be on or off")
+        if c["activation"]["sign_corner"] not in ("top_right", "top_left", "bottom_right", "bottom_left"):
+            raise ValueError("Choose a corner of the screen for the listening sign")
         mic = c["replay"]["mic_device"]
         if not isinstance(mic, str) or len(mic) > 300 or "\0" in mic or (mic and not mic.startswith("input:")):
             raise ValueError("Choose a microphone for recordings, or the Windows default")

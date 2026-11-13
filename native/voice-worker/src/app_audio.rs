@@ -29,7 +29,19 @@ pub const GAME: &str = "@game";
 pub fn is_game_path(path: &str) -> bool {
     let path = path.to_lowercase();
     ["\\steamapps\\common\\", "\\epic games\\", "\\gog galaxy\\games\\"].iter().any(|m| path.contains(m))
+        && !NOT_GAMES.iter().any(|m| path.contains(m))
 }
+
+/// Store programs installed beside the games that are not games: Epic's launcher, its
+/// web helper and overlay, and Steam tools. Any sound from one of them made the game
+/// track follow it instead of the game.
+const NOT_GAMES: [&str; 5] = [
+    "\\epic games\\launcher\\",
+    "\\epic games\\epic online services\\",
+    "\\steamapps\\common\\wallpaper_engine\\",
+    "\\steamapps\\common\\steamworks shared\\",
+    "\\steamapps\\common\\steamvr\\",
+];
 
 pub const RATE: u64 = 48000;
 const FRAME_BYTES: usize = 4;
@@ -461,7 +473,8 @@ mod windows_loopback {
                     continue;
                 }
             };
-            match follow(target, include, program.is_none().then_some(name), out, &mut track) {
+            let game = name == super::GAME && program.is_some();
+            match follow(target, include, program.is_none().then_some(name), game, out, &mut track) {
                 Ok(Followed::ReaderClosed) => return Ok(()),
                 Ok(Followed::Changed) => continue,
                 // It closed while Windows was starting its capture: look again.
@@ -483,11 +496,12 @@ mod windows_loopback {
         target: u32,
         include: bool,
         waiting_for: Option<&str>,
+        game: bool,
         out: &mut impl Write,
         track: &mut Track,
     ) -> Result<Followed> {
         let process = if waiting_for.is_none() { watch(target) } else { None };
-        let result = unsafe { follow_client(target, include, waiting_for, process, out, track) };
+        let result = unsafe { follow_client(target, include, waiting_for, game, process, out, track) };
         if let Some(handle) = process {
             let _ = unsafe { CloseHandle(handle) };
         }
@@ -498,6 +512,7 @@ mod windows_loopback {
         target: u32,
         include: bool,
         waiting_for: Option<&str>,
+        game: bool,
         process: Option<HANDLE>,
         out: &mut impl Write,
         track: &mut Track,
@@ -568,7 +583,11 @@ mod windows_loopback {
                     track.written += gap;
                     if looked.elapsed() >= LOOK_EVERY {
                         looked = Instant::now();
-                        if ended(process) || waiting_for.is_some_and(|name| find(name).is_some()) {
+                        if ended(process)
+                            || waiting_for.is_some_and(|name| find(name).is_some())
+                            // Another game is the one playing now: follow it instead.
+                            || (game && find(super::GAME).is_some_and(|pid| pid != target))
+                        {
                             return Ok(Followed::Changed);
                         }
                     }
@@ -602,6 +621,14 @@ mod tests {
         assert!(is_game_path(r"C:\Program Files (x86)\GOG Galaxy\Games\Cyberpunk 2077\bin\x64\Cyberpunk2077.exe"));
         assert!(!is_game_path(r"C:\Users\me\AppData\Local\Discord\app-1.0\Discord.exe"));
         assert!(!is_game_path(r"C:\Program Files (x86)\Steam\steam.exe"));
+        // Store programs beside the games: their sound must never become the game track.
+        assert!(!is_game_path(r"C:\Program Files\Epic Games\Launcher\Portal\Binaries\Win64\EpicGamesLauncher.exe"));
+        assert!(!is_game_path(r"C:\Program Files\Epic Games\Launcher\Engine\Binaries\Win64\EpicWebHelper.exe"));
+        assert!(!is_game_path(
+            r"C:\Program Files (x86)\Epic Games\Epic Online Services\managedArtifacts\0123abcd\EOSOverlayRenderer-Win64-Shipping.exe"
+        ));
+        assert!(!is_game_path(r"C:\Program Files (x86)\Steam\steamapps\common\SteamVR\bin\win64\vrmonitor.exe"));
+        assert!(is_game_path(r"C:\Program Files\Epic Games\SomeGame\Binaries\Win64\SomeGame.exe"));
     }
 
     #[test]
