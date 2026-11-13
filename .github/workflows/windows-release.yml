@@ -1,0 +1,36 @@
+name: Publish Windows 1.1
+on:
+  push:
+    branches: [codex/release-1.1]
+    paths:
+      - .github/workflows/windows-release.yml
+      - scripts/release_windows_github.py
+      - src/jarvis/__init__.py
+      - pyproject.toml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: release-windows-1.1
+  cancel-in-progress: true
+jobs:
+  release:
+    if: github.repository == 'abdullaho21/jarvis'
+    runs-on: windows-2022
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.13.17'
+      - name: Build, test, verify and publish Windows 1.1
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/release_windows_github.py
+# Release metadata lockfiles verified together with controller package metadata.
