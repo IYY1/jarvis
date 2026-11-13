@@ -6,6 +6,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import time
 import urllib.request
 import zipfile
 
@@ -114,6 +115,19 @@ Validation: Windows policy/packaging tests and native worker tests pass; frozen 
 
 The installer is unsigned. Physical microphone, GPU/HDR, installation/upgrade/uninstallation and Windows 11 per-app audio were not tested by this release build.
 ''', encoding='utf-8')
+# Require the complete repository checks before making the release public.
+deadline = time.monotonic() + 30 * 60
+while True:
+    checks = json.loads(subprocess.check_output(['gh', 'run', 'list', '--repo', os.environ['GITHUB_REPOSITORY'],
+        '--commit', os.environ['GITHUB_SHA'], '--workflow', 'tests.yml', '--limit', '20',
+        '--json', 'status,conclusion'], text=True))
+    if checks and all(c['status'] == 'completed' for c in checks):
+        assert all(c['conclusion'] == 'success' for c in checks), checks
+        break
+    if time.monotonic() > deadline:
+        raise TimeoutError('Repository CI did not finish successfully before publication')
+    print('Waiting for required repository checks before publication', flush=True)
+    time.sleep(20)
 # Create as a draft, attach every verified asset, then publish atomically to users.
 run('gh', 'release', 'create', 'v1.1', '--repo', os.environ['GITHUB_REPOSITORY'], '--target',
     os.environ['GITHUB_SHA'], '--title', 'Jarvis 1.1', '--notes-file', notes, '--draft', *assets)

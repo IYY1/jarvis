@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.0 — 2026-11-13
+
+Windows update from PR #19: screenshots, up to six recording sound outputs,
+a separate recording microphone, stable display selection, quicker wake handling,
+corrected clip joins, the new icon and first-start settings. Existing settings
+are retained. Includes CI test isolation and aligned controller version metadata.
+
 ## 1.0.0 — 2026-11-09
 
 First major Windows release, including the

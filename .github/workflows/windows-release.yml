@@ -12,7 +12,7 @@ permissions:
   contents: read
 concurrency:
   group: release-windows-1.1
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   release:
     if: github.repository == 'abdullaho21/jarvis'
@@ -20,6 +20,7 @@ jobs:
     timeout-minutes: 45
     permissions:
       contents: write
+      actions: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
